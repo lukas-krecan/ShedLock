@@ -11,6 +11,7 @@
     <modules>
         <module>shedlock-core</module>
         <module>shedlock-spring</module>
+        <module>shedlock-springboot-test</module>
     </modules>
 
     <dependencies>

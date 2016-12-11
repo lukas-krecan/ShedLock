@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.core;
+package net.javacrumbs.shedlock.test.boot;
 
-import static java.util.Objects.requireNonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-public class DefaultLockManager implements LockManager {
-    private final LockProvider lockProvider;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-    public DefaultLockManager(LockProvider lockProvider) {
-        this.lockProvider = requireNonNull(lockProvider);
-    }
+@Component
+public class ScheduledTasks {
 
-    @Override
-    public void executeIfNotLocked(Runnable task) {
-        lockProvider.lock(task).ifPresent(lock -> {
-            try {
-                task.run();
-            } finally {
-                lock.unlock(task);
-            }
-        });
+    private static final Logger log = LoggerFactory.getLogger(ScheduledTasks.class);
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    @Scheduled(fixedRate = 5000)
+    public void reportCurrentTime() {
+        log.info("The time is now {}", dateFormat.format(new Date()));
     }
 }
