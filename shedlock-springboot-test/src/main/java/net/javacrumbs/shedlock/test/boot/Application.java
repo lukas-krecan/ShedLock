@@ -16,34 +16,43 @@
 package net.javacrumbs.shedlock.test.boot;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
+import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.ReentrantLockProvider;
+import net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.LockableTaskScheduler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @SpringBootApplication
 @EnableScheduling
-public class Application implements SchedulingConfigurer {
+public class Application {
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Application.class);
     }
 
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+
+    @Bean
+    public TaskScheduler taskScheduler(LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.setPoolSize(10);
         taskScheduler.initialize();
 
-        taskRegistrar.setScheduler(new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider())));
+        return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, lockConfigurationExtractor));
     }
 
-    private LockProvider lockProvider() {
+    @Bean
+    public LockProvider lockProvider() {
         return new ReentrantLockProvider();
+    }
+
+    @Bean
+    public LockConfigurationExtractor lockConfigurationExtractor() {
+        return new SpringLockConfigurationExtractor();
     }
 }

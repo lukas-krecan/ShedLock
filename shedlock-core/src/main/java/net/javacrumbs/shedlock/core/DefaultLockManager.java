@@ -15,23 +15,30 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import java.util.Optional;
+
 import static java.util.Objects.requireNonNull;
 
 public class DefaultLockManager implements LockManager {
     private final LockProvider lockProvider;
+    private final LockConfigurationExtractor lockConfigurationExtractor;
 
-    public DefaultLockManager(LockProvider lockProvider) {
+    public DefaultLockManager(LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
         this.lockProvider = requireNonNull(lockProvider);
+        this.lockConfigurationExtractor = requireNonNull(lockConfigurationExtractor);
     }
 
     @Override
     public void executeIfNotLocked(Runnable task) {
-        lockProvider.lock(task).ifPresent(lock -> {
-            try {
-                task.run();
-            } finally {
-                lock.unlock(task);
-            }
+        Optional<LockConfiguration> lockParamsOptional = lockConfigurationExtractor.getLockConfiguration(task);
+        lockParamsOptional.ifPresent(lockParams -> {
+            lockProvider.lock(lockParams).ifPresent(lock -> {
+                try {
+                    task.run();
+                } finally {
+                    lock.unlock(task);
+                }
+            });
         });
     }
 }

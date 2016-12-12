@@ -15,22 +15,32 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import java.util.Optional;
-import java.util.concurrent.locks.ReentrantLock;
+import java.time.Instant;
 
 /**
- * Lock provider based on {@link java.util.concurrent.locks.ReentrantLock}. Only one task per
- * SimpleLockProvider can be running. Useful mainly for testing.
+ * Lock parameters
  */
-public class ReentrantLockProvider implements LockProvider {
-    private final ReentrantLock lock = new ReentrantLock();
+public class LockConfiguration {
+    private final String name;
+    private final Instant lockUntil;
 
+    public LockConfiguration(String name, Instant lockUntil) {
+        this.name = name;
+        this.lockUntil = lockUntil;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Instant getLockUntil() {
+        return lockUntil;
+    }
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        if (lock.tryLock()) {
-            return Optional.of(task1 -> lock.unlock());
-        } else {
-            return Optional.empty();
-        }
+    public String toString() {
+        return "LockConfiguration{" +
+            "name='" + name + '\'' +
+            ", lockUntil=" + lockUntil +
+            '}';
     }
 }

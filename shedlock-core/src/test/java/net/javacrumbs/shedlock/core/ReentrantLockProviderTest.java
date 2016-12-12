@@ -10,11 +10,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class ReentrantLockProviderTest {
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
     private LockProvider lockProvider = new ReentrantLockProvider();
-    private LockManager lockManager = new DefaultLockManager(lockProvider);
+    private LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
+    private LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
 
     @Test
     public void shouldExecuteTask() throws ExecutionException, InterruptedException {

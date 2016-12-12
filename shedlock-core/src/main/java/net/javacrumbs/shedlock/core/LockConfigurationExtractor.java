@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.test.boot;
+package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.core.SchedulerLock;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import java.util.Optional;
 
-@Component
-public class ScheduledTasks {
-    @Scheduled(fixedRate = 1)
-    @SchedulerLock(name = "reportCurrentTime")
-    public void reportCurrentTime() {
-    }
+/**
+ * Extracts lock parameters from the task.
+ */
+public interface LockConfigurationExtractor {
+    Optional<LockConfiguration> getLockConfiguration(Runnable task);
 }
