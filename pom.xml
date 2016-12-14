@@ -12,9 +12,16 @@
         <module>shedlock-core</module>
         <module>shedlock-spring</module>
         <module>shedlock-springboot-test</module>
+        <module>shedlock-provider-mongo</module>
     </modules>
 
     <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -40,6 +47,13 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.7</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -42,7 +42,7 @@ public class DefaultLockManagerTest {
         verify(task).run();
         InOrder inOrder = inOrder(task, lock);
         inOrder.verify(task).run();
-        inOrder.verify(lock).unlock(task);
+        inOrder.verify(lock).unlock();
     }
 
     @Test

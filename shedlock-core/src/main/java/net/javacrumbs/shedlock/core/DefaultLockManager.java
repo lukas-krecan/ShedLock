@@ -40,7 +40,7 @@ public class DefaultLockManager implements LockManager {
                 try {
                     task.run();
                 } finally {
-                    lock.unlock(task);
+                    lock.unlock();
                 }
             });
         }

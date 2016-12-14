@@ -28,7 +28,7 @@ public class ReentrantLockProvider implements LockProvider {
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         if (lock.tryLock()) {
-            return Optional.of(task1 -> lock.unlock());
+            return Optional.of(lock::unlock);
         } else {
             return Optional.empty();
         }
