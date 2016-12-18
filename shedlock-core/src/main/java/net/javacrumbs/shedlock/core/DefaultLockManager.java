@@ -15,11 +15,18 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
+
+// FIXME: exception handling
 public class DefaultLockManager implements LockManager {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultLockManager.class);
+
     private final LockProvider lockProvider;
     private final LockConfigurationExtractor lockConfigurationExtractor;
 
@@ -32,17 +39,22 @@ public class DefaultLockManager implements LockManager {
     public void executeIfNotLocked(Runnable task) {
         Optional<LockConfiguration> lockConfigOptional = lockConfigurationExtractor.getLockConfiguration(task);
         if (!lockConfigOptional.isPresent()) {
-            // No lock configuration, execute without lock
+            logger.debug("No lock configuration for {}. Executing without lock.", task);
             task.run();
         } else {
             LockConfiguration lockConfig = lockConfigOptional.get();
-            lockProvider.lock(lockConfig).ifPresent(lock -> {
+            Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
+            if (lock.isPresent()) {
                 try {
+                    logger.debug("Locked {}.", lockConfig.getName());
                     task.run();
                 } finally {
-                    lock.unlock();
+                    lock.get().unlock();
+                    logger.debug("Unlocked {}.", lockConfig.getName());
                 }
-            });
+            } else {
+                logger.info("Not executing {}. It's locked.", lockConfig.getName());
+            }
         }
     }
 }
