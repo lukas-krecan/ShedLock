@@ -15,18 +15,16 @@
  */
 package net.javacrumbs.shedlock.test.boot;
 
-import net.javacrumbs.shedlock.core.DefaultLockManager;
-import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
+import com.github.fakemongo.Fongo;
+import com.mongodb.MongoClient;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.ReentrantLockProvider;
-import net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor;
-import net.javacrumbs.shedlock.spring.LockableTaskScheduler;
+import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
+import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @SpringBootApplication
 @EnableScheduling
@@ -38,21 +36,18 @@ public class Application {
 
 
     @Bean
-    public TaskScheduler taskScheduler(LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(10);
-        taskScheduler.initialize();
-
-        return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, lockConfigurationExtractor));
+    public TaskScheduler taskScheduler(LockProvider lockProvider) {
+        int poolSize = 10;
+        return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(poolSize, lockProvider);
     }
 
     @Bean
-    public LockProvider lockProvider() {
-        return new ReentrantLockProvider();
+    public LockProvider lockProvider(MongoClient mongo) {
+        return new MongoLockProvider(mongo, "databaseName");
     }
 
     @Bean
-    public LockConfigurationExtractor lockConfigurationExtractor() {
-        return new SpringLockConfigurationExtractor();
+    public MongoClient mongo() {
+        return new Fongo("fongo").getMongo();
     }
 }

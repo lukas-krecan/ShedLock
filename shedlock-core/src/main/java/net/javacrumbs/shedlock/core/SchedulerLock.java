@@ -15,11 +15,7 @@ public @interface SchedulerLock {
 
     /**
      * How long the lock should be kept in case the machine which obtained the lock died before releasing it.
+     * This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes
      */
     long lockForMillis() default 60 * 60 * 1000;
-
-    /**
-     * Use lock for this method.
-     */
-    boolean shouldLock() default true;
 }

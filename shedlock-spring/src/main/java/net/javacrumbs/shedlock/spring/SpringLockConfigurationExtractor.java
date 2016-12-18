@@ -49,10 +49,6 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
 
 
     private boolean shouldLock(SchedulerLock annotation) {
-        if (annotation != null) {
-            return annotation.shouldLock();
-        } else {
-            return false;
-        }
+        return annotation != null;
     }
 }

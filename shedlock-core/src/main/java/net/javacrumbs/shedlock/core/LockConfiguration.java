@@ -18,7 +18,7 @@ package net.javacrumbs.shedlock.core;
 import java.time.Instant;
 
 /**
- * Lock parameters
+ * Lock configuration.
  */
 public class LockConfiguration {
     private final String name;

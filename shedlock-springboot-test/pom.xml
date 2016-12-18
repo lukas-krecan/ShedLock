@@ -26,6 +26,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
+        <dependency>
+            <groupId>nej.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-mongo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.fakemongo</groupId>
+            <artifactId>fongo</artifactId>
+            <version>2.0.10</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

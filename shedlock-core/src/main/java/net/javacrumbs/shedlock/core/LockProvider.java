@@ -8,7 +8,8 @@ import java.util.Optional;
 public interface LockProvider {
 
     /**
-     * @return If empty optional has been returned, lock could not be acquired
+     * @return If empty optional has been returned, lock could not be acquired. The lock
+     * has to be released by the callee.
      */
     Optional<SimpleLock> lock(LockConfiguration lockConfiguration);
 }

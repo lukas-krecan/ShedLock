@@ -23,7 +23,9 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 
-// FIXME: exception handling
+/**
+ * Default implementation {@link LockManager} implementation.
+ */
 public class DefaultLockManager implements LockManager {
     private static final Logger logger = LoggerFactory.getLogger(DefaultLockManager.class);
 

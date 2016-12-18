@@ -36,7 +36,7 @@ import static com.mongodb.client.model.Updates.set;
 import static com.mongodb.client.model.Updates.setOnInsert;
 
 /**
- * Distributed lock using MongoDB > 2.6
+ * Distributed lock using MongoDB > 2.6. Requires mongo-java-driver > 3.4.0
  */
 public class MongoLockProvider implements LockProvider {
     static final String LOCK_UNTIL = "lockUntil";
@@ -48,6 +48,20 @@ public class MongoLockProvider implements LockProvider {
     private final String collectionName;
     private final String hostname;
 
+    /**
+     * Uses Mongo to coordinate locks
+     * @param mongo Mongo to be used
+     * @param databaseName database to be used
+     */
+    public MongoLockProvider(MongoClient mongo, String databaseName) {
+        this(mongo, databaseName, "shedLock");
+    }
+    /**
+     * Uses Mongo to coordinate locks
+     * @param mongo Mongo to be used
+     * @param databaseName database to be used
+     * @param collectionName collection to store the locks
+     */
     public MongoLockProvider(MongoClient mongo, String databaseName, String collectionName) {
         this.mongo = mongo;
         this.databaseName = databaseName;
