@@ -13,6 +13,14 @@ Since this is the very first version, only Spring annotated tasks coordinated th
 scheduling and coordination mechanisms and expected in the future. 
 
 ## Usage
+### Import project
+
+    <dependency>
+        <groupId>net.javacrumbs.shedlock</groupId>
+        <artifactId>shedlock-spring</artifactId>
+        <version>0.1.0</version>
+    </dependency>
+
 ### Annotate your scheduled tasks
  
     @Scheduled( ... )
@@ -37,6 +45,15 @@ Now we need to integrate the library into Spring. It's done by wrapping standard
 
 ### Configure LockProvider
 #### Mongo
+Import the project
+
+    <dependency>
+        <groupId>net.javacrumbs.shedlock</groupId>
+        <artifactId>shedlock-provider-mongo</artifactId>
+        <version>0.1.0</version>
+    </dependency>
+
+Configure:
 
     @Bean
     public LockProvider lockProvider(MongoClient mongo) {
