@@ -36,7 +36,7 @@ import static com.mongodb.client.model.Updates.set;
 import static com.mongodb.client.model.Updates.setOnInsert;
 
 /**
- * Distributed lock using MongoDB > 2.6. Requires mongo-java-driver > 3.4.0
+ * Distributed lock using MongoDB &gt;= 2.6. Requires mongo-java-driver &gt; 3.4.0
  */
 public class MongoLockProvider implements LockProvider {
     static final String LOCK_UNTIL = "lockUntil";
@@ -80,7 +80,7 @@ public class MongoLockProvider implements LockProvider {
     }
 
     /**
-     * Sets lockUntil according to LockConfiguration if current lockUntil <= now
+     * Sets lockUntil according to LockConfiguration if current lockUntil &lt;= now
      */
     protected boolean doLock(LockConfiguration lockConfiguration) {
         String name = lockConfiguration.getName();
