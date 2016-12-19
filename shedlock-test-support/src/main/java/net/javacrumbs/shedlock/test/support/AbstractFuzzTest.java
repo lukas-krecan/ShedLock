@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.mongo;
+package net.javacrumbs.shedlock.test.support;
 
-import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -40,23 +34,15 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FuzzTest {
-    private static MongodForTestsFactory mongoFactory;
-
+public abstract class AbstractFuzzTest {
 
     private static final int THREADS = 4;
     private static final int ITERATIONS = 100;
 
-    private LockProvider lockProvider;
-
     private int counter;
     private final LockConfiguration config = new LockConfiguration("lock", Instant.now().plus(5, ChronoUnit.MINUTES));
 
-    @Before
-    public void createLockProvider() throws UnknownHostException {
-        lockProvider = new MongoLockProvider(mongoFactory.newMongo(), "test", "test");
-    }
-
+    protected abstract LockProvider getLockProvider();
 
     @Test
     public void fuzzTest() throws InterruptedException, ExecutionException {
@@ -76,7 +62,7 @@ public class FuzzTest {
 
     private Void task() {
         for (int i = 0; i < ITERATIONS; ) {
-            Optional<SimpleLock> lock = lockProvider.lock(config);
+            Optional<SimpleLock> lock = getLockProvider().lock(config);
             if (lock.isPresent()) {
                 int n = counter;
                 sleep();
@@ -86,16 +72,6 @@ public class FuzzTest {
             }
         }
         return null;
-    }
-
-    @BeforeClass
-    public static void startMongo() throws IOException {
-        mongoFactory = new MongodForTestsFactory();
-    }
-
-    @AfterClass
-    public static void stopMongo() throws IOException {
-        mongoFactory.shutdown();
     }
 
     private void sleep() {

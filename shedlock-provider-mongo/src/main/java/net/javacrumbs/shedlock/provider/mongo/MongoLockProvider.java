@@ -119,7 +119,7 @@ public class MongoLockProvider implements LockProvider {
     private class MongoLock implements SimpleLock {
         private final LockConfiguration lockConfiguration;
 
-        public MongoLock(LockConfiguration lockConfiguration) {
+        MongoLock(LockConfiguration lockConfiguration) {
             this.lockConfiguration = lockConfiguration;
         }
 
