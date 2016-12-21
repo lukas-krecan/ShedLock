@@ -11,7 +11,7 @@ public class LockRecordRegistryTest {
 
     @Test
     public void unusedKeysShouldBeGarbageCollected() {
-        int records = 100_000;
+        int records = 1_000_000;
         for (int i = 0; i < records; i++) {
             lockRecordRegistry.addLockRecord(UUID.randomUUID().toString());
         }
