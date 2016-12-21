@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +74,11 @@ public abstract class AbstractLockProviderTest {
 
         Optional<SimpleLock> lock2 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock2).isNotEmpty();
+    }
+
+    @Test
+    public void fuzzTestShuldPass() throws ExecutionException, InterruptedException {
+        new FuzzTester(getLockProvider()).doFuzzTest();
     }
 
     private static LockConfiguration lockConfig(String name) {

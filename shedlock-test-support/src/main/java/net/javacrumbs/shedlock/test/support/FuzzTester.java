@@ -18,7 +18,6 @@ package net.javacrumbs.shedlock.test.support;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.Test;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -34,18 +33,24 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class AbstractFuzzTest {
+/**
+ * Increments counter from several threads coordinating using lock provided under test.
+ */
+class FuzzTester {
 
     private static final int THREADS = 4;
     private static final int ITERATIONS = 100;
 
+    private final LockProvider lockProvider;
+
     private int counter;
     private final LockConfiguration config = new LockConfiguration("lock", Instant.now().plus(5, ChronoUnit.MINUTES));
 
-    protected abstract LockProvider getLockProvider();
+    FuzzTester(LockProvider lockProvider) {
+        this.lockProvider = lockProvider;
+    }
 
-    @Test
-    public void fuzzTest() throws InterruptedException, ExecutionException {
+    void doFuzzTest() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
 
         List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) this::task).collect(toList());
@@ -62,7 +67,7 @@ public abstract class AbstractFuzzTest {
 
     private Void task() {
         for (int i = 0; i < ITERATIONS; ) {
-            Optional<SimpleLock> lock = getLockProvider().lock(config);
+            Optional<SimpleLock> lock = lockProvider.lock(config);
             if (lock.isPresent()) {
                 int n = counter;
                 sleep();
