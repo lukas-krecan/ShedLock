@@ -8,15 +8,17 @@ import org.junit.Before;
 import java.sql.SQLException;
 import java.util.Date;
 
-public class JdbcTemplateLockProviderTest extends AbstractLockProviderTest {
+public abstract class AbstractJdbcTemplateLockProviderTest extends AbstractLockProviderTest {
     private JdbcTemplateLockProvider lockProvider;
     private JdbcTestUtils testUtils;
 
     @Before
     public void initLockProvider() throws SQLException {
-        testUtils = new JdbcTestUtils();
+        testUtils = new JdbcTestUtils(getDbConfig());
         lockProvider = new JdbcTemplateLockProvider(testUtils.getDatasource(), "shedlock");
     }
+
+    protected abstract DbConfig getDbConfig();
 
     @After
     public void cleanup() {

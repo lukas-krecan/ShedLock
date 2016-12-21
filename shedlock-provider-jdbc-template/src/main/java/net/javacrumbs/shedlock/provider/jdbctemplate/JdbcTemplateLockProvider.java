@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.core.support.LockRecordRegistry;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -31,7 +32,31 @@ import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Lock provided by JdbcTemplate. It uses a table that contains lock_name and locked_until.
+ * <ol>
+ * <li>
+ * Attempts to insert a new lock record. Since lock name is a primary key, it fails if the record already exists. As an optimization,
+ * we keep in-memory track of created  lock records.
+ * </li>
+ * <li>
+ * If the insert succeeds (1 inserted row) we have the lock.
+ * </li>
+ * <li>
+ * If the insert failed due to duplicate key or we have skipped the insertion, we will try to update lock record using
+ * UPDATE tableName SET lock_until = :lockUntil WHERE name = :lockName AND lock_until <= :now
+ * </li>
+ * <li>
+ * If the update succeeded (1 updated row), we have the lock. If the update failed (0 updated rows) somebody else holds the lock
+ * </li>
+ * <li>
+ * When unlocking, lock_until is set to now.
+ * </li>
+ * </ol>
+ */
 public class JdbcTemplateLockProvider implements LockProvider {
+    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final String tableName;
 
@@ -44,14 +69,18 @@ public class JdbcTemplateLockProvider implements LockProvider {
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         Map<String, Object> params = createParams(lockConfiguration);
 
-        try {
-            // Try to insert if the row does not exists (not optimal, but the simplest platform agnostic way)
-            int insertedRows = jdbcTemplate.update(getInsertStatement(), params);
-            if (insertedRows > 0) {
-                return Optional.of(new JdbcLock(lockConfiguration));
+        String name = lockConfiguration.getName();
+        if (!lockRecordRegistry.lockRecordRecentlyCreated(name)) {
+            try {
+                // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
+                int insertedRows = jdbcTemplate.update(getInsertStatement(), params);
+                lockRecordRegistry.addLockRecord(name);
+                if (insertedRows > 0) {
+                    return Optional.of(new JdbcLock(lockConfiguration));
+                }
+            } catch (DuplicateKeyException e) {
+                // lock row already exists
             }
-        } catch (DuplicateKeyException e) {
-            // lock line already exists
         }
         // Row already exists, update it if lock_until <= now()
         int updatedRows = jdbcTemplate.update(getUpdateStatement(), params);

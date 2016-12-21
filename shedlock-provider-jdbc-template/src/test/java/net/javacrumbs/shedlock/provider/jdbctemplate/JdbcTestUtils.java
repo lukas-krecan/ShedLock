@@ -25,14 +25,14 @@ class JdbcTestUtils {
     private final HikariDataSource datasource;
     private final JdbcTemplate jdbcTemplate;
 
-    JdbcTestUtils() {
+    JdbcTestUtils(DbConfig dbConfig) {
         datasource = new HikariDataSource();
-        datasource.setJdbcUrl("jdbc:hsqldb:mem:mymemdb");
-        datasource.setUsername("SA");
-        datasource.setPassword("");
+        datasource.setJdbcUrl(dbConfig.getJdbcUrl());
+        datasource.setUsername(dbConfig.getUsername());
+        datasource.setPassword(dbConfig.getPassword());
 
         jdbcTemplate = new JdbcTemplate(datasource);
-        jdbcTemplate.execute("CREATE TABLE shedlock(name VARCHAR(255), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))");
+        jdbcTemplate.execute("CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))");
     }
 
     void clean() {

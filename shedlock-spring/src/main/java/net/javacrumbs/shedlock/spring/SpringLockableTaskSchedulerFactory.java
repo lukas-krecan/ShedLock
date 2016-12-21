@@ -28,8 +28,9 @@ public class SpringLockableTaskSchedulerFactory {
     /**
      * Wraps the task scheduler and ensures that {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated methods
      * are locked using the lockProvider
+     *
      * @param taskScheduler wrapped task scheduler
-     * @param lockProvider lock provider to be used
+     * @param lockProvider  lock provider to be used
      */
     public static LockableTaskScheduler newLockableTaskScheduler(TaskScheduler taskScheduler, LockProvider lockProvider) {
         return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor()));
@@ -38,7 +39,8 @@ public class SpringLockableTaskSchedulerFactory {
     /**
      * Creates {@link ThreadPoolTaskScheduler} and ensures that {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated methods
      * are locked using the lockProvider
-     * @param poolSize size of the thread pool
+     *
+     * @param poolSize     size of the thread pool
      * @param lockProvider lock provider to be used
      */
     public static LockableTaskScheduler newLockableTaskScheduler(int poolSize, LockProvider lockProvider) {

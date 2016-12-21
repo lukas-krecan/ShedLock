@@ -13,35 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.core;
+package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import java.time.Instant;
-
-/**
- * Lock configuration.
- */
-public class LockConfiguration {
-    private final String name;
-    private final Instant lockUntil;
-
-    public LockConfiguration(String name, Instant lockUntil) {
-        this.name = name;
-        this.lockUntil = lockUntil;
+class HsqlConfig implements DbConfig {
+    public void startDb() {
     }
 
-    public String getName() {
-        return name;
+    public void shutdownDb() {
     }
 
-    public Instant getLockUntil() {
-        return lockUntil;
+    public String getJdbcUrl() {
+        return "jdbc:hsqldb:mem:mymemdb";
     }
 
     @Override
-    public String toString() {
-        return "LockConfiguration{" +
-            "name='" + name + '\'' +
-            ", lockUntil=" + lockUntil +
-            '}';
+    public String getUsername() {
+        return "SA";
+    }
+
+    @Override
+    public String getPassword() {
+        return "";
     }
 }

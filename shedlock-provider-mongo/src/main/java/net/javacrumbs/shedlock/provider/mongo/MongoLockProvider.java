@@ -21,6 +21,7 @@ import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.core.support.LockRecordRegistry;
 import org.bson.Document;
 
 import java.net.InetAddress;
@@ -37,6 +38,22 @@ import static com.mongodb.client.model.Updates.setOnInsert;
 
 /**
  * Distributed lock using MongoDB &gt;= 2.6. Requires mongo-java-driver &gt; 3.4.0
+ * <p>
+ * It uses a collection that contains _id = lock name and a filed locked_until.
+ * <ol>
+ * <li>
+ * Attempts to insert a new lock record. As an optimization, we keep in-memory track of created lock records.
+ * </li>
+ * <li>
+ * We will try to update lock record using filter _id == name AND lock_until <= now
+ * </li>
+ * <li>
+ * If the update succeeded (1 updated document), we have the lock. If the update failed (0 updated documents) somebody else holds the lock
+ * </li>
+ * <li>
+ * When unlocking, lock_until is set to now.
+ * </li>
+ * </ol>
  */
 public class MongoLockProvider implements LockProvider {
     static final String LOCK_UNTIL = "lockUntil";
@@ -48,18 +65,23 @@ public class MongoLockProvider implements LockProvider {
     private final String collectionName;
     private final String hostname;
 
+    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
+
     /**
      * Uses Mongo to coordinate locks
-     * @param mongo Mongo to be used
+     *
+     * @param mongo        Mongo to be used
      * @param databaseName database to be used
      */
     public MongoLockProvider(MongoClient mongo, String databaseName) {
         this(mongo, databaseName, "shedLock");
     }
+
     /**
      * Uses Mongo to coordinate locks
-     * @param mongo Mongo to be used
-     * @param databaseName database to be used
+     *
+     * @param mongo          Mongo to be used
+     * @param databaseName   database to be used
      * @param collectionName collection to store the locks
      */
     public MongoLockProvider(MongoClient mongo, String databaseName, String collectionName) {
@@ -85,8 +107,11 @@ public class MongoLockProvider implements LockProvider {
     protected boolean doLock(LockConfiguration lockConfiguration) {
         String name = lockConfiguration.getName();
 
-        // create document in case it does not exist yet
-        getCollection().findOneAndUpdate(eq(ID, name), setOnInsert(LOCK_UNTIL, now()), new FindOneAndUpdateOptions().upsert(true));
+        if (!lockRecordRegistry.lockRecordRecentlyCreated(name)) {
+            // create document in case it does not exist yet
+            getCollection().findOneAndUpdate(eq(ID, name), setOnInsert(LOCK_UNTIL, now()), new FindOneAndUpdateOptions().upsert(true));
+            lockRecordRegistry.addLockRecord(name);
+        }
 
         // update document
         Document result = getCollection().findOneAndUpdate(
