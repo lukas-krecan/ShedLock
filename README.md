@@ -71,4 +71,4 @@ public LockProvider lockProvider(MongoClient mongo) {
 }
 ```
 
-Please note that MongoDB integration requires Mongo >= 2.6 and mongo-java-driver >= 3.4.0
+Please note that MongoDB integration requires Mongo >= 3.2 and mongo-java-driver >= 3.4.0

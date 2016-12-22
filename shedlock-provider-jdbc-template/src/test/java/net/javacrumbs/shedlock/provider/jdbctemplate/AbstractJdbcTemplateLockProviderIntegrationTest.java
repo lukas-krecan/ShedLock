@@ -1,14 +1,14 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderTest;
+import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 
 import java.sql.SQLException;
 import java.util.Date;
 
-public abstract class AbstractJdbcTemplateLockProviderTest extends AbstractLockProviderTest {
+public abstract class AbstractJdbcTemplateLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private JdbcTemplateLockProvider lockProvider;
     private JdbcTestUtils testUtils;
 

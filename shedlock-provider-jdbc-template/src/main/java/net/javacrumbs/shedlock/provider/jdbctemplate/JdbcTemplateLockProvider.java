@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.core.support.LockRecordRegistry;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
@@ -57,11 +58,15 @@ import static java.util.Objects.requireNonNull;
 public class JdbcTemplateLockProvider implements LockProvider {
     private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
 
-    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcOperations jdbcTemplate;
     private final String tableName;
 
     public JdbcTemplateLockProvider(DataSource datasource, String tableName) {
-        jdbcTemplate = new NamedParameterJdbcTemplate(datasource);
+        this(new NamedParameterJdbcTemplate(datasource), tableName);
+    }
+
+    public JdbcTemplateLockProvider(NamedParameterJdbcOperations jdbcTemplate, String tableName) {
+        this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
     }
 
@@ -79,7 +84,8 @@ public class JdbcTemplateLockProvider implements LockProvider {
                     return Optional.of(new JdbcLock(lockConfiguration));
                 }
             } catch (DuplicateKeyException e) {
-                // lock row already exists
+                // lock record already exists
+                lockRecordRegistry.addLockRecord(name);
             }
         }
         // Row already exists, update it if lock_until <= now()

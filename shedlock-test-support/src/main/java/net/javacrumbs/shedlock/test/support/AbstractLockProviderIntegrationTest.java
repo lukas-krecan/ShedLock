@@ -8,11 +8,12 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class AbstractLockProviderTest {
+public abstract class AbstractLockProviderIntegrationTest {
     private static final String LOCK_NAME1 = "name";
 
     protected abstract LockProvider getLockProvider();
@@ -82,10 +83,10 @@ public abstract class AbstractLockProviderTest {
     }
 
     private static LockConfiguration lockConfig(String name) {
-        return lockConfig(name, 10_000);
+        return lockConfig(name, TimeUnit.MINUTES.toMillis(5));
     }
 
-    private static LockConfiguration lockConfig(String name, int timeoutMillis) {
+    private static LockConfiguration lockConfig(String name, long timeoutMillis) {
         return new LockConfiguration(name, Instant.now().plus(timeoutMillis, MILLIS));
     }
 

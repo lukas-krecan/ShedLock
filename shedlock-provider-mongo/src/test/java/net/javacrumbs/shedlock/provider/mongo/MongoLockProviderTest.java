@@ -1,71 +1,59 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderTest;
-import org.bson.Document;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.MongoAccessor;
+import org.junit.Test;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
-import static com.mongodb.client.model.Filters.eq;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class MongoLockProviderTest extends AbstractLockProviderTest {
-    private static MongodForTestsFactory mongoFactory;
+public class MongoLockProviderTest {
+    public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plus(5, ChronoUnit.MINUTES));
 
-    private static final String COLLECTION_NAME = "Shedlock";
-    private static final String DB_NAME = "db";
-    private MongoLockProvider lockProvider;
-    private MongoClient mongo;
+    private MongoAccessor mongoAccessor = mock(MongoAccessor.class);
 
-    @Before
-    public void createLockProvider() throws UnknownHostException {
-        mongo = mongoFactory.newMongo();
-        lockProvider = new MongoLockProvider(mongo, DB_NAME, COLLECTION_NAME);
+    private final MongoLockProvider lockProvider = new MongoLockProvider(mongoAccessor);
+
+    @Test
+    public void newRecordShouldOnlyBeInserted() {
+        when(mongoAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(true);
+        assertThat(lockProvider.lock(LOCK_CONFIGURATION)).isNotEmpty();
+        verify(mongoAccessor, never()).updateRecord(LOCK_CONFIGURATION);
+
+        // Should update directly without insert
+        reset(mongoAccessor);
+        when(mongoAccessor.updateRecord(LOCK_CONFIGURATION)).thenReturn(true);
+        assertThat(lockProvider.lock(LOCK_CONFIGURATION)).isNotEmpty();
+        verify(mongoAccessor, never()).insertRecord(LOCK_CONFIGURATION);
+        verify(mongoAccessor).updateRecord(LOCK_CONFIGURATION);
     }
 
-    @Override
-    protected LockProvider getLockProvider() {
-        return lockProvider;
+    @Test
+    public void updateOnDuplicateKey() {
+        when(mongoAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
+        when(mongoAccessor.updateRecord(LOCK_CONFIGURATION)).thenReturn(true);
+        assertThat(lockProvider.lock(LOCK_CONFIGURATION)).isNotEmpty();
+        verify(mongoAccessor).updateRecord(LOCK_CONFIGURATION);
+
+        // Should update directly without insert
+        reset(mongoAccessor);
+        when(mongoAccessor.updateRecord(LOCK_CONFIGURATION)).thenReturn(true);
+        assertThat(lockProvider.lock(LOCK_CONFIGURATION)).isNotEmpty();
+        verify(mongoAccessor, never()).insertRecord(LOCK_CONFIGURATION);
+        verify(mongoAccessor).updateRecord(LOCK_CONFIGURATION);
     }
 
-    @Override
-    protected void assertUnlocked(String lockName) {
-        Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isBefore(new Date());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBefore(new Date());
-        assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
-    }
-
-    @Override
-    protected void assertLocked(String lockName) {
-        Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isAfter(new Date());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBefore(new Date());
-        assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
-    }
-
-    private Document getLockDocument(String lockName) {
-        return mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME).find(eq(ID, lockName)).first();
-    }
-
-    @BeforeClass
-    public static void startMongo() throws IOException {
-        mongoFactory = new MongodForTestsFactory();
-    }
-
-    @AfterClass
-    public static void stopMongo() throws IOException {
-        mongoFactory.shutdown();
+    @Test
+    public void doNotReturnLockIfUpdatedZeroRows() {
+        when(mongoAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
+        when(mongoAccessor.updateRecord(LOCK_CONFIGURATION)).thenReturn(false);
+        assertThat(lockProvider.lock(LOCK_CONFIGURATION)).isEmpty();
     }
 }

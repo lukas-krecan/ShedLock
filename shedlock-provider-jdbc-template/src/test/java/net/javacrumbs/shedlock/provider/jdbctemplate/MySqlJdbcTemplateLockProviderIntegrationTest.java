@@ -3,18 +3,16 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import java.io.IOException;
-
-public class PostgresJdbcTemplateLockProviderTest extends AbstractJdbcTemplateLockProviderTest {
-    private static final PostgresConfig dbConfig = new PostgresConfig();
+public class MySqlJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
+    private static final MySqlConfig dbConfig = new MySqlConfig();
 
     @BeforeClass
-    public static void startDb() throws IOException {
+    public static void startMySql() {
         dbConfig.startDb();
     }
 
     @AfterClass
-    public static void shutdownDb() {
+    public static void shutDownMysql() {
         dbConfig.shutdownDb();
     }
 
