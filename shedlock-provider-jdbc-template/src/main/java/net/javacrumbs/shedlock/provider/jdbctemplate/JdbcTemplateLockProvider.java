@@ -15,23 +15,11 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.core.support.LockRecordRegistry;
-import org.springframework.dao.DuplicateKeyException;
+import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Lock provided by JdbcTemplate. It uses a table that contains lock_name and locked_until.
@@ -55,88 +43,12 @@ import static java.util.Objects.requireNonNull;
  * </li>
  * </ol>
  */
-public class JdbcTemplateLockProvider implements LockProvider {
-    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
-
-    private final NamedParameterJdbcOperations jdbcTemplate;
-    private final String tableName;
-
+public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
     public JdbcTemplateLockProvider(DataSource datasource, String tableName) {
         this(new NamedParameterJdbcTemplate(datasource), tableName);
     }
 
     public JdbcTemplateLockProvider(NamedParameterJdbcOperations jdbcTemplate, String tableName) {
-        this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
-        this.tableName = requireNonNull(tableName, "tableName can not be null");
-    }
-
-    @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        Map<String, Object> params = createParams(lockConfiguration);
-
-        String name = lockConfiguration.getName();
-        if (!lockRecordRegistry.lockRecordRecentlyCreated(name)) {
-            try {
-                // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
-                int insertedRows = jdbcTemplate.update(getInsertStatement(), params);
-                lockRecordRegistry.addLockRecord(name);
-                if (insertedRows > 0) {
-                    return Optional.of(new JdbcLock(lockConfiguration));
-                }
-            } catch (DuplicateKeyException e) {
-                // lock record already exists
-                lockRecordRegistry.addLockRecord(name);
-            }
-        }
-        // Row already exists, update it if lock_until <= now()
-        int updatedRows = jdbcTemplate.update(getUpdateStatement(), params);
-        if (updatedRows > 0) {
-            return Optional.of(new JdbcLock(lockConfiguration));
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private class JdbcLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
-
-        JdbcLock(LockConfiguration lockConfiguration) {
-            this.lockConfiguration = lockConfiguration;
-        }
-
-        @Override
-        public void unlock() {
-            Map<String, Object> params = createParams(lockConfiguration);
-            jdbcTemplate.update(getUnlockStatement(), params);
-        }
-    }
-
-    protected Map<String, Object> createParams(LockConfiguration lockConfiguration) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("lockName", lockConfiguration.getName());
-        params.put("lockUntil", Date.from(lockConfiguration.getLockUntil()));
-        params.put("now", new Date());
-        params.put("lockedBy", getHostname());
-        return params;
-    }
-
-    protected String getInsertStatement() {
-        return "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(:lockName, :lockUntil, :now, :lockedBy)";
-    }
-
-    protected String getUpdateStatement() {
-        return "UPDATE " + tableName + " SET lock_until = :lockUntil, locked_at = :now, locked_by = :lockedBy WHERE name = :lockName AND lock_until <= :now";
-    }
-
-    protected String getUnlockStatement() {
-        return "UPDATE " + tableName + " SET lock_until = :now WHERE name = :lockName";
-    }
-
-    private static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "unknown";
-        }
+        super(new JdbcTemplateStorageAccessor(jdbcTemplate, tableName));
     }
 }

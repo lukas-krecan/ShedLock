@@ -20,7 +20,7 @@ import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_BY
 import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MongoLockProviderIntegrationIntegrationTest extends AbstractLockProviderIntegrationTest {
+public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private static MongodForTestsFactory mongoFactory;
 
     private static final String COLLECTION_NAME = "Shedlock";

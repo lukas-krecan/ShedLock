@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.core.support;
+package net.javacrumbs.shedlock.support;
 
 import org.junit.Test;
 

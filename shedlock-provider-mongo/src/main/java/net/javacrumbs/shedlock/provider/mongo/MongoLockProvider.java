@@ -16,19 +16,15 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.core.support.LockRecordRegistry;
+import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
@@ -40,7 +36,7 @@ import static com.mongodb.client.model.Updates.setOnInsert;
 /**
  * Distributed lock using MongoDB &gt;= 2.6. Requires mongo-java-driver &gt; 3.4.0
  * <p>
- * It uses a collection that contains _id = lock name and a filed locked_until.
+ * It uses a collection that contains _id = lock name and a field locked_until.
  * <ol>
  * <li>
  * Attempts to insert a new lock record. As an optimization, we keep in-memory track of created lock records. If the record
@@ -57,14 +53,11 @@ import static com.mongodb.client.model.Updates.setOnInsert;
  * </li>
  * </ol>
  */
-public class MongoLockProvider implements LockProvider {
+public class MongoLockProvider extends StorageBasedLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
-    private final MongoAccessor mongoAccessor;
-
-    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
 
     /**
      * Uses Mongo to coordinate locks
@@ -88,52 +81,10 @@ public class MongoLockProvider implements LockProvider {
     }
 
     MongoLockProvider(MongoAccessor mongoAccessor) {
-        this.mongoAccessor = mongoAccessor;
+        super(mongoAccessor);
     }
 
-    @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        boolean lockObtained = doLock(lockConfiguration);
-        if (lockObtained) {
-            return Optional.of(new MongoLock(lockConfiguration));
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Sets lockUntil according to LockConfiguration if current lockUntil &lt;= now
-     */
-    protected boolean doLock(LockConfiguration lockConfiguration) {
-        String name = lockConfiguration.getName();
-
-        if (!lockRecordRegistry.lockRecordRecentlyCreated(name)) {
-            // create document in case it does not exist yet
-            if (mongoAccessor.insertRecord(lockConfiguration)) {
-                lockRecordRegistry.addLockRecord(name);
-                return true;
-            }
-            lockRecordRegistry.addLockRecord(name);
-        }
-
-        return mongoAccessor.updateRecord(lockConfiguration);
-    }
-
-
-    private class MongoLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
-
-        MongoLock(LockConfiguration lockConfiguration) {
-            this.lockConfiguration = lockConfiguration;
-        }
-
-        @Override
-        public void unlock() {
-            mongoAccessor.unlock(lockConfiguration);
-        }
-    }
-
-    static class MongoAccessor {
+    static class MongoAccessor implements StorageAccessor {
         private final MongoClient mongo;
         private final String databaseName;
         private final String collectionName;
@@ -146,21 +97,33 @@ public class MongoLockProvider implements LockProvider {
             this.hostname = getHostname();
         }
 
-        boolean insertRecord(LockConfiguration lockConfiguration) {
+        @Override
+        public boolean insertRecord(LockConfiguration lockConfiguration) {
             Bson update = combine(
                 setOnInsert(LOCK_UNTIL, Date.from(lockConfiguration.getLockUntil())),
                 setOnInsert(LOCKED_AT, now()),
                 setOnInsert(LOCKED_BY, hostname)
             );
-            Document result = getCollection().findOneAndUpdate(
-                eq(ID, lockConfiguration.getName()),
-                update,
-                new FindOneAndUpdateOptions().upsert(true)
-            );
-            return result == null;
+            try {
+                Document result = getCollection().findOneAndUpdate(
+                    eq(ID, lockConfiguration.getName()),
+                    update,
+                    new FindOneAndUpdateOptions().upsert(true)
+                );
+                return result == null;
+            } catch (MongoCommandException e) {
+                if (e.getErrorCode() == 11000) { // duplicate key
+                    // this should not normally happen, but it happened once in tests
+                    return false;
+                } else {
+                    throw e;
+                }
+
+            }
         }
 
-        boolean updateRecord(LockConfiguration lockConfiguration) {
+        @Override
+        public boolean updateRecord(LockConfiguration lockConfiguration) {
             Bson update = combine(
                 set(LOCK_UNTIL, Date.from(lockConfiguration.getLockUntil())),
                 set(LOCKED_AT, now()),
@@ -173,7 +136,8 @@ public class MongoLockProvider implements LockProvider {
             return result != null;
         }
 
-        void unlock(LockConfiguration lockConfiguration) {
+        @Override
+        public void unlock(LockConfiguration lockConfiguration) {
             // Set lockUtil to now
             getCollection().findOneAndUpdate(
                 eq(ID, lockConfiguration.getName()),
@@ -183,19 +147,6 @@ public class MongoLockProvider implements LockProvider {
 
         private MongoCollection<Document> getCollection() {
             return mongo.getDatabase(databaseName).getCollection(collectionName);
-        }
-
-
-        private static String getHostname() {
-            try {
-                return InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException e) {
-                return "unknown";
-            }
-        }
-
-        private Date now() {
-            return new Date();
         }
     }
 }
