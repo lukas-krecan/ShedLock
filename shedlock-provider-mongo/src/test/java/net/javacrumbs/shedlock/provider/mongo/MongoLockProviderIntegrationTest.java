@@ -42,16 +42,20 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @Override
     protected void assertUnlocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isBeforeOrEqualsTo(new Date());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualsTo(new Date());
+        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isBeforeOrEqualsTo(now());
+        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualsTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
+    }
+
+    private Date now() {
+        return new Date();
     }
 
     @Override
     protected void assertLocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isAfter(new Date());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualsTo(new Date());
+        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isAfter(now());
+        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualsTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 
