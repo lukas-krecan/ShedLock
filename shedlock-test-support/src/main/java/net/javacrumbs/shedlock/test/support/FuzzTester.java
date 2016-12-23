@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class FuzzTester {
 
-    private static final int THREADS = 4;
+    private static final int THREADS = 8;
     private static final int ITERATIONS = 100;
 
     private final LockProvider lockProvider;
