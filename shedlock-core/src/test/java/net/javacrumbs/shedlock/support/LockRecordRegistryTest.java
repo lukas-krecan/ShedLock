@@ -7,6 +7,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class LockRecordRegistryTest {
+    private static final String NAME = "name";
     private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
 
     @Test
@@ -18,4 +19,14 @@ public class LockRecordRegistryTest {
         assertThat(lockRecordRegistry.getSize()).isLessThan(records);
     }
 
+    @Test
+    public void shouldRememberKeys() {
+        lockRecordRegistry.addLockRecord(NAME);
+        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isTrue();
+    }
+
+    @Test
+    public void shouldNotLie() {
+        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isFalse();
+    }
 }
