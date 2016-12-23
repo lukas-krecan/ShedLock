@@ -33,7 +33,7 @@ import javax.sql.DataSource;
  * </li>
  * <li>
  * If the insert failed due to duplicate key or we have skipped the insertion, we will try to update lock record using
- * UPDATE tableName SET lock_until = :lockUntil WHERE name = :lockName AND lock_until <= :now
+ * UPDATE tableName SET lock_until = :lockUntil WHERE name = :lockName AND lock_until &lt;= :now
  * </li>
  * <li>
  * If the update succeeded (1 updated row), we have the lock. If the update failed (0 updated rows) somebody else holds the lock

@@ -43,7 +43,7 @@ import static com.mongodb.client.model.Updates.setOnInsert;
  * has been inserted, returns lock.
  * </li>
  * <li>
- * We will try to update lock record using filter _id == name AND lock_until <= now
+ * We will try to update lock record using filter _id == name AND lock_until &lt;= now
  * </li>
  * <li>
  * If the update succeeded (1 updated document), we have the lock. If the update failed (0 updated documents) somebody else holds the lock

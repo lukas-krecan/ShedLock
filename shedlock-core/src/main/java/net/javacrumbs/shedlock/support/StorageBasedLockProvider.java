@@ -34,7 +34,7 @@ import java.util.Optional;
  * has been inserted, returns lock.
  * </li>
  * <li>
- * We will try to update lock record using filter ID == name AND lock_until <= now
+ * We will try to update lock record using filter ID == name AND lock_until &lt;= now
  * </li>
  * <li>
  * If the update succeeded (1 updated row/document), we have the lock. If the update failed (0 updated documents) somebody else holds the lock
