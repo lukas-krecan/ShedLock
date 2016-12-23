@@ -78,6 +78,15 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     @Test
+    public void shouldBeAbleToLockRightAfterUnlock() {
+        for (int i = 0; i < 100; i++) {
+            Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1));
+            assertThat(lock).isNotEmpty();
+            lock.get().unlock();
+        }
+    }
+
+    @Test
     public void fuzzTestShuldPass() throws ExecutionException, InterruptedException {
         new FuzzTester(getLockProvider()).doFuzzTest();
     }
