@@ -9,7 +9,7 @@ but what if it dies? Or you can use ShedLock.
 ShedLock does one and only thing. It makes sure your tasks ar executed at most once. It coordinates
 cluster nodes using shared database. If a task is being executed on one node, it acquires a lock which
 prevents execution of the same task from another node (or thread). Please note, that **if one task is already running
-the other one is does not wait, it is simply skipped**.
+execution from another node does not wait, it is simply skipped**.
  
 Since this is the very first version, only Spring annotated tasks coordinated through Mongo or JDBC database are supported. More
 scheduling and coordination mechanisms and expected in the future. 
