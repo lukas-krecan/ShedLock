@@ -11,7 +11,7 @@ cluster nodes using shared database. If a task is being executed on one node, it
 prevents execution of the same task from another node (or thread). Please note, that **if one task is already running
 the other one is does not wait, it is simply skipped**.
  
-Since this is the very first version, only Spring annotated tasks coordinated through Mongo are supported. More
+Since this is the very first version, only Spring annotated tasks coordinated through Mongo or JDBC database are supported. More
 scheduling and coordination mechanisms and expected in the future. 
 
 ## Usage
@@ -73,3 +73,23 @@ public LockProvider lockProvider(MongoClient mongo) {
 ```
 
 Please note that MongoDB integration requires Mongo >= 3.2 and mongo-java-driver >= 3.4.0
+
+
+#### JdbcTemplate
+
+Create the table
+
+```sql
+CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))
+```
+
+Configure:
+
+```java
+@Bean
+public LockProvider lockProvider(DataSource dataSource) {
+    return new JdbcTemplateLockProvider(dataSource, "shedlock");
+}
+```
+
+Tested with MySql, Postgres and HSQLDB
