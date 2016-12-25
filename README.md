@@ -11,7 +11,7 @@ cluster nodes using shared database. If a task is being executed on one node, it
 prevents execution of the same task from another node (or thread). Please note, that **if one task is already running
 execution from another node does not wait, it is simply skipped**.
  
-Since this is the very first version, only Spring annotated tasks coordinated through Mongo or JDBC database are supported. More
+Currently, only Spring scheduled tasks coordinated through Mongo or JDBC database are supported. More
 scheduling and coordination mechanisms and expected in the future. 
 
 ## Usage
@@ -83,6 +83,16 @@ Create the table
 CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))
 ```
 
+Add dependency
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jdbc-template</artifactId>
+    <version>0.2.0</version>
+</dependency>
+```
+
 Configure:
 
 ```java
@@ -93,3 +103,34 @@ public LockProvider lockProvider(DataSource dataSource) {
 ```
 
 Tested with MySql, Postgres and HSQLDB
+
+### Spring XML configuration
+
+If you are using Spring XML config, use this configuration
+
+```xml
+<!-- Wrap the original scheduler -->
+<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory" factory-method="newLockableTaskScheduler">
+    <constructor-arg>
+        <!-- The original scheduler -->
+        <task:scheduler id="sch" pool-size="10"/>
+    </constructor-arg>
+    <constructor-arg ref="lockProvider"/>
+</bean>
+
+
+<!-- Your task(s) without change -->
+<task:scheduled-tasks scheduler="scheduler">
+    <task:scheduled ref="task" method="run" fixed-delay="1" fixed-rate="1"/>
+</task:scheduled-tasks>
+```
+
+Annotate scheduler method(s)
+
+
+```java
+@SchedulerLock(name = "taskName")
+public void run() {
+
+}
+```
