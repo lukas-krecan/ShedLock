@@ -12,7 +12,9 @@ prevents execution of the same task from another node (or thread). Please note, 
 execution from another node does not wait, it is simply skipped**.
  
 Currently, only Spring scheduled tasks coordinated through Mongo or JDBC database are supported. More
-scheduling and coordination mechanisms and expected in the future. 
+scheduling and coordination mechanisms and expected in the future.
+
+Feedback and pull-requests welcome!
 
 ## Usage
 ### Import project
