@@ -90,7 +90,7 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     @Test
-    public void fuzzTestShuldPass() throws ExecutionException, InterruptedException {
+    public void fuzzTestShouldPass() throws ExecutionException, InterruptedException {
         new FuzzTester(getLockProvider()).doFuzzTest();
     }
 

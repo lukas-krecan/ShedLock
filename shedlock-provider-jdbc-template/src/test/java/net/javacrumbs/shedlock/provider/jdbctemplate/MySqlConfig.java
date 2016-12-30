@@ -27,8 +27,8 @@ import static com.wix.mysql.distribution.Version.v5_6_latest;
 class MySqlConfig implements DbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    public static final String USERNAME = "SA";
-    public static final String PASSWORD = "";
+    private static final String USERNAME = "SA";
+    private static final String PASSWORD = "";
     private static SchemaConfig schemaConfig = aSchemaConfig(TEST_SCHEMA_NAME).build();
     private EmbeddedMysql mysqld;
 
