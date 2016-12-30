@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
 import com.mongodb.MongoClient;
+import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -65,7 +66,7 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
     @BeforeClass
     public static void startMongo() throws IOException {
-        mongoFactory = new MongodForTestsFactory();
+        mongoFactory = new MongodForTestsFactory(Version.Main.V3_2);
     }
 
     @AfterClass
