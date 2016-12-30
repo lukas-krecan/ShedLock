@@ -30,7 +30,11 @@ Feedback and pull-requests welcome!
 ### Annotate your scheduled tasks
  
  ```java
-@Scheduled( ... )
+import net.javacrumbs.shedlock.core.SchedulerLock;
+
+...
+
+@Scheduled(...)
 @SchedulerLock(name = "scheduledTaskName")
 public void scheduledTask() {
     // do something
@@ -46,6 +50,10 @@ executing node dies. This is just a fallback, under normal circumstances the loc
 Now we need to integrate the library into Spring. It's done by wrapping standard Spring task scheduler.  
 
 ```java
+import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
+
+...
+
 @Bean
 public TaskScheduler taskScheduler(LockProvider lockProvider) {
     int poolSize = 10;
@@ -68,6 +76,10 @@ Import the project
 Configure:
 
 ```java
+import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
+
+...
+
 @Bean
 public LockProvider lockProvider(MongoClient mongo) {
     return new MongoLockProvider(mongo, "databaseName");
@@ -98,6 +110,10 @@ Add dependency
 Configure:
 
 ```java
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+
+...
+
 @Bean
 public LockProvider lockProvider(DataSource dataSource) {
     return new JdbcTemplateLockProvider(dataSource, "shedlock");
