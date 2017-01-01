@@ -98,7 +98,7 @@ public abstract class AbstractLockProviderIntegrationTest {
         return lockConfig(name, TimeUnit.MINUTES.toMillis(5));
     }
 
-    private static LockConfiguration lockConfig(String name, long timeoutMillis) {
+    protected static LockConfiguration lockConfig(String name, long timeoutMillis) {
         return new LockConfiguration(name, Instant.now().plus(timeoutMillis, MILLIS));
     }
 

@@ -26,9 +26,10 @@
         <module>shedlock-springboot-test</module>
         <module>shedlock-provider-mongo</module>
         <module>shedlock-test-support</module>
+        <module>shedlock-test-support-jdbc</module>
         <module>shedlock-provider-jdbc-template</module>
         <module>shedlock-provider-jdbc</module>
-        <module>shedlock-test-support-jdbc</module>
+        <module>shedlock-provider-zookeeper-curator</module>
     </modules>
 
     <properties>

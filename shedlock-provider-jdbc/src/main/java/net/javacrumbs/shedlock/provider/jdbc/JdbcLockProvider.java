@@ -20,7 +20,7 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import javax.sql.DataSource;
 
 /**
- * Lock provided by JdbcTemplate. It uses a table that contains lock_name and locked_until.
+ * Lock provided by plain JDBC. It uses a table that contains lock_name and locked_until.
  * <ol>
  * <li>
  * Attempts to insert a new lock record. Since lock name is a primary key, it fails if the record already exists. As an optimization,
