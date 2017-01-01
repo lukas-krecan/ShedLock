@@ -14,7 +14,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
-    private static final String LOCK_NAME1 = "name";
+    protected static final String LOCK_NAME1 = "name";
 
     protected abstract LockProvider getLockProvider();
 
@@ -94,11 +94,11 @@ public abstract class AbstractLockProviderIntegrationTest {
         new FuzzTester(getLockProvider()).doFuzzTest();
     }
 
-    private static LockConfiguration lockConfig(String name) {
+    protected static LockConfiguration lockConfig(String name) {
         return lockConfig(name, TimeUnit.MINUTES.toMillis(5));
     }
 
-    private static LockConfiguration lockConfig(String name, long timeoutMillis) {
+    protected static LockConfiguration lockConfig(String name, long timeoutMillis) {
         return new LockConfiguration(name, Instant.now().plus(timeoutMillis, MILLIS));
     }
 
