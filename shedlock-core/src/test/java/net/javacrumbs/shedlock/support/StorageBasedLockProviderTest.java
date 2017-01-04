@@ -1,7 +1,6 @@
 package net.javacrumbs.shedlock.support;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider.StorageAccessor;
 import org.junit.Test;
 
 import java.time.Instant;

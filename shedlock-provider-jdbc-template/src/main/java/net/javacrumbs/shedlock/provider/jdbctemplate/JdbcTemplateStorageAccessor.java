@@ -16,19 +16,17 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
-class JdbcTemplateStorageAccessor implements StorageBasedLockProvider.StorageAccessor {
+class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final NamedParameterJdbcOperations jdbcTemplate;
     private final String tableName;
 
@@ -83,13 +81,5 @@ class JdbcTemplateStorageAccessor implements StorageBasedLockProvider.StorageAcc
 
     protected String getUnlockStatement() {
         return "UPDATE " + tableName + " SET lock_until = :now WHERE name = :lockName";
-    }
-
-    private static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "unknown";
-        }
     }
 }

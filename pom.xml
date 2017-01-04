@@ -27,6 +27,7 @@
         <module>shedlock-provider-mongo</module>
         <module>shedlock-test-support</module>
         <module>shedlock-provider-jdbc-template</module>
+        <module>shedlock-provider-jdbc</module>
     </modules>
 
     <properties>

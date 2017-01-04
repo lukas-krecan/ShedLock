@@ -19,8 +19,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Optional;
 
@@ -80,19 +78,9 @@ public class StorageBasedLockProvider implements LockProvider {
         return storageAccessor.updateRecord(lockConfiguration);
     }
 
-
-    protected static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "unknown";
-        }
-    }
-
     protected static Date now() {
         return new Date();
     }
-
 
     private static class StorageLock implements SimpleLock {
         private final LockConfiguration lockConfiguration;
@@ -109,23 +97,4 @@ public class StorageBasedLockProvider implements LockProvider {
         }
     }
 
-    public interface StorageAccessor {
-        /**
-         * Inserts a record
-         *
-         * @param lockConfiguration LockConfiguration
-         * @return true if inserted
-         */
-        boolean insertRecord(LockConfiguration lockConfiguration);
-
-        /**
-         * Updates record
-         *
-         * @param lockConfiguration LockConfiguration
-         * @return true if updated
-         */
-        boolean updateRecord(LockConfiguration lockConfiguration);
-
-        void unlock(LockConfiguration lockConfiguration);
-    }
 }

@@ -20,6 +20,7 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -84,7 +85,7 @@ public class MongoLockProvider extends StorageBasedLockProvider {
         super(mongoAccessor);
     }
 
-    static class MongoAccessor implements StorageAccessor {
+    static class MongoAccessor extends AbstractStorageAccessor {
         private final MongoClient mongo;
         private final String databaseName;
         private final String collectionName;
