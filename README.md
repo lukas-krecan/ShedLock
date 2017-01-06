@@ -61,6 +61,15 @@ public TaskScheduler taskScheduler(LockProvider lockProvider) {
 }
 ```
 
+Or if you already have an instance of ScheduledExecutorService
+
+```java
+@Bean
+public TaskScheduler taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
+    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(new ConcurrentTaskScheduler(executorService), lockProvider);
+}
+```
+
 ### Configure LockProvider
 #### Mongo
 Import the project
