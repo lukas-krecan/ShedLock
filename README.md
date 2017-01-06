@@ -103,7 +103,13 @@ Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver
 Create the table
 
 ```sql
-CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))
+CREATE TABLE shedlock(
+    name VARCHAR(64), 
+    lock_until TIMESTAMP(3) NULL, 
+    locked_at TIMESTAMP(3) NULL, 
+    locked_by  VARCHAR(255), 
+    PRIMARY KEY (name)
+) 
 ```
 
 Add dependency
