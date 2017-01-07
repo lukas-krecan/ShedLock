@@ -34,7 +34,7 @@ public class SpringLockConfigurationExtractorTest {
 
     }
 
-    @SchedulerLock(name = "lockName", lockForMillis = 10)
+    @SchedulerLock(name = "lockName", lockAtMostFor = 10)
     public void annotatedMethod() {
 
     }

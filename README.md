@@ -43,7 +43,7 @@ public void scheduledTask() {
         
 The `@SchedulerLock` annotation has several purposes. First of all, only annotated methods are locked, the library ignores
 all other scheduled tasks. You also have to specify the name for the lock. Only one tasks with the same name can be executed
-at the same time. Lastly, you can set `lockForMillis` attribute which specifies how long the lock should be kept in case the
+at the same time. Lastly, you can set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
 executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
 
 ### Configure the task scheduler
@@ -167,3 +167,10 @@ public void run() {
 
 }
 ```
+
+
+#Change log
+
+## 0.3.0
+1. `@ShedlulerLock.name` made obligatory
+2. `@ShedlulerLock.lockForMillis` renamed to lockAtMostFor

@@ -41,7 +41,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             Method method = ((ScheduledMethodRunnable) task).getMethod();
             SchedulerLock annotation = AnnotationUtils.findAnnotation(method, SchedulerLock.class);
             if (shouldLock(annotation)) {
-                return Optional.of(new LockConfiguration(annotation.name(), now().plus(annotation.lockForMillis(), MILLIS)));
+                return Optional.of(new LockConfiguration(annotation.name(), now().plus(annotation.lockAtMostFor(), MILLIS)));
             }
         }
         return Optional.empty();
