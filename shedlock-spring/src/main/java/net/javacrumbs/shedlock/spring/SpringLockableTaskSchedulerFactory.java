@@ -18,7 +18,10 @@ package net.javacrumbs.shedlock.spring;
 import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler.
@@ -34,6 +37,17 @@ public class SpringLockableTaskSchedulerFactory {
      */
     public static LockableTaskScheduler newLockableTaskScheduler(TaskScheduler taskScheduler, LockProvider lockProvider) {
         return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor()));
+    }
+
+    /**
+     * Wraps ScheduledExecutorService and ensures that {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated methods
+     * are locked using the lockProvider
+     *
+     * @param scheduledExecutorService wrapped ScheduledExecutorService
+     * @param lockProvider             lock provider to be used
+     */
+    public static LockableTaskScheduler newLockableTaskScheduler(ScheduledExecutorService scheduledExecutorService, LockProvider lockProvider) {
+        return newLockableTaskScheduler(new ConcurrentTaskScheduler(scheduledExecutorService), lockProvider);
     }
 
     /**
