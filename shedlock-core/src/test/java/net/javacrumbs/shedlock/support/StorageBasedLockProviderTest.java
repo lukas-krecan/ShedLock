@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 public class StorageBasedLockProviderTest {
     private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plus(5, ChronoUnit.MINUTES));
+    public static final LockException LOCK_EXCEPTION = new LockException("Test");
 
     private StorageAccessor storageAccessor = mock(StorageAccessor.class);
 
@@ -54,5 +56,18 @@ public class StorageBasedLockProviderTest {
         when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
         when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenReturn(false);
         assertThat(lockProvider.lock(LOCK_CONFIGURATION)).isEmpty();
+    }
+
+    @Test
+    public void shouldRethrowExceptionFromInsert() {
+        when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+    }
+
+    @Test
+    public void shouldRethrowExceptionFromUpdate() {
+        when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
+        when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
     }
 }

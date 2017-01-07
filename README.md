@@ -137,6 +137,31 @@ public LockProvider lockProvider(DataSource dataSource) {
 
 Tested with MySql, Postgres and HSQLDB
 
+#### Plain JDBC
+For those who do not want to use jdbc-template, there is plain JDBC lock provider. Just import 
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jdbc</artifactId>
+    <version>0.3.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(DataSource dataSource) {
+    return new JdbcLockProvider(dataSource, "shedlock");
+}
+```
+the rest is the same as with JdbcTemplate lock provider. 
+
 ### Spring XML configuration
 
 If you are using Spring XML config, use this configuration
