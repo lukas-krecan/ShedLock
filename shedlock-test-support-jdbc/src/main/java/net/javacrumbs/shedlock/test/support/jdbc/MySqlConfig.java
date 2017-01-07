@@ -18,11 +18,11 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import com.wix.mysql.EmbeddedMysql;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
-import com.wix.mysql.distribution.Version;
 
 import static com.wix.mysql.EmbeddedMysql.anEmbeddedMysql;
 import static com.wix.mysql.config.MysqldConfig.aMysqldConfig;
 import static com.wix.mysql.config.SchemaConfig.aSchemaConfig;
+import static com.wix.mysql.distribution.Version.v5_6_latest;
 
 class MySqlConfig implements DbConfig {
 
@@ -33,7 +33,7 @@ class MySqlConfig implements DbConfig {
     private EmbeddedMysql mysqld;
 
     public void startDb() {
-        MysqldConfig config = aMysqldConfig(Version.v5_5_latest)
+        MysqldConfig config = aMysqldConfig(v5_6_latest)
             .withUser(USERNAME, PASSWORD)
             .build();
 
