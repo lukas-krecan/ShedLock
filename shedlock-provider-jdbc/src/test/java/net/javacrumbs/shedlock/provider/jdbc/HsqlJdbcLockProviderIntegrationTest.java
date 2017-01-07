@@ -1,10 +1,12 @@
 package net.javacrumbs.shedlock.provider.jdbc;
 
-public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
-    private static final HsqlConfig dbConfig = new HsqlConfig();
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
+
+public class HsqlJdbcLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
 
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    protected LockProvider getLockProvider() {
+        return new JdbcLockProvider(testUtils.getDatasource(), "shedlock");
     }
 }

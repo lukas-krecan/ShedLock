@@ -28,6 +28,7 @@
         <module>shedlock-test-support</module>
         <module>shedlock-provider-jdbc-template</module>
         <module>shedlock-provider-jdbc</module>
+        <module>shedlock-test-support-jdbc</module>
     </modules>
 
     <properties>

@@ -1,23 +1,11 @@
 package net.javacrumbs.shedlock.provider.jdbc;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.jdbc.AbstractMySqlJdbcLockProviderIntegrationTest;
 
-public class MySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
-    private static final MySqlConfig dbConfig = new MySqlConfig();
-
-    @BeforeClass
-    public static void startMySql() {
-        dbConfig.startDb();
-    }
-
-    @AfterClass
-    public static void shutDownMysql() {
-        dbConfig.shutdownDb();
-    }
-
+public class MySqlJdbcLockProviderIntegrationTest extends AbstractMySqlJdbcLockProviderIntegrationTest {
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    protected LockProvider getLockProvider() {
+        return new JdbcLockProvider(testUtils.getDatasource(), "shedlock");
     }
 }

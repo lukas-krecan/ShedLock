@@ -1,25 +1,11 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.jdbc.AbstractPostgresJdbcLockProviderIntegrationTest;
 
-import java.io.IOException;
-
-public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
-    private static final PostgresConfig dbConfig = new PostgresConfig();
-
-    @BeforeClass
-    public static void startDb() throws IOException {
-        dbConfig.startDb();
-    }
-
-    @AfterClass
-    public static void shutdownDb() {
-        dbConfig.shutdownDb();
-    }
-
+public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractPostgresJdbcLockProviderIntegrationTest {
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    protected LockProvider getLockProvider() {
+        return new JdbcTemplateLockProvider(testUtils.getDatasource(), "shedlock");
     }
 }

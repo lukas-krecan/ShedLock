@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.jdbctemplate;
+package net.javacrumbs.shedlock.test.support.jdbc;
 
 class HsqlConfig implements DbConfig {
     public void startDb() {

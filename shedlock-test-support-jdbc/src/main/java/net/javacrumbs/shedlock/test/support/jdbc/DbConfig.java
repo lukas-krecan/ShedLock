@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.jdbc;
+package net.javacrumbs.shedlock.test.support.jdbc;
 
 import java.io.IOException;
 

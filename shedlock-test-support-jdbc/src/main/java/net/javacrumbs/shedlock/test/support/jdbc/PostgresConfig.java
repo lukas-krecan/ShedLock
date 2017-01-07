@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.jdbc;
+package net.javacrumbs.shedlock.test.support.jdbc;
 
 import ru.yandex.qatools.embed.postgresql.PostgresExecutable;
 import ru.yandex.qatools.embed.postgresql.PostgresProcess;
 import ru.yandex.qatools.embed.postgresql.PostgresStarter;
 
 import java.io.IOException;
-
-import static java.lang.String.format;
 
 class PostgresConfig implements DbConfig {
 
@@ -42,7 +40,7 @@ class PostgresConfig implements DbConfig {
     }
 
     public String getJdbcUrl() {
-        return format("jdbc:postgresql://%s:%s/%s?currentSchema=public&user=%s&password=%s",
+        return String.format("jdbc:postgresql://%s:%s/%s?currentSchema=public&user=%s&password=%s",
             config.net().host(),
             config.net().port(),
             config.storage().dbName(),

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.jdbctemplate;
+package net.javacrumbs.shedlock.test.support.jdbc;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
-class JdbcTestUtils {
+public class JdbcTestUtils {
 
     private final HikariDataSource datasource;
     private final JdbcTemplate jdbcTemplate;
@@ -32,7 +32,7 @@ class JdbcTestUtils {
         datasource.setPassword(dbConfig.getPassword());
 
         jdbcTemplate = new JdbcTemplate(datasource);
-        jdbcTemplate.execute("CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))");
+        jdbcTemplate.execute("CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3), locked_at TIMESTAMP(3), locked_by  VARCHAR(255), PRIMARY KEY (name))");
     }
 
     void clean() {

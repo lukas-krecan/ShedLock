@@ -170,7 +170,7 @@ public void run() {
 
 
 #Change log
-
 ## 0.3.0
 1. `@ShedlulerLock.name` made obligatory
 2. `@ShedlulerLock.lockForMillis` renamed to lockAtMostFor
+3. Adding plain JDBC support
