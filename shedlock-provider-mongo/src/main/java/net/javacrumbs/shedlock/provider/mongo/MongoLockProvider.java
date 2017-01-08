@@ -37,7 +37,18 @@ import static com.mongodb.client.model.Updates.setOnInsert;
 /**
  * Distributed lock using MongoDB &gt;= 2.6. Requires mongo-java-driver &gt; 3.4.0
  * <p>
- * It uses a collection that contains _id = lock name and a field locked_until.
+ * It uses a collection that contains documents like this:
+ * <pre>
+ * {
+ *    "_id" : "lock name",
+ *    "lockUntil" : ISODate("2017-01-07T16:52:04.071Z"),
+ *    "lockedAt" : ISODate("2017-01-07T16:52:03.932Z"),
+ *    "lockedBy" : "host name"
+ * }
+ * </pre>
+ *
+ * lockedAt and lockedBy are just for troubleshooting and are not read by the code
+ *
  * <ol>
  * <li>
  * Attempts to insert a new lock record. As an optimization, we keep in-memory track of created lock records. If the record

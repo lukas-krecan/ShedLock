@@ -193,8 +193,12 @@ public void run() {
 }
 ```
 
+## Requirements and dependencies
+1. Java 8
+2. slf4j-api
 
-#Change log
+
+##Change log
 ## 0.3.0
 1. `@ShedlulerLock.name` made obligatory
 2. `@ShedlulerLock.lockForMillis` renamed to lockAtMostFor

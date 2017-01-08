@@ -18,6 +18,8 @@ package net.javacrumbs.shedlock.spring;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
@@ -34,6 +36,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
  * </ol>
  */
 public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
+    private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     @Override
     public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
@@ -43,6 +46,8 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             if (shouldLock(annotation)) {
                 return Optional.of(new LockConfiguration(annotation.name(), now().plus(annotation.lockAtMostFor(), MILLIS)));
             }
+        } else {
+            logger.debug("Unknown task type " + task);
         }
         return Optional.empty();
     }
