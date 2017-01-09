@@ -44,19 +44,22 @@ public class DefaultLockManager implements LockManager {
             logger.debug("No lock configuration for {}. Executing without lock.", task);
             task.run();
         } else {
-            LockConfiguration lockConfig = lockConfigOptional.get();
-            Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
-            if (lock.isPresent()) {
-                try {
-                    logger.debug("Locked {}.", lockConfig.getName());
-                    task.run();
-                } finally {
-                    lock.get().unlock();
-                    logger.debug("Unlocked {}.", lockConfig.getName());
-                }
-            } else {
-                logger.info("Not executing {}. It's locked.", lockConfig.getName());
+            executeIfNotLocked(task, lockConfigOptional.get());
+        }
+    }
+
+    private void executeIfNotLocked(Runnable task, LockConfiguration lockConfig) {
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
+        if (lock.isPresent()) {
+            try {
+                logger.debug("Locked {}.", lockConfig.getName());
+                task.run();
+            } finally {
+                lock.get().unlock();
+                logger.debug("Unlocked {}.", lockConfig.getName());
             }
+        } else {
+            logger.info("Not executing {}. It's locked.", lockConfig.getName());
         }
     }
 }
