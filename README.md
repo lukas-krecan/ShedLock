@@ -200,6 +200,11 @@ public void run() {
 
 ##Change log
 ## 0.3.0
+1. Extracted LockingTaskExecutor
+2. LockManager.executeIfNotLocked renamed to executeWithLock
+3. Default table name in JDBC lock providers
+
+## 0.3.0
 1. `@ShedlulerLock.name` made obligatory
 2. `@ShedlulerLock.lockForMillis` renamed to lockAtMostFor
 3. Adding plain JDBC LockProvider

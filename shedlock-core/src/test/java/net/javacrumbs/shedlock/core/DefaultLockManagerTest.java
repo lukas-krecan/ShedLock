@@ -43,7 +43,7 @@ public class DefaultLockManagerTest {
     public void noConfigNoLock() {
         when(lockConfigurationExtractor.getLockConfiguration(task)).thenReturn(Optional.empty());
 
-        defaultLockManager.executeIfNotLocked(task);
+        defaultLockManager.executeWithLock(task);
         verify(task).run();
         verifyZeroInteractions(lockProvider);
     }
@@ -53,7 +53,7 @@ public class DefaultLockManagerTest {
         when(lockConfigurationExtractor.getLockConfiguration(task)).thenReturn(Optional.of(LOCK_CONFIGURATION));
         when(lockProvider.lock(LOCK_CONFIGURATION)).thenReturn(Optional.of(lock));
 
-        defaultLockManager.executeIfNotLocked(task);
+        defaultLockManager.executeWithLock(task);
         verify(task).run();
         InOrder inOrder = inOrder(task, lock);
         inOrder.verify(task).run();
@@ -65,7 +65,7 @@ public class DefaultLockManagerTest {
         when(lockConfigurationExtractor.getLockConfiguration(task)).thenReturn(Optional.of(LOCK_CONFIGURATION));
         when(lockProvider.lock(LOCK_CONFIGURATION)).thenReturn(Optional.empty());
 
-        defaultLockManager.executeIfNotLocked(task);
+        defaultLockManager.executeWithLock(task);
         verifyZeroInteractions(task);
     }
 

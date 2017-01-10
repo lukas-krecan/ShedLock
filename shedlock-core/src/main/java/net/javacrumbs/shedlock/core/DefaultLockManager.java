@@ -29,37 +29,26 @@ import static java.util.Objects.requireNonNull;
 public class DefaultLockManager implements LockManager {
     private static final Logger logger = LoggerFactory.getLogger(DefaultLockManager.class);
 
-    private final LockProvider lockProvider;
+    private final LockingTaskExecutor lockingTaskExecutor;
     private final LockConfigurationExtractor lockConfigurationExtractor;
 
     public DefaultLockManager(LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
-        this.lockProvider = requireNonNull(lockProvider);
+        this(new DefaultLockingTaskExecutor(lockProvider), lockConfigurationExtractor);
+    }
+
+    public DefaultLockManager(LockingTaskExecutor lockingTaskExecutor, LockConfigurationExtractor lockConfigurationExtractor) {
+        this.lockingTaskExecutor = requireNonNull(lockingTaskExecutor);
         this.lockConfigurationExtractor = requireNonNull(lockConfigurationExtractor);
     }
 
     @Override
-    public void executeIfNotLocked(Runnable task) {
+    public void executeWithLock(Runnable task) {
         Optional<LockConfiguration> lockConfigOptional = lockConfigurationExtractor.getLockConfiguration(task);
         if (!lockConfigOptional.isPresent()) {
             logger.debug("No lock configuration for {}. Executing without lock.", task);
             task.run();
         } else {
-            executeIfNotLocked(task, lockConfigOptional.get());
-        }
-    }
-
-    private void executeIfNotLocked(Runnable task, LockConfiguration lockConfig) {
-        Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
-        if (lock.isPresent()) {
-            try {
-                logger.debug("Locked {}.", lockConfig.getName());
-                task.run();
-            } finally {
-                lock.get().unlock();
-                logger.debug("Unlocked {}.", lockConfig.getName());
-            }
-        } else {
-            logger.info("Not executing {}. It's locked.", lockConfig.getName());
+            lockingTaskExecutor.executeWithLock(task, lockConfigOptional.get());
         }
     }
 }
