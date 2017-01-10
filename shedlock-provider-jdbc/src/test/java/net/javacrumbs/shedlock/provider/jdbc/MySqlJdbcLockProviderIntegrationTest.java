@@ -21,6 +21,6 @@ import net.javacrumbs.shedlock.test.support.jdbc.AbstractMySqlJdbcLockProviderIn
 public class MySqlJdbcLockProviderIntegrationTest extends AbstractMySqlJdbcLockProviderIntegrationTest {
     @Override
     protected LockProvider getLockProvider() {
-        return new JdbcLockProvider(testUtils.getDatasource(), "shedlock");
+        return new JdbcLockProvider(testUtils.getDatasource());
     }
 }

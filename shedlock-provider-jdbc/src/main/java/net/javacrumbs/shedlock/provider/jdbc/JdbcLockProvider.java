@@ -42,6 +42,9 @@ import javax.sql.DataSource;
  * </ol>
  */
 public class JdbcLockProvider extends StorageBasedLockProvider {
+    public JdbcLockProvider(DataSource datasource) {
+        this(datasource, "shedlock");
+    }
     public JdbcLockProvider(DataSource datasource, String tableName) {
         super(new JdbcStorageAccessor(datasource, tableName));
     }

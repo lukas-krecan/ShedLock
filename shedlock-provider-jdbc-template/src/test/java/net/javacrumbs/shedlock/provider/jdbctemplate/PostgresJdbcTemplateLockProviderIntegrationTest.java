@@ -21,6 +21,6 @@ import net.javacrumbs.shedlock.test.support.jdbc.AbstractPostgresJdbcLockProvide
 public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractPostgresJdbcLockProviderIntegrationTest {
     @Override
     protected LockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(testUtils.getDatasource(), "shedlock");
+        return new JdbcTemplateLockProvider(testUtils.getDatasource());
     }
 }

@@ -22,6 +22,6 @@ public class HsqlJdbcLockProviderIntegrationTest extends AbstractHsqlJdbcLockPro
 
     @Override
     protected LockProvider getLockProvider() {
-        return new JdbcLockProvider(testUtils.getDatasource(), "shedlock");
+        return new JdbcLockProvider(testUtils.getDatasource());
     }
 }
