@@ -131,7 +131,7 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 
 @Bean
 public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcTemplateLockProvider(dataSource, "shedlock");
+    return new JdbcTemplateLockProvider(dataSource);
 }
 ```
 
@@ -157,7 +157,7 @@ import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 
 @Bean
 public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcLockProvider(dataSource, "shedlock");
+    return new JdbcLockProvider(dataSource);
 }
 ```
 the rest is the same as with JdbcTemplate lock provider. 
