@@ -199,6 +199,9 @@ public void run() {
 
 
 ##Change log
+## 0.4.1
+1. JdbcLockProvider insert does not fail on DataIntegrityViolationException
+
 ## 0.4.0
 1. Extracted LockingTaskExecutor
 2. LockManager.executeIfNotLocked renamed to executeWithLock

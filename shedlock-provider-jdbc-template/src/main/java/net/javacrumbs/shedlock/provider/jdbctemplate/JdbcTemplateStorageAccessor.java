@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
 import java.util.Date;
@@ -44,8 +44,9 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             if (insertedRows > 0) {
                 return true;
             }
-        } catch (DuplicateKeyException e) {
+        } catch (DataIntegrityViolationException e) {
             // lock record already exists
+            // DuplicateKeyException is not enough for Vertica
         }
         return false;
     }
