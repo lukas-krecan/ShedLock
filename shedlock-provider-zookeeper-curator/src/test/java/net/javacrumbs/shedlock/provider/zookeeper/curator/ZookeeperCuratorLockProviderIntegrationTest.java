@@ -52,7 +52,7 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
     }
 
     private CuratorFramework newClient() {
-        CuratorFramework client = CuratorFrameworkFactory.builder().namespace("test/node")
+        CuratorFramework client = CuratorFrameworkFactory.builder().namespace("MyApp")
             .retryPolicy(new RetryOneTime(2000))
             .connectString(zkTestServer.getConnectString()).build();
         client.start();
@@ -95,7 +95,7 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
 
     private Stat getNodeStat(String lockName) {
         try {
-            return client.checkExists().forPath("/" + lockName);
+            return client.checkExists().forPath("/shedlock/" + lockName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

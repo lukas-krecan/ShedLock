@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
@@ -31,17 +32,25 @@ import static java.util.Objects.requireNonNull;
  * Locks kept using ZooKeeper. When locking, creates an ephemeral node with node name = lock name, when nlocking, removes the node.
  */
 public class ZookeeperCuratorLockProvider implements LockProvider {
+    public static final String DEFAULT_PATH = "/shedlock";
+    private final String path;
     private final CuratorFramework client;
 
     public ZookeeperCuratorLockProvider(CuratorFramework client) {
+        this(client, DEFAULT_PATH);
+    }
+
+    public ZookeeperCuratorLockProvider(CuratorFramework client, String path) {
         this.client = requireNonNull(client);
+        this.path = PathUtils.validatePath(path);
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         try {
-            client.create().withMode(CreateMode.EPHEMERAL).forPath(getNodeName(lockConfiguration));
-            return Optional.of(new CuratorLock(lockConfiguration, client));
+            String nodePath = getNodePath(lockConfiguration);
+            client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(nodePath);
+            return Optional.of(new CuratorLock(nodePath, client));
         } catch (KeeperException.NodeExistsException ex) {
             return Optional.empty();
         } catch (Exception e) {
@@ -49,23 +58,23 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         }
     }
 
-    private static String getNodeName(LockConfiguration lockConfiguration) {
-        return "/" + lockConfiguration.getName();
+    private String getNodePath(LockConfiguration lockConfiguration) {
+        return path + "/" + lockConfiguration.getName();
     }
 
     private static final class CuratorLock implements SimpleLock {
-        private final LockConfiguration configuration;
+        private final String nodePath;
         private final CuratorFramework client;
 
-        private CuratorLock(LockConfiguration configuration, CuratorFramework client) {
-            this.configuration = configuration;
+        private CuratorLock(String nodePath, CuratorFramework client) {
+            this.nodePath = nodePath;
             this.client = client;
         }
 
         @Override
         public void unlock() {
             try {
-                client.delete().forPath(getNodeName(configuration));
+                client.delete().forPath(nodePath);
             } catch (Exception e) {
                 throw new LockException("Can not remove node", e);
             }
