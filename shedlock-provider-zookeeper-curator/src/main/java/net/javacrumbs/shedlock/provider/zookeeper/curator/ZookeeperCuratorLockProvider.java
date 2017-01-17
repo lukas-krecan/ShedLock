@@ -29,7 +29,7 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Locks kept using ZooKeeper. When locking, creates an ephemeral node with node name = lock name, when nlocking, removes the node.
+ * Locks kept using ZooKeeper. When locking, creates an ephemeral node with node name = lock name, when unlocking, removes the node.
  */
 public class ZookeeperCuratorLockProvider implements LockProvider {
     public static final String DEFAULT_PATH = "/shedlock";
