@@ -61,7 +61,7 @@ Or if you already have an instance of ScheduledExecutorService
 ```java
 @Bean
 public TaskScheduler taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
-    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(new ConcurrentTaskScheduler(executorService), lockProvider);
+    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(executorService, lockProvider);
 }
 ```
 
