@@ -1,17 +1,12 @@
 ShedLock [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 ========
 
-You have a simple Spring scheduler which works great until you need to run the application
-on multiple instances. Now what? You want to execute your tasks only once. You can use Quartz, 
-but it's incredibly complex. You can use environment variable to determine a "scheduler master",
-but what if it dies? Or you can use ShedLock.
-
-ShedLock does one and only thing. It makes sure your tasks ar executed at most once. It coordinates
+ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once. It coordinates
 cluster nodes using shared database. If a task is being executed on one node, it acquires a lock which
-prevents execution of the same task from another node (or thread). Please note, that **if one task is already running
-execution from another node does not wait, it is simply skipped**.
+prevents execution of the same task from another node (or thread). Please note, that **if one task is already being
+executed on one node, execution on other nodes does not wait, it is simply skipped**.
  
-Currently, only Spring scheduled tasks coordinated through Mongo or JDBC database are supported. More
+Currently, only Spring scheduled tasks coordinated through Mongo, JDBC database or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
 
 Feedback and pull-requests welcome!
@@ -23,7 +18,7 @@ Feedback and pull-requests welcome!
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
@@ -78,7 +73,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
@@ -118,7 +113,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
@@ -144,7 +139,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
@@ -160,7 +155,27 @@ public LockProvider lockProvider(DataSource dataSource) {
     return new JdbcLockProvider(dataSource);
 }
 ```
-the rest is the same as with JdbcTemplate lock provider. 
+the rest is the same as with JdbcTemplate lock provider.
+ 
+#### ZooKeeper (using Curator)
+Import 
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-zookeeper-curator</artifactId>
+    <version>0.5.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+@Bean
+public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework client) {
+    return  new ZookeeperCuratorLockProvider(client);
+}
+```
+By default, ephemeral nodes for locks will be created under `/shedlock` node. 
 
 ### Spring XML configuration
 
@@ -199,6 +214,9 @@ public void run() {
 
 
 ##Change log
+## 0.5.0
+1. ZooKeeper nodes created under /shedlock by default
+
 ## 0.4.1
 1. JdbcLockProvider insert does not fail on DataIntegrityViolationException
 
