@@ -106,6 +106,7 @@ CREATE TABLE shedlock(
     PRIMARY KEY (name)
 ) 
 ```
+script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227)
 
 Add dependency
 
@@ -172,7 +173,7 @@ and configure
 ```java
 @Bean
 public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework client) {
-    return  new ZookeeperCuratorLockProvider(client);
+    return new ZookeeperCuratorLockProvider(client);
 }
 ```
 By default, ephemeral nodes for locks will be created under `/shedlock` node. 
