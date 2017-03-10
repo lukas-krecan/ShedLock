@@ -18,7 +18,7 @@ Feedback and pull-requests welcome!
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
@@ -61,7 +61,7 @@ Or if you already have an instance of ScheduledExecutorService
 ```java
 @Bean
 public TaskScheduler taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
-    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(executorService, lockProvider);
+    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(executorService, lockProvider, Duration.of(10, MINUTES));
 }
 ```
 
@@ -73,7 +73,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
@@ -114,7 +114,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
@@ -140,7 +140,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
@@ -164,7 +164,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
