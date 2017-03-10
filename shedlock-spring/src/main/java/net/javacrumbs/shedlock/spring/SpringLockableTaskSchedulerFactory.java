@@ -21,7 +21,10 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import java.time.temporal.TemporalAmount;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
 
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler.
@@ -32,11 +35,23 @@ public class SpringLockableTaskSchedulerFactory {
      * Wraps the task scheduler and ensures that {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated methods
      * are locked using the lockProvider
      *
+     * @param taskScheduler        wrapped task scheduler
+     * @param lockProvider         lock provider to be used
+     * @param defaultLockAtMostFor default value of lockAtMostFor if none specified in the annotation
+     */
+    public static LockableTaskScheduler newLockableTaskScheduler(TaskScheduler taskScheduler, LockProvider lockProvider, TemporalAmount defaultLockAtMostFor) {
+        return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor(defaultLockAtMostFor)));
+    }
+
+    /**
+     * Wraps the task scheduler and ensures that {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated methods
+     * are locked using the lockProvider
+     *
      * @param taskScheduler wrapped task scheduler
      * @param lockProvider  lock provider to be used
      */
     public static LockableTaskScheduler newLockableTaskScheduler(TaskScheduler taskScheduler, LockProvider lockProvider) {
-        return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor()));
+        return newLockableTaskScheduler(taskScheduler, lockProvider, DEFAULT_LOCK_AT_MOST_FOR);
     }
 
     /**
@@ -48,6 +63,18 @@ public class SpringLockableTaskSchedulerFactory {
      */
     public static LockableTaskScheduler newLockableTaskScheduler(ScheduledExecutorService scheduledExecutorService, LockProvider lockProvider) {
         return newLockableTaskScheduler(new ConcurrentTaskScheduler(scheduledExecutorService), lockProvider);
+    }
+
+    /**
+     * Wraps ScheduledExecutorService and ensures that {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated methods
+     * are locked using the lockProvider
+     *
+     * @param scheduledExecutorService wrapped ScheduledExecutorService
+     * @param lockProvider             lock provider to be used
+     * @param defaultLockAtMostFor     default value of lockAtMostFor if none specified in the annotation
+     */
+    public static LockableTaskScheduler newLockableTaskScheduler(ScheduledExecutorService scheduledExecutorService, LockProvider lockProvider, TemporalAmount defaultLockAtMostFor) {
+        return newLockableTaskScheduler(new ConcurrentTaskScheduler(scheduledExecutorService), lockProvider, defaultLockAtMostFor);
     }
 
     /**

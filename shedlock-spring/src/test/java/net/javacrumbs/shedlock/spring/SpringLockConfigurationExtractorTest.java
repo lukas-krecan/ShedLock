@@ -18,20 +18,24 @@ package net.javacrumbs.shedlock.spring;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.junit.Test;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SpringLockConfigurationExtractorTest {
-    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor();
+    public static final Duration DEFAULT_LOCK_TIME = Duration.of(30, ChronoUnit.MINUTES);
+    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME);
 
 
     @Test
-    public void shouldExtractMethodName() throws NoSuchMethodException {
+    public void shouldNotLockUnannotatedMethod() throws NoSuchMethodException {
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "methodWithoutAnnotation");
         Optional<LockConfiguration> lockConfiguration = extractor.getLockConfiguration(runnable);
         assertThat(lockConfiguration).isEmpty();
@@ -45,12 +49,35 @@ public class SpringLockConfigurationExtractorTest {
         assertThat(lockConfiguration.getLockUntil()).isLessThan(Instant.now().plus(11, ChronoUnit.MILLIS));
     }
 
+    @Test
+    public void shouldLockForDefaultTimeIfNoAnnotation() throws NoSuchMethodException {
+        SchedulerLock annotation = getAnnotation("annotatedMethodWithoutLockAtMostFor");
+        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(lockAtMostFor).isEqualTo(DEFAULT_LOCK_TIME);
+    }
+
+    @Test
+    public void shouldLockTimeFromAnnotation() throws NoSuchMethodException {
+        SchedulerLock annotation = getAnnotation("annotatedMethod");
+        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(lockAtMostFor).isEqualTo(Duration.of(10, ChronoUnit.MILLIS));
+    }
+
+    protected SchedulerLock getAnnotation(String method) throws NoSuchMethodException {
+        return AnnotationUtils.findAnnotation(getClass().getMethod(method), SchedulerLock.class);
+    }
+
     public void methodWithoutAnnotation() {
 
     }
 
     @SchedulerLock(name = "lockName", lockAtMostFor = 10)
     public void annotatedMethod() {
+
+    }
+
+    @SchedulerLock(name = "lockName")
+    public void annotatedMethodWithoutLockAtMostFor() {
 
     }
 }

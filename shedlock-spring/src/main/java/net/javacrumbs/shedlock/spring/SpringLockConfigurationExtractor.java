@@ -24,10 +24,14 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Extracts configuration form Spring scheduled task. Is able to extract information from
@@ -36,7 +40,18 @@ import static java.time.temporal.ChronoUnit.MILLIS;
  * </ol>
  */
 public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
+    static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
+
+    private final TemporalAmount defaultLockAtMostFor;
+
+    public SpringLockConfigurationExtractor() {
+        this(DEFAULT_LOCK_AT_MOST_FOR);
+    }
+
+    public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor) {
+        this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
+    }
 
     @Override
     public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
@@ -44,12 +59,17 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             Method method = ((ScheduledMethodRunnable) task).getMethod();
             SchedulerLock annotation = AnnotationUtils.findAnnotation(method, SchedulerLock.class);
             if (shouldLock(annotation)) {
-                return Optional.of(new LockConfiguration(annotation.name(), now().plus(annotation.lockAtMostFor(), MILLIS)));
+                return Optional.of(new LockConfiguration(annotation.name(), now().plus(getLockAtMostFor(annotation))));
             }
         } else {
             logger.debug("Unknown task type " + task);
         }
         return Optional.empty();
+    }
+
+    TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
+        long valueFromAnnotation = annotation.lockAtMostFor();
+        return valueFromAnnotation >= 0 ? Duration.of(valueFromAnnotation, MILLIS) : defaultLockAtMostFor;
     }
 
 

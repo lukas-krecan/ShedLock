@@ -18,10 +18,12 @@ package net.javacrumbs.shedlock.spring;
 import net.javacrumbs.shedlock.core.LockProvider;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,7 +39,7 @@ public class SpringLockableTaskSchedulerFactoryTest {
     @Test
     public void shouldWrapScheduledExecutorService() {
         ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
-        LockableTaskScheduler lockableTaskScheduler = SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(scheduledExecutorService, lockProvider);
+        LockableTaskScheduler lockableTaskScheduler = SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(scheduledExecutorService, lockProvider, Duration.of(10, MINUTES));
         lockableTaskScheduler.schedule(task, new Date());
         verify(scheduledExecutorService).schedule(any(Runnable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
     }
