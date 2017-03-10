@@ -216,21 +216,21 @@ public void run() {
 
 ##Change log
 ## 0.6.0
-1. Possible to configure defaultLockFor time so it does not have to be repeated in every annotation
+* Possible to configure defaultLockFor time so it does not have to be repeated in every annotation
 
 ## 0.5.0
-1. ZooKeeper nodes created under /shedlock by default
+* ZooKeeper nodes created under /shedlock by default
 
 ## 0.4.1
-1. JdbcLockProvider insert does not fail on DataIntegrityViolationException
+* JdbcLockProvider insert does not fail on DataIntegrityViolationException
 
 ## 0.4.0
-1. Extracted LockingTaskExecutor
-2. LockManager.executeIfNotLocked renamed to executeWithLock
-3. Default table name in JDBC lock providers
+* Extracted LockingTaskExecutor
+* LockManager.executeIfNotLocked renamed to executeWithLock
+* Default table name in JDBC lock providers
 
 ## 0.3.0
-1. `@ShedlulerLock.name` made obligatory
-2. `@ShedlulerLock.lockForMillis` renamed to lockAtMostFor
-3. Adding plain JDBC LockProvider
-4. Adding ZooKeepr LockProvider
+* `@ShedlulerLock.name` made obligatory
+* `@ShedlulerLock.lockForMillis` renamed to lockAtMostFor
+* Adding plain JDBC LockProvider
+* Adding ZooKeepr LockProvider
