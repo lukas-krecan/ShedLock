@@ -215,6 +215,9 @@ public void run() {
 
 
 ##Change log
+## 0.6.0
+1. Possible to configure defaultLockFor time so it does not have to be repeated in every annotation
+
 ## 0.5.0
 1. ZooKeeper nodes created under /shedlock by default
 
