@@ -1,10 +1,10 @@
 ShedLock [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 ========
 
-ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once. It coordinates
+ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once at the same time. It coordinates
 cluster nodes using shared database. If a task is being executed on one node, it acquires a lock which
 prevents execution of the same task from another node (or thread). Please note, that **if one task is already being
-executed on one node, execution on other nodes does not wait, it is simply skipped**.
+executed on one node, execution on other nodes does not wait, it is simply skipped**. Moreover, if task on one node finishes, it may be executed again (for example due to clock on diferent nodes being out of sync).
  
 Currently, only Spring scheduled tasks coordinated through Mongo, JDBC database or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
