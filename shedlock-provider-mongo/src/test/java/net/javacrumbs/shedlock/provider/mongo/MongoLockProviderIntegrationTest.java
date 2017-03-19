@@ -47,6 +47,7 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @Before
     public void createLockProvider() throws UnknownHostException {
         mongo = mongoFactory.newMongo();
+        mongo.getDatabase(DB_NAME).drop();
         lockProvider = new MongoLockProvider(mongo, DB_NAME, COLLECTION_NAME);
     }
 

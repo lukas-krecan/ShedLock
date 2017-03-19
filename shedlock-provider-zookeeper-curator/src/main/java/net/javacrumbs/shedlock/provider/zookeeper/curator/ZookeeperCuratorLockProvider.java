@@ -24,8 +24,10 @@ import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 
+import java.time.Instant;
 import java.util.Optional;
 
+import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -47,6 +49,10 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+        Instant now = now();
+        if (lockConfiguration.getLockAtLeastUntil().isAfter(now)) {
+            throw new UnsupportedOperationException("ZookeeperCuratorLockProvider does not support nonzero lockAtLeastUntil yet.");
+        }
         try {
             String nodePath = getNodePath(lockConfiguration);
             client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(nodePath);

@@ -112,7 +112,7 @@ public class MongoLockProvider extends StorageBasedLockProvider {
         @Override
         public boolean insertRecord(LockConfiguration lockConfiguration) {
             Bson update = combine(
-                setOnInsert(LOCK_UNTIL, Date.from(lockConfiguration.getLockUntil())),
+                setOnInsert(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
                 setOnInsert(LOCKED_AT, now()),
                 setOnInsert(LOCKED_BY, hostname)
             );
@@ -134,15 +134,20 @@ public class MongoLockProvider extends StorageBasedLockProvider {
             }
         }
 
+        private Date now() {
+            return new Date();
+        }
+
         @Override
         public boolean updateRecord(LockConfiguration lockConfiguration) {
+            Date now = now();
             Bson update = combine(
-                set(LOCK_UNTIL, Date.from(lockConfiguration.getLockUntil())),
-                set(LOCKED_AT, now()),
+                set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
+                set(LOCKED_AT, now),
                 set(LOCKED_BY, hostname)
             );
             Document result = getCollection().findOneAndUpdate(
-                and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now())),
+                and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
                 update
             );
             return result != null;
@@ -150,10 +155,10 @@ public class MongoLockProvider extends StorageBasedLockProvider {
 
         @Override
         public void unlock(LockConfiguration lockConfiguration) {
-            // Set lockUtil to now
+            // Set lockUtil to now or lockAtLeastUntil whichever is later
             getCollection().findOneAndUpdate(
                 eq(ID, lockConfiguration.getName()),
-                combine(set(LOCK_UNTIL, now()))
+                combine(set(LOCK_UNTIL, Date.from(lockConfiguration.getUnlockTime())))
             );
         }
 
