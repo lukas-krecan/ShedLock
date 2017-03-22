@@ -19,7 +19,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
-import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -76,10 +75,6 @@ public class StorageBasedLockProvider implements LockProvider {
         }
 
         return storageAccessor.updateRecord(lockConfiguration);
-    }
-
-    protected static Date now() {
-        return new Date();
     }
 
     private static class StorageLock implements SimpleLock {

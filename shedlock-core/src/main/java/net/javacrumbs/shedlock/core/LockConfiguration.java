@@ -16,32 +16,65 @@
 package net.javacrumbs.shedlock.core;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * Lock configuration.
  */
 public class LockConfiguration {
     private final String name;
-    private final Instant lockUntil;
+
+    /**
+     * The lock is held until this instant, after that it's automatically released (the process holding it has most likely
+     * died without releasing the lock) Can be ignored by providers which can detect dead processes (like Zookeeper)
+     */
+    private final Instant lockAtMostUntil;
+    /**
+     * The lock will be held until this time even if the task holding the lock finishes earlier.
+     */
+    private final Instant lockAtLeastUntil;
 
     public LockConfiguration(String name, Instant lockUntil) {
-        this.name = name;
-        this.lockUntil = lockUntil;
+        this(name, lockUntil, Instant.now());
+    }
+
+    public LockConfiguration(String name, Instant lockUntil, Instant lockAtLeastUntil) {
+        this.name = Objects.requireNonNull(name);
+        this.lockAtMostUntil = Objects.requireNonNull(lockUntil);
+        this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);
     }
 
     public String getName() {
         return name;
     }
 
+    @Deprecated
     public Instant getLockUntil() {
-        return lockUntil;
+        return lockAtMostUntil;
+    }
+
+    public Instant getLockAtMostUntil() {
+        return lockAtMostUntil;
+    }
+
+    public Instant getLockAtLeastUntil() {
+        return lockAtLeastUntil;
+    }
+
+    /**
+     * Returns either now or lockAtLeastUntil whichever is later.
+     */
+    public Instant getUnlockTime() {
+        Instant now = Instant.now();
+        return lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
     }
 
     @Override
     public String toString() {
         return "LockConfiguration{" +
             "name='" + name + '\'' +
-            ", lockUntil=" + lockUntil +
+            ", lockAtMostUntil=" + lockAtMostUntil +
+            ", lockAtLeastUntil=" + lockAtLeastUntil +
             '}';
     }
 }

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private TestingServer zkTestServer;
@@ -76,6 +77,13 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
         Optional<SimpleLock> lock2 = new ZookeeperCuratorLockProvider(newClient).lock(config);
         assertThat(lock2).isNotEmpty();
         newClient.close();
+    }
+
+    @Test
+    @Override
+    public void shouldLockAtLeastFor() throws InterruptedException {
+        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
+        assertThatThrownBy(() -> getLockProvider().lock(configWithGracePeriod)).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Override

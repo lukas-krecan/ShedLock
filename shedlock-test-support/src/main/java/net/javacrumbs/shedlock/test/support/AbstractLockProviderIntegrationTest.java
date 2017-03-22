@@ -20,16 +20,19 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Thread.sleep;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
     protected static final String LOCK_NAME1 = "name";
+    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(1000, MILLIS);
 
     protected abstract LockProvider getLockProvider();
 
@@ -82,11 +85,11 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, 2);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, 2, Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        Thread.sleep(2);
+        sleep(2);
 
         Optional<SimpleLock> lock2 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock2).isNotEmpty();
@@ -109,12 +112,31 @@ public abstract class AbstractLockProviderIntegrationTest {
         new FuzzTester(getLockProvider()).doFuzzTest();
     }
 
-    protected static LockConfiguration lockConfig(String name) {
-        return lockConfig(name, TimeUnit.MINUTES.toMillis(5));
+    @Test
+    public void shouldLockAtLeastFor() throws InterruptedException {
+        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
+        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithGracePeriod);
+        assertThat(lock1).isNotEmpty();
+        lock1.get().unlock();
+
+        // can not acquire lock, grace period did not pass yet
+        Optional<SimpleLock> lock2 = getLockProvider().lock(configWithGracePeriod);
+        assertThat(lock2).isEmpty();
+
+        sleep(LOCK_AT_LEAST_FOR.toMillis());
+        Optional<SimpleLock> lock3 = getLockProvider().lock(configWithGracePeriod);
+        assertThat(lock3).isNotEmpty();
+        lock3.get().unlock();
+
     }
 
-    protected static LockConfiguration lockConfig(String name, long timeoutMillis) {
-        return new LockConfiguration(name, Instant.now().plus(timeoutMillis, MILLIS));
+    protected static LockConfiguration lockConfig(String name) {
+        return lockConfig(name, TimeUnit.MINUTES.toMillis(5), Duration.ZERO);
+    }
+
+    protected static LockConfiguration lockConfig(String name, long timeoutMillis, Duration lockAtLeastFor) {
+        Instant now = Instant.now();
+        return new LockConfiguration(name, now.plus(timeoutMillis, MILLIS), now.plus(lockAtLeastFor));
     }
 
 }

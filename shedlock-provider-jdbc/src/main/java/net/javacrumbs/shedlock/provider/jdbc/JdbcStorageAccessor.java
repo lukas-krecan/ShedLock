@@ -46,7 +46,7 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)")
         ) {
             statement.setString(1, lockConfiguration.getName());
-            statement.setTimestamp(2, Timestamp.from(lockConfiguration.getLockUntil()));
+            statement.setTimestamp(2, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setTimestamp(3, Timestamp.from(Instant.now()));
             statement.setString(4, getHostname());
             int insertedRows = statement.executeUpdate();
@@ -70,7 +70,7 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
             PreparedStatement statement = connection.prepareStatement("UPDATE " + tableName + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?")
         ) {
             Timestamp now = Timestamp.from(Instant.now());
-            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockUntil()));
+            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setTimestamp(2, now);
             statement.setString(3, getHostname());
             statement.setString(4, lockConfiguration.getName());
@@ -88,7 +88,7 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
             Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement("UPDATE " + tableName + " SET lock_until = ? WHERE name = ?")
         ) {
-            statement.setTimestamp(1, Timestamp.from(Instant.now()));
+            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getUnlockTime()));
             statement.setString(2, lockConfiguration.getName());
             statement.executeUpdate();
         } catch (SQLException e) {

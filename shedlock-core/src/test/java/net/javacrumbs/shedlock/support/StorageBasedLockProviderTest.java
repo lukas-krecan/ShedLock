@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 public class StorageBasedLockProviderTest {
     private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plus(5, ChronoUnit.MINUTES));
-    public static final LockException LOCK_EXCEPTION = new LockException("Test");
+    private static final LockException LOCK_EXCEPTION = new LockException("Test");
 
     private StorageAccessor storageAccessor = mock(StorageAccessor.class);
 
