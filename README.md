@@ -60,11 +60,11 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 ...
-private static final FOURTEEN_MINUTES = 14 * 60 * 1000;
+private static final FOURTEEN_MIN = 14 * 60 * 1000;
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
-@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = FOURTEEN_MINUTES, lockAtLeastFor = FOURTEEN_MINUTES)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = FOURTEEN_MIN, lockAtLeastFor = FOURTEEN_MIN)
 public void scheduledTask() {
     // do something
 }
