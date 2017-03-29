@@ -1,15 +1,22 @@
 ShedLock [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 ========
 
-ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once at the same time. It coordinates
-cluster nodes using shared database. If a task is being executed on one node, it acquires a lock which
-prevents execution of the same task from another node (or thread). Please note, that **if one task is already being
-executed on one node, execution on other nodes does not wait, it is simply skipped**. Moreover, if task on one node finishes, it may be executed again (for example due to clock on diferent nodes being out of sync).
+ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once at the same time. 
+If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
+Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
+Moreover, if task on one node finishes, it may be executed again (for example due to clock difference between nodes).
  
 Currently, only Spring scheduled tasks coordinated through Mongo, JDBC database or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
 
 Feedback and pull-requests welcome!
+
+## ShedLock is not a distributed scheduler
+Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
+ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
+executed repeatedly. For example if the task is fetching records from a database, processing them and marking them as processed at the end without
+using transaction. In such case you can execute the task as many times you want as long as they are not executed in parallel.
+
 
 ## Usage
 ### Import project
@@ -215,6 +222,7 @@ public void run() {
 
 
 ##Change log
+
 ## 0.7.0
 * Support for lockAtLeastFor
 
