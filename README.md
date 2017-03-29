@@ -248,7 +248,7 @@ public void run() {
 2. slf4j-api
 
 
-##Change log
+## Change log
 
 ## 0.7.0
 * Support for lockAtLeastFor
