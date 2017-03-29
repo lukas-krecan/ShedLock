@@ -14,7 +14,7 @@ Feedback and pull-requests welcome!
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. For example if the task is fetching records from a database, processing them and marking them as processed at the end without
-using transaction. In such case you can execute the task as many times you want as long as they are not executed in parallel.
+using any transaction. In such case ShedLock may be right for you.
 
 
 ## Usage
