@@ -4,7 +4,6 @@ ShedLock [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch
 ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once at the same time. 
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
-Moreover, if task on one node finishes, it may be executed again (for example due to clock difference between nodes).
  
 Currently, only Spring scheduled tasks coordinated through Mongo, JDBC database or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
@@ -45,8 +44,36 @@ public void scheduledTask() {
         
 The `@SchedulerLock` annotation has several purposes. First of all, only annotated methods are locked, the library ignores
 all other scheduled tasks. You also have to specify the name for the lock. Only one tasks with the same name can be executed
-at the same time. Lastly, you can set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
+at the same time. 
+
+You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
 executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
+
+Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept. 
+Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
+
+#### Example 
+Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run. 
+Moreover, you want to execute it at most once per 15 minutes. In such case, you can configure it like this
+
+ ```java
+import net.javacrumbs.shedlock.core.SchedulerLock;
+
+...
+private static final FOURTEEN_MINUTES = 14 * 60 * 1000;
+...
+
+@Scheduled(cron = "0 */15 * * * *")
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = FOURTEEN_MINUTES, lockAtLeastFor = FOURTEEN_MINUTES)
+public void scheduledTask() {
+    // do something
+}
+
+```
+By setting `lockAtMostFor` we make sure that the lock is released even if the node dies and by setting `lockAtLeastFor`
+we make sure it's not executed more than once in fifteen minutes. 
+Please note that if the task takes longer than 15 minutes, it will be executed again.
+
 
 ### Configure the task scheduler
 Now we need to integrate the library into Spring. It's done by wrapping standard Spring task scheduler.  
