@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ScheduledTasks {
-    @Scheduled(cron = "0 */15 * * * *")
+    @Scheduled(fixedRate = 1)
     @SchedulerLock(name = "reportCurrentTime")
     public void reportCurrentTime() {
     }
