@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockableRunnable;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 
@@ -28,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Wraps a all tasks to {@link LockableRunnable} and delegates all calls to a {@link TaskScheduler}.
  */
-public class LockableTaskScheduler implements TaskScheduler {
+public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     private final TaskScheduler taskScheduler;
     private final LockManager lockManager;
 
@@ -69,5 +70,12 @@ public class LockableTaskScheduler implements TaskScheduler {
 
     private Runnable wrap(Runnable task) {
         return new LockableRunnable(task, lockManager);
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (taskScheduler instanceof DisposableBean) {
+            ((DisposableBean) taskScheduler).destroy();
+        }
     }
 }
