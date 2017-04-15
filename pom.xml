@@ -23,7 +23,9 @@
     <modules>
         <module>shedlock-core</module>
         <module>shedlock-spring</module>
+        <module>shedlock-spring-aop</module>
         <module>shedlock-springboot-test</module>
+        <module>shedlock-springboot-aop-test</module>
         <module>shedlock-provider-mongo</module>
         <module>shedlock-test-support</module>
         <module>shedlock-test-support-jdbc</module>
