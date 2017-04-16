@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
@@ -63,8 +64,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
     @Override
     public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
         if (task instanceof ScheduledMethodRunnable) {
-            Method method = ((ScheduledMethodRunnable) task).getMethod();
-            SchedulerLock annotation = AnnotationUtils.findAnnotation(method, SchedulerLock.class);
+            SchedulerLock annotation = findAnnotation((ScheduledMethodRunnable) task);
             if (shouldLock(annotation)) {
                 Instant now = now();
                 return Optional.of(new LockConfiguration(annotation.name(), now.plus(getLockAtMostFor(annotation)), now.plus(getLockAtLeastFor(annotation))));
@@ -73,6 +73,27 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             logger.debug("Unknown task type " + task);
         }
         return Optional.empty();
+    }
+
+    SchedulerLock findAnnotation(ScheduledMethodRunnable task) {
+        Method method = task.getMethod();
+        SchedulerLock annotation = AnnotationUtils.findAnnotation(method, SchedulerLock.class);
+        if (annotation != null) {
+            return annotation;
+        } else {
+            // Try to find annotation on proxied class
+            Class<?> targetClass = AopUtils.getTargetClass(task.getTarget());
+            if (targetClass != null && !task.getTarget().getClass().equals(targetClass)) {
+                try {
+                    Method methodOnTarget = targetClass.getMethod(method.getName(), method.getParameterTypes());
+                    return AnnotationUtils.findAnnotation(methodOnTarget, SchedulerLock.class);
+                } catch (NoSuchMethodException e) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
     }
 
     TemporalAmount getLockAtMostFor(SchedulerLock annotation) {

@@ -17,8 +17,11 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
+import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
+import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
 import org.junit.Test;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
 import java.time.Duration;
@@ -81,8 +84,25 @@ public class SpringLockConfigurationExtractorTest {
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
     }
 
+    @Test
+    public void shouldFindAnnotationOnDynamicProxy() throws NoSuchMethodException {
+        doTestfindAnnotationOnProxy(DynamicProxyConfig.class);
+    }
+
+    @Test
+    public void shouldFindAnnotationOnSubclassProxy() throws NoSuchMethodException {
+        doTestfindAnnotationOnProxy(SubclassProxyConfig.class);
+    }
+
+    private void doTestfindAnnotationOnProxy(Class<?> config) throws NoSuchMethodException {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(config)) {
+            BeanInterface bean = context.getBean(BeanInterface.class);
+            assertThat(extractor.findAnnotation(new ScheduledMethodRunnable(bean, "method"))).isNotNull();
+        }
+    }
+
     protected SchedulerLock getAnnotation(String method) throws NoSuchMethodException {
-        return AnnotationUtils.findAnnotation(getClass().getMethod(method), SchedulerLock.class);
+        return extractor.findAnnotation(new ScheduledMethodRunnable(this, method));
     }
 
     public void methodWithoutAnnotation() {
