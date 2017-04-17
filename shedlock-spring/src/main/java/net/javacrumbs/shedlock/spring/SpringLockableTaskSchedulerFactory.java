@@ -24,7 +24,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.time.temporal.TemporalAmount;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
+import static net.javacrumbs.shedlock.core.ScheduledLockConfigurer.DEFAULT_LOCK_AT_MOST_FOR;
+
 
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler.

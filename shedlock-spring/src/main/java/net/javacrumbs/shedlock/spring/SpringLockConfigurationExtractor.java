@@ -17,8 +17,8 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
+import net.javacrumbs.shedlock.core.ScheduledLockConfigurer;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import net.javacrumbs.shedlock.core.ShedLockConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -27,9 +27,10 @@ import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
+
+import static net.javacrumbs.shedlock.core.ScheduledLockConfigurer.DEFAULT_LOCK_AT_MOST_FOR;
 
 /**
  * Extracts configuration form Spring scheduled task. Is able to extract information from
@@ -38,11 +39,10 @@ import java.util.Optional;
  * </ol>
  */
 public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
-    static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
 
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
-    private final ShedLockConfiguration shedLockConfiguration;
+    private final ScheduledLockConfigurer scheduledLockConfigurer;
 
     public SpringLockConfigurationExtractor() {
         this(DEFAULT_LOCK_AT_MOST_FOR);
@@ -53,7 +53,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
     }
 
     public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor, Duration defaultLockAtLeastFor) {
-        shedLockConfiguration = new ShedLockConfiguration(defaultLockAtMostFor, defaultLockAtLeastFor);
+        scheduledLockConfigurer = new ScheduledLockConfigurer(defaultLockAtMostFor, defaultLockAtLeastFor);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         if (task instanceof ScheduledMethodRunnable) {
             SchedulerLock annotation = findAnnotation((ScheduledMethodRunnable) task);
             if (shouldLock(annotation)) {
-                return Optional.of(shedLockConfiguration.getLockConfiguration(annotation));
+                return Optional.of(scheduledLockConfigurer.getLockConfiguration(annotation));
             }
         } else {
             logger.debug("Unknown task type " + task);

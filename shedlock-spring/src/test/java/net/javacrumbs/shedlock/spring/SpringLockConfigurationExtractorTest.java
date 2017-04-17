@@ -26,7 +26,6 @@ import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 import static java.time.Instant.now;
@@ -57,34 +56,6 @@ public class SpringLockConfigurationExtractorTest {
     }
 
     @Test
-    public void shouldLockForDefaultTimeIfNoAnnotation() throws NoSuchMethodException {
-        SchedulerLock annotation = getAnnotation("annotatedMethodWithoutLockAtMostFor");
-        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
-        assertThat(lockAtMostFor).isEqualTo(DEFAULT_LOCK_TIME);
-    }
-
-    @Test
-    public void shouldLockTimeFromAnnotation() throws NoSuchMethodException {
-        SchedulerLock annotation = getAnnotation("annotatedMethod");
-        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
-        assertThat(lockAtMostFor).isEqualTo(Duration.of(10, MILLIS));
-    }
-
-    @Test
-    public void shouldGetZeroGracePeriodFromAnnotation() throws NoSuchMethodException {
-        SchedulerLock annotation = getAnnotation("annotatedMethodWithZeroGracePeriod");
-        TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
-        assertThat(gracePeriod).isEqualTo(Duration.ZERO);
-    }
-
-    @Test
-    public void shouldGetPositiveGracePeriodFromAnnotation() throws NoSuchMethodException {
-        SchedulerLock annotation = getAnnotation("annotatedMethodWithPositiveGracePeriod");
-        TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
-        assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
-    }
-
-    @Test
     public void shouldFindAnnotationOnDynamicProxy() throws NoSuchMethodException {
         doTestfindAnnotationOnProxy(DynamicProxyConfig.class);
     }
@@ -101,9 +72,6 @@ public class SpringLockConfigurationExtractorTest {
         }
     }
 
-    protected SchedulerLock getAnnotation(String method) throws NoSuchMethodException {
-        return extractor.findAnnotation(new ScheduledMethodRunnable(this, method));
-    }
 
     public void methodWithoutAnnotation() {
 
@@ -111,21 +79,6 @@ public class SpringLockConfigurationExtractorTest {
 
     @SchedulerLock(name = "lockName", lockAtMostFor = 10)
     public void annotatedMethod() {
-
-    }
-
-    @SchedulerLock(name = "lockName")
-    public void annotatedMethodWithoutLockAtMostFor() {
-
-    }
-
-    @SchedulerLock(name = "lockName", lockAtLeastFor = 0)
-    public void annotatedMethodWithZeroGracePeriod() {
-
-    }
-
-    @SchedulerLock(name = "lockName", lockAtLeastFor = 10)
-    public void annotatedMethodWithPositiveGracePeriod() {
 
     }
 }

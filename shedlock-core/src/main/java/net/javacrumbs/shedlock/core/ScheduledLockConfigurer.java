@@ -17,27 +17,30 @@ package net.javacrumbs.shedlock.core;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
-public class ShedLockConfiguration {
+public class ScheduledLockConfigurer {
+    public static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
+
     private final TemporalAmount defaultLockAtMostFor;
     private final TemporalAmount defaultLockAtLeastFor;
 
-    public ShedLockConfiguration(TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
+    public ScheduledLockConfigurer(TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
     }
 
-    private TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
+    TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
         long valueFromAnnotation = annotation.lockAtMostFor();
         return valueFromAnnotation >= 0 ? Duration.of(valueFromAnnotation, MILLIS) : defaultLockAtMostFor;
     }
 
-    private TemporalAmount getLockAtLeastFor(SchedulerLock annotation) {
+    TemporalAmount getLockAtLeastFor(SchedulerLock annotation) {
         long valueFromAnnotation = annotation.lockAtLeastFor();
         return valueFromAnnotation >= 0 ? Duration.of(valueFromAnnotation, MILLIS) : defaultLockAtLeastFor;
     }
