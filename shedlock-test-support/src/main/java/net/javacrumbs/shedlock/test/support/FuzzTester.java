@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Increments counter from several threads coordinating using lock provided under test.
  */
-class FuzzTester {
+public class FuzzTester {
 
     private static final int THREADS = 8;
     private static final int ITERATIONS = 100;
@@ -46,11 +46,11 @@ class FuzzTester {
     private int counter;
     private final LockConfiguration config = new LockConfiguration("lock", Instant.now().plus(5, ChronoUnit.MINUTES));
 
-    FuzzTester(LockProvider lockProvider) {
+    public FuzzTester(LockProvider lockProvider) {
         this.lockProvider = lockProvider;
     }
 
-    void doFuzzTest() throws InterruptedException, ExecutionException {
+    public void doFuzzTest() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
 
         List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) this::task).collect(toList());
@@ -65,7 +65,7 @@ class FuzzTester {
         }
     }
 
-    private Void task() {
+    protected Void task() {
         for (int i = 0; i < ITERATIONS; ) {
             Optional<SimpleLock> lock = lockProvider.lock(config);
             if (lock.isPresent()) {

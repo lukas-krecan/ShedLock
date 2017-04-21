@@ -20,6 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -64,5 +65,9 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractLo
 
     private Date now() {
         return new Date();
+    }
+
+    protected DataSource getDatasource() {
+        return testUtils.getDatasource();
     }
 }
