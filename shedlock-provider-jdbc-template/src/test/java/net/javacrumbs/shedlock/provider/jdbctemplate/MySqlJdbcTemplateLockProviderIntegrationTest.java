@@ -17,10 +17,18 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractMySqlJdbcLockProviderIntegrationTest;
+import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
 
 public class MySqlJdbcTemplateLockProviderIntegrationTest extends AbstractMySqlJdbcLockProviderIntegrationTest {
     @Override
     protected LockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(testUtils.getDatasource());
+        return new JdbcTemplateLockProvider(getDatasource());
+    }
+
+    @Test
+    public void fuzzTestShouldWorkWithTransaction() throws ExecutionException, InterruptedException {
+        TransactionalFuzzTest.fuzzTestShouldWorkWithTransaction(getLockProvider(), getDatasource());
     }
 }

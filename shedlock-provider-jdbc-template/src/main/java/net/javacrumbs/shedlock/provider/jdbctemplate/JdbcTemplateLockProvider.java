@@ -20,6 +20,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.logging.Logger;
 
 /**
  * Lock provided by JdbcTemplate. It uses a table that contains lock_name and locked_until.
@@ -49,10 +54,68 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
     }
 
     public JdbcTemplateLockProvider(DataSource datasource, String tableName) {
-        this(new NamedParameterJdbcTemplate(datasource), tableName);
+        this(new NamedParameterJdbcTemplate(new WrappingDataSource(datasource)), tableName);
     }
 
-    public JdbcTemplateLockProvider(NamedParameterJdbcOperations jdbcTemplate, String tableName) {
+    private JdbcTemplateLockProvider(NamedParameterJdbcOperations jdbcTemplate, String tableName) {
         super(new JdbcTemplateStorageAccessor(jdbcTemplate, tableName));
+    }
+
+    /**
+     * ShedLock relies on atomic JDBC operations and thus should not participate in a underlying transaction.
+     * By using different data source the transaction thread-local does not match and thus the JdbcTemplate
+     * does not use transaction.
+     */
+    private static class WrappingDataSource implements DataSource {
+        private final DataSource dataSource;
+
+        private WrappingDataSource(DataSource dataSource) {
+            this.dataSource = dataSource;
+        }
+
+        @Override
+        public Connection getConnection() throws SQLException {
+            return dataSource.getConnection();
+        }
+
+        @Override
+        public Connection getConnection(String username, String password) throws SQLException {
+            return dataSource.getConnection(username, password);
+        }
+
+        @Override
+        public PrintWriter getLogWriter() throws SQLException {
+            return dataSource.getLogWriter();
+        }
+
+        @Override
+        public void setLogWriter(PrintWriter out) throws SQLException {
+            dataSource.setLogWriter(out);
+        }
+
+        @Override
+        public void setLoginTimeout(int seconds) throws SQLException {
+            dataSource.setLoginTimeout(seconds);
+        }
+
+        @Override
+        public int getLoginTimeout() throws SQLException {
+            return dataSource.getLoginTimeout();
+        }
+
+        @Override
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+            return dataSource.getParentLogger();
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> iface) throws SQLException {
+            return dataSource.unwrap(iface);
+        }
+
+        @Override
+        public boolean isWrapperFor(Class<?> iface) throws SQLException {
+            return dataSource.isWrapperFor(iface);
+        }
     }
 }
