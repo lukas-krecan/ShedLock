@@ -26,4 +26,8 @@
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
+
+    <logger name="org.apache.zookeeper.server.PrepRequestProcessor" level="WARN">
+        <appender-ref ref="STDOUT"/>
+    </logger>
 </configuration>

@@ -20,10 +20,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,7 +64,16 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractLo
         shouldCreateLock();
     }
 
+    @Test
+    public void fuzzTestShouldWorkWithTransaction() throws ExecutionException, InterruptedException {
+        TransactionalFuzzTester.fuzzTestShouldWorkWithTransaction(getLockProvider(), getDatasource());
+    }
+
     private Date now() {
         return new Date();
+    }
+
+    protected DataSource getDatasource() {
+        return testUtils.getDatasource();
     }
 }

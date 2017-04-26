@@ -18,6 +18,8 @@ package net.javacrumbs.shedlock.test.support;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -36,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Increments counter from several threads coordinating using lock provided under test.
  */
-class FuzzTester {
+public class FuzzTester {
 
     private static final int THREADS = 8;
     private static final int ITERATIONS = 100;
@@ -46,11 +48,13 @@ class FuzzTester {
     private int counter;
     private final LockConfiguration config = new LockConfiguration("lock", Instant.now().plus(5, ChronoUnit.MINUTES));
 
-    FuzzTester(LockProvider lockProvider) {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public FuzzTester(LockProvider lockProvider) {
         this.lockProvider = lockProvider;
     }
 
-    void doFuzzTest() throws InterruptedException, ExecutionException {
+    public void doFuzzTest() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
 
         List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) this::task).collect(toList());
@@ -65,18 +69,29 @@ class FuzzTester {
         }
     }
 
-    private Void task() {
-        for (int i = 0; i < ITERATIONS; ) {
-            Optional<SimpleLock> lock = lockProvider.lock(config);
-            if (lock.isPresent()) {
-                int n = counter;
-                sleep();
-                counter = n + 1;
-                i++;
-                lock.get().unlock();
+    protected Void task() {
+        try {
+            for (int i = 0; i < ITERATIONS; ) {
+                Optional<SimpleLock> lock = lockProvider.lock(config);
+                if (lock.isPresent()) {
+                    int n = counter;
+                    if (shouldLog()) logger.debug("action=getLock value={}", n);
+                    sleep();
+                    if (shouldLog()) logger.debug("action=setCounter value={}", n + 1);
+                    counter = n + 1;
+                    i++;
+                    lock.get().unlock();
+                }
             }
+            return null;
+        } catch (RuntimeException e) {
+            logger.error("Unexpected exception", e);
+            throw e;
         }
-        return null;
+    }
+
+    protected boolean shouldLog() {
+        return false;
     }
 
     private void sleep() {

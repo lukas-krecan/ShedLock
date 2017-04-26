@@ -15,90 +15,47 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import javax.sql.DataSource;
+import java.sql.SQLException;
 
-import static java.util.Objects.requireNonNull;
+/**
+ * Spring JdbcTemplate based implementation which at the end does not use much from JdbcTemplate except
+ * exception translator. The reason is that we rely on atomic JDBC operations and thus do not want to
+ * participate in transactions. It's not easy to not use transactions with JdbcTemplate and since we were using
+ * only exception translation, it makes sense to skip JdbcTemplate completely.
+ */
+class JdbcTemplateStorageAccessor extends AbstractJdbcStorageAccessor {
+    private final SQLExceptionTranslator exceptionTranslator;
 
-class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
-    private final Logger logger = LoggerFactory.getLogger(JdbcTemplateStorageAccessor.class);
-
-    private final NamedParameterJdbcOperations jdbcTemplate;
-    private final String tableName;
-
-    JdbcTemplateStorageAccessor(NamedParameterJdbcOperations jdbcTemplate, String tableName) {
-        this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
-        this.tableName = requireNonNull(tableName, "tableName can not be null");
+    JdbcTemplateStorageAccessor(DataSource dataSource, String tableName) {
+        super(dataSource, tableName);
+        this.exceptionTranslator = new SQLErrorCodeSQLExceptionTranslator(dataSource);
     }
 
-
     @Override
-    public boolean insertRecord(LockConfiguration lockConfiguration) {
-        try {
-            // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
-            Map<String, Object> params = createParams(lockConfiguration);
-            logger.trace("Trying to insert lock record {}", params);
-            int insertedRows = jdbcTemplate.update(getInsertStatement(), params);
-            if (insertedRows > 0) {
-                logger.trace("Lock record inserted");
-                return true;
-            }
-        } catch (DataIntegrityViolationException e) {
+    protected void handleInsertionException(String sql, SQLException e) {
+        DataAccessException translatedException = exceptionTranslator.translate("InsertLock", sql, e);
+        if (translatedException instanceof DataIntegrityViolationException) {
             // lock record already exists
             // DuplicateKeyException is not enough for Vertica
+        } else {
+            throw translatedException;
         }
-        logger.trace("Lock record not inserted");
-        return false;
     }
 
     @Override
-    public boolean updateRecord(LockConfiguration lockConfiguration) {
-        Map<String, Object> params = createParams(lockConfiguration);
-        logger.trace("Trying to update lock record {}", params);
-        int updatedRows = jdbcTemplate.update(getUpdateStatement(), params);
-        boolean updated = updatedRows > 0;
-        logger.trace("Lock record updated={}", updated);
-        return updated;
+    protected void handleUpdateException(String sql, SQLException e) {
+        throw exceptionTranslator.translate("UpdateLock", sql, e);
     }
 
     @Override
-    public void unlock(LockConfiguration lockConfiguration) {
-        Instant now = Instant.now();
-        Map<String, Object> params = new HashMap<>();
-        params.put("lockName", lockConfiguration.getName());
-        params.put("unlockTime", Date.from(lockConfiguration.getUnlockTime()));
-        jdbcTemplate.update(getUnlockStatement(), params);
-    }
-
-    protected Map<String, Object> createParams(LockConfiguration lockConfiguration) {
-        Instant now = Instant.now();
-        Map<String, Object> params = new HashMap<>();
-        params.put("lockName", lockConfiguration.getName());
-        params.put("lockUntil", Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-        params.put("now", Timestamp.from(now));
-        params.put("lockedBy", getHostname());
-        return params;
-    }
-
-    protected String getInsertStatement() {
-        return "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(:lockName, :lockUntil, :now, :lockedBy)";
-    }
-
-    protected String getUpdateStatement() {
-        return "UPDATE " + tableName + " SET lock_until = :lockUntil, locked_at = :now, locked_by = :lockedBy WHERE name = :lockName AND lock_until <= :now";
-    }
-
-    protected String getUnlockStatement() {
-        return "UPDATE " + tableName + " SET lock_until = :unlockTime WHERE name = :lockName";
+    protected void handleUnlockException(String sql, SQLException e) {
+        throw exceptionTranslator.translate("Unlock", sql, e);
     }
 }
