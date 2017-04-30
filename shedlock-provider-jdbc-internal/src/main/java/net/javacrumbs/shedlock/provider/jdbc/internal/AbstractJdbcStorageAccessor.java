@@ -66,7 +66,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
 
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
+        String sql = "UPDATE " + tableName + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until < ?";
         try (
             Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)
