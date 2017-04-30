@@ -13,9 +13,9 @@ public class TransactionalFuzzTester {
     public static void fuzzTestShouldWorkWithTransaction(LockProvider lockProvider, DataSource dataSource) throws ExecutionException, InterruptedException {
         new FuzzTester(lockProvider) {
             @Override
-            protected Void task() {
+            protected Void task(int iterations) {
                 TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
-                return transactionTemplate.execute(status -> super.task());
+                return transactionTemplate.execute(status -> super.task(iterations));
             }
 
             @Override

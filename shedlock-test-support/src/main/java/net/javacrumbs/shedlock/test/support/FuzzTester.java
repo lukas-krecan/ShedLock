@@ -42,6 +42,7 @@ public class FuzzTester {
 
     private static final int THREADS = 8;
     private static final int ITERATIONS = 100;
+    public static final int SHORT_ITERATION = 10;
 
     private final LockProvider lockProvider;
 
@@ -56,11 +57,13 @@ public class FuzzTester {
 
     public void doFuzzTest() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+        int[] iterations = range(0, THREADS).map(i -> ITERATIONS).toArray();
+        iterations[0] = SHORT_ITERATION; // short task to simulate MySql issues
 
-        List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) this::task).collect(toList());
+        List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) () -> this.task(iterations[i])).collect(toList());
         waitForIt(executor.invokeAll(tasks));
 
-        assertThat(counter).isEqualTo(THREADS * ITERATIONS);
+        assertThat(counter).isEqualTo((THREADS - 1) * ITERATIONS + SHORT_ITERATION);
     }
 
     private void waitForIt(List<Future<Void>> futures) throws InterruptedException, ExecutionException {
@@ -69,20 +72,21 @@ public class FuzzTester {
         }
     }
 
-    protected Void task() {
+    protected Void task(int iterations) {
         try {
-            for (int i = 0; i < ITERATIONS; ) {
+            for (int i = 0; i < iterations; ) {
                 Optional<SimpleLock> lock = lockProvider.lock(config);
                 if (lock.isPresent()) {
                     int n = counter;
-                    if (shouldLog()) logger.debug("action=getLock value={}", n);
+                    if (shouldLog()) logger.debug("action=getLock value={} i={}", n, i);
                     sleep();
-                    if (shouldLog()) logger.debug("action=setCounter value={}", n + 1);
+                    if (shouldLog()) logger.debug("action=setCounter value={} i={}", n + 1, i);
                     counter = n + 1;
                     i++;
                     lock.get().unlock();
                 }
             }
+            logger.debug("action=finished");
             return null;
         } catch (RuntimeException e) {
             logger.error("Unexpected exception", e);
