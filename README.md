@@ -217,6 +217,11 @@ By default, ephemeral nodes for locks will be created under `/shedlock` node.
 If you are using Spring XML config, use this configuration
 
 ```xml
+<!-- lock provider of your choice (jdbc/zookeeper/mongo/whatever) -->
+<bean id="lockProvider" class="net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider">
+    <constructor-arg ref="dataSource"/>
+</bean>
+
 <!-- Wrap the original scheduler -->
 <bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory" factory-method="newLockableTaskScheduler">
     <constructor-arg>
@@ -227,7 +232,7 @@ If you are using Spring XML config, use this configuration
 </bean>
 
 
-<!-- Your task(s) without change -->
+<!-- Your task(s) without change (or annotated with @Scheduled)-->
 <task:scheduled-tasks scheduler="scheduler">
     <task:scheduled ref="task" method="run" fixed-delay="1" fixed-rate="1"/>
 </task:scheduled-tasks>
