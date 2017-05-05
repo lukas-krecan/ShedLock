@@ -75,7 +75,7 @@ public class JedisLockProvider implements LockProvider {
 
         long difference = -1;
         if (mostDiff > 0 && leastDiff > 0) {
-            difference = Math.min(mostDiff, leastDiff);
+            difference = Math.max(mostDiff, leastDiff);
         } else if (mostDiff > 0 && leastDiff <= 0) {
             difference = mostDiff;
         } else if (mostDiff <= 0 && leastDiff > 0) {
