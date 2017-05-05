@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redis;
+package net.javacrumbs.shedlock.provider.jedis;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     private static JedisPool jedisPool;
     private LockProvider lockProvider;
@@ -41,7 +41,7 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @Before
     public void createLockProvider() {
         jedisPool = new JedisPool(new JedisPoolConfig(), "localhost");
-        lockProvider = new RedisLockProvider(jedisPool);
+        lockProvider = new JedisLockProvider(jedisPool);
     }
 
     @Override
@@ -52,14 +52,14 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @Override
     protected void assertUnlocked(String lockName) {
         try (Jedis jedis = jedisPool.getResource()) {
-            Assert.assertNull(jedis.get(RedisLockProvider.buildKey(lockName)));
+            Assert.assertNull(jedis.get(JedisLockProvider.buildKey(lockName)));
         }
     }
 
     @Override
     protected void assertLocked(String lockName) {
         try (Jedis jedis = jedisPool.getResource()) {
-            Assert.assertNotNull(jedis.get(RedisLockProvider.buildKey(lockName)));
+            Assert.assertNotNull(jedis.get(JedisLockProvider.buildKey(lockName)));
         }
     }
 

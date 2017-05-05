@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redis;
+package net.javacrumbs.shedlock.provider.jedis;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -28,7 +28,7 @@ import java.util.Optional;
 /**
  * Uses Redis as locking mechanism.
  */
-public class RedisLockProvider implements LockProvider {
+public class JedisLockProvider implements LockProvider {
 
     private static final String keyPrefix = "job-lock:";
 
@@ -38,7 +38,7 @@ public class RedisLockProvider implements LockProvider {
         return keyPrefix + lockName;
     }
 
-    public RedisLockProvider(JedisPool jedisPool) {
+    public JedisLockProvider(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
     }
 
