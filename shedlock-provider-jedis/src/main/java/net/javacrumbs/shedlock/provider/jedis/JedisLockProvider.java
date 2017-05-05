@@ -22,24 +22,35 @@ import net.javacrumbs.shedlock.support.LockException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.Optional;
 
 /**
- * Uses Redis as locking mechanism.
+ * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
+ *
+ * See https://redis.io/commands/set
+ *
  */
 public class JedisLockProvider implements LockProvider {
 
     private static final String keyPrefix = "job-lock:";
 
     private JedisPool jedisPool;
+    private String lockValue;
 
     static String buildKey(String lockName) {
         return keyPrefix + lockName;
     }
 
-    public JedisLockProvider(JedisPool jedisPool) {
+    static String buildValue(String lockValue) {
+        return "\'" + Instant.now().toString() + "\'-" + lockValue + "-" + getHostname();
+    }
+
+    public JedisLockProvider(JedisPool jedisPool, String lockValue) {
         this.jedisPool = jedisPool;
+        this.lockValue = lockValue;
     }
 
     @Override
@@ -48,7 +59,7 @@ public class JedisLockProvider implements LockProvider {
         if (difference > 0) {
             String key = buildKey(lockConfiguration.getName());
             try (Jedis jedis = jedisPool.getResource()) {
-                String rez = jedis.set(key, "value", "NX", "PX", difference);
+                String rez = jedis.set(key, buildValue(lockValue), "NX", "PX", difference);
                 if (rez != null && "OK".equals(rez)) {
                     return Optional.of(new RedisLock(key, jedisPool));
                 }
@@ -89,6 +100,14 @@ public class JedisLockProvider implements LockProvider {
             } catch (Exception e) {
                 throw new LockException("Can not remove node", e);
             }
+        }
+    }
+
+    protected static String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return "unknown host";
         }
     }
 }
