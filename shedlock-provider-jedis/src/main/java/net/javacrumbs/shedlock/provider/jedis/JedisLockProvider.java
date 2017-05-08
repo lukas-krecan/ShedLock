@@ -1,12 +1,12 @@
 /**
  * Copyright 2009-2017 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 public class JedisLockProvider implements LockProvider {
 
-    private static final String keyPrefix = "job-lock:";
+    private static final String keyPrefix = "job-lock";
 
     private static final String DEFAULT_ENV = "default";
 
@@ -87,13 +87,13 @@ public class JedisLockProvider implements LockProvider {
         private final JedisPool jedisPool;
 
         private RedisLock(String key, JedisPool jedisPool) {
-            this.key= key;
+            this.key = key;
             this.jedisPool = jedisPool;
         }
 
         @Override
         public void unlock() {
-            try (Jedis jedis = jedisPool.getResource()){
+            try (Jedis jedis = jedisPool.getResource()) {
                 jedis.del(key);
             } catch (Exception e) {
                 throw new LockException("Can not remove node", e);
@@ -110,10 +110,10 @@ public class JedisLockProvider implements LockProvider {
     }
 
     public static String buildKey(String lockName, String env) {
-        return keyPrefix + env + ":" + lockName;
+        return String.format("%s:%s:%s", keyPrefix, env, lockName);
     }
 
     static String buildValue() {
-        return "ADDED:" + Instant.now().toString() + "@" + getHostname();
+        return String.format("ADDED:%s@%s", Instant.now().toString(),getHostname());
     }
 }
