@@ -77,30 +77,4 @@ public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
         configWithShortTimeout = lockConfig(LOCK_NAME1, 2, Duration.ZERO);
         assertUnlocked(configWithShortTimeout.getName());
     }
-
-    @Override
-    public void shouldLockAtLeastFor() throws InterruptedException {
-        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
-        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithGracePeriod);
-        assertThat(lock1).isNotEmpty();
-
-        // can not acquire lock, grace period did not pass yet
-        Optional<SimpleLock> lock2 = getLockProvider().lock(configWithGracePeriod);
-        assertThat(lock2).isEmpty();
-
-        // can not acquire lock, grace period did not pass yet
-        configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
-        Optional<SimpleLock> lock3 = getLockProvider().lock(configWithGracePeriod);
-        assertThat(lock3).isEmpty();
-
-        sleep(LOCK_AT_LEAST_FOR.toMillis());
-        // Get with updated timeout
-        configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
-        Optional<SimpleLock> lock4 = getLockProvider().lock(configWithGracePeriod);
-        assertThat(lock4).isNotEmpty();
-        lock4.get().unlock();
-
-        // clean up for next test
-        lock1.get().unlock();
-    }
 }
