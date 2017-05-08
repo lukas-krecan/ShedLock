@@ -43,7 +43,7 @@ public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @Before
     public void createLockProvider() {
         jedisPool = new JedisPool(HOST, PORT);
-        lockProvider = new JedisLockProvider(jedisPool, "test");
+        lockProvider = new JedisLockProvider(jedisPool, ENV);
     }
 
     @Override
