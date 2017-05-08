@@ -24,7 +24,9 @@ import redis.clients.jedis.JedisPool;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 /**
@@ -35,68 +37,80 @@ import java.util.Optional;
  */
 public class JedisLockProvider implements LockProvider {
 
-    private static final String keyPrefix = "job-lock";
+    private static final String KEY_PREFIX = "job-lock";
+    private static final String ENV_DEFAULT = "default";
 
-    private static final String DEFAULT_ENV = "default";
+    private static final long AT_MOST_HOURS_DEFAULT = 1;
+
+    // Redis Flags
+    private static final String SET_IF_NOT_EXIST = "NX";
+    private static final String SET_EXPIRE_TIME_IN_MS = "PX";
 
     private JedisPool jedisPool;
     private String environment;
+    private Duration atMostHoursDefault;
 
     public JedisLockProvider(JedisPool jedisPool) {
-        this(jedisPool, DEFAULT_ENV);
+        this(jedisPool, ENV_DEFAULT, AT_MOST_HOURS_DEFAULT);
     }
 
     public JedisLockProvider(JedisPool jedisPool, String environment) {
+        this(jedisPool, environment, AT_MOST_HOURS_DEFAULT);
+    }
+
+    public JedisLockProvider(JedisPool jedisPool, String environment, long atMostHoursDefault) {
         this.jedisPool = jedisPool;
         this.environment = environment;
+        this.atMostHoursDefault = Duration.of(atMostHoursDefault, ChronoUnit.HOURS);
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        long difference = getDifference(lockConfiguration);
-        if (difference > 0) {
-            String key = buildKey(lockConfiguration.getName(), this.environment);
-            try (Jedis jedis = jedisPool.getResource()) {
-                String rez = jedis.set(key, buildValue(), "NX", "PX", difference);
-                if (rez != null && "OK".equals(rez)) {
-                    return Optional.of(new RedisLock(key, jedisPool));
-                }
+        Instant now = Instant.now();
+
+        // Get 'furthest out' configured expire time for lock TTL
+        long expireTime = Math.max(
+            Duration.between(now, lockConfiguration.getLockAtMostUntil()).toMillis(),
+            Duration.between(now, lockConfiguration.getLockAtLeastUntil()).toMillis());
+
+        String key = buildKey(lockConfiguration.getName(), this.environment);
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            String rez = jedis.set(key,
+                    buildValue(),
+                    SET_IF_NOT_EXIST,
+                    SET_EXPIRE_TIME_IN_MS,
+                    expireTime < 0 ? atMostHoursDefault.toMillis() : expireTime); // And if not set, use default
+
+            if (rez != null && "OK".equals(rez)) {
+                return Optional.of(new RedisLock(key, jedisPool, lockConfiguration));
             }
         }
         return Optional.empty();
     }
 
-    long getDifference(LockConfiguration lockConfiguration) {
-        long now = Instant.now().toEpochMilli();
-        long mostDiff = lockConfiguration.getLockAtMostUntil().toEpochMilli() - now;
-        long leastDiff = lockConfiguration.getLockAtLeastUntil().toEpochMilli() - now;
-
-        long difference = -1;
-        if (mostDiff > 0 && leastDiff > 0) {
-            difference = Math.max(mostDiff, leastDiff);
-        } else if (mostDiff > 0 && leastDiff <= 0) {
-            difference = mostDiff;
-        } else if (mostDiff <= 0 && leastDiff > 0) {
-            difference = leastDiff;
-        }
-        return difference;
-    }
-
     private static final class RedisLock implements SimpleLock {
         private final String key;
         private final JedisPool jedisPool;
+        private final LockConfiguration lockConfiguration;
 
-        private RedisLock(String key, JedisPool jedisPool) {
+        private RedisLock(String key, JedisPool jedisPool, LockConfiguration lockConfiguration) {
             this.key = key;
             this.jedisPool = jedisPool;
+            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
         public void unlock() {
-            try (Jedis jedis = jedisPool.getResource()) {
-                jedis.del(key);
-            } catch (Exception e) {
-                throw new LockException("Can not remove node", e);
+            Instant now = Instant.now();
+            Instant atLeastUntil = lockConfiguration.getLockAtLeastUntil();
+
+            if (now.equals(atLeastUntil) || now.isAfter(atLeastUntil)) {
+                try (Jedis jedis = jedisPool.getResource()) {
+                    jedis.del(key);
+                } catch (Exception e) {
+                    throw new LockException("Can not remove node", e);
+                }
             }
         }
     }
@@ -110,7 +124,7 @@ public class JedisLockProvider implements LockProvider {
     }
 
     public static String buildKey(String lockName, String env) {
-        return String.format("%s:%s:%s", keyPrefix, env, lockName);
+        return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
     }
 
     static String buildValue() {
