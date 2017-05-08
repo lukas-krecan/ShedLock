@@ -37,10 +37,12 @@ public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     private LockProvider lockProvider;
 
     private final static int PORT = 6379;
+    private final static String HOST = "localhost";
+    private final static String ENV = "test";
 
     @Before
     public void createLockProvider() {
-        jedisPool = new JedisPool(new JedisPoolConfig(), "localhost");
+        jedisPool = new JedisPool(HOST, PORT);
         lockProvider = new JedisLockProvider(jedisPool, "test");
     }
 
@@ -52,14 +54,14 @@ public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @Override
     protected void assertUnlocked(String lockName) {
         try (Jedis jedis = jedisPool.getResource()) {
-            Assert.assertNull(jedis.get(JedisLockProvider.buildKey(lockName)));
+            Assert.assertNull(jedis.get(JedisLockProvider.buildKey(lockName, ENV)));
         }
     }
 
     @Override
     protected void assertLocked(String lockName) {
         try (Jedis jedis = jedisPool.getResource()) {
-            Assert.assertNotNull(jedis.get(JedisLockProvider.buildKey(lockName)));
+            Assert.assertNotNull(jedis.get(JedisLockProvider.buildKey(lockName, ENV)));
         }
     }
 

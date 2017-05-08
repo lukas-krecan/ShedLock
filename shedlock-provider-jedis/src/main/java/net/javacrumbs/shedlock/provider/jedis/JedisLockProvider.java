@@ -37,29 +37,27 @@ public class JedisLockProvider implements LockProvider {
 
     private static final String keyPrefix = "job-lock:";
 
+    private static final String DEFAULT_ENV = "default";
+
     private JedisPool jedisPool;
-    private String lockValue;
+    private String environment;
 
-    static String buildKey(String lockName) {
-        return keyPrefix + lockName;
+    public JedisLockProvider(JedisPool jedisPool) {
+        this(jedisPool, DEFAULT_ENV);
     }
 
-    static String buildValue(String lockValue) {
-        return "\'" + Instant.now().toString() + "\'-" + lockValue + "-" + getHostname();
-    }
-
-    public JedisLockProvider(JedisPool jedisPool, String lockValue) {
+    public JedisLockProvider(JedisPool jedisPool, String environment) {
         this.jedisPool = jedisPool;
-        this.lockValue = lockValue;
+        this.environment = environment;
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         long difference = getDifference(lockConfiguration);
         if (difference > 0) {
-            String key = buildKey(lockConfiguration.getName());
+            String key = buildKey(lockConfiguration.getName(), this.environment);
             try (Jedis jedis = jedisPool.getResource()) {
-                String rez = jedis.set(key, buildValue(lockValue), "NX", "PX", difference);
+                String rez = jedis.set(key, buildValue(), "NX", "PX", difference);
                 if (rez != null && "OK".equals(rez)) {
                     return Optional.of(new RedisLock(key, jedisPool));
                 }
@@ -109,5 +107,13 @@ public class JedisLockProvider implements LockProvider {
         } catch (UnknownHostException e) {
             return "unknown host";
         }
+    }
+
+    public static String buildKey(String lockName, String env) {
+        return keyPrefix + env + ":" + lockName;
+    }
+
+    static String buildValue() {
+        return "ADDED:" + Instant.now().toString() + "@" + getHostname();
     }
 }
