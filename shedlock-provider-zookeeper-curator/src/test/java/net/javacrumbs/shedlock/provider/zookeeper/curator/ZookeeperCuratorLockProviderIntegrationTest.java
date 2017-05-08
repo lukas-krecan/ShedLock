@@ -82,8 +82,8 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
     @Test
     @Override
     public void shouldLockAtLeastFor() throws InterruptedException {
-        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
-        assertThatThrownBy(() -> getLockProvider().lock(configWithGracePeriod)).isInstanceOf(UnsupportedOperationException.class);
+        LockConfiguration configWithAtLeastFor = lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR, LOCK_AT_LEAST_FOR);
+        assertThatThrownBy(() -> getLockProvider().lock(configWithAtLeastFor)).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Override

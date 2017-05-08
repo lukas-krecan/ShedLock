@@ -24,15 +24,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.sleep;
-import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
     protected static final String LOCK_NAME1 = "name";
-    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(1000, MILLIS);
+    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(5, SECONDS);
 
     protected abstract LockProvider getLockProvider();
 
@@ -85,7 +85,7 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, 2, Duration.ZERO);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
@@ -114,7 +114,7 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockAtLeastFor() throws InterruptedException {
-        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
+        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR, LOCK_AT_LEAST_FOR);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithGracePeriod);
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
@@ -131,12 +131,12 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     protected static LockConfiguration lockConfig(String name) {
-        return lockConfig(name, TimeUnit.MINUTES.toMillis(5), Duration.ZERO);
+        return lockConfig(name, Duration.of(5, MINUTES), Duration.ZERO);
     }
 
-    protected static LockConfiguration lockConfig(String name, long timeoutMillis, Duration lockAtLeastFor) {
+    protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
         Instant now = Instant.now();
-        return new LockConfiguration(name, now.plus(timeoutMillis, MILLIS), now.plus(lockAtLeastFor));
+        return new LockConfiguration(name, now.plus(lockAtMostFor), now.plus(lockAtLeastFor));
     }
 
 }
