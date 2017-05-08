@@ -10,23 +10,6 @@
     <artifactId>shedlock-provider-jedis</artifactId>
     <version>0.10.1-SNAPSHOT</version>
 
-    <!-- disable tests by default to avoid redis dependancy for now -->
-    <properties>
-        <skipTests>true</skipTests>
-    </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>${skipTests}</skipTests>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
@@ -47,6 +30,13 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.6</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

@@ -19,12 +19,15 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
+import redis.embedded.RedisServer;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -34,11 +37,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     private static JedisPool jedisPool;
+    private static RedisServer redisServer;
     private LockProvider lockProvider;
 
-    private final static int PORT = 6379;
+    private final static int PORT = 6380;
     private final static String HOST = "localhost";
     private final static String ENV = "test";
+
+    @BeforeClass
+    public static void startRedis() throws IOException {
+        redisServer = new RedisServer(PORT);
+        redisServer.start();
+    }
+
+    @AfterClass
+    public static void stopRedis() {
+        redisServer.stop();
+    }
 
     @Before
     public void createLockProvider() {
