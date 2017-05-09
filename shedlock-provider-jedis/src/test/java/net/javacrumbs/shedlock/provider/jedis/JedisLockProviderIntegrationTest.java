@@ -82,14 +82,14 @@ public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
     @Override
     public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, 2, Duration.ZERO);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
         sleep(5);
 
         // Get new config with updated timeout
-        configWithShortTimeout = lockConfig(LOCK_NAME1, 2, Duration.ZERO);
+        configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
         assertUnlocked(configWithShortTimeout.getName());
     }
 }

@@ -26,7 +26,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 /**
@@ -40,38 +39,26 @@ public class JedisLockProvider implements LockProvider {
     private static final String KEY_PREFIX = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
-    private static final long AT_MOST_HOURS_DEFAULT = 1;
-
     // Redis Flags
     private static final String SET_IF_NOT_EXIST = "NX";
+    private static final String SET_IF_EXIST = "XX";
     private static final String SET_EXPIRE_TIME_IN_MS = "PX";
 
     private JedisPool jedisPool;
     private String environment;
-    private Duration atMostHoursDefault;
 
     public JedisLockProvider(JedisPool jedisPool) {
-        this(jedisPool, ENV_DEFAULT, AT_MOST_HOURS_DEFAULT);
+        this(jedisPool, ENV_DEFAULT);
     }
 
     public JedisLockProvider(JedisPool jedisPool, String environment) {
-        this(jedisPool, environment, AT_MOST_HOURS_DEFAULT);
-    }
-
-    public JedisLockProvider(JedisPool jedisPool, String environment, long atMostHoursDefault) {
         this.jedisPool = jedisPool;
         this.environment = environment;
-        this.atMostHoursDefault = Duration.of(atMostHoursDefault, ChronoUnit.HOURS);
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        Instant now = Instant.now();
-
-        // Get 'furthest out' configured expire time for lock TTL
-        long expireTime = Math.max(
-            Duration.between(now, lockConfiguration.getLockAtMostUntil()).toMillis(),
-            Duration.between(now, lockConfiguration.getLockAtLeastUntil()).toMillis());
+        long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), this.environment);
 
@@ -80,7 +67,7 @@ public class JedisLockProvider implements LockProvider {
                     buildValue(),
                     SET_IF_NOT_EXIST,
                     SET_EXPIRE_TIME_IN_MS,
-                    expireTime < 0 ? atMostHoursDefault.toMillis() : expireTime); // And if not set, use default
+                expireTime);
 
             if (rez != null && "OK".equals(rez)) {
                 return Optional.of(new RedisLock(key, jedisPool, lockConfiguration));
@@ -102,20 +89,32 @@ public class JedisLockProvider implements LockProvider {
 
         @Override
         public void unlock() {
-            Instant now = Instant.now();
-            Instant atLeastUntil = lockConfiguration.getLockAtLeastUntil();
+            long keepLockFor = getMsUntil(lockConfiguration.getLockAtLeastUntil());
 
-            if (now.equals(atLeastUntil) || now.isAfter(atLeastUntil)) {
+            // lock at least until is in the past
+            if (keepLockFor <= 0) {
                 try (Jedis jedis = jedisPool.getResource()) {
                     jedis.del(key);
                 } catch (Exception e) {
                     throw new LockException("Can not remove node", e);
                 }
+            } else {
+                try (Jedis jedis = jedisPool.getResource()) {
+                    jedis.set(key,
+                        buildValue(),
+                        SET_IF_EXIST,
+                        SET_EXPIRE_TIME_IN_MS,
+                        keepLockFor);
+                }
             }
         }
     }
 
-    protected static String getHostname() {
+    private static long getMsUntil(Instant instant) {
+        return Duration.between(Instant.now(), instant).toMillis();
+    }
+
+    private static String getHostname() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -123,11 +122,11 @@ public class JedisLockProvider implements LockProvider {
         }
     }
 
-    public static String buildKey(String lockName, String env) {
+    static String buildKey(String lockName, String env) {
         return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
     }
 
-    static String buildValue() {
+    private static String buildValue() {
         return String.format("ADDED:%s@%s", Instant.now().toString(),getHostname());
     }
 }

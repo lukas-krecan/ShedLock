@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
     protected static final String LOCK_NAME1 = "name";
-    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(5, SECONDS);
+    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(2, SECONDS);
 
     protected abstract LockProvider getLockProvider();
 
@@ -114,17 +114,16 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockAtLeastFor() throws InterruptedException {
-        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR, LOCK_AT_LEAST_FOR);
-        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithGracePeriod);
+        Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
 
         // can not acquire lock, grace period did not pass yet
-        Optional<SimpleLock> lock2 = getLockProvider().lock(configWithGracePeriod);
-        assertThat(lock2).isEmpty();
-
+        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).isEmpty();
         sleep(LOCK_AT_LEAST_FOR.toMillis());
-        Optional<SimpleLock> lock3 = getLockProvider().lock(configWithGracePeriod);
+
+        // can acquire the lock
+        Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));
         assertThat(lock3).isNotEmpty();
         lock3.get().unlock();
 
