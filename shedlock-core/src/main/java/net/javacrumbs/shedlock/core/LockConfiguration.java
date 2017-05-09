@@ -42,6 +42,12 @@ public class LockConfiguration {
         this.name = Objects.requireNonNull(name);
         this.lockAtMostUntil = Objects.requireNonNull(lockUntil);
         this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);
+        if (lockAtLeastUntil.isAfter(lockAtMostUntil)) {
+            throw new IllegalArgumentException("lockAtMost is before lockAtLeast for lock '" + name + "'.");
+        }
+        if (lockAtMostUntil.isBefore(Instant.now())) {
+            throw new IllegalArgumentException("lockAtMost is in the past for lock '" + name + "'.");
+        }
     }
 
     public String getName() {
