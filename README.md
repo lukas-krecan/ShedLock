@@ -5,7 +5,7 @@ ShedLock does one and only thing. It makes sure your scheduled tasks ar executed
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
  
-Currently, only Spring scheduled tasks coordinated through Mongo, JDBC database or ZooKeeper are supported. More
+Currently, Spring scheduled tasks coordinated through Mongo, JDBC database, Redis or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
 
 Feedback and pull-requests welcome!
@@ -24,7 +24,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
 </dependency>
 ```
 
@@ -148,7 +148,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
 </dependency>
 ```
 
@@ -174,7 +174,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
 </dependency>
 ```
 
@@ -198,7 +198,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.10.0</version>
+    <version>0.11.0</version>
 </dependency>
 ```
 
@@ -211,6 +211,25 @@ public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework c
 }
 ```
 By default, ephemeral nodes for locks will be created under `/shedlock` node. 
+
+#### Redis (using Jedis)
+Import 
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jedis</artifactId>
+    <version>0.11.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+@Bean
+public LockProvider lockProvider(JedisPool jedisPool) {
+    return new JedisLockProvider(jedisPool, ENV);
+}
+```
 
 ### Spring XML configuration
 
@@ -254,6 +273,13 @@ public void run() {
 
 
 ## Change log
+
+
+## 0.11.0
+* Support for Redis (thanks to @clamey)
+* Checking that lockAtMostFor is in the future
+* Checking that lockAtMostFor is larger than lockAtLeastFor
+
 
 ## 0.10.0
 * jdbc-template-provider does not participate in task transaction 
