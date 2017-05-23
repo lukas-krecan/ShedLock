@@ -102,9 +102,6 @@ public class SpringLockableTaskSchedulerFactory {
     }
 
     public static LockableTaskScheduler newLockableTaskScheduler(int poolSize, LockProvider lockProvider) {
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(poolSize);
-        taskScheduler.initialize();
-        return newLockableTaskScheduler(taskScheduler, lockProvider, (LockConfigurationExtractor)null);
+        return newLockableTaskScheduler(poolSize, lockProvider, (LockConfigurationExtractor)null);
     }
 }
