@@ -71,6 +71,13 @@ public class SpringLockConfigurationExtractorTest {
     }
 
     @Test
+    public void shouldLockTimeFromAnnotationWithString() throws NoSuchMethodException {
+        SchedulerLock annotation = getAnnotation("annotatedMethodWithString");
+        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(lockAtMostFor).isEqualTo(Duration.of(10, MILLIS));
+    }
+
+    @Test
     public void shouldGetZeroGracePeriodFromAnnotation() throws NoSuchMethodException {
         SchedulerLock annotation = getAnnotation("annotatedMethodWithZeroGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
@@ -80,6 +87,13 @@ public class SpringLockConfigurationExtractorTest {
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotation() throws NoSuchMethodException {
         SchedulerLock annotation = getAnnotation("annotatedMethodWithPositiveGracePeriod");
+        TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
+        assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
+    }
+
+    @Test
+    public void shouldGetPositiveGracePeriodFromAnnotationWithString() throws NoSuchMethodException {
+        SchedulerLock annotation = getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
     }
@@ -114,6 +128,11 @@ public class SpringLockConfigurationExtractorTest {
 
     }
 
+    @SchedulerLock(name = "lockName", lockAtMostForString = "10")
+    public void annotatedMethodWithString() {
+
+    }
+
     @SchedulerLock(name = "lockName")
     public void annotatedMethodWithoutLockAtMostFor() {
 
@@ -126,6 +145,11 @@ public class SpringLockConfigurationExtractorTest {
 
     @SchedulerLock(name = "lockName", lockAtLeastFor = 10)
     public void annotatedMethodWithPositiveGracePeriod() {
+
+    }
+
+    @SchedulerLock(name = "lockName", lockAtLeastForString = "10")
+    public void annotatedMethodWithPositiveGracePeriodWithString() {
 
     }
 }
