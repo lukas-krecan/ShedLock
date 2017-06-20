@@ -15,16 +15,18 @@
  */
 package net.javacrumbs.shedlock.spring;
 
-import net.javacrumbs.shedlock.core.DefaultLockManager;
-import net.javacrumbs.shedlock.core.LockProvider;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import static net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
 
 import java.time.temporal.TemporalAmount;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import net.javacrumbs.shedlock.core.DefaultLockManager;
+import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
+import net.javacrumbs.shedlock.core.LockProvider;
 
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler.
@@ -41,6 +43,10 @@ public class SpringLockableTaskSchedulerFactory {
      */
     public static LockableTaskScheduler newLockableTaskScheduler(TaskScheduler taskScheduler, LockProvider lockProvider, TemporalAmount defaultLockAtMostFor) {
         return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor(defaultLockAtMostFor)));
+    }
+
+    public static LockableTaskScheduler newLockableTaskScheduler(TaskScheduler taskScheduler, LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
+        return new LockableTaskScheduler(taskScheduler, new DefaultLockManager(lockProvider, lockConfigurationExtractor));
     }
 
     /**
@@ -83,11 +89,19 @@ public class SpringLockableTaskSchedulerFactory {
      *
      * @param poolSize     size of the thread pool
      * @param lockProvider lock provider to be used
+     * @param lockConfigurationExtractor lock configuration extractor to use.
      */
-    public static LockableTaskScheduler newLockableTaskScheduler(int poolSize, LockProvider lockProvider) {
+    public static LockableTaskScheduler newLockableTaskScheduler(int poolSize, LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.setPoolSize(poolSize);
         taskScheduler.initialize();
-        return newLockableTaskScheduler(taskScheduler, lockProvider);
+        if (lockConfigurationExtractor == null) {
+            return newLockableTaskScheduler(taskScheduler, lockProvider);
+        }
+        return newLockableTaskScheduler(taskScheduler, lockProvider, lockConfigurationExtractor);
+    }
+
+    public static LockableTaskScheduler newLockableTaskScheduler(int poolSize, LockProvider lockProvider) {
+        return newLockableTaskScheduler(poolSize, lockProvider, (LockConfigurationExtractor)null);
     }
 }
