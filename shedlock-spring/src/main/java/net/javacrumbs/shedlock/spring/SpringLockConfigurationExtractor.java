@@ -1,20 +1,31 @@
 /**
  * Copyright 2009-2017 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package net.javacrumbs.shedlock.spring;
 
-import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.MILLIS;
-import static java.util.Objects.requireNonNull;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
+import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.context.EmbeddedValueResolverAware;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.util.StringUtils;
+import org.springframework.util.StringValueResolver;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -23,21 +34,15 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.aop.support.AopUtils;
-import org.springframework.context.EmbeddedValueResolverAware;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.scheduling.support.ScheduledMethodRunnable;
-import org.springframework.util.StringValueResolver;
-
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
-import net.javacrumbs.shedlock.core.SchedulerLock;
+import static java.time.Instant.now;
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.util.Objects.requireNonNull;
 
 /**
- * Extracts configuration form Spring scheduled task. Is able to extract information from <ol> <li>Annotation based
- * scheduler</li> </ol>
+ * Extracts configuration form Spring scheduled task. Is able to extract information from
+ * <ol>
+ * <li>Annotation based scheduler</li>
+ * </ol>
  */
 public class SpringLockConfigurationExtractor
         implements
@@ -112,48 +117,41 @@ public class SpringLockConfigurationExtractor
     }
 
     TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
-        long valueFromAnnotation = annotation.lockAtMostFor();
-        if (valueFromAnnotation < 0) {
-            String lockAtMostForString = annotation.lockAtMostForString();
-            if (lockAtMostForString.length() > 0) {
-                if (this.embeddedValueResolver != null) {
-                    lockAtMostForString = this.embeddedValueResolver
-                        .resolveStringValue(lockAtMostForString);
-                }
-                if (lockAtMostForString != null && lockAtMostForString.length() > 0) {
-                    try {
-                        valueFromAnnotation = Long.valueOf(lockAtMostForString);
-                    } catch (NumberFormatException nfe) {
-                        logger.error("Unparseable lockAtMostFor", nfe);
-                    }
-                }
-            }
-        }
-        return valueFromAnnotation >= 0
-                ? Duration.of(valueFromAnnotation, MILLIS)
-                : defaultLockAtMostFor;
+        return getValue(
+            annotation.lockAtMostFor(),
+            annotation.lockAtMostForString(),
+            this.defaultLockAtMostFor,
+            "lockAtMostForString"
+        );
     }
 
     Duration getLockAtLeastFor(SchedulerLock annotation) {
-        long valueFromAnnotation = annotation.lockAtLeastFor();
-        if (valueFromAnnotation < 0) {
-            String lockAtLeastForString = annotation.lockAtLeastForString();
-            if (this.embeddedValueResolver != null) {
-                lockAtLeastForString = this.embeddedValueResolver
-                    .resolveStringValue(lockAtLeastForString);
-            }
-            if (lockAtLeastForString != null && lockAtLeastForString.length() > 0) {
-                try {
-                    valueFromAnnotation = Long.valueOf(lockAtLeastForString);
-                } catch (NumberFormatException nfe) {
-                    logger.error("Unparseable lockAtLeastFor", nfe);
-                }
-            }
-        }
-        return valueFromAnnotation >= 0
-                ? Duration.of(valueFromAnnotation, MILLIS)
-                : defaultLockAtLeastFor;
+        return getValue(
+            annotation.lockAtLeastFor(),
+            annotation.lockAtLeastForString(),
+            this.defaultLockAtLeastFor,
+            "lockAtLeastForString"
+        );
     }
+
+    private Duration getValue(long valueFromAnnotation, String stringValueFromAnnotation, TemporalAmount defaultValue, final String paramName) {
+        if (valueFromAnnotation >= 0) {
+            return Duration.of(valueFromAnnotation, MILLIS);
+        } else if (StringUtils.hasText(stringValueFromAnnotation)) {
+            if (embeddedValueResolver != null) {
+                stringValueFromAnnotation = embeddedValueResolver.resolveStringValue(stringValueFromAnnotation);
+            }
+            try {
+                return Duration.of(Long.valueOf(stringValueFromAnnotation), MILLIS);
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long");
+            }
+        } else {
+            return Duration.from(defaultValue);
+        }
+    }
+
+
 
     private boolean shouldLock(SchedulerLock annotation) {
         return annotation != null;
