@@ -21,7 +21,6 @@ import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringUtils;
@@ -46,34 +45,40 @@ import static java.util.Objects.requireNonNull;
  */
 public class SpringLockConfigurationExtractor
         implements
-        LockConfigurationExtractor,
-        EmbeddedValueResolverAware {
+    LockConfigurationExtractor {
     static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     private final TemporalAmount defaultLockAtMostFor;
-    private final Duration defaultLockAtLeastFor;
+    private final TemporalAmount defaultLockAtLeastFor;
 
-    private StringValueResolver embeddedValueResolver;
+    private final StringValueResolver embeddedValueResolver;
 
+    @Deprecated
     public SpringLockConfigurationExtractor() {
         this(DEFAULT_LOCK_AT_MOST_FOR);
     }
 
+    @Deprecated
     public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor) {
         this(defaultLockAtMostFor, Duration.ZERO);
     }
 
+    @Deprecated
     public SpringLockConfigurationExtractor(
-            TemporalAmount defaultLockAtMostFor,
-            Duration defaultLockAtLeastFor) {
-        this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
-        this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
+        TemporalAmount defaultLockAtMostFor,
+        Duration defaultLockAtLeastFor) {
+        this(defaultLockAtMostFor, defaultLockAtLeastFor, null);
     }
 
-    @Override
-    public void setEmbeddedValueResolver(StringValueResolver resolver) {
-        this.embeddedValueResolver = resolver;
+    public SpringLockConfigurationExtractor(
+        TemporalAmount defaultLockAtMostFor,
+        TemporalAmount defaultLockAtLeastFor,
+        StringValueResolver embeddedValueResolver
+    ) {
+        this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
+        this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
+        this.embeddedValueResolver = embeddedValueResolver;
     }
 
     @Override
@@ -125,7 +130,7 @@ public class SpringLockConfigurationExtractor
         );
     }
 
-    Duration getLockAtLeastFor(SchedulerLock annotation) {
+    TemporalAmount getLockAtLeastFor(SchedulerLock annotation) {
         return getValue(
             annotation.lockAtLeastFor(),
             annotation.lockAtLeastForString(),
@@ -134,7 +139,7 @@ public class SpringLockConfigurationExtractor
         );
     }
 
-    private Duration getValue(long valueFromAnnotation, String stringValueFromAnnotation, TemporalAmount defaultValue, final String paramName) {
+    private TemporalAmount getValue(long valueFromAnnotation, String stringValueFromAnnotation, TemporalAmount defaultValue, final String paramName) {
         if (valueFromAnnotation >= 0) {
             return Duration.of(valueFromAnnotation, MILLIS);
         } else if (StringUtils.hasText(stringValueFromAnnotation)) {
@@ -147,7 +152,7 @@ public class SpringLockConfigurationExtractor
                 throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long");
             }
         } else {
-            return Duration.from(defaultValue);
+            return defaultValue;
         }
     }
 
