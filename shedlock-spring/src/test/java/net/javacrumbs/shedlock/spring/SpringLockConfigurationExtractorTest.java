@@ -23,6 +23,7 @@ import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.util.StringValueResolver;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -33,11 +34,14 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SpringLockConfigurationExtractorTest {
     public static final Duration DEFAULT_LOCK_TIME = Duration.of(30, ChronoUnit.MINUTES);
     public static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
-    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR);
+    private final StringValueResolver embeddedValueResolver = mock(StringValueResolver.class);
+    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver);
 
 
     @Test
@@ -72,9 +76,10 @@ public class SpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockTimeFromAnnotationWithString() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("${placeholder}")).thenReturn("5");
         SchedulerLock annotation = getAnnotation("annotatedMethodWithString");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
-        assertThat(lockAtMostFor).isEqualTo(Duration.of(10, MILLIS));
+        assertThat(lockAtMostFor).isEqualTo(Duration.of(5, MILLIS));
     }
 
     @Test
@@ -93,6 +98,7 @@ public class SpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotationWithString() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("10")).thenReturn("10");
         SchedulerLock annotation = getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
@@ -128,7 +134,7 @@ public class SpringLockConfigurationExtractorTest {
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtMostForString = "10")
+    @SchedulerLock(name = "lockName", lockAtMostForString = "${placeholder}")
     public void annotatedMethodWithString() {
 
     }
