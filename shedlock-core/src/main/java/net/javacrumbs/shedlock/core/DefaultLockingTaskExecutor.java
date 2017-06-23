@@ -45,7 +45,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
                 logger.debug("Unlocked {}.", lockConfig.getName());
             }
         } else {
-            logger.info("Not executing {}. It's locked.", lockConfig.getName());
+            logger.debug("Not executing {}. It's locked.", lockConfig.getName());
         }
     }
 }
