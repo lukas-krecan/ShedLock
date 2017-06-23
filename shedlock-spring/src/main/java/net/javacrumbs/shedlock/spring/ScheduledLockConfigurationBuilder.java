@@ -27,7 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * <p>
  * * <pre>
  * {@code
- *   @Bean
+ *   {@literal @}Bean
  *   public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
  *       return ScheduledLockConfigurationBuilder
  *           .withLockProvider(lockProvider)
