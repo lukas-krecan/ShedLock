@@ -24,7 +24,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
@@ -82,11 +82,13 @@ Now we need to integrate the library into Spring. It's done by wrapping standard
 import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
 
 ...
-
 @Bean
-public TaskScheduler taskScheduler(LockProvider lockProvider) {
-    int poolSize = 10;
-    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(poolSize, lockProvider);
+public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
+    return ScheduledLockConfigurationBuilder
+        .withLockProvider(lockProvider)
+        .withPoolSize(10)
+        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
+        .build();
 }
 ```
 
@@ -148,7 +150,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
@@ -174,7 +176,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
@@ -198,7 +200,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
@@ -218,7 +220,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jedis</artifactId>
-    <version>0.11.0</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
@@ -241,13 +243,16 @@ If you are using Spring XML config, use this configuration
     <constructor-arg ref="dataSource"/>
 </bean>
 
-<!-- Wrap the original scheduler -->
-<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory" factory-method="newLockableTaskScheduler">
+<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactoryBean">
     <constructor-arg>
-        <!-- The original scheduler -->
         <task:scheduler id="sch" pool-size="10"/>
     </constructor-arg>
     <constructor-arg ref="lockProvider"/>
+    <constructor-arg name="defaultLockAtMostFor">
+        <bean class="java.time.Duration" factory-method="ofMinutes">
+            <constructor-arg value="10"/>
+        </bean>
+    </constructor-arg>
 </bean>
 
 
@@ -274,6 +279,10 @@ public void run() {
 
 ## Change log
 
+## 0.12.0
+* Support for property placeholders in annotation lockAtMostForString/lockAtLeastForString
+* Support for composed annotations
+* ScheduledLockConfigurationBuilder introduced (deprecating SpringLockableTaskSchedulerFactory)
 
 ## 0.11.0
 * Support for Redis (thanks to @clamey)
