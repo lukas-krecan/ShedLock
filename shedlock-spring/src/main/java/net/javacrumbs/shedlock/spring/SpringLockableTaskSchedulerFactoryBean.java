@@ -22,13 +22,14 @@ import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.StringValueResolver;
 
+import java.time.Duration;
 import java.time.temporal.TemporalAmount;
 
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler. embeddedValueResolver is injected by Spring automatically.
  * That's why this class implements FactoryBean.
  */
-class SpringLockableTaskSchedulerFactoryBean implements FactoryBean<LockableTaskScheduler>, EmbeddedValueResolverAware, ScheduledLockConfiguration {
+public class SpringLockableTaskSchedulerFactoryBean implements FactoryBean<LockableTaskScheduler>, EmbeddedValueResolverAware, ScheduledLockConfiguration {
     private final TaskScheduler taskScheduler;
 
     private final LockProvider lockProvider;
@@ -39,7 +40,11 @@ class SpringLockableTaskSchedulerFactoryBean implements FactoryBean<LockableTask
 
     private StringValueResolver embeddedValueResolver;
 
-    SpringLockableTaskSchedulerFactoryBean(TaskScheduler taskScheduler, LockProvider lockProvider, TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
+    public SpringLockableTaskSchedulerFactoryBean(TaskScheduler taskScheduler, LockProvider lockProvider, TemporalAmount defaultLockAtMostFor) {
+        this(taskScheduler, lockProvider, defaultLockAtMostFor, Duration.ZERO);
+    }
+
+    public SpringLockableTaskSchedulerFactoryBean(TaskScheduler taskScheduler, LockProvider lockProvider, TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
         this.taskScheduler = taskScheduler;
         this.lockProvider = lockProvider;
         this.defaultLockAtMostFor = defaultLockAtMostFor;
