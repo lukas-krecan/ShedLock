@@ -21,7 +21,7 @@ import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
@@ -101,7 +101,7 @@ public class SpringLockConfigurationExtractor
 
     SchedulerLock findAnnotation(ScheduledMethodRunnable task) {
         Method method = task.getMethod();
-        SchedulerLock annotation = AnnotationUtils.findAnnotation(method, SchedulerLock.class);
+        SchedulerLock annotation = findAnnotation(method);
         if (annotation != null) {
             return annotation;
         } else {
@@ -111,7 +111,7 @@ public class SpringLockConfigurationExtractor
                 try {
                     Method methodOnTarget = targetClass
                         .getMethod(method.getName(), method.getParameterTypes());
-                    return AnnotationUtils.findAnnotation(methodOnTarget, SchedulerLock.class);
+                    return findAnnotation(methodOnTarget);
                 } catch (NoSuchMethodException e) {
                     return null;
                 }
@@ -119,6 +119,10 @@ public class SpringLockConfigurationExtractor
                 return null;
             }
         }
+    }
+
+    private SchedulerLock findAnnotation(Method method) {
+        return AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
     }
 
     TemporalAmount getLockAtMostFor(SchedulerLock annotation) {

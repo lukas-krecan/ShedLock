@@ -20,13 +20,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SchedulerLock {
     /**
      * Lock name.
      */
-    String name();
+    String name() default "";
 
     /**
      * How long (in ms) the lock should be kept in case the machine which obtained the lock died before releasing it.

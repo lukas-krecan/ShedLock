@@ -22,14 +22,21 @@ import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
 import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringValueResolver;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -105,6 +112,14 @@ public class SpringLockConfigurationExtractorTest {
     }
 
     @Test
+    public void shouldExtractComposedAnnotation() throws NoSuchMethodException {
+        SchedulerLock annotation = getAnnotation("composedAnnotation");
+        TemporalAmount atMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(annotation.name()).isEqualTo("lockName1");
+        assertThat(atMostFor).isEqualTo(Duration.of(20, MILLIS));
+    }
+
+    @Test
     public void shouldFindAnnotationOnDynamicProxy() throws NoSuchMethodException {
         doTestfindAnnotationOnProxy(DynamicProxyConfig.class);
     }
@@ -157,5 +172,26 @@ public class SpringLockConfigurationExtractorTest {
     @SchedulerLock(name = "lockName", lockAtLeastForString = "10")
     public void annotatedMethodWithPositiveGracePeriodWithString() {
 
+    }
+
+    @ScheduledLocked(name = "lockName1")
+    public void composedAnnotation() {
+
+    }
+
+    @Target(METHOD)
+    @Retention(RUNTIME)
+    @Documented
+    @Scheduled
+    @SchedulerLock
+    public @interface ScheduledLocked {
+        @AliasFor(annotation = Scheduled.class, attribute = "cron")
+        String cron() default "";
+
+        @AliasFor(annotation = SchedulerLock.class, attribute = "lockAtMostFor")
+        long lockAtMostFor() default 20L;
+
+        @AliasFor(annotation = SchedulerLock.class, attribute = "name")
+        String name();
     }
 }

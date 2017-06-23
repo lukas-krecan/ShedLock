@@ -48,6 +48,9 @@ public class LockConfiguration {
         if (lockAtMostUntil.isBefore(Instant.now())) {
             throw new IllegalArgumentException("lockAtMost is in the past for lock '" + name + "'.");
         }
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("lock name can not be empty");
+        }
     }
 
     public String getName() {
