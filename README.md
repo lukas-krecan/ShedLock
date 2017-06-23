@@ -109,7 +109,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.8.0</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
