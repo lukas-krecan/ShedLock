@@ -1,5 +1,6 @@
-ShedLock [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
+ShedLock
 ========
+[![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt) [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 
 ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once at the same time. 
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
@@ -18,6 +19,12 @@ using any transaction. In such case ShedLock may be right for you.
 
 
 ## Usage
+### Requirements and dependencies
+* Java 8
+* Spring Framework
+* slf4j-api
+
+
 ### Import project
 
 ```xml
@@ -60,7 +67,7 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 ...
-private static final FOURTEEN_MIN = 14 * 60 * 1000;
+private static final int FOURTEEN_MIN = 14 * 60 * 1000;
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
@@ -271,11 +278,6 @@ public void run() {
 
 }
 ```
-
-## Requirements and dependencies
-1. Java 8
-2. slf4j-api
-
 
 ## Change log
 
