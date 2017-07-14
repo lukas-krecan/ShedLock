@@ -19,6 +19,12 @@ using any transaction. In such case ShedLock may be right for you.
 
 
 ## Usage
+### Requirements and dependencies
+* Java 8
+* Spring Framework
+* slf4j-api
+
+
 ### Import project
 
 ```xml
@@ -272,11 +278,6 @@ public void run() {
 
 }
 ```
-
-## Requirements and dependencies
-1. Java 8
-2. slf4j-api
-
 
 ## Change log
 
