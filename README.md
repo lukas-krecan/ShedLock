@@ -60,7 +60,7 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 ...
-private static final FOURTEEN_MIN = 14 * 60 * 1000;
+private static final int FOURTEEN_MIN = 14 * 60 * 1000;
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
