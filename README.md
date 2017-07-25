@@ -246,8 +246,8 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>hazelcast-provider-mongo</artifactId>
-    <version>0.12.0</version>
+    <artifactId>shedlock-provider-hazelcast</artifactId>
+    <version>0.12.1</version>
 </dependency>
 ```
 
