@@ -1,36 +1,40 @@
 package net.javacrumbs.shedlock.provider.hazelcast;
 
 
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Date;
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     private static HazelcastInstance hazelcastInstance;
-    private HazelcastLockProvider lockProvider;
+
+    private static HazelcastLockProvider lockProvider;
 
     @BeforeClass
-    public static void startMongo() throws IOException {
-        hazelcastInstance = null;
+    public static void startHazelcast() throws IOException {
+        hazelcastInstance = Hazelcast.newHazelcastInstance();
+        lockProvider = new HazelcastLockProvider(hazelcastInstance);
     }
 
     @AfterClass
-    public static void stopMongo() throws IOException {
+    public static void stopHazelcast() throws IOException {
         hazelcastInstance.shutdown();
     }
 
-    @Before
-    public void createLockProvider() throws UnknownHostException {
-        lockProvider = new HazelcastLockProvider();
+    @After
+    public void resetLockProvider() throws UnknownHostException {
+        hazelcastInstance.removeDistributedObjectListener(HazelcastLockProvider.LOCK_STORE_KEY_DEFAULT);
     }
 
     @Override
@@ -39,12 +43,19 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
     }
 
     @Override
-    protected void assertUnlocked(String lockName) {
+    protected void assertUnlocked(final String lockName) {
+        assertThat(isUnlocked(lockName));
+    }
 
+    private boolean isUnlocked(final String lockName) {
+        final Instant now = Instant.now();
+        final HazelcastLock lock = lockProvider.getLock(lockName);
+        return lockProvider.isUnlocked(lock) || lockProvider.isExpired(lock, now) || lockProvider.isLockedByDownClusterMember(lock);
     }
 
     @Override
-    protected void assertLocked(String lockName) {
+    protected void assertLocked(final String lockName) {
+        assertThat(!isUnlocked(lockName));
     }
 
 
