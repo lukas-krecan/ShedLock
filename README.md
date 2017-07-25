@@ -240,6 +240,31 @@ public LockProvider lockProvider(JedisPool jedisPool) {
 }
 ```
 
+#### Hazelcast
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>hazelcast-provider-mongo</artifactId>
+    <version>0.12.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.hazelcast.HazelcastLockProvider;
+
+...
+
+@Bean
+public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
+    return new HazelcastLockProvider(hazelcastInstance);
+}
+```
+
+
 ### Spring XML configuration
 
 If you are using Spring XML config, use this configuration
