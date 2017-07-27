@@ -288,7 +288,7 @@ public void run() {
 ## Change log
 
 ## 0.13.0
-* Jedis constructor made more generic. 
+* Jedis constructor made more generic (thanks to @mgrzeszczak) 
 
 ## 0.12.0
 * Support for property placeholders in annotation lockAtMostForString/lockAtLeastForString
