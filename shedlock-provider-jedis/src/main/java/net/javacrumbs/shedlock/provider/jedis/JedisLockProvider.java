@@ -20,7 +20,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.util.Pool;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -44,14 +44,14 @@ public class JedisLockProvider implements LockProvider {
     private static final String SET_IF_EXIST = "XX";
     private static final String SET_EXPIRE_TIME_IN_MS = "PX";
 
-    private JedisPool jedisPool;
+    private Pool<Jedis> jedisPool;
     private String environment;
 
-    public JedisLockProvider(JedisPool jedisPool) {
+    public JedisLockProvider(Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
     }
 
-    public JedisLockProvider(JedisPool jedisPool, String environment) {
+    public JedisLockProvider(Pool<Jedis> jedisPool, String environment) {
         this.jedisPool = jedisPool;
         this.environment = environment;
     }
@@ -78,10 +78,10 @@ public class JedisLockProvider implements LockProvider {
 
     private static final class RedisLock implements SimpleLock {
         private final String key;
-        private final JedisPool jedisPool;
+        private final Pool<Jedis> jedisPool;
         private final LockConfiguration lockConfiguration;
 
-        private RedisLock(String key, JedisPool jedisPool, LockConfiguration lockConfiguration) {
+        private RedisLock(String key, Pool<Jedis> jedisPool, LockConfiguration lockConfiguration) {
             this.key = key;
             this.jedisPool = jedisPool;
             this.lockConfiguration = lockConfiguration;
