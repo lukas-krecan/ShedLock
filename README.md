@@ -31,7 +31,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -157,7 +157,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -183,7 +183,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -207,7 +207,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -227,7 +227,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jedis</artifactId>
-    <version>0.12.0</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
@@ -239,6 +239,12 @@ public LockProvider lockProvider(JedisPool jedisPool) {
     return new JedisLockProvider(jedisPool, ENV);
 }
 ```
+
+#### Warning
+**Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
+so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
+that multiple locks will be held.
+
 
 ### Spring XML configuration
 
@@ -280,6 +286,9 @@ public void run() {
 ```
 
 ## Change log
+
+## 0.13.0
+* Jedis constructor made more generic. 
 
 ## 0.12.0
 * Support for property placeholders in annotation lockAtMostForString/lockAtLeastForString
