@@ -12,6 +12,21 @@ import java.time.Instant;
 import java.util.Optional;
 
 /**
+ * HazelcastLockProvider.
+ *
+ * Implementation of {@link LockProvider} using Hazelcast for store and share locks informations and mechanisms between a cluster members
+ *
+ * Below, the mechanims :
+ *  - The Lock, an instance of {@link HazelcastLock}, is obtained / created when :
+ *      - the lock is not not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
+ *      - the lock is expired : {@link Instant#now()} > {@link HazelcastLock#unlockTime} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
+ *      and can have the value of {@link HazelcastLock#lockAtLeastUntil} if unlock action is used
+ *          - expired object is removed
+ *      - the lock is owned by not available member of Hazelcast cluster member
+ *          - no owner objectis removed
+ *  - Unlock action :
+ *      - removes lock object when {@link HazelcastLock#lockAtLeastUntil} is not come
+ *      - override value of {@link HazelcastLock#unlockTime} with {@link HazelcastLock#lockAtLeastUntil} (its default value is the same of {@link HazelcastLock#lockAtLeastUntil})
  *
  */
 public class HazelcastLockProvider implements LockProvider {
@@ -22,6 +37,7 @@ public class HazelcastLockProvider implements LockProvider {
 
     /**
      * Key used for get the lock container (an {@link IMap}) inside {@link #hazelcastInstance}.
+     * By default : {@link #LOCK_STORE_KEY_DEFAULT}
      */
     protected final String lockStoreKey;
 
@@ -42,14 +58,13 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Instanciate the provider.
      *
-     * @param hazelcastInstance The Hzelcast engine used by the application
-     * @param lockStoreKey      The where the locks store is located inside {@link #hazelcastInstance}.
+     * @param hazelcastInstance The Hazelcast engine used by the application
+     * @param lockStoreKey      The key where the locks store is associate {@link #hazelcastInstance} (by default {@link #LOCK_STORE_KEY_DEFAULT}).
      */
     public HazelcastLockProvider(final HazelcastInstance hazelcastInstance, final String lockStoreKey) {
         this.hazelcastInstance = hazelcastInstance;
         this.lockStoreKey = lockStoreKey;
     }
-
 
     @Override
     public Optional<SimpleLock> lock(final LockConfiguration lockConfiguration) {
@@ -61,7 +76,7 @@ public class HazelcastLockProvider implements LockProvider {
             // lock the map key entry
             store.lock(lockName);
             // just one thread at a time, in the cluster, can run this code
-            // each thread waits until the lock to be released
+            // each thread waits until the lock to be unlock
             if (tryLock(lockConfiguration, now)) {
                 return Optional.of(() -> unlock(lockName));
             }
@@ -76,21 +91,21 @@ public class HazelcastLockProvider implements LockProvider {
         final String lockName = lockConfiguration.getName();
         final HazelcastLock lock = getLock(lockName);
         if (isUnlocked(lock)) {
-            log.debug("lock - lock obtained, it wasn't locked : {}", lockConfiguration);
+            log.debug("lock - lock obtained, it wasn't locked : conf={}", lockConfiguration);
             addNewLock(lockConfiguration);
             return true;
         } else if (isExpired(lock, now)) {
-            log.debug("lock - lock obtained, it was locked but expired : {}", lockConfiguration);
+            log.debug("lock - lock obtained, it was locked but expired : oldLock={};  conf={}", lock, lockConfiguration);
             removeLock(lockName);
             addNewLock(lockConfiguration);
             return true;
-        } else if (isLockedByDownClusterMember(lock)) {
-            log.debug("lock - lock obtained, it was locked by a down cluster membre : {}", lockConfiguration);
+        } else if (isLockedByUnvailableMemberOfCluster(lock)) {
+            log.debug("lock - lock obtained, it was locked by an available member of cluster :  oldLock={};  conf={}", lock, lockConfiguration);
             removeLock(lockName);
             addNewLock(lockConfiguration);
             return true;
         } else {
-            log.debug("lock - already locked : {}", lockConfiguration);
+            log.debug("lock - already locked : currentLock={};  conf={}", lock, lockConfiguration);
             return false;
         }
     }
@@ -132,16 +147,16 @@ public class HazelcastLockProvider implements LockProvider {
         return now.isAfter(unlockTime);
     }
 
-    protected boolean isLockedByDownClusterMember(final HazelcastLock lock) {
+    protected boolean isLockedByUnvailableMemberOfCluster(final HazelcastLock lock) {
         final String memberUuid = lock.getClusterMemberUuid();
         final boolean membreIsUp = hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(memberUuid));
         return !membreIsUp;
     }
 
     /**
-     * Unlock a lock with its name.
+     * Unlock the lock with its name.
      *
-     * @param lockName
+     * @param lockName the name of the lock to unlock.
      */
     protected void unlock(final String lockName) {
         log.trace("unlock - attempt : {}", lockName);

@@ -6,7 +6,9 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * Lock representation.
+ * Hazelcast lock entity.
+ *
+ * It's used to persist lock informations into Hazelcast instances (cluster).
  */
 class HazelcastLock implements Serializable {
 
@@ -16,11 +18,19 @@ class HazelcastLock implements Serializable {
 
     private final Instant lockAtLeastUntil;
 
+    /**
+     * Unique ID of Hazelcast cluster member.
+     * This information is stored to identify the Lock owner and automatically unlock if this member shuddown.
+     */
     private final String clusterMemberUuid;
 
+    /**
+     * Moment when the lock is expired, so unlockable.
+     * The first value of this is {@link #lockAtMostUntil}.
+     */
     private Instant unlockTime;
 
-    public HazelcastLock(String name, Instant lockAtMostUntil, Instant lockAtLeastUntil, String clusterMemberUuid) {
+    public HazelcastLock(final String name, final Instant lockAtMostUntil, final Instant lockAtLeastUntil, final String clusterMemberUuid) {
         this.name = name;
         this.lockAtMostUntil = lockAtMostUntil;
         this.lockAtLeastUntil = lockAtLeastUntil;
@@ -28,6 +38,13 @@ class HazelcastLock implements Serializable {
         this.clusterMemberUuid = clusterMemberUuid;
     }
 
+    /**
+     * Instanciate {@link HazelcastLock} with {@link LockConfiguration} and Hazelcast member UUID.
+     *
+     * @param configuration
+     * @param clusterMemberUuid
+     * @return the new instance of {@link HazelcastLock}.
+     */
     public static HazelcastLock fromLockConfiguration(final LockConfiguration configuration, final String clusterMemberUuid) {
         return new HazelcastLock(configuration.getName(), configuration.getLockAtMostUntil(), configuration.getLockAtLeastUntil(), clusterMemberUuid);
     }
