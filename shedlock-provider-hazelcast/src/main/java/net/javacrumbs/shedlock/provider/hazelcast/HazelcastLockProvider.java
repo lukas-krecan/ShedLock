@@ -32,18 +32,18 @@ public class HazelcastLockProvider implements LockProvider {
 
     private static final Logger log = LoggerFactory.getLogger(HazelcastLockProvider.class);
 
-    protected static final String LOCK_STORE_KEY_DEFAULT = "shedlock_storage";
+    static final String LOCK_STORE_KEY_DEFAULT = "shedlock_storage";
 
     /**
      * Key used for get the lock container (an {@link IMap}) inside {@link #hazelcastInstance}.
      * By default : {@link #LOCK_STORE_KEY_DEFAULT}
      */
-    protected final String lockStoreKey;
+    private final String lockStoreKey;
 
     /**
      * Instance of the Hazelcast engine used by the application.
      */
-    protected HazelcastInstance hazelcastInstance;
+    private HazelcastInstance hazelcastInstance;
 
     /**
      * Instanciate the provider.
