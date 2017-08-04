@@ -49,8 +49,8 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
 
     private boolean isUnlocked(final String lockName) {
         final Instant now = Instant.now();
-        final HazelcastLock lock = lockProvider.getLock(lockName);
-        return lockProvider.isUnlocked(lock) || lockProvider.isExpired(lock, now) || lockProvider.isLockedByUnvailableMemberOfCluster(lock);
+        final HazelcastLock lock = (HazelcastLock) hazelcastInstance.getMap(HazelcastLockProvider.LOCK_STORE_KEY_DEFAULT).get(lockName);
+        return lock == null || !now.isBefore(lock.getTimeToLive()) || !hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(lock.getClusterMemberUuid()));
     }
 
     @Override
