@@ -19,7 +19,7 @@ import java.util.Optional;
  * Below, the mechanims :
  * - The Lock, an instance of {@link HazelcastLock}, is obtained / created when :
  * - the lock is not not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
- * - the lock is expired : {@link Instant#now()} > {@link HazelcastLock#unlockTime} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
+ * - the lock is expired : {@link Instant#now()} &gt; {@link HazelcastLock#unlockTime} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
  * and can have the value of {@link HazelcastLock#lockAtLeastUntil} if unlock action is used
  * - expired object is removed
  * - the lock is owned by not available member of Hazelcast cluster member
