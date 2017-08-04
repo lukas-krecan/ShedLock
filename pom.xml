@@ -32,6 +32,7 @@
         <module>shedlock-provider-jdbc</module>
         <module>shedlock-provider-jdbc-template</module>
         <module>shedlock-provider-zookeeper-curator</module>
+        <module>shedlock-provider-hazelcast</module>
     </modules>
 
     <properties>

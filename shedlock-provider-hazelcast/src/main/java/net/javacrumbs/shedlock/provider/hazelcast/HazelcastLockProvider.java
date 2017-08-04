@@ -95,13 +95,11 @@ public class HazelcastLockProvider implements LockProvider {
             return true;
         } else if (isExpired(lock, now)) {
             log.debug("lock - lock obtained, it was locked but expired : oldLock={};  conf={}", lock, lockConfiguration);
-            removeLock(lockName);
-            addNewLock(lockConfiguration);
+            replaceLock(lockConfiguration, lockName);
             return true;
-        } else if (isLockedByUnvailableMemberOfCluster(lock)) {
+        } else if (isLockedByUnavailableMemberOfCluster(lock)) {
             log.debug("lock - lock obtained, it was locked by an available member of cluster :  oldLock={};  conf={}", lock, lockConfiguration);
-            removeLock(lockName);
-            addNewLock(lockConfiguration);
+            replaceLock(lockConfiguration, lockName);
             return true;
         } else {
             log.debug("lock - already locked : currentLock={};  conf={}", lock, lockConfiguration);
@@ -109,11 +107,16 @@ public class HazelcastLockProvider implements LockProvider {
         }
     }
 
+    private void replaceLock(LockConfiguration lockConfiguration, String lockName) {
+        removeLock(lockName);
+        addNewLock(lockConfiguration);
+    }
+
     private IMap<String, HazelcastLock> getStore() {
         return hazelcastInstance.getMap(lockStoreKey);
     }
 
-    protected HazelcastLock getLock(final String lockName) {
+    HazelcastLock getLock(final String lockName) {
         final IMap<String, HazelcastLock> store = getStore();
         return store.get(lockName);
     }
@@ -128,28 +131,31 @@ public class HazelcastLockProvider implements LockProvider {
         final String localMemberUuid = getLocalMemberUuid();
         final HazelcastLock lock = HazelcastLock.fromLockConfiguration(lockConfiguration, localMemberUuid);
         final String lockName = lockConfiguration.getName();
-        final IMap<String, HazelcastLock> store = getStore();
-        store.put(lockName, lock);
+        putToStore(lock, lockName);
         log.debug("lock store - new lock added : {}", lock);
+    }
+
+    private void putToStore(HazelcastLock lock, String lockName) {
+        getStore().put(lockName, lock);
     }
 
     private String getLocalMemberUuid() {
         return hazelcastInstance.getCluster().getLocalMember().getUuid();
     }
 
-    protected boolean isUnlocked(final HazelcastLock lock) {
+    boolean isUnlocked(final HazelcastLock lock) {
         return lock == null;
     }
 
-    protected boolean isExpired(final HazelcastLock lock, final Instant now) {
+    boolean isExpired(final HazelcastLock lock, final Instant now) {
         final Instant unlockTime = lock.getUnlockTime();
         return now.isAfter(unlockTime);
     }
 
-    protected boolean isLockedByUnvailableMemberOfCluster(final HazelcastLock lock) {
+    boolean isLockedByUnavailableMemberOfCluster(final HazelcastLock lock) {
         final String memberUuid = lock.getClusterMemberUuid();
-        final boolean membreIsUp = hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(memberUuid));
-        return !membreIsUp;
+        final boolean memberIsUp = hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(memberUuid));
+        return !memberIsUp;
     }
 
     /**
@@ -157,7 +163,7 @@ public class HazelcastLockProvider implements LockProvider {
      *
      * @param lockName the name of the lock to unlock.
      */
-    protected void unlock(final String lockName) {
+    private void unlock(final String lockName) {
         log.trace("unlock - attempt : {}", lockName);
         final Instant now = Instant.now();
         final IMap<String, HazelcastLock> store = getStore();
@@ -177,14 +183,13 @@ public class HazelcastLockProvider implements LockProvider {
         }
         final String lockName = lock.getName();
         final Instant lockAtLeastInstant = lock.getLockAtLeastUntil();
-        if (now.isAfter(lockAtLeastInstant)) {
+        if (!now.isBefore(lockAtLeastInstant)) {
             removeLock(lockName);
             log.debug("unlock - done : {}", lock);
         } else {
             log.debug("unlock - it doesn't unlock, least time is not passed : {}", lock);
             lock.setUnlockTime(lockAtLeastInstant);
-            final IMap<String, HazelcastLock> store = getStore();
-            store.put(lockName, lock);
+            putToStore(lock, lockName);
         }
 
     }

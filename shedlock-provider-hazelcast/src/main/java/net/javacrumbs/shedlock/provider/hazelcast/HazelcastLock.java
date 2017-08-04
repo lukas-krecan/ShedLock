@@ -39,7 +39,7 @@ class HazelcastLock implements Serializable {
     }
 
     /**
-     * Instanciate {@link HazelcastLock} with {@link LockConfiguration} and Hazelcast member UUID.
+     * Instantiate {@link HazelcastLock} with {@link LockConfiguration} and Hazelcast member UUID.
      *
      * @param configuration
      * @param clusterMemberUuid
@@ -82,18 +82,5 @@ class HazelcastLock implements Serializable {
                 ", clusterMemberUuid='" + clusterMemberUuid + '\'' +
                 ", unlockTime=" + unlockTime +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        HazelcastLock that = (HazelcastLock) o;
-        return getName() != null ? getName().equals(that.getName()) : that.getName() == null;
-    }
-
-    @Override
-    public int hashCode() {
-        return getName() != null ? getName().hashCode() : 0;
     }
 }
