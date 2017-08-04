@@ -240,6 +240,30 @@ public LockProvider lockProvider(JedisPool jedisPool) {
 }
 ```
 
+#### Hazelcast
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-hazelcast</artifactId>
+    <version>0.12.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.hazelcast.HazelcastLockProvider;
+
+...
+
+@Bean
+public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
+    return new HazelcastLockProvider(hazelcastInstance);
+}
+```
+
 #### Warning
 **Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
