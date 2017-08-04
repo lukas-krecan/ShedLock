@@ -93,10 +93,10 @@ public class HazelcastLockProviderClusterTest {
         assertThat(lock1).isNotEmpty();
         final Optional<SimpleLock> lock2 = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
         assertThat(lock2).isEmpty();
-        Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(6));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(6));
         final Optional<SimpleLock> lock2Bis = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
         assertThat(lock2Bis).isEmpty();
-        Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(4));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(4));
         final Optional<SimpleLock> lock2Ter = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
         assertThat(lock2Ter).isNotEmpty();
     }
