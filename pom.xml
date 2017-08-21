@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.13.1-SNAPSHOT</version>
+    <version>0.14.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
         <module>shedlock-spring</module>
@@ -137,6 +137,15 @@
                     <excludes>
                         <exclude>LICENSE.txt</exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20</version>
+                <configuration>
+                    <forkCount>3</forkCount>
+                    <argLine>-Xmx512m</argLine>
                 </configuration>
             </plugin>
         </plugins>

@@ -13,40 +13,38 @@ import java.util.Optional;
 
 /**
  * HazelcastLockProvider.
- *
+ * <p>
  * Implementation of {@link LockProvider} using Hazelcast for store and share locks informations and mechanisms between a cluster members
- *
+ * <p>
  * Below, the mechanims :
- *
- *  - The Lock, an instance of {@link HazelcastLock}, is obtained / created when :
- *      - the lock is not not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
- *      - the lock is expired : {@link Instant#now()} > {@link HazelcastLock#timeToLive} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
- *      and can have the value of {@link HazelcastLock#lockAtLeastUntil} if unlock action is used
- *          - expired object is removed
- *      - the lock is owned by not available member of Hazelcast cluster member
- *          - no owner objectis removed
- *
- *  - Unlock action :
- *      - removes lock object when {@link HazelcastLock#lockAtLeastUntil} is not come
- *      - override value of {@link HazelcastLock#timeToLive} with {@link HazelcastLock#lockAtLeastUntil} (its default value is the same of {@link HazelcastLock#lockAtLeastUntil})
- *
+ * - The Lock, an instance of {@link HazelcastLock}, is obtained / created when :
+ * -- the lock is not not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
+ * -- the lock is expired : {@link Instant#now()} &gt; {@link HazelcastLock#unlockTime} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
+ * and can have the value of {@link HazelcastLock#lockAtLeastUntil} if unlock action is used
+ * --- expired object is removed
+ * -- the lock is owned by not available member of Hazelcast cluster member
+ * --- no owner objectis removed
+ * - Unlock action :
+ * -- removes lock object when {@link HazelcastLock#lockAtLeastUntil} is not come
+ * -- override value of {@link HazelcastLock#timeToLive} with {@link HazelcastLock#lockAtLeastUntil} (its default value is the same of {@link HazelcastLock#lockAtLeastUntil}
  */
 public class HazelcastLockProvider implements LockProvider {
 
     private static final Logger log = LoggerFactory.getLogger(HazelcastLockProvider.class);
 
     public static final String LOCK_STORE_KEY_DEFAULT = "shedlock_storage";
+    static final String LOCK_STORE_KEY_DEFAULT = "shedlock_storage";
 
     /**
      * Key used for get the lock container (an {@link IMap}) inside {@link #hazelcastInstance}.
      * By default : {@link #LOCK_STORE_KEY_DEFAULT}
      */
-    protected final String lockStoreKey;
+    private final String lockStoreKey;
 
     /**
      * Instance of the Hazelcast engine used by the application.
      */
-    protected HazelcastInstance hazelcastInstance;
+    private HazelcastInstance hazelcastInstance;
 
     /**
      * Instantiate the provider.
@@ -115,7 +113,7 @@ public class HazelcastLockProvider implements LockProvider {
         return hazelcastInstance.getMap(lockStoreKey);
     }
 
-    private HazelcastLock getLock(final String lockName) {
+    HazelcastLock getLock(final String lockName) {
         final IMap<String, HazelcastLock> store = getStore();
         return store.get(lockName);
     }
@@ -167,7 +165,7 @@ public class HazelcastLockProvider implements LockProvider {
      *
      * @param lockName the name of the lock to unlock.
      */
-    public void unlock(final String lockName) {
+    private void unlock(final String lockName) {
         log.trace("unlock - attempt : {}", lockName);
         final Instant now = Instant.now();
         final IMap<String, HazelcastLock> store = getStore();

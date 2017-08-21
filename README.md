@@ -6,12 +6,12 @@ ShedLock does one and only thing. It makes sure your scheduled tasks ar executed
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
  
-Currently, Spring scheduled tasks coordinated through Mongo, JDBC database, Redis or ZooKeeper are supported. More
+Currently, Spring scheduled tasks coordinated through Mongo, JDBC database, Redis, Hazelcast or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
 
 Feedback and pull-requests welcome!
 
-## ShedLock is not a distributed scheduler
+#### ShedLock is not a distributed scheduler
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. For example if the task is fetching records from a database, processing them and marking them as processed at the end without
@@ -31,7 +31,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -157,7 +157,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -183,7 +183,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -200,6 +200,12 @@ public LockProvider lockProvider(DataSource dataSource) {
 }
 ```
 the rest is the same as with JdbcTemplate lock provider.
+
+
+#### Warning
+**Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
+so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
+that multiple locks will be held.
  
 #### ZooKeeper (using Curator)
 Import 
@@ -207,7 +213,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -227,7 +233,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jedis</artifactId>
-    <version>0.13.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -247,7 +253,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>0.12.1</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -263,12 +269,6 @@ public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
     return new HazelcastLockProvider(hazelcastInstance);
 }
 ```
-
-#### Warning
-**Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
-so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
-that multiple locks will be held.
-
 
 ### Spring XML configuration
 
@@ -310,6 +310,8 @@ public void run() {
 ```
 
 ## Change log
+## 0.14.0
+* Support for Hazelcast (thanks to @peyo)
 
 ## 0.13.0
 * Jedis constructor made more generic (thanks to @mgrzeszczak) 
