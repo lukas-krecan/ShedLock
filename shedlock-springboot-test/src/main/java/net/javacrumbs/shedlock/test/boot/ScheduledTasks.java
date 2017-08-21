@@ -19,25 +19,10 @@ import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.Random;
-
 @Component
 public class ScheduledTasks {
-
-    private static final Random sleepTimerRandom = new Random();
-
-    @Scheduled(cron = "0/5 * * * * *")
-    @SchedulerLock(name = "lockedTask")
-    public void lockedTask() throws InterruptedException {
-        final int milliSecSleep = sleepTimerRandom.nextInt(20000);
-        System.out.println("Locked task : " + Instant.now().toString() + " (sleep = " + milliSecSleep + "ms)");
-        Thread.sleep(milliSecSleep);
+    @Scheduled(fixedRate = 1)
+    @SchedulerLock(name = "reportCurrentTime", lockAtLeastForString = "${lock.at.most.for}")
+    public void reportCurrentTime() {
     }
-
-    @Scheduled(cron = "0/5 * * * * *")
-    public void notLockedTask() {
-        System.out.println("Not locked task : " + Instant.now().toString());
-    }
-
 }
