@@ -155,8 +155,8 @@ public class HazelcastLockProvider implements LockProvider {
 
     private boolean isLockedByUnavailableMemberOfCluster(final HazelcastLock lock) {
         final String memberUuid = lock.getClusterMemberUuid();
-        final boolean membreIsAvailable = hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(memberUuid));
-        return !membreIsAvailable;
+        final boolean memberIsAvailable = hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(memberUuid));
+        return !memberIsAvailable;
     }
 
     /**
