@@ -76,7 +76,7 @@ class DefaultScheduledLockConfigurationBuilder
     }
 
     @Override
-    public ScheduledLockConfigurationBuilder withDefaultLockAtLeastFor(TemporalAmount defaultLockAtLeastFor) {
+    public ConfiguredScheduledLockConfigurationBuilder withDefaultLockAtLeastFor(TemporalAmount defaultLockAtLeastFor) {
         this.defaultLockAtLeastFor = defaultLockAtLeastFor;
         return this;
     }
