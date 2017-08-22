@@ -76,7 +76,7 @@ public interface ScheduledLockConfigurationBuilder {
         /**
          * Every lock is hold at least for given amount of time.
          */
-        ScheduledLockConfigurationBuilder withDefaultLockAtLeastFor(TemporalAmount defaultLockAtLeastFor);
+        ConfiguredScheduledLockConfigurationBuilder withDefaultLockAtLeastFor(TemporalAmount defaultLockAtLeastFor);
 
         /**
          * Builds the configuration
