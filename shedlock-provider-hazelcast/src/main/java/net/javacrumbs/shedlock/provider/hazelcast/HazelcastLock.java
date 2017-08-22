@@ -8,7 +8,7 @@ import java.time.Instant;
 /**
  * Hazelcast lock entity.
  * <p>
- * It's used to persist lock informations into Hazelcast instances (cluster).
+ * It's used to persist lock information into Hazelcast instances (cluster).
  */
 class HazelcastLock implements Serializable {
 
