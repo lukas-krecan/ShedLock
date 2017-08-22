@@ -41,10 +41,10 @@ public class Application {
     @Bean
     public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
         return ScheduledLockConfigurationBuilder
-            .withLockProvider(lockProvider)
-            .withPoolSize(10)
-            .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-            .build();
+                .withLockProvider(lockProvider)
+                .withPoolSize(10)
+                .withDefaultLockAtMostFor(Duration.ofMinutes(10))
+                .build();
     }
 
     //    @Bean
