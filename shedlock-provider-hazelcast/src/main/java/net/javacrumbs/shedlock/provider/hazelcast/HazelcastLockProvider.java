@@ -113,13 +113,11 @@ public class HazelcastLockProvider implements LockProvider {
     }
 
     HazelcastLock getLock(final String lockName) {
-        final IMap<String, HazelcastLock> store = getStore();
-        return store.get(lockName);
+        return getStore().get(lockName);
     }
 
     private void removeLock(final String lockName) {
-        final IMap<String, HazelcastLock> store = getStore();
-        store.delete(lockName);
+        getStore().delete(lockName);
         log.debug("lock store - lock deleted : {}", lockName);
     }
 
@@ -128,8 +126,7 @@ public class HazelcastLockProvider implements LockProvider {
         final HazelcastLock lock = HazelcastLock.fromConfigurationWhereTtlIsUntilTime(lockConfiguration, localMemberUuid);
         log.trace("lock store - new lock created from configuration : {}", lockConfiguration);
         final String lockName = lockConfiguration.getName();
-        final IMap<String, HazelcastLock> store = getStore();
-        store.put(lockName, lock);
+        getStore().put(lockName, lock);
         log.debug("lock store - new lock added : {}", lock);
     }
 
@@ -190,8 +187,7 @@ public class HazelcastLockProvider implements LockProvider {
         } else {
             log.debug("unlock - it doesn't unlock, least time is not passed : {}", lock);
             final HazelcastLock newLock = HazelcastLock.fromLockWhereTtlIsReduceToLeastTime(lock);
-            final IMap<String, HazelcastLock> store = getStore();
-            store.put(lockName, newLock);
+            getStore().put(lockName, newLock);
         }
 
     }

@@ -30,7 +30,7 @@ class HazelcastLock implements Serializable {
      */
     private final Instant timeToLive;
 
-    public HazelcastLock(final String name, final Instant lockAtMostUntil, final Instant lockAtLeastUntil, final Instant timeToLive, final String clusterMemberUuid) {
+    private HazelcastLock(final String name, final Instant lockAtMostUntil, final Instant lockAtLeastUntil, final Instant timeToLive, final String clusterMemberUuid) {
         this.name = name;
         this.lockAtMostUntil = lockAtMostUntil;
         this.lockAtLeastUntil = lockAtLeastUntil;
@@ -45,7 +45,7 @@ class HazelcastLock implements Serializable {
      * @param clusterMemberUuid
      * @return the new instance of {@link HazelcastLock}.
      */
-    public static HazelcastLock fromConfigurationWhereTtlIsUntilTime(final LockConfiguration configuration, final String clusterMemberUuid) {
+    static HazelcastLock fromConfigurationWhereTtlIsUntilTime(final LockConfiguration configuration, final String clusterMemberUuid) {
         return new HazelcastLock(configuration.getName(), configuration.getLockAtMostUntil(), configuration.getLockAtLeastUntil(), configuration.getLockAtMostUntil(), clusterMemberUuid);
     }
 
@@ -55,15 +55,15 @@ class HazelcastLock implements Serializable {
      * @param lock
      * @return the new instance of {@link HazelcastLock}.
      */
-    public static HazelcastLock fromLockWhereTtlIsReduceToLeastTime(final HazelcastLock lock) {
+    static HazelcastLock fromLockWhereTtlIsReduceToLeastTime(final HazelcastLock lock) {
         return new HazelcastLock(lock.name, lock.lockAtMostUntil, lock.lockAtLeastUntil, lock.lockAtLeastUntil, lock.clusterMemberUuid);
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public String getClusterMemberUuid() {
+    String getClusterMemberUuid() {
         return clusterMemberUuid;
     }
 
@@ -71,11 +71,11 @@ class HazelcastLock implements Serializable {
         return lockAtMostUntil;
     }
 
-    public Instant getLockAtLeastUntil() {
+    Instant getLockAtLeastUntil() {
         return lockAtLeastUntil;
     }
 
-    public Instant getTimeToLive() {
+    Instant getTimeToLive() {
         return timeToLive;
     }
 
