@@ -18,11 +18,6 @@ class HazelcastLock implements Serializable {
 
     private final Instant lockAtLeastUntil;
 
-    /**
-     * Unique ID of Hazelcast cluster member.
-     * This information is stored to identify the Lock owner and automatically unlock if this member shuddown.
-     */
-    private final String clusterMemberUuid;
 
     /**
      * Moment when the lock is expired, so unlockable.
@@ -30,23 +25,21 @@ class HazelcastLock implements Serializable {
      */
     private final Instant timeToLive;
 
-    private HazelcastLock(final String name, final Instant lockAtMostUntil, final Instant lockAtLeastUntil, final Instant timeToLive, final String clusterMemberUuid) {
+    private HazelcastLock(final String name, final Instant lockAtMostUntil, final Instant lockAtLeastUntil, final Instant timeToLive) {
         this.name = name;
         this.lockAtMostUntil = lockAtMostUntil;
         this.lockAtLeastUntil = lockAtLeastUntil;
         this.timeToLive = timeToLive;
-        this.clusterMemberUuid = clusterMemberUuid;
     }
 
     /**
      * Instantiate {@link HazelcastLock} with {@link LockConfiguration} and Hazelcast member UUID.
      *
      * @param configuration
-     * @param clusterMemberUuid
      * @return the new instance of {@link HazelcastLock}.
      */
-    static HazelcastLock fromConfigurationWhereTtlIsUntilTime(final LockConfiguration configuration, final String clusterMemberUuid) {
-        return new HazelcastLock(configuration.getName(), configuration.getLockAtMostUntil(), configuration.getLockAtLeastUntil(), configuration.getLockAtMostUntil(), clusterMemberUuid);
+    static HazelcastLock fromConfigurationWhereTtlIsUntilTime(final LockConfiguration configuration) {
+        return new HazelcastLock(configuration.getName(), configuration.getLockAtMostUntil(), configuration.getLockAtLeastUntil(), configuration.getLockAtMostUntil());
     }
 
     /**
@@ -56,15 +49,11 @@ class HazelcastLock implements Serializable {
      * @return the new instance of {@link HazelcastLock}.
      */
     static HazelcastLock fromLockWhereTtlIsReduceToLeastTime(final HazelcastLock lock) {
-        return new HazelcastLock(lock.name, lock.lockAtMostUntil, lock.lockAtLeastUntil, lock.lockAtLeastUntil, lock.clusterMemberUuid);
+        return new HazelcastLock(lock.name, lock.lockAtMostUntil, lock.lockAtLeastUntil, lock.lockAtLeastUntil);
     }
 
     String getName() {
         return name;
-    }
-
-    String getClusterMemberUuid() {
-        return clusterMemberUuid;
     }
 
     public Instant getLockAtMostUntil() {
@@ -85,7 +74,6 @@ class HazelcastLock implements Serializable {
                 "name='" + name + '\'' +
                 ", lockAtMostUntil=" + lockAtMostUntil +
                 ", lockAtLeastUntil=" + lockAtLeastUntil +
-                ", clusterMemberUuid='" + clusterMemberUuid + '\'' +
                 ", timeToLive=" + timeToLive +
                 '}';
     }

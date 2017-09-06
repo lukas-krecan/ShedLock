@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.hazelcast;
 
 
+import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -39,7 +40,7 @@ public class HazelcastLockProviderClusterTest {
         hazelcastInstance1 = Hazelcast.newHazelcastInstance();
         lockProvider1 = new HazelcastLockProvider(hazelcastInstance1);
         hazelcastInstance2 = Hazelcast.newHazelcastInstance();
-        lockProvider2 = new HazelcastLockProvider(hazelcastInstance2);
+        lockProvider2 = new HazelcastLockProvider(HazelcastClient.newHazelcastClient());
     }
 
     @After
@@ -99,17 +100,6 @@ public class HazelcastLockProviderClusterTest {
         Thread.sleep(TimeUnit.SECONDS.toMillis(4));
         final Optional<SimpleLock> lock2Ter = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
         assertThat(lock2Ter).isNotEmpty();
-    }
-
-    @Test
-    public void testGetLockWhenLockOwnerShutdown() {
-        final Optional<SimpleLock> lock1 = lockProvider1.lock(lockConfig(LOCK_NAME_1, Duration.of(20, SECONDS), Duration.of(20, SECONDS)));
-        assertThat(lock1).isNotEmpty();
-        final Optional<SimpleLock> lock2 = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
-        assertThat(lock2).isEmpty();
-        hazelcastInstance1.shutdown();
-        final Optional<SimpleLock> lock2Bis = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
-        assertThat(lock2Bis).isNotEmpty();
     }
 
     protected static LockConfiguration simpleLockConfig(final String name) {

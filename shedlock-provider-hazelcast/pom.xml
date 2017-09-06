@@ -10,6 +10,10 @@
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <version>0.15.1-SNAPSHOT</version>
 
+    <properties>
+        <hazelcast.version>3.8.3</hazelcast.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
@@ -20,7 +24,14 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>3.8.3</version>
+            <version>${hazelcast.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-client</artifactId>
+            <version>${hazelcast.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
