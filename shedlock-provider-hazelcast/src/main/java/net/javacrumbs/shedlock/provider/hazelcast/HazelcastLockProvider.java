@@ -97,10 +97,6 @@ public class HazelcastLockProvider implements LockProvider {
             log.debug("lock - lock obtained, it was locked but expired : oldLock={};  conf={}", lock, lockConfiguration);
             replaceLock(lockName, lockConfiguration);
             return true;
-        } else if (isLockedByUnavailableMemberOfCluster(lock)) {
-            log.debug("lock - lock obtained, it was locked by an available member of cluster :  oldLock={};  conf={}", lock, lockConfiguration);
-            replaceLock(lockName, lockConfiguration);
-            return true;
         } else {
             log.debug("lock - already locked : currentLock={};  conf={}", lock, lockConfiguration);
             return false;
@@ -122,8 +118,7 @@ public class HazelcastLockProvider implements LockProvider {
     }
 
     private void addNewLock(final LockConfiguration lockConfiguration) {
-        final String localMemberUuid = getLocalMemberUuid();
-        final HazelcastLock lock = HazelcastLock.fromConfigurationWhereTtlIsUntilTime(lockConfiguration, localMemberUuid);
+        final HazelcastLock lock = HazelcastLock.fromConfigurationWhereTtlIsUntilTime(lockConfiguration);
         log.trace("lock store - new lock created from configuration : {}", lockConfiguration);
         final String lockName = lockConfiguration.getName();
         getStore().put(lockName, lock);
@@ -136,11 +131,6 @@ public class HazelcastLockProvider implements LockProvider {
         addNewLock(lockConfiguration);
     }
 
-
-    private String getLocalMemberUuid() {
-        return hazelcastInstance.getCluster().getLocalMember().getUuid();
-    }
-
     private boolean isUnlocked(final HazelcastLock lock) {
         return lock == null;
     }
@@ -148,12 +138,6 @@ public class HazelcastLockProvider implements LockProvider {
     private boolean isExpired(final HazelcastLock lock, final Instant now) {
         final Instant timeToLive = lock.getTimeToLive();
         return !now.isBefore(timeToLive);
-    }
-
-    private boolean isLockedByUnavailableMemberOfCluster(final HazelcastLock lock) {
-        final String memberUuid = lock.getClusterMemberUuid();
-        final boolean memberIsAvailable = hazelcastInstance.getCluster().getMembers().stream().anyMatch(member -> member.getUuid().equals(memberUuid));
-        return !memberIsAvailable;
     }
 
     /**
