@@ -4,6 +4,7 @@ before_install:
 language: java
 jdk:
   - oraclejdk8
+  - oraclejdk9
 cache:
   directories:
   - $HOME/.embedmongo
