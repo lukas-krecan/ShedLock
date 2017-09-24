@@ -3,7 +3,6 @@ before_install:
   - sudo apt-get install -y libaio1
 language: java
 jdk:
-  - oraclejdk8
   - oraclejdk9
 cache:
   directories:
