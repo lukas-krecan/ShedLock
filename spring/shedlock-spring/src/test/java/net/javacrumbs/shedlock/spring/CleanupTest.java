@@ -22,6 +22,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.time.Duration;
 
@@ -38,16 +39,27 @@ public class CleanupTest {
         assertThat(taskScheduler).isNotNull();
         context.close();
 
-
-        verify(Config.taskScheduler).destroy();
+        assertThat(Config.taskScheduler.isDestroyed()).isTrue();
     }
 
     @Configuration
     static class Config {
-        interface DisposableTaskScheduler extends TaskScheduler, DisposableBean {};
+        static class DisposableTaskScheduler extends ThreadPoolTaskScheduler implements DisposableBean {
+            private volatile boolean destroyed;
+
+            @Override
+            public void destroy() {
+                destroyed = true;
+                super.destroy();
+            }
+
+            public boolean isDestroyed() {
+                return destroyed;
+            }
+        }
 
         private static LockProvider lockProvider = mock(LockProvider.class);
-        private static DisposableTaskScheduler taskScheduler = mock(DisposableTaskScheduler.class);
+        private static DisposableTaskScheduler taskScheduler = new DisposableTaskScheduler();
 
         @Bean
         public ScheduledLockConfiguration shedlockConfig() {

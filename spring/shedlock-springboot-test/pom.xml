@@ -46,6 +46,7 @@
         </dependency>
 
         <dependency>
+<<<<<<< HEAD
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
@@ -55,6 +56,11 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
             <scope>compile</scope>
+=======
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.3.4</version>
+>>>>>>> Adding module-info.java
         </dependency>
     </dependencies>
 
@@ -81,5 +87,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

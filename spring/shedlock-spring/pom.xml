@@ -56,6 +56,18 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Needed for test -->
+                    <argLine>
+                        --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.proxytest=spring.core
+                        --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.proxytest=spring.beans
+                        --add-exports net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.proxytest=spring.context
+                    </argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
