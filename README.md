@@ -309,6 +309,19 @@ public void run() {
 }
 ```
 
+### Running without Spring
+It is possible to use ShedLock without Spring
+
+```java
+LockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
+
+...
+
+Instant lockAtMostUntil = Instant.now().plusSeconds(10);
+executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostUntil));
+
+```
+
 ## Change log
 ## 0.15.1
 * Hazelcast works with remote cluster 
