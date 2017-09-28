@@ -42,11 +42,11 @@ public class LockConfiguration {
         this.name = Objects.requireNonNull(name);
         this.lockAtMostUntil = Objects.requireNonNull(lockAtMostUntil);
         this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);
-        if (lockAtLeastUntil.isAfter(this.lockAtMostUntil)) {
-            throw new IllegalArgumentException("lockAtMost is before lockAtLeast for lock '" + name + "'.");
+        if (lockAtLeastUntil.isAfter(lockAtMostUntil)) {
+            throw new IllegalArgumentException("lockAtMostUntil is before lockAtLeastUntil for lock '" + name + "'.");
         }
-        if (this.lockAtMostUntil.isBefore(Instant.now())) {
-            throw new IllegalArgumentException("lockAtMost is in the past for lock '" + name + "'.");
+        if (lockAtMostUntil.isBefore(Instant.now())) {
+            throw new IllegalArgumentException("lockAtMostUntil is in the past for lock '" + name + "'.");
         }
         if (name.isEmpty()) {
             throw new IllegalArgumentException("lock name can not be empty");
