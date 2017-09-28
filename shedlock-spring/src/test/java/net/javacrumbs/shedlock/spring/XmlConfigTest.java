@@ -37,7 +37,7 @@ public class XmlConfigTest {
 
     @Test
     public void shouldCallLockProvider() {
-        await().until(() -> verify(lockProvider, atLeastOnce()).lock(any()));
+        await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(any()));
     }
 
     public static class Task {

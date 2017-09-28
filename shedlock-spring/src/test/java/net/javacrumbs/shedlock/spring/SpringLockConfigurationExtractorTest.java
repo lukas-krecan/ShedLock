@@ -63,8 +63,8 @@ public class SpringLockConfigurationExtractorTest {
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethod");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName");
-        assertThat(lockConfiguration.getLockAtMostUntil()).isLessThanOrEqualTo(now().plus(10, MILLIS));
-        assertThat(lockConfiguration.getLockAtLeastUntil()).isGreaterThan(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
+        assertThat(lockConfiguration.getLockAtMostUntil()).isBeforeOrEqualTo(now().plus(10, MILLIS));
+        assertThat(lockConfiguration.getLockAtLeastUntil()).isAfter(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
     }
 
     @Test
