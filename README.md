@@ -31,7 +31,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -157,7 +157,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -183,7 +183,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -213,7 +213,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -233,7 +233,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jedis</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -253,7 +253,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1</version>
 </dependency>
 ```
 
@@ -323,6 +323,9 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 ```
 
 ## Change log
+## 0.16.1
+* Automatically closing TaskExecutor on Spring shutdown
+
 ## 0.16.0
 * Removed spring-test from shedlock-spring compile time dependencies
 * Added Automatic-Module-Names
