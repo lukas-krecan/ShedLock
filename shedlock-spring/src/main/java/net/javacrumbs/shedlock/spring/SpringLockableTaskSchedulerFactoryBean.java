@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
-import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.StringValueResolver;
@@ -29,7 +29,7 @@ import java.time.temporal.TemporalAmount;
  * Helper class to simplify configuration of Spring LockableTaskScheduler. embeddedValueResolver is injected by Spring automatically.
  * That's why this class implements FactoryBean.
  */
-public class SpringLockableTaskSchedulerFactoryBean implements FactoryBean<LockableTaskScheduler>, EmbeddedValueResolverAware, ScheduledLockConfiguration {
+public class SpringLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<LockableTaskScheduler> implements EmbeddedValueResolverAware, ScheduledLockConfiguration {
     private final TaskScheduler taskScheduler;
 
     private final LockProvider lockProvider;
@@ -52,7 +52,12 @@ public class SpringLockableTaskSchedulerFactoryBean implements FactoryBean<Locka
     }
 
     @Override
-    public LockableTaskScheduler getObject() throws Exception {
+    public Class<?> getObjectType() {
+        return LockableTaskScheduler.class;
+    }
+
+    @Override
+    protected LockableTaskScheduler createInstance() throws Exception {
         return new LockableTaskScheduler(
             taskScheduler,
             new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, embeddedValueResolver))
@@ -60,13 +65,8 @@ public class SpringLockableTaskSchedulerFactoryBean implements FactoryBean<Locka
     }
 
     @Override
-    public Class<?> getObjectType() {
-        return LockableTaskScheduler.class;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
+    protected void destroyInstance(LockableTaskScheduler instance) throws Exception {
+        instance.destroy();
     }
 
     @Override
