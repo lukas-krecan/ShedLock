@@ -43,9 +43,7 @@ import static java.util.Objects.requireNonNull;
  * <li>Annotation based scheduler</li>
  * </ol>
  */
-public class SpringLockConfigurationExtractor
-        implements
-    LockConfigurationExtractor {
+public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
@@ -89,7 +87,7 @@ public class SpringLockConfigurationExtractor
                 Instant now = now();
                 return Optional.of(
                     new LockConfiguration(
-                        annotation.name(),
+                        getName(annotation),
                         now.plus(getLockAtMostFor(annotation)),
                         now.plus(getLockAtLeastFor(annotation))));
             }
@@ -97,6 +95,14 @@ public class SpringLockConfigurationExtractor
             logger.debug("Unknown task type " + task);
         }
         return Optional.empty();
+    }
+
+    private String getName(SchedulerLock annotation) {
+        if (embeddedValueResolver != null) {
+            return embeddedValueResolver.resolveStringValue(annotation.name());
+        } else {
+            return annotation.name();
+        }
     }
 
     SchedulerLock findAnnotation(ScheduledMethodRunnable task) {

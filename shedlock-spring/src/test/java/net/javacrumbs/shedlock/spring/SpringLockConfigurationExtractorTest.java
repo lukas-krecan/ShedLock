@@ -60,11 +60,20 @@ public class SpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetNameAndLockTimeFromAnnotation() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("lockName")).thenReturn("lockName");
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethod");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName");
         assertThat(lockConfiguration.getLockAtMostUntil()).isBeforeOrEqualTo(now().plus(100, MILLIS));
         assertThat(lockConfiguration.getLockAtLeastUntil()).isAfter(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
+    }
+
+    @Test
+    public void shouldGetNameFromSpringVariable() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("${name}")).thenReturn("lockNameX");
+        ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethodWithNameVariable");
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("lockNameX");
     }
 
     @Test
@@ -151,6 +160,11 @@ public class SpringLockConfigurationExtractorTest {
 
     @SchedulerLock(name = "lockName", lockAtMostForString = "${placeholder}")
     public void annotatedMethodWithString() {
+
+    }
+
+    @SchedulerLock(name = "${name}")
+    public void annotatedMethodWithNameVariable() {
 
     }
 
