@@ -19,8 +19,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
@@ -37,9 +35,6 @@ import java.util.Optional;
  * See https://redis.io/commands/set
  */
 public class RedisLockProvider implements LockProvider {
-    private static final Logger log = LoggerFactory.getLogger(RedisLockProvider.class);
-
-
     private static final String KEY_PREFIX = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
