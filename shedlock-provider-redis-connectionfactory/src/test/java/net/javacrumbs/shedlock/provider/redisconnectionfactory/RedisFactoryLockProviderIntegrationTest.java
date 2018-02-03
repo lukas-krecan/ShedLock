@@ -15,94 +15,93 @@
  */
 package net.javacrumbs.shedlock.provider.redisconnectionfactory;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Optional;
-
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import redis.embedded.RedisServer;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Optional;
 
 import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
-	private static JedisConnectionFactory jedisConnectionFactory;
-	private static RedisServer redisServer;
-	private LockProvider lockProvider;
+    private static JedisConnectionFactory jedisConnectionFactory;
+    private static RedisServer redisServer;
+    private LockProvider lockProvider;
 
-	private final static int PORT = 6380;
-	private final static String HOST = "localhost";
-	private final static String ENV = "test";
+    private final static int PORT = 6380;
+    private final static String HOST = "localhost";
+    private final static String ENV = "test";
 
-	@BeforeClass
-	public static void startRedis() throws IOException {
-		redisServer = new RedisServer(PORT);
-		redisServer.start();
-	}
+    @BeforeClass
+    public static void startRedis() throws IOException {
+        redisServer = new RedisServer(PORT);
+        redisServer.start();
+    }
 
-	@AfterClass
-	public static void stopRedis() {
-		redisServer.stop();
-	}
+    @AfterClass
+    public static void stopRedis() {
+        redisServer.stop();
+    }
 
-	@Before
-	public void createLockProvider() {
-		jedisConnectionFactory = new JedisConnectionFactory();
-		jedisConnectionFactory.setHostName(HOST);
-		jedisConnectionFactory.setPort(PORT);
-		lockProvider = new RedisFactoryLockProvider(jedisConnectionFactory, ENV);
-	}
+    @Before
+    public void createLockProvider() {
+        jedisConnectionFactory = new JedisConnectionFactory();
+        jedisConnectionFactory.setHostName(HOST);
+        jedisConnectionFactory.setPort(PORT);
+        lockProvider = new RedisFactoryLockProvider(jedisConnectionFactory, ENV);
+    }
 
-	@Override
-	protected LockProvider getLockProvider() {
-		return lockProvider;
-	}
+    @Override
+    protected LockProvider getLockProvider() {
+        return lockProvider;
+    }
 
-	@Override
-	protected void assertUnlocked(String lockName) {
-		RedisConnection redisConnection = null;
-		try {
-			redisConnection = jedisConnectionFactory.getConnection();
-			Assert.assertNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
-		} finally {
-			if (redisConnection != null)
-				redisConnection.close();
-		}
-	}
+    @Override
+    protected void assertUnlocked(String lockName) {
+        RedisConnection redisConnection = null;
+        try {
+            redisConnection = jedisConnectionFactory.getConnection();
+            Assert.assertNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
+        } finally {
+            if (redisConnection != null)
+                redisConnection.close();
+        }
+    }
 
-	@Override
-	protected void assertLocked(String lockName) {
-		RedisConnection redisConnection = null;
-		try {
-			redisConnection = jedisConnectionFactory.getConnection();
-			Assert.assertNotNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
-		} finally {
-			if (redisConnection != null)
-				redisConnection.close();
-		}
-	}
+    @Override
+    protected void assertLocked(String lockName) {
+        RedisConnection redisConnection = null;
+        try {
+            redisConnection = jedisConnectionFactory.getConnection();
+            Assert.assertNotNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
+        } finally {
+            if (redisConnection != null)
+                redisConnection.close();
+        }
+    }
 
-	@Override
-	public void shouldTimeout() throws InterruptedException {
-		LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
-		Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
-		assertThat(lock1).isNotEmpty();
+    @Override
+    public void shouldTimeout() throws InterruptedException {
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
+        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
+        assertThat(lock1).isNotEmpty();
 
-		sleep(5);
+        sleep(5);
 
-		// Get new config with updated timeout
-		configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
-		assertUnlocked(configWithShortTimeout.getName());
-	}
+        // Get new config with updated timeout
+        configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
+        assertUnlocked(configWithShortTimeout.getName());
+    }
 }
