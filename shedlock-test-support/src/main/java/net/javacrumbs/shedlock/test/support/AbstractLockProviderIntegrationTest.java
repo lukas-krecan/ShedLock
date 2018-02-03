@@ -89,11 +89,14 @@ public abstract class AbstractLockProviderIntegrationTest {
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        sleep(20);
+        sleep(25);
+        assertUnlocked(LOCK_NAME1);
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(configWithShortTimeout);
+        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(5), Duration.ZERO));
         assertThat(lock2).isNotEmpty();
+        lock2.get().unlock();
     }
+
 
     @Test
     public void shouldBeAbleToLockRightAfterUnlock() {

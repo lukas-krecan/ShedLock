@@ -15,36 +15,42 @@
  */
 package net.javacrumbs.shedlock.provider.redisconnectionfactory;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Collection;
 
-import static java.lang.Thread.sleep;
 import static net.javacrumbs.shedlock.provider.redisconnectionfactory.RedisFactoryLockProvider.buildKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(Parameterized.class)
 public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
-    private static JedisConnectionFactory jedisConnectionFactory;
     private static RedisServer redisServer;
     private LockProvider lockProvider;
     private StringRedisTemplate redisTemplate;
 
-    private final static int PORT = 6380;
-    private final static String HOST = "localhost";
+    final static int PORT = 6380;
+    final static String HOST = "localhost";
     private final static String ENV = "test";
+
+    @Parameters
+    public static Collection<RedisConnectionFactory> data() {
+        return Arrays.asList(createJedisConnectionFactory(), createLettuceConnectionFactory());
+    }
 
     @BeforeClass
     public static void startRedis() throws IOException {
@@ -57,11 +63,9 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
         redisServer.stop();
     }
 
-    @Before
-    public void createLockProvider() {
-        jedisConnectionFactory = new JedisConnectionFactory(new RedisStandaloneConfiguration(HOST, PORT));
-        lockProvider = new RedisFactoryLockProvider(jedisConnectionFactory, ENV);
-        redisTemplate = new StringRedisTemplate(jedisConnectionFactory);
+    public RedisFactoryLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
+        lockProvider = new RedisFactoryLockProvider(connectionFactory, ENV);
+        redisTemplate = new StringRedisTemplate(connectionFactory);
     }
 
     @Override
@@ -79,16 +83,16 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
         assertThat(redisTemplate.getExpire(buildKey(lockName, ENV))).isGreaterThan(0);
     }
 
-    @Override
-    public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
-        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
-        assertThat(lock1).isNotEmpty();
 
-        sleep(5);
+    private static RedisConnectionFactory createJedisConnectionFactory() {
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(new RedisStandaloneConfiguration(HOST, PORT));
+        jedisConnectionFactory.afterPropertiesSet();
+        return jedisConnectionFactory;
+    }
 
-        // Get new config with updated timeout
-        configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
-        assertUnlocked(configWithShortTimeout.getName());
+    private static RedisConnectionFactory createLettuceConnectionFactory() {
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(new RedisStandaloneConfiguration(HOST, PORT));
+        lettuceConnectionFactory.afterPropertiesSet();
+        return lettuceConnectionFactory;
     }
 }

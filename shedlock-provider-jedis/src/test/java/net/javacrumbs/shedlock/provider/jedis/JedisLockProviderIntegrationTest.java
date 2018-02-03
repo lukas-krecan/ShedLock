@@ -15,9 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jedis;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -28,11 +26,6 @@ import redis.clients.jedis.JedisPool;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.util.Optional;
-
-import static java.lang.Thread.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
@@ -78,18 +71,5 @@ public class JedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
         try (Jedis jedis = jedisPool.getResource()) {
             Assert.assertNotNull(jedis.get(JedisLockProvider.buildKey(lockName, ENV)));
         }
-    }
-
-    @Override
-    public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
-        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
-        assertThat(lock1).isNotEmpty();
-
-        sleep(5);
-
-        // Get new config with updated timeout
-        configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(2), Duration.ZERO);
-        assertUnlocked(configWithShortTimeout.getName());
     }
 }
