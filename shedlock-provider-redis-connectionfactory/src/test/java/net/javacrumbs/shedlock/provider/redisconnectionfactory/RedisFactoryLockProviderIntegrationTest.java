@@ -20,11 +20,11 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
+import static net.javacrumbs.shedlock.provider.redisconnectionfactory.RedisFactoryLockProvider.buildKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
@@ -39,7 +40,7 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
     private static JedisConnectionFactory jedisConnectionFactory;
     private static RedisServer redisServer;
     private LockProvider lockProvider;
-    
+    private StringRedisTemplate redisTemplate;
 
     private final static int PORT = 6380;
     private final static String HOST = "localhost";
@@ -58,10 +59,9 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
 
     @Before
     public void createLockProvider() {
-        jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setHostName(HOST);
-        jedisConnectionFactory.setPort(PORT);
+        jedisConnectionFactory = new JedisConnectionFactory(new RedisStandaloneConfiguration(HOST, PORT));
         lockProvider = new RedisFactoryLockProvider(jedisConnectionFactory, ENV);
+        redisTemplate = new StringRedisTemplate(jedisConnectionFactory);
     }
 
     @Override
@@ -71,28 +71,12 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
 
     @Override
     protected void assertUnlocked(String lockName) {
-        RedisConnection redisConnection = null;
-        try {
-            redisConnection = jedisConnectionFactory.getConnection();
-            Assert.assertNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
-        } finally {
-            if (redisConnection != null) {
-                redisConnection.close();
-            }
-        }
+        assertThat(redisTemplate.hasKey(buildKey(lockName, ENV))).isFalse();
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        RedisConnection redisConnection = null;
-        try {
-            redisConnection = jedisConnectionFactory.getConnection();
-            Assert.assertNotNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
-        } finally {
-            if (redisConnection != null) {
-                redisConnection.close();
-            }
-        }
+        assertThat(redisTemplate.getExpire(buildKey(lockName, ENV))).isGreaterThan(0);
     }
 
     @Override
