@@ -62,19 +62,19 @@ public class RedisFactoryLockProvider implements LockProvider {
         RedisConnection redisConnection = null;
         try {
             redisConnection = redisConnectionFactory.getConnection();
-
-            if (redisConnection.setNX(key.getBytes(), buildValue().getBytes())) {
-                redisConnection.pExpire(key.getBytes(), getMsUntil(lockConfiguration.getLockAtMostUntil()));
+            Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
+            if (redisConnection.set(key.getBytes(), buildValue(), expiration, SetOption.SET_IF_ABSENT)) {
                 return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
             } else {
                 return Optional.empty();
             }
-        } catch (Exception e) {
-            log.error("Error obtaining lock ", e);
-            return Optional.empty();
         } finally {
             close(redisConnection);
         }
+    }
+
+    private static Expiration getExpiration(Instant lockAtMostUntil) {
+        return Expiration.from(Duration.between(Instant.now(), lockAtMostUntil));
     }
 
     private static void close(RedisConnection redisConnection) {
@@ -97,7 +97,7 @@ public class RedisFactoryLockProvider implements LockProvider {
 
         @Override
         public void unlock() {
-            Expiration keepLockFor = Expiration.milliseconds(getMsUntil(lockConfiguration.getLockAtLeastUntil()));
+            Expiration keepLockFor = getExpiration(lockConfiguration.getLockAtLeastUntil());
             RedisConnection redisConnection = null;
             // lock at least until is in the past
             if (keepLockFor.getExpirationTimeInMilliseconds() <= 0) {
@@ -112,16 +112,12 @@ public class RedisFactoryLockProvider implements LockProvider {
             } else {
                 try {
                     redisConnection = redisConnectionFactory.getConnection();
-                    redisConnection.set(key.getBytes(), buildValue().getBytes(), keepLockFor, SetOption.SET_IF_PRESENT);
+                    redisConnection.set(key.getBytes(), buildValue(), keepLockFor, SetOption.SET_IF_PRESENT);
                 } finally {
                     close(redisConnection);
                 }
             }
         }
-    }
-
-    private static long getMsUntil(Instant instant) {
-        return Duration.between(Instant.now(), instant).toMillis();
     }
 
     private static String getHostname() {
@@ -136,7 +132,7 @@ public class RedisFactoryLockProvider implements LockProvider {
         return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
     }
 
-    private static String buildValue() {
-        return String.format("ADDED:%s@%s", Instant.now().toString(), getHostname());
+    private static byte[] buildValue() {
+        return String.format("ADDED:%s@%s", Instant.now().toString(), getHostname()).getBytes();
     }
 }
