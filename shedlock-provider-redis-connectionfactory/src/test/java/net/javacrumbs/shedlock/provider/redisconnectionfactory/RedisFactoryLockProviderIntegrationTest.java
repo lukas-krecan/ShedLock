@@ -39,6 +39,7 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
     private static JedisConnectionFactory jedisConnectionFactory;
     private static RedisServer redisServer;
     private LockProvider lockProvider;
+    
 
     private final static int PORT = 6380;
     private final static String HOST = "localhost";
@@ -75,8 +76,9 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
             redisConnection = jedisConnectionFactory.getConnection();
             Assert.assertNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
         } finally {
-            if (redisConnection != null)
+            if (redisConnection != null) {
                 redisConnection.close();
+            }
         }
     }
 
@@ -87,8 +89,9 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
             redisConnection = jedisConnectionFactory.getConnection();
             Assert.assertNotNull(redisConnection.get(RedisFactoryLockProvider.buildKey(lockName, ENV).getBytes()));
         } finally {
-            if (redisConnection != null)
+            if (redisConnection != null) {
                 redisConnection.close();
+            }
         }
     }
 

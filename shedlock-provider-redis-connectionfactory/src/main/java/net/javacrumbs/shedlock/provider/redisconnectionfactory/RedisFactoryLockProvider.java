@@ -19,6 +19,8 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
@@ -35,12 +37,14 @@ import java.util.Optional;
  * See https://redis.io/commands/set
  */
 public class RedisFactoryLockProvider implements LockProvider {
+    private static final Logger log = LoggerFactory.getLogger(RedisFactoryLockProvider.class);
+
 
     private static final String KEY_PREFIX = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
-    private RedisConnectionFactory redisConnectionFactory;
-    private String environment;
+    private final RedisConnectionFactory redisConnectionFactory;
+    private final String environment;
 
     public RedisFactoryLockProvider(RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
@@ -62,11 +66,20 @@ public class RedisFactoryLockProvider implements LockProvider {
             if (redisConnection.setNX(key.getBytes(), buildValue().getBytes())) {
                 redisConnection.pExpire(key.getBytes(), getMsUntil(lockConfiguration.getLockAtMostUntil()));
                 return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
-            } else return Optional.empty();
+            } else {
+                return Optional.empty();
+            }
         } catch (Exception e) {
+            log.error("Error obtaining lock ", e);
             return Optional.empty();
         } finally {
-            if (redisConnection != null) redisConnection.close();
+            close(redisConnection);
+        }
+    }
+
+    private static void close(RedisConnection redisConnection) {
+        if (redisConnection != null) {
+            redisConnection.close();
         }
     }
 
@@ -94,14 +107,14 @@ public class RedisFactoryLockProvider implements LockProvider {
                 } catch (Exception e) {
                     throw new LockException("Can not remove node", e);
                 } finally {
-                    if (redisConnection != null) redisConnection.close();
+                    close(redisConnection);
                 }
             } else {
                 try {
                     redisConnection = redisConnectionFactory.getConnection();
                     redisConnection.set(key.getBytes(), buildValue().getBytes(), keepLockFor, SetOption.SET_IF_PRESENT);
                 } finally {
-                    if (redisConnection != null) redisConnection.close();
+                    close(redisConnection);
                 }
             }
         }
