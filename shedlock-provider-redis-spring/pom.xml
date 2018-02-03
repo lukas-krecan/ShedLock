@@ -8,7 +8,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-redis-connectionfactory</artifactId>
+    <artifactId>shedlock-provider-redis-spring</artifactId>
     <version>0.17.1-SNAPSHOT</version>
 
     <dependencies>
@@ -62,7 +62,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.redis-connectionfactory
+                                net.javacrumbs.shedlock.provider.redis.spring
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

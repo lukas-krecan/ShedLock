@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redisconnectionfactory;
+package net.javacrumbs.shedlock.provider.redis.spring;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -36,8 +36,8 @@ import java.util.Optional;
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
  * See https://redis.io/commands/set
  */
-public class RedisFactoryLockProvider implements LockProvider {
-    private static final Logger log = LoggerFactory.getLogger(RedisFactoryLockProvider.class);
+public class RedisLockProvider implements LockProvider {
+    private static final Logger log = LoggerFactory.getLogger(RedisLockProvider.class);
 
 
     private static final String KEY_PREFIX = "job-lock";
@@ -46,11 +46,11 @@ public class RedisFactoryLockProvider implements LockProvider {
     private final RedisConnectionFactory redisConnectionFactory;
     private final String environment;
 
-    public RedisFactoryLockProvider(RedisConnectionFactory redisConn) {
+    public RedisLockProvider(RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
-    public RedisFactoryLockProvider(RedisConnectionFactory redisConn, String environment) {
+    public RedisLockProvider(RedisConnectionFactory redisConn, String environment) {
         this.redisConnectionFactory = redisConn;
         this.environment = environment;
     }

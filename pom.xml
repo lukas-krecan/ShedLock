@@ -33,7 +33,7 @@
         <module>shedlock-provider-jdbc-template</module>
         <module>shedlock-provider-zookeeper-curator</module>
         <module>shedlock-provider-hazelcast</module>
-        <module>shedlock-provider-redis-connectionfactory</module>
+        <module>shedlock-provider-redis-spring</module>
     </modules>
 
     <properties>

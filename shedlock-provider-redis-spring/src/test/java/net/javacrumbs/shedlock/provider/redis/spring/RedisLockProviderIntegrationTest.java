@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redisconnectionfactory;
+package net.javacrumbs.shedlock.provider.redis.spring;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static net.javacrumbs.shedlock.provider.redisconnectionfactory.RedisFactoryLockProvider.buildKey;
+import static net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider.buildKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
-public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     private static RedisServer redisServer;
     private LockProvider lockProvider;
@@ -63,8 +63,8 @@ public class RedisFactoryLockProviderIntegrationTest extends AbstractLockProvide
         redisServer.stop();
     }
 
-    public RedisFactoryLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
-        lockProvider = new RedisFactoryLockProvider(connectionFactory, ENV);
+    public RedisLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
+        lockProvider = new RedisLockProvider(connectionFactory, ENV);
         redisTemplate = new StringRedisTemplate(connectionFactory);
     }
 
