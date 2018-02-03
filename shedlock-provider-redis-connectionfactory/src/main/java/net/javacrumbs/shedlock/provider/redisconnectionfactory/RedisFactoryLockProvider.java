@@ -73,8 +73,8 @@ public class RedisFactoryLockProvider implements LockProvider {
         }
     }
 
-    private static Expiration getExpiration(Instant lockAtMostUntil) {
-        return Expiration.from(Duration.between(Instant.now(), lockAtMostUntil));
+    private static Expiration getExpiration(Instant until) {
+        return Expiration.from(Duration.between(Instant.now(), until));
     }
 
     private static void close(RedisConnection redisConnection) {
