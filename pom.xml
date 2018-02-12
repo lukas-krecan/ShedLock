@@ -24,17 +24,17 @@
         <module>shedlock-core</module>
         <module>shedlock-spring</module>
         <module>shedlock-springboot-test</module>
-        <module>shedlock-provider-mongo</module>
         <module>shedlock-test-support</module>
         <module>shedlock-test-support-jdbc</module>
-        <module>shedlock-provider-jdbc-internal</module>
-        <module>shedlock-provider-jdbc</module>
-        <module>shedlock-provider-jdbc-template</module>
-        <module>shedlock-provider-zookeeper-curator</module>
-        <module>shedlock-provider-hazelcast</module>
-        <module>shedlock-provider-redis-jedis</module>
-        <module>shedlock-provider-redis-spring</module>
-        <module>shedlock-provider-jedis</module>
+        <module>providers/mongo/shedlock-provider-mongo</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-internal</module>
+        <module>providers/jdbc/shedlock-provider-jdbc</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-template</module>
+        <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
+        <module>providers/hazelcast/shedlock-provider-hazelcast</module>
+        <module>providers/redis/shedlock-provider-redis-jedis</module>
+        <module>providers/redis/shedlock-provider-redis-spring</module>
+        <module>providers/redis/shedlock-provider-jedis</module>
     </modules>
 
     <properties>
