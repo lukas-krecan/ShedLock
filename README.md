@@ -220,6 +220,10 @@ Import
 and configure
 
 ```java
+import net.javacrumbs.shedlock.provider.zookeeper.curator.ZookeeperCuratorLockProvider;
+
+...
+
 @Bean
 public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework client) {
     return new ZookeeperCuratorLockProvider(client);
