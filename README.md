@@ -240,6 +240,10 @@ Import
 and configure
 
 ```java
+import net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider;
+
+...
+
 @Bean
 public LockProvider lockProvider(JedisPool jedisPool) {
     return new RedisLockProvider(connectionFactory, ENV);
@@ -260,6 +264,10 @@ Import
 and configure
 
 ```java
+import net.javacrumbs.shedlock.provider.redis.jedis.JedisLockProvider;
+
+...
+
 @Bean
 public LockProvider lockProvider(JedisPool jedisPool) {
     return new JedisLockProvider(jedisPool, ENV);
