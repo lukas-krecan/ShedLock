@@ -227,13 +227,33 @@ public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework c
 ```
 By default, ephemeral nodes for locks will be created under `/shedlock` node. 
 
+#### Redis (using Spring RedisConnectionFactory)
+Import 
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-redis-spring</artifactId>
+    <version>0.17.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+@Bean
+public LockProvider lockProvider(JedisPool jedisPool) {
+    return new RedisLockProvider(connectionFactory, ENV);
+}
+```
+
+
 #### Redis (using Jedis)
 Import 
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-jedis</artifactId>
-    <version>0.17.0</version>
+    <artifactId>shedlock-provider-redis-jedis</artifactId>
+    <version>0.18.0</version>
 </dependency>
 ```
 
@@ -253,7 +273,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.0</version>
 </dependency>
 ```
 
@@ -323,6 +343,10 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 ```
 
 ## Change log
+## 0.18.0
+* Added shedlock-provider-redis-spring
+* shedlock-provider-jedis moved to shedlock-provider-redis-jedis
+
 ## 0.17.0
 * Support for SPEL in lock name annotation 
 
