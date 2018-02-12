@@ -25,7 +25,6 @@
         <module>shedlock-spring</module>
         <module>shedlock-springboot-test</module>
         <module>shedlock-provider-mongo</module>
-        <module>shedlock-provider-jedis</module>
         <module>shedlock-test-support</module>
         <module>shedlock-test-support-jdbc</module>
         <module>shedlock-provider-jdbc-internal</module>
@@ -33,7 +32,9 @@
         <module>shedlock-provider-jdbc-template</module>
         <module>shedlock-provider-zookeeper-curator</module>
         <module>shedlock-provider-hazelcast</module>
+        <module>shedlock-provider-redis-jedis</module>
         <module>shedlock-provider-redis-spring</module>
+        <module>shedlock-provider-jedis</module>
     </modules>
 
     <properties>
