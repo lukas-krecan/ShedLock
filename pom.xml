@@ -25,7 +25,7 @@
         <module>shedlock-spring</module>
         <module>shedlock-springboot-test</module>
         <module>shedlock-test-support</module>
-        <module>shedlock-test-support-jdbc</module>
+        <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/jdbc/shedlock-provider-jdbc-internal</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>
