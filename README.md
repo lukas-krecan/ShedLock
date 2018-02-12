@@ -356,7 +356,7 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 ## Change log
 ## 0.18.0
-* Added shedlock-provider-redis-spring
+* Added shedlock-provider-redis-spring (thanks to @siposr)
 * shedlock-provider-jedis moved to shedlock-provider-redis-jedis
 
 ## 0.17.0
