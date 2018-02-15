@@ -31,7 +31,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
@@ -157,7 +157,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
@@ -183,7 +183,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
@@ -213,7 +213,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
@@ -237,7 +237,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>0.17.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
@@ -355,6 +355,9 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 ```
 
 ## Change log
+## 0.18.1
+* shedlock-provider-redis-spring made compatible with spring-data-redis 1.x.x  
+
 ## 0.18.0
 * Added shedlock-provider-redis-spring (thanks to @siposr)
 * shedlock-provider-jedis moved to shedlock-provider-redis-jedis
