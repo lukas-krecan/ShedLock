@@ -20,13 +20,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SchedulerLock {
     /**
      * Lock name.
      */
-    String name();
+    String name() default "";
 
     /**
      * How long (in ms) the lock should be kept in case the machine which obtained the lock died before releasing it.
@@ -37,6 +37,8 @@ public @interface SchedulerLock {
      */
     long lockAtMostFor() default -1;
 
+    String lockAtMostForString() default "";
+
     /**
      * The lock will be held at least for X millis. Can be used if you really need to execute the task
      * at most once in given period of time. If the duration of the task is shorter than clock difference between nodes, the task can
@@ -44,4 +46,6 @@ public @interface SchedulerLock {
      * lock will be kept at least for given period of time.
      */
     long lockAtLeastFor() default -1;
+
+    String lockAtLeastForString() default "";
 }

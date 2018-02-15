@@ -20,14 +20,15 @@ import com.mongodb.MongoClient;
 import com.zaxxer.hikari.HikariDataSource;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
+import net.javacrumbs.shedlock.spring.ScheduledLockConfiguration;
+import net.javacrumbs.shedlock.spring.ScheduledLockConfigurationBuilder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.sql.DataSource;
+import java.time.Duration;
 
 @SpringBootApplication
 @EnableScheduling
@@ -37,11 +38,13 @@ public class Application {
         SpringApplication.run(Application.class);
     }
 
-
     @Bean
-    public TaskScheduler taskScheduler(LockProvider lockProvider) {
-        int poolSize = 10;
-        return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(poolSize, lockProvider);
+    public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
+        return ScheduledLockConfigurationBuilder
+                .withLockProvider(lockProvider)
+                .withPoolSize(10)
+                .withDefaultLockAtMostFor(Duration.ofMinutes(10))
+                .build();
     }
 
     //    @Bean

@@ -34,15 +34,25 @@ public class LockConfiguration {
      */
     private final Instant lockAtLeastUntil;
 
-    public LockConfiguration(String name, Instant lockUntil) {
-        this(name, lockUntil, Instant.now());
+    public LockConfiguration(String name, Instant lockAtMostUntil) {
+        this(name, lockAtMostUntil, Instant.now());
     }
 
-    public LockConfiguration(String name, Instant lockUntil, Instant lockAtLeastUntil) {
+    public LockConfiguration(String name, Instant lockAtMostUntil, Instant lockAtLeastUntil) {
         this.name = Objects.requireNonNull(name);
-        this.lockAtMostUntil = Objects.requireNonNull(lockUntil);
+        this.lockAtMostUntil = Objects.requireNonNull(lockAtMostUntil);
         this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);
+        if (lockAtLeastUntil.isAfter(lockAtMostUntil)) {
+            throw new IllegalArgumentException("lockAtMostUntil is before lockAtLeastUntil for lock '" + name + "'.");
+        }
+        if (lockAtMostUntil.isBefore(Instant.now())) {
+            throw new IllegalArgumentException("lockAtMostUntil is in the past for lock '" + name + "'.");
+        }
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("lock name can not be empty");
+        }
     }
+
 
     public String getName() {
         return name;

@@ -28,7 +28,9 @@ import static net.javacrumbs.shedlock.spring.SpringLockConfigurationExtractor.DE
 
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler.
+ * @deprecated Use {@link ScheduledLockConfigurationBuilder} instead. Objects created through this class will not support string annotation param resolution.
  */
+@Deprecated
 public class SpringLockableTaskSchedulerFactory {
 
     /**

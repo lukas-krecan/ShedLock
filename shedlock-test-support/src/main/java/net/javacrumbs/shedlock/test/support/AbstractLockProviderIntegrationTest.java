@@ -24,15 +24,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.sleep;
-import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
     protected static final String LOCK_NAME1 = "name";
-    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(1000, MILLIS);
+    public static final Duration LOCK_AT_LEAST_FOR = Duration.of(2, SECONDS);
 
     protected abstract LockProvider getLockProvider();
 
@@ -85,15 +85,18 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, 2, Duration.ZERO);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(20), Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        sleep(2);
+        sleep(25);
+        assertUnlocked(LOCK_NAME1);
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(configWithShortTimeout);
+        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(5), Duration.ZERO));
         assertThat(lock2).isNotEmpty();
+        lock2.get().unlock();
     }
+
 
     @Test
     public void shouldBeAbleToLockRightAfterUnlock() {
@@ -114,29 +117,28 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockAtLeastFor() throws InterruptedException {
-        LockConfiguration configWithGracePeriod = lockConfig(LOCK_NAME1, 0, LOCK_AT_LEAST_FOR);
-        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithGracePeriod);
+        Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
 
         // can not acquire lock, grace period did not pass yet
-        Optional<SimpleLock> lock2 = getLockProvider().lock(configWithGracePeriod);
-        assertThat(lock2).isEmpty();
-
+        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).isEmpty();
         sleep(LOCK_AT_LEAST_FOR.toMillis());
-        Optional<SimpleLock> lock3 = getLockProvider().lock(configWithGracePeriod);
+
+        // can acquire the lock
+        Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));
         assertThat(lock3).isNotEmpty();
         lock3.get().unlock();
 
     }
 
     protected static LockConfiguration lockConfig(String name) {
-        return lockConfig(name, TimeUnit.MINUTES.toMillis(5), Duration.ZERO);
+        return lockConfig(name, Duration.of(5, MINUTES), Duration.ZERO);
     }
 
-    protected static LockConfiguration lockConfig(String name, long timeoutMillis, Duration lockAtLeastFor) {
+    protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
         Instant now = Instant.now();
-        return new LockConfiguration(name, now.plus(timeoutMillis, MILLIS), now.plus(lockAtLeastFor));
+        return new LockConfiguration(name, now.plus(lockAtMostFor), now.plus(lockAtLeastFor));
     }
 
 }

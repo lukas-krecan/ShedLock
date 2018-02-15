@@ -1,16 +1,17 @@
-ShedLock [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
+ShedLock
 ========
+[![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt) [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 
-ShedLock does one and only thing. It makes sure your scheduled tasks ar executed at most once at the same time. 
+ShedLock does one and only one thing. It makes sure your scheduled tasks are executed at most once at the same time. 
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
  
-Currently, only Spring scheduled tasks coordinated through Mongo, JDBC database or ZooKeeper are supported. More
+Currently, Spring scheduled tasks coordinated through Mongo, JDBC database, Redis, Hazelcast or ZooKeeper are supported. More
 scheduling and coordination mechanisms and expected in the future.
 
 Feedback and pull-requests welcome!
 
-## ShedLock is not a distributed scheduler
+#### ShedLock is not a distributed scheduler
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. For example if the task is fetching records from a database, processing them and marking them as processed at the end without
@@ -18,13 +19,19 @@ using any transaction. In such case ShedLock may be right for you.
 
 
 ## Usage
+### Requirements and dependencies
+* Java 8
+* Spring Framework
+* slf4j-api
+
+
 ### Import project
 
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.10.0</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
@@ -60,7 +67,7 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 ...
-private static final FOURTEEN_MIN = 14 * 60 * 1000;
+private static final int FOURTEEN_MIN = 14 * 60 * 1000;
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
@@ -82,11 +89,13 @@ Now we need to integrate the library into Spring. It's done by wrapping standard
 import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
 
 ...
-
 @Bean
-public TaskScheduler taskScheduler(LockProvider lockProvider) {
-    int poolSize = 10;
-    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(poolSize, lockProvider);
+public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
+    return ScheduledLockConfigurationBuilder
+        .withLockProvider(lockProvider)
+        .withPoolSize(10)
+        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
+        .build();
 }
 ```
 
@@ -107,7 +116,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.8.0</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
@@ -148,7 +157,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.10.0</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
@@ -174,7 +183,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.10.0</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
@@ -191,6 +200,12 @@ public LockProvider lockProvider(DataSource dataSource) {
 }
 ```
 the rest is the same as with JdbcTemplate lock provider.
+
+
+#### Warning
+**Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
+so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
+that multiple locks will be held.
  
 #### ZooKeeper (using Curator)
 Import 
@@ -198,19 +213,94 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.10.0</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
 and configure
 
 ```java
+import net.javacrumbs.shedlock.provider.zookeeper.curator.ZookeeperCuratorLockProvider;
+
+...
+
 @Bean
 public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework client) {
     return new ZookeeperCuratorLockProvider(client);
 }
 ```
 By default, ephemeral nodes for locks will be created under `/shedlock` node. 
+
+#### Redis (using Spring RedisConnectionFactory)
+Import 
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-redis-spring</artifactId>
+    <version>0.17.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(JedisPool jedisPool) {
+    return new RedisLockProvider(connectionFactory, ENV);
+}
+```
+
+
+#### Redis (using Jedis)
+Import 
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-redis-jedis</artifactId>
+    <version>0.18.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.redis.jedis.JedisLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(JedisPool jedisPool) {
+    return new JedisLockProvider(jedisPool, ENV);
+}
+```
+
+#### Hazelcast
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-hazelcast</artifactId>
+    <version>0.18.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.hazelcast.HazelcastLockProvider;
+
+...
+
+@Bean
+public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
+    return new HazelcastLockProvider(hazelcastInstance);
+}
+```
 
 ### Spring XML configuration
 
@@ -222,13 +312,16 @@ If you are using Spring XML config, use this configuration
     <constructor-arg ref="dataSource"/>
 </bean>
 
-<!-- Wrap the original scheduler -->
-<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory" factory-method="newLockableTaskScheduler">
+<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactoryBean">
     <constructor-arg>
-        <!-- The original scheduler -->
         <task:scheduler id="sch" pool-size="10"/>
     </constructor-arg>
     <constructor-arg ref="lockProvider"/>
+    <constructor-arg name="defaultLockAtMostFor">
+        <bean class="java.time.Duration" factory-method="ofMinutes">
+            <constructor-arg value="10"/>
+        </bean>
+    </constructor-arg>
 </bean>
 
 
@@ -248,12 +341,57 @@ public void run() {
 }
 ```
 
-## Requirements and dependencies
-1. Java 8
-2. slf4j-api
+### Running without Spring
+It is possible to use ShedLock without Spring
 
+```java
+LockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
+
+...
+
+Instant lockAtMostUntil = Instant.now().plusSeconds(600);
+executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostUntil));
+
+```
 
 ## Change log
+## 0.18.0
+* Added shedlock-provider-redis-spring (thanks to @siposr)
+* shedlock-provider-jedis moved to shedlock-provider-redis-jedis
+
+## 0.17.0
+* Support for SPEL in lock name annotation 
+
+## 0.16.1
+* Automatically closing TaskExecutor on Spring shutdown
+
+## 0.16.0
+* Removed spring-test from shedlock-spring compile time dependencies
+* Added Automatic-Module-Names
+
+## 0.15.1
+* Hazelcast works with remote cluster 
+
+## 0.15.0
+* Fixed ScheduledLockConfigurationBuilder interfaces #32
+* Hazelcast code refactoring
+
+## 0.14.0
+* Support for Hazelcast (thanks to @peyo)
+
+## 0.13.0
+* Jedis constructor made more generic (thanks to @mgrzeszczak) 
+
+## 0.12.0
+* Support for property placeholders in annotation lockAtMostForString/lockAtLeastForString
+* Support for composed annotations
+* ScheduledLockConfigurationBuilder introduced (deprecating SpringLockableTaskSchedulerFactory)
+
+## 0.11.0
+* Support for Redis (thanks to @clamey)
+* Checking that lockAtMostFor is in the future
+* Checking that lockAtMostFor is larger than lockAtLeastFor
+
 
 ## 0.10.0
 * jdbc-template-provider does not participate in task transaction 

@@ -22,22 +22,33 @@ import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
 import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.util.StringValueResolver;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SpringLockConfigurationExtractorTest {
     public static final Duration DEFAULT_LOCK_TIME = Duration.of(30, ChronoUnit.MINUTES);
-    public static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MINUTES);
-    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR);
+    public static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
+    private final StringValueResolver embeddedValueResolver = mock(StringValueResolver.class);
+    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver);
 
 
     @Test
@@ -49,11 +60,20 @@ public class SpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetNameAndLockTimeFromAnnotation() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("lockName")).thenReturn("lockName");
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethod");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName");
-        assertThat(lockConfiguration.getLockAtMostUntil()).isLessThanOrEqualTo(now().plus(10, MILLIS));
-        assertThat(lockConfiguration.getLockAtLeastUntil()).isGreaterThan(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
+        assertThat(lockConfiguration.getLockAtMostUntil()).isBeforeOrEqualTo(now().plus(100, MILLIS));
+        assertThat(lockConfiguration.getLockAtLeastUntil()).isAfter(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
+    }
+
+    @Test
+    public void shouldGetNameFromSpringVariable() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("${name}")).thenReturn("lockNameX");
+        ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethodWithNameVariable");
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("lockNameX");
     }
 
     @Test
@@ -67,7 +87,15 @@ public class SpringLockConfigurationExtractorTest {
     public void shouldLockTimeFromAnnotation() throws NoSuchMethodException {
         SchedulerLock annotation = getAnnotation("annotatedMethod");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
-        assertThat(lockAtMostFor).isEqualTo(Duration.of(10, MILLIS));
+        assertThat(lockAtMostFor).isEqualTo(Duration.of(100, MILLIS));
+    }
+
+    @Test
+    public void shouldLockTimeFromAnnotationWithString() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("${placeholder}")).thenReturn("5");
+        SchedulerLock annotation = getAnnotation("annotatedMethodWithString");
+        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(lockAtMostFor).isEqualTo(Duration.of(5, MILLIS));
     }
 
     @Test
@@ -82,6 +110,22 @@ public class SpringLockConfigurationExtractorTest {
         SchedulerLock annotation = getAnnotation("annotatedMethodWithPositiveGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
+    }
+
+    @Test
+    public void shouldGetPositiveGracePeriodFromAnnotationWithString() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("10")).thenReturn("10");
+        SchedulerLock annotation = getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
+        TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
+        assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
+    }
+
+    @Test
+    public void shouldExtractComposedAnnotation() throws NoSuchMethodException {
+        SchedulerLock annotation = getAnnotation("composedAnnotation");
+        TemporalAmount atMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(annotation.name()).isEqualTo("lockName1");
+        assertThat(atMostFor).isEqualTo(Duration.of(20, MILLIS));
     }
 
     @Test
@@ -109,8 +153,18 @@ public class SpringLockConfigurationExtractorTest {
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtMostFor = 10)
+    @SchedulerLock(name = "lockName", lockAtMostFor = 100)
     public void annotatedMethod() {
+
+    }
+
+    @SchedulerLock(name = "lockName", lockAtMostForString = "${placeholder}")
+    public void annotatedMethodWithString() {
+
+    }
+
+    @SchedulerLock(name = "${name}")
+    public void annotatedMethodWithNameVariable() {
 
     }
 
@@ -127,5 +181,31 @@ public class SpringLockConfigurationExtractorTest {
     @SchedulerLock(name = "lockName", lockAtLeastFor = 10)
     public void annotatedMethodWithPositiveGracePeriod() {
 
+    }
+
+    @SchedulerLock(name = "lockName", lockAtLeastForString = "10")
+    public void annotatedMethodWithPositiveGracePeriodWithString() {
+
+    }
+
+    @ScheduledLocked(name = "lockName1")
+    public void composedAnnotation() {
+
+    }
+
+    @Target(METHOD)
+    @Retention(RUNTIME)
+    @Documented
+    @Scheduled
+    @SchedulerLock
+    public @interface ScheduledLocked {
+        @AliasFor(annotation = Scheduled.class, attribute = "cron")
+        String cron() default "";
+
+        @AliasFor(annotation = SchedulerLock.class, attribute = "lockAtMostFor")
+        long lockAtMostFor() default 20L;
+
+        @AliasFor(annotation = SchedulerLock.class, attribute = "name")
+        String name();
     }
 }

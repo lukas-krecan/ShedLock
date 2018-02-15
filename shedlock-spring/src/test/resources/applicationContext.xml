@@ -8,12 +8,16 @@
         <constructor-arg value="net.javacrumbs.shedlock.core.LockProvider"/>
     </bean>
 
-    <bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory"
-          factory-method="newLockableTaskScheduler">
+    <bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactoryBean">
         <constructor-arg>
             <task:scheduler id="sch" pool-size="10"/>
         </constructor-arg>
         <constructor-arg ref="lockProvider"/>
+        <constructor-arg name="defaultLockAtMostFor">
+            <bean class="java.time.Duration" factory-method="ofMinutes">
+                <constructor-arg value="10"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
 

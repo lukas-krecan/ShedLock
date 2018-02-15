@@ -21,8 +21,10 @@ import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.util.StringUtils;
+import org.springframework.util.StringValueResolver;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -46,19 +48,35 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     private final TemporalAmount defaultLockAtMostFor;
-    private final Duration defaultLockAtLeastFor;
+    private final TemporalAmount defaultLockAtLeastFor;
 
+    private final StringValueResolver embeddedValueResolver;
+
+    @Deprecated
     public SpringLockConfigurationExtractor() {
         this(DEFAULT_LOCK_AT_MOST_FOR);
     }
 
+    @Deprecated
     public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor) {
         this(defaultLockAtMostFor, Duration.ZERO);
     }
 
-    public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor, Duration defaultLockAtLeastFor) {
+    @Deprecated
+    public SpringLockConfigurationExtractor(
+        TemporalAmount defaultLockAtMostFor,
+        Duration defaultLockAtLeastFor) {
+        this(defaultLockAtMostFor, defaultLockAtLeastFor, null);
+    }
+
+    public SpringLockConfigurationExtractor(
+        TemporalAmount defaultLockAtMostFor,
+        TemporalAmount defaultLockAtLeastFor,
+        StringValueResolver embeddedValueResolver
+    ) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
+        this.embeddedValueResolver = embeddedValueResolver;
     }
 
     @Override
@@ -67,7 +85,11 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             SchedulerLock annotation = findAnnotation((ScheduledMethodRunnable) task);
             if (shouldLock(annotation)) {
                 Instant now = now();
-                return Optional.of(new LockConfiguration(annotation.name(), now.plus(getLockAtMostFor(annotation)), now.plus(getLockAtLeastFor(annotation))));
+                return Optional.of(
+                    new LockConfiguration(
+                        getName(annotation),
+                        now.plus(getLockAtMostFor(annotation)),
+                        now.plus(getLockAtLeastFor(annotation))));
             }
         } else {
             logger.debug("Unknown task type " + task);
@@ -75,9 +97,17 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         return Optional.empty();
     }
 
+    private String getName(SchedulerLock annotation) {
+        if (embeddedValueResolver != null) {
+            return embeddedValueResolver.resolveStringValue(annotation.name());
+        } else {
+            return annotation.name();
+        }
+    }
+
     SchedulerLock findAnnotation(ScheduledMethodRunnable task) {
         Method method = task.getMethod();
-        SchedulerLock annotation = AnnotationUtils.findAnnotation(method, SchedulerLock.class);
+        SchedulerLock annotation = findAnnotation(method);
         if (annotation != null) {
             return annotation;
         } else {
@@ -85,8 +115,9 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             Class<?> targetClass = AopUtils.getTargetClass(task.getTarget());
             if (targetClass != null && !task.getTarget().getClass().equals(targetClass)) {
                 try {
-                    Method methodOnTarget = targetClass.getMethod(method.getName(), method.getParameterTypes());
-                    return AnnotationUtils.findAnnotation(methodOnTarget, SchedulerLock.class);
+                    Method methodOnTarget = targetClass
+                        .getMethod(method.getName(), method.getParameterTypes());
+                    return findAnnotation(methodOnTarget);
                 } catch (NoSuchMethodException e) {
                     return null;
                 }
@@ -96,15 +127,45 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         }
     }
 
-    TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
-        long valueFromAnnotation = annotation.lockAtMostFor();
-        return valueFromAnnotation >= 0 ? Duration.of(valueFromAnnotation, MILLIS) : defaultLockAtMostFor;
+    private SchedulerLock findAnnotation(Method method) {
+        return AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
     }
 
-    Duration getLockAtLeastFor(SchedulerLock annotation) {
-        long valueFromAnnotation = annotation.lockAtLeastFor();
-        return valueFromAnnotation >= 0 ? Duration.of(valueFromAnnotation, MILLIS) : defaultLockAtLeastFor;
+    TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
+        return getValue(
+            annotation.lockAtMostFor(),
+            annotation.lockAtMostForString(),
+            this.defaultLockAtMostFor,
+            "lockAtMostForString"
+        );
     }
+
+    TemporalAmount getLockAtLeastFor(SchedulerLock annotation) {
+        return getValue(
+            annotation.lockAtLeastFor(),
+            annotation.lockAtLeastForString(),
+            this.defaultLockAtLeastFor,
+            "lockAtLeastForString"
+        );
+    }
+
+    private TemporalAmount getValue(long valueFromAnnotation, String stringValueFromAnnotation, TemporalAmount defaultValue, final String paramName) {
+        if (valueFromAnnotation >= 0) {
+            return Duration.of(valueFromAnnotation, MILLIS);
+        } else if (StringUtils.hasText(stringValueFromAnnotation)) {
+            if (embeddedValueResolver != null) {
+                stringValueFromAnnotation = embeddedValueResolver.resolveStringValue(stringValueFromAnnotation);
+            }
+            try {
+                return Duration.of(Long.valueOf(stringValueFromAnnotation), MILLIS);
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long");
+            }
+        } else {
+            return defaultValue;
+        }
+    }
+
 
 
     private boolean shouldLock(SchedulerLock annotation) {
