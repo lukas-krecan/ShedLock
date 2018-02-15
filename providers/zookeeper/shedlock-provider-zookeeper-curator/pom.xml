@@ -3,12 +3,12 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>0.18.1</version>
+        <version>0.18.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2-SNAPSHOT</version>
 
     <properties>
         <curator.version>3.2.1</curator.version>
