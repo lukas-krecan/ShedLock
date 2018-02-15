@@ -29,6 +29,7 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
@@ -69,7 +70,7 @@ public class RedisLockProvider implements LockProvider {
     }
 
     private static Expiration getExpiration(Instant until) {
-        return Expiration.from(Duration.between(Instant.now(), until));
+        return Expiration.from(Duration.between(Instant.now(), until).toMillis(), TimeUnit.MILLISECONDS);
     }
 
     private static void close(RedisConnection redisConnection) {
