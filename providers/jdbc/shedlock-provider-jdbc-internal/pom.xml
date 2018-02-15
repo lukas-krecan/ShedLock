@@ -3,12 +3,12 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>0.18.1-SNAPSHOT</version>
+        <version>0.18.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-jdbc-internal</artifactId>
-    <version>0.18.1-SNAPSHOT</version>
+    <version>0.18.1</version>
     <description>Internal module containing JDBC related code. Please do not use directly, the API might not be
         stable.
     </description>
