@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -85,13 +84,15 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
 
     private static RedisConnectionFactory createJedisConnectionFactory() {
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(new RedisStandaloneConfiguration(HOST, PORT));
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        jedisConnectionFactory.setHostName(HOST);
+        jedisConnectionFactory.setPort(PORT);
         jedisConnectionFactory.afterPropertiesSet();
         return jedisConnectionFactory;
     }
 
     private static RedisConnectionFactory createLettuceConnectionFactory() {
-        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(new RedisStandaloneConfiguration(HOST, PORT));
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(HOST, PORT);
         lettuceConnectionFactory.afterPropertiesSet();
         return lettuceConnectionFactory;
     }
