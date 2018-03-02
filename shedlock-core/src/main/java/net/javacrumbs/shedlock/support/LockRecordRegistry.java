@@ -37,4 +37,8 @@ class LockRecordRegistry {
     int getSize() {
         return lockRecords.size();
     }
+
+    public void clear() {
+        lockRecords.clear();
+    }
 }

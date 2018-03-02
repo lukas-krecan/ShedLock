@@ -49,6 +49,10 @@ public class StorageBasedLockProvider implements LockProvider {
         this.storageAccessor = storageAccessor;
     }
 
+    public void clearCache() {
+        lockRecordRegistry.clear();
+    }
+
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         boolean lockObtained = doLock(lockConfiguration);
