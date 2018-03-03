@@ -25,6 +25,7 @@ import net.javacrumbs.shedlock.spring.ScheduledLockConfigurationBuilder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.sql.DataSource;
@@ -67,6 +68,14 @@ public class Application {
         datasource.setJdbcUrl("jdbc:hsqldb:mem:mymemdb");
         datasource.setUsername("SA");
         datasource.setPassword("");
+
+        new JdbcTemplate(datasource).execute("CREATE TABLE shedlock(\n" +
+            "    name VARCHAR(64), \n" +
+            "    lock_until TIMESTAMP(3) NULL, \n" +
+            "    locked_at TIMESTAMP(3) NULL, \n" +
+            "    locked_by  VARCHAR(255), \n" +
+            "    PRIMARY KEY (name)\n" +
+            ")");
         return datasource;
     }
 }
