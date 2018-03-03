@@ -44,4 +44,12 @@ public class LockRecordRegistryTest {
     public void shouldNotLie() {
         assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isFalse();
     }
+
+    @Test
+    public void shouldClear() {
+        lockRecordRegistry.addLockRecord(NAME);
+        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isTrue();
+        lockRecordRegistry.clear();
+        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isFalse();
+    }
 }

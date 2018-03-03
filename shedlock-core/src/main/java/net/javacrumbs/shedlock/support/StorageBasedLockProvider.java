@@ -49,6 +49,9 @@ public class StorageBasedLockProvider implements LockProvider {
         this.storageAccessor = storageAccessor;
     }
 
+    /**
+     * Clears cache of existing lock records.
+     */
     public void clearCache() {
         lockRecordRegistry.clear();
     }
