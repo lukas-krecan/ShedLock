@@ -21,8 +21,8 @@ using any transaction. In such case ShedLock may be right for you.
 ## Usage
 ### Requirements and dependencies
 * Java 8
-* Spring Framework
 * slf4j-api
+* Spring Framework (optional)
 
 
 ### Import project
@@ -31,7 +31,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
 </dependency>
 ```
 
@@ -157,7 +157,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
 </dependency>
 ```
 
@@ -183,7 +183,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
 </dependency>
 ```
 
@@ -205,7 +205,7 @@ the rest is the same as with JdbcTemplate lock provider.
 #### Warning
 **Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
-that multiple locks will be held.
+that multiple locks will be held. Since 0.18.2 you can clean the cache by calling `clearCache()` on LockProvider.
  
 #### ZooKeeper (using Curator)
 Import 
@@ -213,7 +213,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
 </dependency>
 ```
 
@@ -237,7 +237,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
 </dependency>
 ```
 
@@ -355,6 +355,9 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 ```
 
 ## Change log
+## 0.18.2
+* ablility to clean lock cache
+
 ## 0.18.1
 * shedlock-provider-redis-spring made compatible with spring-data-redis 1.x.x  
 
