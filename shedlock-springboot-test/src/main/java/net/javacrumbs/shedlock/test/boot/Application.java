@@ -30,7 +30,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.sql.DataSource;
 import java.time.Duration;
-import java.util.concurrent.ScheduledExecutorService;
 
 @SpringBootApplication
 @EnableScheduling
@@ -41,10 +40,10 @@ public class Application {
     }
 
     @Bean
-    public ScheduledLockConfiguration taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
+    public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
         return ScheduledLockConfigurationBuilder
                 .withLockProvider(lockProvider)
-                .withExecutorService(executorService)
+                .withPoolSize(10)
                 .withDefaultLockAtMostFor(Duration.ofMinutes(10))
                 .build();
     }
