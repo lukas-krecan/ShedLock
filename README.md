@@ -104,7 +104,11 @@ Or if you already have an instance of ScheduledExecutorService
 ```java
 @Bean
 public TaskScheduler taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
-    return SpringLockableTaskSchedulerFactory.newLockableTaskScheduler(executorService, lockProvider, Duration.of(10, MINUTES));
+    return ScheduledLockConfigurationBuilder
+                .withLockProvider(lockProvider)
+                .withExecutorService(executorService)
+                .withDefaultLockAtMostFor(Duration.ofMinutes(10))
+                .build();
 }
 ```
 
