@@ -105,10 +105,10 @@ Or if you already have an instance of ScheduledExecutorService
 @Bean
 public TaskScheduler taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
     return ScheduledLockConfigurationBuilder
-                .withLockProvider(lockProvider)
-                .withExecutorService(executorService)
-                .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-                .build();
+        .withLockProvider(lockProvider)
+        .withExecutorService(executorService)
+        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
+        .build();
 }
 ```
 
