@@ -52,23 +52,6 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
 
     private final StringValueResolver embeddedValueResolver;
 
-    @Deprecated
-    public SpringLockConfigurationExtractor() {
-        this(DEFAULT_LOCK_AT_MOST_FOR);
-    }
-
-    @Deprecated
-    public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor) {
-        this(defaultLockAtMostFor, Duration.ZERO);
-    }
-
-    @Deprecated
-    public SpringLockConfigurationExtractor(
-        TemporalAmount defaultLockAtMostFor,
-        Duration defaultLockAtLeastFor) {
-        this(defaultLockAtMostFor, defaultLockAtLeastFor, null);
-    }
-
     public SpringLockConfigurationExtractor(
         TemporalAmount defaultLockAtMostFor,
         TemporalAmount defaultLockAtLeastFor,

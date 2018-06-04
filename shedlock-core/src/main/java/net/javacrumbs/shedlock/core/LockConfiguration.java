@@ -58,11 +58,6 @@ public class LockConfiguration {
         return name;
     }
 
-    @Deprecated
-    public Instant getLockUntil() {
-        return lockAtMostUntil;
-    }
-
     public Instant getLockAtMostUntil() {
         return lockAtMostUntil;
     }
