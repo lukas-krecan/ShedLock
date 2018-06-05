@@ -113,6 +113,8 @@ public TaskScheduler taskScheduler(ScheduledExecutorService executorService, Loc
 ```
 
 ### Configure LockProvider
+There are several implementations of LockProvider.  
+
 #### Mongo
 Import the project
 
