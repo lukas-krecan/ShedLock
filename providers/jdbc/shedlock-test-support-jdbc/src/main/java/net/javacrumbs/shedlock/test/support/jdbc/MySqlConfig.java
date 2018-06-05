@@ -29,7 +29,7 @@ class MySqlConfig implements DbConfig {
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
     private static final String USERNAME = "SA";
     private static final String PASSWORD = "";
-    private static SchemaConfig schemaConfig = aSchemaConfig(TEST_SCHEMA_NAME).build();
+    private static final SchemaConfig schemaConfig = aSchemaConfig(TEST_SCHEMA_NAME).build();
     private EmbeddedMysql mysqld;
 
     public void startDb() {

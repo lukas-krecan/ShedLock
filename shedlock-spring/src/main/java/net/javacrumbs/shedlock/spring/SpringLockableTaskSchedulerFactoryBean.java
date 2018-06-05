@@ -57,7 +57,7 @@ public class SpringLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<
     }
 
     @Override
-    protected LockableTaskScheduler createInstance() throws Exception {
+    protected LockableTaskScheduler createInstance() {
         return new LockableTaskScheduler(
             taskScheduler,
             new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, embeddedValueResolver))

@@ -43,7 +43,7 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Instance of the Hazelcast engine used by the application.
      */
-    private HazelcastInstance hazelcastInstance;
+    private final HazelcastInstance hazelcastInstance;
 
     /**
      * Instantiate the provider.

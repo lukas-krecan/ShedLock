@@ -24,7 +24,7 @@ import java.util.WeakHashMap;
  * This class helps them keep track of existing lock records, so they know if a lock record exists.
  */
 class LockRecordRegistry {
-    private final Set<String> lockRecords = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<String, Boolean>()));
+    private final Set<String> lockRecords = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     public void addLockRecord(String lockName) {
         lockRecords.add(lockName);

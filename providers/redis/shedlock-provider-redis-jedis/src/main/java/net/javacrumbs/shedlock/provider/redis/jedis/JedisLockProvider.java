@@ -43,8 +43,8 @@ public class JedisLockProvider implements LockProvider {
     private static final String SET_IF_EXIST = "XX";
     private static final String SET_EXPIRE_TIME_IN_MS = "PX";
 
-    private Pool<Jedis> jedisPool;
-    private String environment;
+    private final Pool<Jedis> jedisPool;
+    private final String environment;
 
     public JedisLockProvider(Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
