@@ -161,7 +161,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>0.18.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -187,7 +187,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>0.18.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -209,7 +209,7 @@ the rest is the same as with JdbcTemplate lock provider.
 #### Warning
 **Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
-that multiple locks will be held. Since 0.18.2 you can clean the cache by calling `clearCache()` on LockProvider.
+that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
  
 #### ZooKeeper (using Curator)
 Import 
@@ -217,7 +217,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>0.18.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -241,7 +241,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>0.18.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -358,7 +358,20 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 ```
 
+## Versions
+Version 1.x.x is compiled and tested with Spring 5 and Spring Data 2. It should be safe to use ShedLock 1.x.x with Spring 4
+if you are not using Spring Redis lock provider which introduced incompatibility. In other words
+- If you have dependency on spring-data-redis 2 - use ShedLock 1.x.x
+- If you have dependency on spring-data-redis 1 - use ShedLock 0.x.x
+- In all other cases, you can use both versions, prefereably 1.x.x
+
+
 ## Change log
+## 1.0.0
+* Upgraded dependencies to Spring 5 and Spring Data 2
+* Removed deprecated net.javacrumbs.shedlock.provider.jedis.JedisLockProvider (use  net.javacrumbs.shedlock.provider.redis.jedis.JedisLockProvide instead)
+* Removed deprecated SpringLockableTaskSchedulerFactory (use ScheduledLockConfigurationBuilder instead)
+
 ## 0.18.2
 * ablility to clean lock cache
 
