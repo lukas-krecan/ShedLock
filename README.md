@@ -31,7 +31,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>0.18.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -120,7 +120,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>0.18.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -265,7 +265,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>0.18.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -289,7 +289,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>0.18.0</version>
+    <version>1.0.0/version>
 </dependency>
 ```
 
