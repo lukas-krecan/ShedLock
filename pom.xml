@@ -34,11 +34,10 @@
         <module>providers/hazelcast/shedlock-provider-hazelcast</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
-        <module>providers/redis/shedlock-provider-jedis</module>
     </modules>
 
     <properties>
-        <spring.version>4.3.4.RELEASE</spring.version>
+        <spring.version>5.0.6.RELEASE</spring.version>
     </properties>
 
     <dependencies>
@@ -81,21 +80,21 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>2.10.0</version>
+                <version>2.18.3</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.8.0</version>
+                <version>3.10.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

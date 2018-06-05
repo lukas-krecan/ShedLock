@@ -11,7 +11,7 @@
     <version>0.18.3-SNAPSHOT</version>
 
     <properties>
-        <curator.version>3.2.1</curator.version>
+        <curator.version>4.0.1</curator.version>
     </properties>
 
     <dependencies>

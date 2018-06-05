@@ -53,13 +53,12 @@ public class RedisLockProvider implements LockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-
         String key = buildKey(lockConfiguration.getName(), this.environment);
         RedisConnection redisConnection = null;
         try {
             redisConnection = redisConnectionFactory.getConnection();
-            if (redisConnection.setNX(key.getBytes(), buildValue())) {
-                redisConnection.pExpire(key.getBytes(), getMsUntil(lockConfiguration.getLockAtMostUntil()));
+            Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
+            if (redisConnection.set(key.getBytes(), buildValue(), expiration, SetOption.SET_IF_ABSENT)) {
                 return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
             } else {
                 return Optional.empty();
