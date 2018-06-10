@@ -103,7 +103,7 @@ Or if you already have an instance of ScheduledExecutorService
 
 ```java
 @Bean
-public TaskScheduler taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
+public ScheduledLockConfiguration taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
     return ScheduledLockConfigurationBuilder
         .withLockProvider(lockProvider)
         .withExecutorService(executorService)
