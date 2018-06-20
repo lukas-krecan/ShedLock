@@ -251,11 +251,12 @@ and configure
 
 ```java
 import net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 ...
 
 @Bean
-public LockProvider lockProvider(JedisPool jedisPool) {
+public LockProvider lockProvider(RedisConnectionFactory connectionFactory) {
     return new RedisLockProvider(connectionFactory, ENV);
 }
 ```
