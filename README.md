@@ -18,6 +18,20 @@ executed repeatedly. For example if the task is fetching records from a database
 using any transaction. In such case ShedLock may be right for you.
 
 
++ [Usage](#usage)
++ [Lock Providers](#configure-lockprovider)
+  - [Mongo](#mongo)
+  - [JdbcTemplate](#jdbctemplate)
+  - [Plain JDBC](#plain-jdbc)
+  - [Warning](#warning)
+  - [ZooKeeper (using Curator)](#zookeeper--using-curator-)
+  - [Redis (using Spring RedisConnectionFactory)](#redis--using-spring-redisconnectionfactory-)
+  - [Redis (using Jedis)](#redis--using-jedis-)
+  - [Hazelcast](#hazelcast)
++ [Spring XML configuration](#spring-xml-configuration)
++ [Running without Spring](#running-without-spring)
++ [Versions](#versions)
+
 ## Usage
 ### Requirements and dependencies
 * Java 8
