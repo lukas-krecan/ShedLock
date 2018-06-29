@@ -15,8 +15,6 @@
  */
 package net.javacrumbs.shedlock.test.boot;
 
-import com.github.fakemongo.Fongo;
-import com.mongodb.MongoClient;
 import com.zaxxer.hikari.HikariDataSource;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -56,11 +54,11 @@ public class Application {
     public LockProvider lockProvider(DataSource dataSource) {
         return new JdbcTemplateLockProvider(dataSource, "shedlock");
     }
-
-    @Bean
-    public MongoClient mongo() {
-        return new Fongo("fongo").getMongo();
-    }
+//
+//    @Bean
+//    public MongoClient mongo() {
+//        return new Fongo("fongo").getMongo();
+//    }
 
     @Bean
     public DataSource dataSource() {
