@@ -93,7 +93,7 @@ public void scheduledTask() {
 ```
 By setting `lockAtMostFor` we make sure that the lock is released even if the node dies and by setting `lockAtLeastFor`
 we make sure it's not executed more than once in fifteen minutes. 
-Please note that **`lockAtMostFor` is just a safety net for a case that the node executing the task dies, please set it to 
+Please note that **`lockAtMostFor` is just a safety net for a case that the node executing the task dies, so set it to 
 a time that is significantly larger than maximum estimated execution time.**  If the task takes longer than `lockAtMostFor`,
 it will be executed again.
 
