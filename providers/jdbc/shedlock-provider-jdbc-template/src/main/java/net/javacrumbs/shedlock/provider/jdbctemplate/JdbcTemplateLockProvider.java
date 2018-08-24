@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -42,11 +43,19 @@ import javax.sql.DataSource;
  * </ol>
  */
 public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
-    public JdbcTemplateLockProvider(DataSource datasource) {
-        this(datasource, "shedlock");
+    public JdbcTemplateLockProvider(JdbcTemplate jdbcTemplate) {
+        this(jdbcTemplate, "shedlock");
     }
 
-    public JdbcTemplateLockProvider(DataSource datasource, String tableName) {
-        super(new JdbcTemplateStorageAccessor(datasource, tableName));
+    public JdbcTemplateLockProvider(DataSource dataSource) {
+        this(new JdbcTemplate(dataSource));
+    }
+
+    public JdbcTemplateLockProvider(DataSource dataSource, String tableName) {
+        this(new JdbcTemplate(dataSource), tableName);
+    }
+
+    public JdbcTemplateLockProvider(JdbcTemplate jdbcTemplate, String tableName) {
+        super(new JdbcTemplateStorageAccessor(jdbcTemplate, tableName));
     }
 }
