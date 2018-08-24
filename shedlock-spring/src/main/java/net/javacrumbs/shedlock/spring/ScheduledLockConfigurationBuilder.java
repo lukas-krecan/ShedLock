@@ -41,7 +41,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public interface ScheduledLockConfigurationBuilder {
 
     /**
-     * Configures required lockProvider
+     * Configures required lockProvider.
      */
     static ScheduledLockConfigurationBuilderWithoutTaskScheduler withLockProvider(LockProvider lockProvider) {
         return new DefaultScheduledLockConfigurationBuilder(lockProvider);
@@ -50,24 +50,24 @@ public interface ScheduledLockConfigurationBuilder {
 
     interface ScheduledLockConfigurationBuilderWithoutTaskScheduler {
         /**
-         * Will use ThreadPoolTaskScheduler with given poolsize
+         * Will use ThreadPoolTaskScheduler with given poolSize to execute the scheduled tasks.
          */
         ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor withPoolSize(int poolSize);
 
         /**
-         * Will use scheduledExecutorService for task execution
+         * Will use scheduledExecutorService for task execution.
          */
         ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor withExecutorService(ScheduledExecutorService scheduledExecutorService);
 
         /**
-         * Will use taskScheduler for task execution
+         * Will use taskScheduler for task execution.
          */
         ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor withTaskScheduler(TaskScheduler taskScheduler);
     }
 
     interface ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor {
         /**
-         * Upper limit after which the lock is automatically released
+         * Upper limit after which the lock is automatically released.
          */
         ConfiguredScheduledLockConfigurationBuilder withDefaultLockAtMostFor(TemporalAmount defaultLockAtMostFor);
     }
@@ -79,7 +79,7 @@ public interface ScheduledLockConfigurationBuilder {
         ConfiguredScheduledLockConfigurationBuilder withDefaultLockAtLeastFor(TemporalAmount defaultLockAtLeastFor);
 
         /**
-         * Builds the configuration
+         * Builds the configuration.
          */
         ScheduledLockConfiguration build();
     }
