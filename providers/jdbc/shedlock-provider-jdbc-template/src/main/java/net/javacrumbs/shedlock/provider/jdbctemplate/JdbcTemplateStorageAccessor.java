@@ -19,11 +19,13 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Timestamp;
@@ -37,20 +39,29 @@ import static java.util.Objects.requireNonNull;
 class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final String tableName;
     private final JdbcTemplate jdbcTemplate;
-    private final TransactionTemplate transactionTemplate;
+    private final TransactionOperations transactionTemplate;
 
-    public JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager, String tableName) {
+    JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager, String tableName) {
         this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
-        if (null == transactionManager) {
-            transactionManager = new DataSourceTransactionManager(jdbcTemplate.getDataSource());
-        }
-        this.transactionTemplate = new TransactionTemplate(transactionManager);
-        this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.transactionTemplate = createTransactionTemplate(transactionManager);
     }
 
-    JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, String tableName) {
-        this(jdbcTemplate, null, tableName);
+    private static TransactionOperations createTransactionTemplate(PlatformTransactionManager transactionManager) {
+        if (transactionManager == null) {
+            // no transaction provider specified, let's keep the original behavior
+            return new TransactionOperations() {
+                @Override
+                public <T> T execute(TransactionCallback<T> action) throws TransactionException {
+                    return action.doInTransaction(null);
+                }
+            };
+        } else {
+            // transaction provider specified, let's use it
+            TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+            transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+            return transactionTemplate;
+        }
     }
 
     @Override
