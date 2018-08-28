@@ -17,10 +17,27 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractMySqlJdbcLockProviderIntegrationTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
 public class MySqlJdbcTemplateLockProviderIntegrationTest extends AbstractMySqlJdbcLockProviderIntegrationTest {
+
+    private LockProviderFactory lockProviderFactory;
+
+    public MySqlJdbcTemplateLockProviderIntegrationTest(LockProviderFactory lockProviderFactory) {
+        this.lockProviderFactory = lockProviderFactory;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> lockProviders() {
+        return LockProviderFactory.lockProviders();
+    }
+
     @Override
     protected LockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(getDatasource());
+        return lockProviderFactory.createLockProvider(getDatasource());
     }
 }
