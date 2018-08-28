@@ -39,7 +39,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
 
-    public JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager, String tableName) {
+    JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager, String tableName) {
         this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
         if (null == transactionManager) {
@@ -47,10 +47,6 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         }
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    }
-
-    JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, String tableName) {
-        this(jdbcTemplate, null, tableName);
     }
 
     @Override
