@@ -59,7 +59,7 @@ public class ReentrantLockProviderTest {
 
         Runnable task = () -> {
             assertThat(runningTasks.getAndIncrement()).isEqualTo(0);
-            sleep(10);
+            sleep(50);
             assertThat(runningTasks.decrementAndGet()).isEqualTo(0);
             executedTasks.incrementAndGet();
         };
@@ -67,6 +67,8 @@ public class ReentrantLockProviderTest {
         ScheduledFuture<?> scheduledFuture2 = executor.schedule(new LockableRunnable(task, lockManager), 1, TimeUnit.MILLISECONDS);
         scheduledFuture1.get();
         scheduledFuture2.get();
+
+        // this assertion can fail if the tasks are scheduled one after another
         assertThat(executedTasks.get()).isEqualTo(1);
     }
 
