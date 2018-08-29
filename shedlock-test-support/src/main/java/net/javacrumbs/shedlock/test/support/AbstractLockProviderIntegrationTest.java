@@ -121,13 +121,11 @@ public abstract class AbstractLockProviderIntegrationTest {
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
 
-        // can not acquire lock, grace period did not pass yet
-        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).isEmpty();
+        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).describedAs("Can not acquire lock, grace period did not pass yet").isEmpty();
         sleep(LOCK_AT_LEAST_FOR.toMillis());
 
-        // can acquire the lock
         Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));
-        assertThat(lock3).isNotEmpty();
+        assertThat(lock3).describedAs("Can acquire the lock after grace period").isNotEmpty();
         lock3.get().unlock();
 
     }
