@@ -45,7 +45,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -138,7 +138,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -160,7 +160,10 @@ Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver
 
 #### JdbcTemplate
 
-Create the table
+There are two lock providers based on JDBC. JdbcTemplateLockProvider which uses Spring's JDBC template, supports transactions etc, and plain
+JdbcLockProvider which asseses JDBC directly. They should work more or less the same, if in doubt, use JdbcTemplateLockProvider.
+  
+First, create the table
 
 ```sql
 CREATE TABLE shedlock(
@@ -171,7 +174,7 @@ CREATE TABLE shedlock(
     PRIMARY KEY (name)
 ) 
 ```
-script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227)
+script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227) and for Oracle [here](https://github.com/lukas-krecan/ShedLock/issues/81#issue-355599950)
 
 Add dependency
 
@@ -179,7 +182,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -196,7 +199,7 @@ public LockProvider lockProvider(DataSource dataSource) {
 }
 ```
 
-Tested with MySql, Postgres and HSQLDB
+Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
 
 #### Plain JDBC
 For those who do not want to use jdbc-template, there is plain JDBC lock provider. Just import 
@@ -205,7 +208,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -235,7 +238,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -259,7 +262,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -286,7 +289,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -310,7 +313,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>1.0.0/version>
+    <version>1.1.0/version>
 </dependency>
 ```
 
@@ -388,6 +391,9 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 1.1.0
+# Support for transaction manager in JdbcTemplateLockProvider (thanks to @grmblfrz)
+
 ## 1.0.0
 * Upgraded dependencies to Spring 5 and Spring Data 2
 * Removed deprecated net.javacrumbs.shedlock.provider.jedis.JedisLockProvider (use  net.javacrumbs.shedlock.provider.redis.jedis.JedisLockProvide instead)
