@@ -117,17 +117,21 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockAtLeastFor() throws InterruptedException {
+        // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before this time
         Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
 
+        // Even though we have unlocked the lock, it will be held for some time
         assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).describedAs("Can not acquire lock, grace period did not pass yet").isEmpty();
+
+        // Let's wait wor the lock to be automatically released
         sleep(LOCK_AT_LEAST_FOR.toMillis());
 
+        // Should be able to acquire now
         Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));
         assertThat(lock3).describedAs("Can acquire the lock after grace period").isNotEmpty();
         lock3.get().unlock();
-
     }
 
     protected static LockConfiguration lockConfig(String name) {
