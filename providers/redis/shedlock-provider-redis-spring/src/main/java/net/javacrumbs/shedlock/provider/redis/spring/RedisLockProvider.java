@@ -125,8 +125,8 @@ public class RedisLockProvider implements LockProvider {
             super(connectionFactory);
         }
 
-        private Boolean tryToSetExpiration(String key, Expiration expiration, SetOption setIfAbsent) {
-            return execute(connection -> connection.set(serialize(key), buildValue(), expiration, setIfAbsent), false);
+        private Boolean tryToSetExpiration(String key, Expiration expiration, SetOption option) {
+            return execute(connection -> connection.set(serialize(key), buildValue(), expiration, option), false);
         }
 
         private byte[] buildValue() {
