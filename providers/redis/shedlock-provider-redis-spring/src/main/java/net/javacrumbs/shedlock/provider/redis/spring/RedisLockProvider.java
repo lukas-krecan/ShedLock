@@ -53,7 +53,7 @@ public class RedisLockProvider implements LockProvider {
      *
      * @param redisConn   RedisConnectionFactory
      * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances runing on the same Redis
+     *                    multiple ShedLock instances running on the same Redis
      */
     public RedisLockProvider(RedisConnectionFactory redisConn, String environment) {
         this.redisTemplate = new ShedlockRedisTemplate(redisConn);
