@@ -19,9 +19,9 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
 
 import java.net.InetAddress;
@@ -31,6 +31,8 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_ABSENT;
+
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
  * See https://redis.io/commands/set
@@ -39,32 +41,33 @@ public class RedisLockProvider implements LockProvider {
     private static final String KEY_PREFIX = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
-    private final RedisConnectionFactory redisConnectionFactory;
+    private final ShedlockRedisTemplate redisTemplate;
     private final String environment;
 
     public RedisLockProvider(RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
+    /**
+     * Creates RedisLockProvider
+     *
+     * @param redisConn   RedisConnectionFactory
+     * @param environment environment is part of the key and thus makes sure there is not key conflict between
+     *                    multiple ShedLock instances runing on the same Redis
+     */
     public RedisLockProvider(RedisConnectionFactory redisConn, String environment) {
-        this.redisConnectionFactory = redisConn;
+        this.redisTemplate = new ShedlockRedisTemplate(redisConn);
         this.environment = environment;
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName(), this.environment);
-        RedisConnection redisConnection = null;
-        try {
-            redisConnection = redisConnectionFactory.getConnection();
-            Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
-            if (redisConnection.set(key.getBytes(), buildValue(), expiration, SetOption.SET_IF_ABSENT)) {
-                return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
-            } else {
-                return Optional.empty();
-            }
-        } finally {
-            close(redisConnection);
+        Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
+        if (redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT)) {
+            return Optional.of(new RedisLock(key, redisTemplate, lockConfiguration));
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -76,45 +79,30 @@ public class RedisLockProvider implements LockProvider {
         return Duration.between(Instant.now(), until).toMillis();
     }
 
-    private static void close(RedisConnection redisConnection) {
-        if (redisConnection != null) {
-            redisConnection.close();
-        }
-    }
-
     private static final class RedisLock implements SimpleLock {
 
         private final String key;
-        private final RedisConnectionFactory redisConnectionFactory;
+        private final ShedlockRedisTemplate redisTemplate;
         private final LockConfiguration lockConfiguration;
 
-        private RedisLock(String key, RedisConnectionFactory redisConnectionFactory, LockConfiguration lockConfiguration) {
+        private RedisLock(String key, ShedlockRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
             this.key = key;
-            this.redisConnectionFactory = redisConnectionFactory;
+            this.redisTemplate = redisTemplate;
             this.lockConfiguration = lockConfiguration;
         }
 
         @Override
         public void unlock() {
             Expiration keepLockFor = getExpiration(lockConfiguration.getLockAtLeastUntil());
-            RedisConnection redisConnection = null;
             // lock at least until is in the past
             if (keepLockFor.getExpirationTimeInMilliseconds() <= 0) {
                 try {
-                    redisConnection = redisConnectionFactory.getConnection();
-                    redisConnection.del(key.getBytes());
+                    redisTemplate.delete(key);
                 } catch (Exception e) {
                     throw new LockException("Can not remove node", e);
-                } finally {
-                    close(redisConnection);
                 }
             } else {
-                try {
-                    redisConnection = redisConnectionFactory.getConnection();
-                    redisConnection.set(key.getBytes(), buildValue(), keepLockFor, SetOption.SET_IF_PRESENT);
-                } finally {
-                    close(redisConnection);
-                }
+                redisTemplate.tryToSetExpiration(key, keepLockFor, SetOption.SET_IF_PRESENT);
             }
         }
     }
@@ -131,7 +119,22 @@ public class RedisLockProvider implements LockProvider {
         return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
     }
 
-    private static byte[] buildValue() {
-        return String.format("ADDED:%s@%s", Instant.now().toString(), getHostname()).getBytes();
+
+    private static class ShedlockRedisTemplate extends StringRedisTemplate {
+        private ShedlockRedisTemplate(RedisConnectionFactory connectionFactory) {
+            super(connectionFactory);
+        }
+
+        private Boolean tryToSetExpiration(String key, Expiration expiration, SetOption setIfAbsent) {
+            return execute(connection -> connection.set(serialize(key), buildValue(), expiration, setIfAbsent), false);
+        }
+
+        private byte[] buildValue() {
+            return serialize(String.format("ADDED:%s@%s", Instant.now().toString(), getHostname()));
+        }
+
+        private byte[] serialize(String string) {
+            return getStringSerializer().serialize(string);
+        }
     }
 }

@@ -50,6 +50,12 @@ public class JedisLockProvider implements LockProvider {
         this(jedisPool, ENV_DEFAULT);
     }
 
+    /**
+      * Creates JedisLockProvider
+      * @param jedisPool Jedis connection pool
+      * @param environment environment is part of the key and thus makes sure there is not key conflict between
+      *        multiple ShedLock instances runing on the same Redis
+      */
     public JedisLockProvider(Pool<Jedis> jedisPool, String environment) {
         this.jedisPool = jedisPool;
         this.environment = environment;
