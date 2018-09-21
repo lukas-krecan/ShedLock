@@ -6,6 +6,7 @@ import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.JsonDocument;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
