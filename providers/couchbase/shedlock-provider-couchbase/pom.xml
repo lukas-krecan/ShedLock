@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<parent>
+    <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
         <version>1.1.2-SNAPSHOT</version>
@@ -23,9 +23,16 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+		
+		<dependency>
+            <groupId>com.couchbase.client</groupId>
+            <artifactId>java-client</artifactId>
+            <version>LATEST</version>
+        </dependency>
+
 	</dependencies>
 
-	<build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -34,7 +41,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.couchbase
+                                net.javacrumbs.shedlock.provider.zookeeper.curator
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
@@ -42,6 +49,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>
