@@ -41,10 +41,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.javacrumbs.shedlock</groupId>
-			<artifactId>shedlock-spring</artifactId>
-			<version>1.1.0</version>
-		</dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+		
+		<dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-test-support</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
