@@ -41,7 +41,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.zookeeper.curator
+                                net.javacrumbs.shedlock.provider.couchbase
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
