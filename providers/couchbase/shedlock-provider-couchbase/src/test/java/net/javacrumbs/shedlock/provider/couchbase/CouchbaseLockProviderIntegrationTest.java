@@ -2,82 +2,102 @@ package net.javacrumbs.shedlock.provider.couchbase;
 
 
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.bucket.BucketType;
+import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.query.N1qlParams;
+import com.couchbase.client.java.query.N1qlQuery;
+import com.couchbase.client.java.query.consistency.ScanConsistency;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.assertj.core.api.Assertions;
-import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.testcontainers.couchbase.CouchbaseContainer;
 
 import java.time.LocalDateTime;
 
-import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.*;
+import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCK_UNTIL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.couchbase.AbstractCouchbaseTest.DEFAULT_PASSWORD;
+import static org.testcontainers.couchbase.AbstractCouchbaseTest.TEST_BUCKET;
 
 public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest{
+    @Rule
+    public CouchbaseContainer couchbase = new CouchbaseContainer()
+        .withNewBucket(DefaultBucketSettings.builder()
+            .enableFlush(true)
+            .name(TEST_BUCKET)
+            .password(DEFAULT_PASSWORD)
+            .quota(100)
+            .type(BucketType.COUCHBASE)
+            .build());
 
-    private static final String BUCKET_NAME = "bucket_1";
-    private static final String HOST = "127.0.0.1";
+    private static CouchbaseContainer couchbaseContainer;
 
-
-    private CouchbaseLockProvider lockProvider;
-    private Bucket bucket;
-    private static Cluster cluster;
+    private static Bucket bucket;
 
     @BeforeClass
-    public static void startCouchbase () {
-        cluster = connect();
+    public static void setUpCouchbase() {
+        couchbaseContainer = initCouchbaseContainer();
+        bucket = openBucket(TEST_BUCKET, DEFAULT_PASSWORD);
     }
 
-    @AfterClass
-    public static void stopCouchbase () {
-        disconnect(cluster);
-    }
-
-    @Before
-    public void createLockProvider()  {
-        bucket = getBucket(cluster);
-        lockProvider = new CouchbaseLockProvider(bucket);
+    @After
+    public void clear() {
+        if (couchbaseContainer.isIndex() && couchbaseContainer.isQuery() && couchbaseContainer.isPrimaryIndex()) {
+            bucket.query(
+                N1qlQuery.simple(String.format("DELETE FROM `%s`", bucket.name()),
+                    N1qlParams.build().consistency(ScanConsistency.STATEMENT_PLUS)));
+        } else {
+            bucket.bucketManager().flush();
+        }
     }
 
     @Override
     protected LockProvider getLockProvider() {
-        return lockProvider;
+        return new CouchbaseLockProvider(bucket);
     }
 
     @Override
     public void assertUnlocked(String lockName) {
         JsonDocument lockDocument = bucket.get(lockName);
-        Assertions.assertThat(LocalDateTime.parse((String)lockDocument.content().get(LOCK_UNTIL)).isBefore(LocalDateTime.now()));
-        Assertions.assertThat(LocalDateTime.parse((String)lockDocument.content().get(LOCKED_AT)).isBefore(LocalDateTime.now()));
-        Assertions.assertThat(!((String) lockDocument.content().get(LOCKED_BY)).isEmpty());
+        assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCK_UNTIL))).isBefore(LocalDateTime.now());
+        assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCKED_AT))).isBefore(LocalDateTime.now());
+        assertThat(lockDocument.content().get(LOCKED_BY)).asString().isEmpty();
     }
 
     @Override
     public void assertLocked(String lockName) {
 
         JsonDocument lockDocument = bucket.get(lockName);
-        Assertions.assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCK_UNTIL)).isAfter(LocalDateTime.now()));
-        Assertions.assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCKED_AT)).isBefore(LocalDateTime.now()));
-        Assertions.assertThat(!((String) lockDocument.content().get(LOCKED_BY)).isEmpty());
+        assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCK_UNTIL))).isAfter(LocalDateTime.now());
+        assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCKED_AT))).isBefore(LocalDateTime.now());
+        assertThat(lockDocument.content().get(LOCKED_BY)).asString().isEmpty();
 
     }
 
-    private static Cluster connect(){
-        return CouchbaseCluster.create(HOST);
-    }
-
-    private static void disconnect(Cluster cluster){
-        cluster.disconnect();
-    }
-
-    private Bucket getBucket(Cluster cluster) {
-        cluster.authenticate(BUCKET_NAME, BUCKET_NAME);
-        Bucket bucket = cluster.openBucket(BUCKET_NAME);
-
+    private static Bucket openBucket(String bucketName, String password) {
+        CouchbaseCluster cluster = couchbaseContainer.getCouchbaseCluster();
+        Bucket bucket = cluster.openBucket(bucketName, password);
+        Runtime.getRuntime().addShutdownHook(new Thread(bucket::close));
         return bucket;
     }
 
+    private static CouchbaseContainer initCouchbaseContainer() {
+        CouchbaseContainer couchbaseContainer = new CouchbaseContainer()
+            .withNewBucket(DefaultBucketSettings.builder()
+                .enableFlush(true)
+                .name(TEST_BUCKET)
+                .password(DEFAULT_PASSWORD)
+                .quota(100)
+                .replicas(0)
+                .type(BucketType.COUCHBASE)
+                .build());
+        couchbaseContainer.start();
+        return couchbaseContainer;
+    }
 }
