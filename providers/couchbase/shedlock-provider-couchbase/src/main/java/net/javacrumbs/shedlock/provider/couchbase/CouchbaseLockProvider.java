@@ -25,9 +25,6 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Distributed lock using CouchbaseDB
@@ -63,13 +60,12 @@ import java.time.format.DateTimeFormatter;
  * </ol>
  */
 public class CouchbaseLockProvider extends StorageBasedLockProvider {
-
-    static final String LOCK_NAME = "name";
+    private static final String LOCK_NAME = "name";
     static final String LOCK_UNTIL = "lockedUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
 
-    public CouchbaseLockProvider (Bucket bucket) {
+    public CouchbaseLockProvider(Bucket bucket) {
         this(new CouchbaseLockProvider.CouchbaseAccessor(bucket));
     }
 
@@ -77,7 +73,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         super(couchbaseAccessor);
     }
 
-    static class CouchbaseAccessor extends AbstractStorageAccessor {
+    private static class CouchbaseAccessor extends AbstractStorageAccessor {
 
         private final Bucket bucket;
 
@@ -91,8 +87,8 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
                 JsonObject content = JsonObject.empty();
                 content.put(LOCK_NAME, lockConfiguration.getName());
-                content.put(LOCK_UNTIL, lockUntil(lockConfiguration.getLockAtMostUntil()));
-                content.put(LOCKED_AT, now());
+                content.put(LOCK_UNTIL, format(lockConfiguration.getLockAtMostUntil()));
+                content.put(LOCKED_AT, format(Instant.now()));
                 content.put(LOCKED_BY, getHostname());
                 JsonDocument document = JsonDocument.create(lockConfiguration.getName(), content);
 
@@ -105,19 +101,27 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         }
 
+        private String format(Instant instant) {
+            return instant.toString();
+        }
+
+        private Instant parse(Object instant) {
+            return Instant.parse((String) instant);
+        }
+
 
         @Override
-        public boolean updateRecord(LockConfiguration lockConfiguration)
-        {
+        public boolean updateRecord(LockConfiguration lockConfiguration) {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
-                LocalDateTime lockUntil = LocalDateTime.parse((String) document.content().get(LOCK_UNTIL));
-                if (lockUntil.isAfter(LocalDateTime.parse(now()))) {
+                Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
+                Instant now = Instant.now();
+                if (lockUntil.isAfter(now)) {
                     return false;
                 }
 
-                document.content().put(LOCK_UNTIL, lockUntil(lockConfiguration.getLockAtMostUntil()));
-                document.content().put(LOCKED_AT, now());
+                document.content().put(LOCK_UNTIL, format(lockConfiguration.getLockAtMostUntil()));
+                document.content().put(LOCKED_AT, format(now));
                 document.content().put(LOCKED_BY, getHostname());
 
                 bucket.replace(document);
@@ -132,24 +136,9 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         @Override
         public void unlock(LockConfiguration lockConfiguration) {
             JsonDocument document = bucket.get(lockConfiguration.getName());
-            document.content().put(LOCK_UNTIL, lockUntil(lockConfiguration.getUnlockTime()));
-            document.content().put(LOCKED_AT,  now());
-            document.content().put(LOCKED_BY,  getHostname());
+            document.content().put(LOCK_UNTIL, format(lockConfiguration.getUnlockTime()));
             bucket.replace(document);
         }
-
-        private String now() {
-            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            return localDateTime.format(timeFormatter);
-        }
-
-        private String lockUntil(Instant lockAtMostUntil) {
-            LocalDateTime localDateTime = LocalDateTime.ofInstant(lockAtMostUntil, ZoneId.systemDefault());
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            return localDateTime.format(timeFormatter);
-        }
-
     }
 
 }

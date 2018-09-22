@@ -7,28 +7,34 @@ import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.JsonDocument;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import java.time.LocalDateTime;
-
-import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.*;
+import static java.time.Instant.now;
+import static java.time.Instant.parse;
+import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCK_UNTIL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest{
 
-    private static final String BUCKET_NAME = "bucket_1";
+    private static final String BUCKET_NAME = "test";
     private static final String HOST = "127.0.0.1";
 
 
     private CouchbaseLockProvider lockProvider;
-    private Bucket bucket;
     private static Cluster cluster;
+    private static Bucket bucket;
 
     @BeforeClass
     public static void startCouchbase () {
         cluster = connect();
+        cluster.authenticate("Administrator", "password");
+
+        bucket = cluster.openBucket(BUCKET_NAME);
     }
 
     @AfterClass
@@ -42,6 +48,15 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIn
         lockProvider = new CouchbaseLockProvider(bucket);
     }
 
+    @After
+    public void clear() {
+        try {
+            bucket.remove(LOCK_NAME1);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
     @Override
     protected LockProvider getLockProvider() {
         return lockProvider;
@@ -50,19 +65,17 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIn
     @Override
     public void assertUnlocked(String lockName) {
         JsonDocument lockDocument = bucket.get(lockName);
-        Assertions.assertThat(LocalDateTime.parse((String)lockDocument.content().get(LOCK_UNTIL)).isBefore(LocalDateTime.now()));
-        Assertions.assertThat(LocalDateTime.parse((String)lockDocument.content().get(LOCKED_AT)).isBefore(LocalDateTime.now()));
-        Assertions.assertThat(!((String) lockDocument.content().get(LOCKED_BY)).isEmpty());
+        assertThat(parse((String) lockDocument.content().get(LOCK_UNTIL))).isBefore(now());
+        assertThat(parse((String) lockDocument.content().get(LOCKED_AT))).isBefore(now());
+        assertThat(lockDocument.content().get(LOCKED_BY)).asString().isNotEmpty();
     }
 
     @Override
     public void assertLocked(String lockName) {
-
         JsonDocument lockDocument = bucket.get(lockName);
-        Assertions.assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCK_UNTIL)).isAfter(LocalDateTime.now()));
-        Assertions.assertThat(LocalDateTime.parse((String) lockDocument.content().get(LOCKED_AT)).isBefore(LocalDateTime.now()));
-        Assertions.assertThat(!((String) lockDocument.content().get(LOCKED_BY)).isEmpty());
-
+        assertThat(parse((String) lockDocument.content().get(LOCK_UNTIL))).isAfter(now());
+        assertThat(parse((String) lockDocument.content().get(LOCKED_AT))).isBefore(now());
+        assertThat(lockDocument.content().get(LOCKED_BY)).asString().isNotEmpty();
     }
 
     private static Cluster connect(){
@@ -74,9 +87,6 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIn
     }
 
     private Bucket getBucket(Cluster cluster) {
-        cluster.authenticate(BUCKET_NAME, BUCKET_NAME);
-        Bucket bucket = cluster.openBucket(BUCKET_NAME);
-
         return bucket;
     }
 
