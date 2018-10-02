@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.couchbase;
+package net.javacrumbs.shedlock.provider.couchbase.javaclient;
 
 
 import com.couchbase.client.java.Bucket;
@@ -14,9 +14,9 @@ import org.junit.BeforeClass;
 
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
-import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.couchbase.CouchbaseLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest{

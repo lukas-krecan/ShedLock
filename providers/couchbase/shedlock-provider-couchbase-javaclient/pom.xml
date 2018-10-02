@@ -7,7 +7,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-couchbase</artifactId>
+    <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
     <version>1.1.2-SNAPSHOT</version>
 
 	<dependencies>
@@ -48,7 +48,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.zookeeper.curator
+                                net.javacrumbs.shedlock.provider.couchbase.javaclient
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

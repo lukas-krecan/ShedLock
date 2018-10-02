@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.couchbase;
+package net.javacrumbs.shedlock.provider.couchbase.javaclient;
 /**
  * Copyright 2009-2017 the original author or authors.
  *
