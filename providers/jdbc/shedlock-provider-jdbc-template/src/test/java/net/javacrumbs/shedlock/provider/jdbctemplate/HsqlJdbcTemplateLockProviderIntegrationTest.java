@@ -17,11 +17,26 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
 
+    private static final TimeZone TIME_ZONE = TimeZone.getTimeZone("CEST");
+
     @Override
     protected LockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(getDatasource());
+        return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
+            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+            .withTimeZone(TIME_ZONE)
+            .build()
+        );
+    }
+
+    @Override
+    protected Calendar now() {
+        return Calendar.getInstance(TIME_ZONE);
     }
 }

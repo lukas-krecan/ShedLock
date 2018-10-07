@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,8 +27,12 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import static java.util.Objects.requireNonNull;
 
@@ -38,15 +43,18 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final String tableName;
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
+    private final TimeZone timeZone;
 
-    JdbcTemplateStorageAccessor(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager, String tableName) {
-        this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
-        this.tableName = requireNonNull(tableName, "tableName can not be null");
-        if (null == transactionManager) {
-            transactionManager = new DataSourceTransactionManager(jdbcTemplate.getDataSource());
-        }
+    JdbcTemplateStorageAccessor(Configuration configuration) {
+        this.jdbcTemplate = requireNonNull(configuration.getJdbcTemplate(), "jdbcTemplate can not be null");
+        this.tableName = requireNonNull(configuration.getTableName(), "tableName can not be null");
+        PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null ?
+            configuration.getTransactionManager() :
+            new DataSourceTransactionManager(jdbcTemplate.getDataSource());
+
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        this.timeZone = configuration.getTimeZone();
     }
 
     @Override
@@ -56,8 +64,8 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             try {
                 int insertedRows = jdbcTemplate.update(sql, preparedStatement -> {
                     preparedStatement.setString(1, lockConfiguration.getName());
-                    preparedStatement.setTimestamp(2, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-                    preparedStatement.setTimestamp(3, Timestamp.from(Instant.now()));
+                    setTimestamp(preparedStatement, 2, lockConfiguration.getLockAtMostUntil());
+                    setTimestamp(preparedStatement, 3, Instant.now());
                     preparedStatement.setString(4, getHostname());
                 });
                 return insertedRows > 0;
@@ -73,15 +81,24 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
         return transactionTemplate.execute(status -> {
             int updatedRows = jdbcTemplate.update(sql, statement -> {
-                Timestamp now = Timestamp.from(Instant.now());
-                statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-                statement.setTimestamp(2, now);
+                Instant now = Instant.now();
+                setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
+                setTimestamp(statement, 2, now);
                 statement.setString(3, getHostname());
                 statement.setString(4, lockConfiguration.getName());
-                statement.setTimestamp(5, now);
+                setTimestamp(statement, 5, now);
             });
             return updatedRows > 0;
         });
+    }
+
+
+    private void setTimestamp(PreparedStatement preparedStatement, int patameterIndex, Instant time) throws SQLException {
+        if (timeZone == null) {
+            preparedStatement.setTimestamp(patameterIndex, Timestamp.from(time));
+        } else {
+            preparedStatement.setTimestamp(patameterIndex, Timestamp.from(time), Calendar.getInstance(timeZone));
+        }
     }
 
     @Override
@@ -92,7 +109,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
 
                 jdbcTemplate.update(sql, statement -> {
-                    statement.setTimestamp(1, Timestamp.from(lockConfiguration.getUnlockTime()));
+                    setTimestamp(statement, 1, lockConfiguration.getUnlockTime());
                     statement.setString(2, lockConfiguration.getName());
                 });
             }

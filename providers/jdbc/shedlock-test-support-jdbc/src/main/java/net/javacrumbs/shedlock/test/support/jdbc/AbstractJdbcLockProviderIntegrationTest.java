@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractLo
     protected JdbcTestUtils testUtils;
 
     @Before
-    public void initTestUtils() throws SQLException {
+    public void initTestUtils() {
         testUtils = new JdbcTestUtils(getDbConfig());
     }
 
@@ -59,7 +60,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractLo
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
-        Date now = new Date();
+        Calendar now = now();
         testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, now, now, "me");
         shouldCreateLock();
     }
@@ -69,8 +70,8 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractLo
         TransactionalFuzzTester.fuzzTestShouldWorkWithTransaction(getLockProvider(), getDatasource());
     }
 
-    private Date now() {
-        return new Date();
+    protected Calendar now() {
+        return Calendar.getInstance();
     }
 
     protected DataSource getDatasource() {
