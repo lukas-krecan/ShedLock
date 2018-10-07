@@ -22,7 +22,7 @@
 
 
     <task:scheduled-tasks scheduler="scheduler">
-        <task:scheduled ref="task" method="run" fixed-delay="1" fixed-rate="1"/>
+        <task:scheduled ref="task" method="run" fixed-rate="10"/>
     </task:scheduled-tasks>
 
     <bean id="task" class="net.javacrumbs.shedlock.spring.XmlConfigTest$Task"/>

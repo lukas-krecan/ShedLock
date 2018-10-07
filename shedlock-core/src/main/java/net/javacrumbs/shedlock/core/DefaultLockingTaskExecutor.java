@@ -35,6 +35,18 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
 
     @Override
     public void executeWithLock(Runnable task, LockConfiguration lockConfig) {
+        try {
+            executeWithLock((RunnableWithThrowable) task::run, lockConfig);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable throwable) {
+            // Should not happen
+            throw new IllegalStateException(throwable);
+        }
+    }
+
+    @Override
+    public void executeWithLock(RunnableWithThrowable task, LockConfiguration lockConfig) throws Throwable{
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         if (lock.isPresent()) {
             try {

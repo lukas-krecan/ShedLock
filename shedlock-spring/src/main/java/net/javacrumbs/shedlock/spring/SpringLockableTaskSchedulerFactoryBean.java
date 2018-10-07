@@ -60,7 +60,7 @@ public class SpringLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<
     protected LockableTaskScheduler createInstance() {
         return new LockableTaskScheduler(
             taskScheduler,
-            new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, embeddedValueResolver))
+            new DefaultLockManager(lockProvider, new ScheduledMethodSpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, embeddedValueResolver))
         );
     }
 

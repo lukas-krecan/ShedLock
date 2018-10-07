@@ -20,4 +20,10 @@ public interface LockingTaskExecutor {
      * Executes task if it's not already running.
      */
     void executeWithLock(Runnable task, LockConfiguration lockConfig);
+
+    void executeWithLock(RunnableWithThrowable task, LockConfiguration lockConfig) throws Throwable;
+
+    interface RunnableWithThrowable {
+        void run() throws Throwable;
+    }
 }
