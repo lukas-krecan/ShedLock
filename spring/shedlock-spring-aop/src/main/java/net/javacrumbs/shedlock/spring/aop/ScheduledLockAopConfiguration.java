@@ -1,12 +1,12 @@
 /**
- * Copyright 2009-2017 the original author or authors.
- * <p>
+ * Copyright 2009-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,46 +22,32 @@ import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.aop.Advisor;
 import org.springframework.aop.Pointcut;
-import org.springframework.aop.framework.autoproxy.AbstractBeanFactoryAwareAdvisingPostProcessor;
+import org.springframework.aop.framework.AbstractAdvisingBeanPostProcessor;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
-import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.util.StringValueResolver;
 
 import java.time.temporal.TemporalAmount;
 
-class ScheduledLockAopConfiguration extends AbstractBeanFactoryAwareAdvisingPostProcessor implements ScheduledLockConfiguration, EmbeddedValueResolverAware {
+public class ScheduledLockAopConfiguration extends AbstractAdvisingBeanPostProcessor implements ScheduledLockConfiguration, BeanPostProcessor, EmbeddedValueResolverAware {
     private final LockingTaskExecutor lockingTaskExecutor;
     private final TemporalAmount defaultLockAtMostFor;
     private final TemporalAmount defaultLockAtLeastFor;
-    private StringValueResolver resolver;
 
-    ScheduledLockAopConfiguration(LockingTaskExecutor lockingTaskExecutor, TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
+    public ScheduledLockAopConfiguration(LockingTaskExecutor lockingTaskExecutor, TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
         this.lockingTaskExecutor = lockingTaskExecutor;
         this.defaultLockAtMostFor = defaultLockAtMostFor;
         this.defaultLockAtLeastFor = defaultLockAtLeastFor;
     }
-
-
 
     /**
      * Set the StringValueResolver to use for resolving embedded definition values.
      */
     @Override
     public void setEmbeddedValueResolver(StringValueResolver resolver) {
-        this.resolver = resolver;
-    }
-
-
-    @Override
-    public void setBeanFactory(BeanFactory beanFactory) {
-        super.setBeanFactory(beanFactory);
         this.advisor = new ScheduledLockAdvisor(new SpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, resolver), lockingTaskExecutor);
     }
 
@@ -97,14 +83,13 @@ class ScheduledLockAopConfiguration extends AbstractBeanFactoryAwareAdvisingPost
 
             @Override
             public Object invoke(MethodInvocation invocation) throws Throwable {
-
                 Class<?> returnType = invocation.getMethod().getReturnType();
                 if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
                     throw new LockingNotSupportedException();
                 }
 
                 LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(invocation.getThis(), invocation.getMethod()).get();
-                lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) invocation.proceed(), lockConfiguration);
+                lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) invocation::proceed, lockConfiguration);
                 return null;
             }
         }

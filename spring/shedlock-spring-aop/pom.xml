@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
+            <artifactId>aspectjrt</artifactId>
             <version>1.9.1</version>
            <optional>true</optional>
         </dependency>
@@ -44,7 +44,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.spring
+                                net.javacrumbs.shedlock.spring.aop
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

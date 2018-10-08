@@ -21,7 +21,7 @@ public interface LockingTaskExecutor {
      */
     void executeWithLock(Runnable task, LockConfiguration lockConfig);
 
-    <T> void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable;
+    void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable;
 
     @FunctionalInterface
     interface Task {

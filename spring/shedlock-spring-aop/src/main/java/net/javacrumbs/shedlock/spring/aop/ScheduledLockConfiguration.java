@@ -15,8 +15,13 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.EmbeddedValueResolverAware;
+
 /**
  * Scheduled lock configuration. Instance of this class is used by Spring to configure all that's needed.
+ *
+ * Do not implement this interface.
  */
-public interface ScheduledLockConfiguration {
+public interface ScheduledLockConfiguration extends BeanPostProcessor, EmbeddedValueResolverAware {
 }

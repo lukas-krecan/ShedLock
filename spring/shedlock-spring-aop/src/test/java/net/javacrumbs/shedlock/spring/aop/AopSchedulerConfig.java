@@ -1,12 +1,12 @@
 /**
- * Copyright 2009-2017 the original author or authors.
- * <p>
+ * Copyright 2009-2018 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,6 @@ import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
-@EnableAspectJAutoProxy
 public class AopSchedulerConfig {
     private static final Logger logger = LoggerFactory.getLogger(AopSchedulerTest.class);
 
@@ -47,10 +46,17 @@ public class AopSchedulerConfig {
         return new ScheduledLockAopConfiguration(new DefaultLockingTaskExecutor(lockProvider), DEFAULT_LOCK_AT_MOST_FOR, DEFAULT_LOCK_AT_LEAST_FOR);
     }
 
+    @Bean
+    public ScheduledBean scheduledBean() {
+        return new ScheduledBean();
+    }
 
-    @SchedulerLock(name = "taskName")
-    @Scheduled(fixedRate = 10)
-    public void run() {
-        logger.info("Task executed");
+    // Does not work if scheduler configured in Configuration
+    private static class ScheduledBean {
+        @SchedulerLock(name = "taskName")
+        @Scheduled(fixedRate = 10)
+        public void run() {
+            logger.info("Task executed");
+        }
     }
 }
