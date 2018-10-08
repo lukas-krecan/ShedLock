@@ -22,6 +22,7 @@ import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 
 import java.time.Duration;
 
@@ -40,9 +41,16 @@ public class ScheduledLockAopConfiguration {
     /**
      * Supports only void method since we do not know what to return if the task is locked.
      */
-    @Around("execution(void *(..)) && @annotation(schedulerLockAnnotation)")
-    public void doIt(ProceedingJoinPoint pjp, SchedulerLock schedulerLockAnnotation) throws Throwable {
+    @Around("@annotation(schedulerLockAnnotation)")
+    void lockIt(ProceedingJoinPoint pjp, SchedulerLock schedulerLockAnnotation) throws Throwable {
+        if (pjp.getSignature() instanceof MethodSignature) {
+            Class<?> returnType = ((MethodSignature) pjp.getSignature()).getMethod().getReturnType();
+            if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
+                throw new LockingNotSupportedException();
+            }
+        }
+
         LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(schedulerLockAnnotation);
-        lockingTaskExecutor.executeWithLock((LockingTaskExecutor.RunnableWithThrowable) pjp::proceed, lockConfiguration);
+        lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) pjp::proceed, lockConfiguration);
     }
 }

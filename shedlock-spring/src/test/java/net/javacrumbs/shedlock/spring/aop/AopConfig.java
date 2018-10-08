@@ -19,13 +19,12 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+
+import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
 
@@ -33,18 +32,9 @@ import static org.mockito.Mockito.mock;
 @EnableScheduling
 @EnableAspectJAutoProxy
 public class AopConfig {
-    private static final Logger logger = LoggerFactory.getLogger(AopConfig.class);
-
     @Bean
     public LockProvider lockProvider() {
         return mock(LockProvider.class);
-    }
-
-
-    @SchedulerLock(name = "taskName")
-    @Scheduled(fixedRate = 10)
-    public void run() {
-        logger.info("Task executed");
     }
 
     @Bean
@@ -52,4 +42,33 @@ public class AopConfig {
         return new ScheduledLockAopConfiguration(new DefaultLockingTaskExecutor(lockProvider));
     }
 
+    @Bean
+    public TestBean testBean() {
+        return new TestBean();
+    }
+
+    static class TestBean {
+
+        public void noAnnotation() {
+        }
+
+        @SchedulerLock(name = "normal")
+        public void normal() {
+        }
+
+        @SchedulerLock(name = "runtimeException")
+        public Void throwsRuntimeException() {
+            throw new RuntimeException();
+        }
+
+        @SchedulerLock(name = "exception")
+        public void throwsException() throws Exception {
+            throw new IOException();
+        }
+
+        @SchedulerLock(name = "returnsValue")
+        public int returnsValue() {
+            return 0;
+        }
+    }
 }

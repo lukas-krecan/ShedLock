@@ -15,17 +15,28 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.spring.aop.AopConfig.TestBean;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.awaitility.Awaitility.await;
+import java.io.IOException;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -34,8 +45,52 @@ public class AopTest {
     @Autowired
     private LockProvider lockProvider;
 
+    @Autowired
+    private TestBean testBean;
+
+    private final SimpleLock simpleLock = mock(SimpleLock.class);
+
+    @Before
+    public void prepareMocks() {
+        Mockito.reset(lockProvider, simpleLock);
+        when(lockProvider.lock(any())).thenReturn(Optional.of(simpleLock));
+
+    }
+
     @Test
-    public void shouldCallLockProvider() {
-        await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(any()));
+    public void shouldNotCollLockProviderWithNoAnnotation() {
+        testBean.noAnnotation();
+        verifyZeroInteractions(lockProvider);
+    }
+
+    @Test
+    public void shouldCallLockProviderOnDirectCall() {
+        testBean.normal();
+        verify(lockProvider).lock(hasName("normal"));
+        verify(simpleLock).unlock();
+    }
+
+    @Test
+    public void shouldRethrowRuntimeException() {
+        assertThatThrownBy(() -> testBean.throwsRuntimeException()).isInstanceOf(RuntimeException.class);
+        verify(lockProvider).lock(hasName("runtimeException"));
+        verify(simpleLock).unlock();
+    }
+
+    @Test
+    public void shouldRethrowDeclaredException() {
+        assertThatThrownBy(() -> testBean.throwsException()).isInstanceOf(IOException.class);
+        verify(lockProvider).lock(hasName("exception"));
+        verify(simpleLock).unlock();
+    }
+
+    @Test
+    public void shouldFailOnReturnType() {
+        assertThatThrownBy(() -> testBean.returnsValue()).isInstanceOf(LockingNotSupportedException.class);
+        verifyZeroInteractions(lockProvider);
+    }
+
+    static LockConfiguration hasName(String name) {
+        return argThat(c -> name.equals(c.getName()));
     }
 }
