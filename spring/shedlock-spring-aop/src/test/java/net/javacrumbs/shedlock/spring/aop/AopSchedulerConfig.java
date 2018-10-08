@@ -27,8 +27,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.io.IOException;
-
+import static net.javacrumbs.shedlock.spring.aop.AopConfig.DEFAULT_LOCK_AT_LEAST_FOR;
+import static net.javacrumbs.shedlock.spring.aop.AopConfig.DEFAULT_LOCK_AT_MOST_FOR;
 import static org.mockito.Mockito.mock;
 
 @Configuration
@@ -44,7 +44,7 @@ public class AopSchedulerConfig {
 
     @Bean
     public ScheduledLockAopConfiguration scheduledLockAopConfiguration(LockProvider lockProvider) {
-        return new ScheduledLockAopConfiguration(new DefaultLockingTaskExecutor(lockProvider));
+        return new ScheduledLockAopConfiguration(new DefaultLockingTaskExecutor(lockProvider), DEFAULT_LOCK_AT_MOST_FOR, DEFAULT_LOCK_AT_LEAST_FOR);
     }
 
 

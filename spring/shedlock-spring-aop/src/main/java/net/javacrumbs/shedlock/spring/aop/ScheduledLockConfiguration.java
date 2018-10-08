@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.proxytest;
+package net.javacrumbs.shedlock.spring.aop;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
-
-@Configuration
-@EnableAsync
-public class DynamicProxyConfig {
-
-    @Bean
-    public BeanInterface bean() {
-        return new BeanImpl();
-    }
-
+/**
+ * Scheduled lock configuration. Instance of this class is used by Spring to configure all that's needed.
+ */
+public interface ScheduledLockConfiguration {
 }

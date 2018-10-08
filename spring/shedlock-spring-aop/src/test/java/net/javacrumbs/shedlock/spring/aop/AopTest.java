@@ -90,6 +90,13 @@ public class AopTest {
         verifyZeroInteractions(lockProvider);
     }
 
+    @Test
+    public void shouldReadSpringProperty() {
+        testBean.spel();
+        verify(lockProvider).lock(hasName("spel"));
+        verify(simpleLock).unlock();
+    }
+
     static LockConfiguration hasName(String name) {
         return argThat(c -> name.equals(c.getName()));
     }

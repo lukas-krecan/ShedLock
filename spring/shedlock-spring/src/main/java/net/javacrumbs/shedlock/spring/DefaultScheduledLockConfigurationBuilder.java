@@ -39,7 +39,7 @@ class DefaultScheduledLockConfigurationBuilder
 
     private TemporalAmount defaultLockAtLeastFor = Duration.ZERO;
 
-    public DefaultScheduledLockConfigurationBuilder(LockProvider lockProvider) {
+    DefaultScheduledLockConfigurationBuilder(LockProvider lockProvider) {
         this.lockProvider = lockProvider;
     }
 

@@ -16,30 +16,40 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
 @EnableAspectJAutoProxy
+@PropertySource("test.properties")
 public class AopConfig {
+    static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(30, ChronoUnit.MINUTES);
+    static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
+
     @Bean
     public LockProvider lockProvider() {
         return mock(LockProvider.class);
     }
 
     @Bean
-    public ScheduledLockAopConfiguration scheduledLockAopConfiguration(LockProvider lockProvider) {
-        return new ScheduledLockAopConfiguration(new DefaultLockingTaskExecutor(lockProvider));
+    public ScheduledLockConfiguration scheduledLockAopConfiguration(LockProvider lockProvider) {
+        return ScheduledLockConfigurationBuilder
+              .withLockProvider(lockProvider)
+              .withDefaultLockAtMostFor(DEFAULT_LOCK_AT_MOST_FOR)
+              .withDefaultLockAtLeastFor(DEFAULT_LOCK_AT_LEAST_FOR)
+              .build();
     }
 
     @Bean
@@ -69,6 +79,11 @@ public class AopConfig {
         @SchedulerLock(name = "returnsValue")
         public int returnsValue() {
             return 0;
+        }
+
+        @SchedulerLock(name = "${property.value}")
+        public void spel() {
+
         }
     }
 }

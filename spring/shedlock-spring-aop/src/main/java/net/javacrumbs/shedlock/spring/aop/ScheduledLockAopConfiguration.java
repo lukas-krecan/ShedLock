@@ -23,34 +23,68 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.context.EmbeddedValueResolverAware;
+import org.springframework.util.StringValueResolver;
 
-import java.time.Duration;
+import java.time.temporal.TemporalAmount;
 
-@Aspect
-public class ScheduledLockAopConfiguration {
-    private final SpringLockConfigurationExtractor lockConfigurationExtractor;
+class ScheduledLockAopConfiguration implements ScheduledLockConfiguration, EmbeddedValueResolverAware, FactoryBean<ScheduledLockAopConfiguration.ScheduledLockAspect> {
     private final LockingTaskExecutor lockingTaskExecutor;
+    private final TemporalAmount defaultLockAtMostFor;
+    private final TemporalAmount defaultLockAtLeastFor;
+    private StringValueResolver resolver;
 
-    public ScheduledLockAopConfiguration(LockingTaskExecutor lockingTaskExecutor) {
+    ScheduledLockAopConfiguration(LockingTaskExecutor lockingTaskExecutor, TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor) {
         this.lockingTaskExecutor = lockingTaskExecutor;
-
-        //FIXME:
-        lockConfigurationExtractor = new SpringLockConfigurationExtractor(SpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR, Duration.ZERO, null);
+        this.defaultLockAtMostFor = defaultLockAtMostFor;
+        this.defaultLockAtLeastFor = defaultLockAtLeastFor;
     }
 
+
+
     /**
-     * Supports only void method since we do not know what to return if the task is locked.
+     * Set the StringValueResolver to use for resolving embedded definition values.
      */
-    @Around("@annotation(schedulerLockAnnotation)")
-    void lockIt(ProceedingJoinPoint pjp, SchedulerLock schedulerLockAnnotation) throws Throwable {
-        if (pjp.getSignature() instanceof MethodSignature) {
-            Class<?> returnType = ((MethodSignature) pjp.getSignature()).getMethod().getReturnType();
-            if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
-                throw new LockingNotSupportedException();
-            }
+    @Override
+    public void setEmbeddedValueResolver(StringValueResolver resolver) {
+        this.resolver = resolver;
+    }
+
+    @Override
+    public ScheduledLockAspect getObject() {
+        return new ScheduledLockAspect(new SpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, resolver), lockingTaskExecutor);
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        return ScheduledLockAspect.class;
+    }
+
+    @Aspect
+    static class ScheduledLockAspect {
+        private final SpringLockConfigurationExtractor lockConfigurationExtractor;
+        private final LockingTaskExecutor lockingTaskExecutor;
+
+        private ScheduledLockAspect(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
+            this.lockConfigurationExtractor = lockConfigurationExtractor;
+            this.lockingTaskExecutor = lockingTaskExecutor;
         }
 
-        LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(schedulerLockAnnotation);
-        lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) pjp::proceed, lockConfiguration);
+        /**
+          * Supports only void method since we do not know what to return if the task is locked.
+          */
+         @Around("@annotation(schedulerLockAnnotation)")
+         void lockIt(ProceedingJoinPoint pjp, SchedulerLock schedulerLockAnnotation) throws Throwable {
+             if (pjp.getSignature() instanceof MethodSignature) {
+                 Class<?> returnType = ((MethodSignature) pjp.getSignature()).getMethod().getReturnType();
+                 if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
+                     throw new LockingNotSupportedException();
+                 }
+             }
+
+             LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(schedulerLockAnnotation);
+             lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) pjp::proceed, lockConfiguration);
+         }
     }
 }
