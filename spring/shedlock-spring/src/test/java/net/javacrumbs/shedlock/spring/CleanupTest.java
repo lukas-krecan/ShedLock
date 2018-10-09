@@ -44,10 +44,7 @@ public class CleanupTest {
 
     @Configuration
     static class Config {
-        interface DisposableTaskScheduler extends TaskScheduler, DisposableBean {
-        }
-
-        ;
+        interface DisposableTaskScheduler extends TaskScheduler, DisposableBean {};
 
         private static LockProvider lockProvider = mock(LockProvider.class);
         private static DisposableTaskScheduler taskScheduler = mock(DisposableTaskScheduler.class);

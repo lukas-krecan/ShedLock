@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.aop;
+package net.javacrumbs.shedlock.spring;
 
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY;
 import static org.mockito.Mockito.mock;
 
-@Configuration
-@EnableScheduling
-@EnableSchedulerLock(mode = PROXY, defaultLockAtMostFor = "PT30S")
-public class AopSchedulerConfig {
-    private static final Logger logger = LoggerFactory.getLogger(AopSchedulerTest.class);
+public abstract class AbstractSchedulerConfig {
+    private static final Logger logger = LoggerFactory.getLogger(ProxyIntegrationTest.class);
 
     @Bean
     public LockProvider lockProvider() {
@@ -46,7 +39,7 @@ public class AopSchedulerConfig {
     }
 
     // Does not work if scheduler configured in Configuration
-    private static class ScheduledBean {
+    public static class ScheduledBean {
         @SchedulerLock(name = "taskName")
         @Scheduled(fixedRate = 10)
         public void run() {

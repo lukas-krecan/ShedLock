@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring;
+package net.javacrumbs.shedlock.spring.internal;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
-import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
@@ -32,10 +31,10 @@ import java.util.Optional;
  * <li>Annotation based scheduler</li>
  * </ol>
  */
-class ScheduledMethodSpringLockConfigurationExtractor extends SpringLockConfigurationExtractor implements LockConfigurationExtractor {
+public class ScheduledMethodSpringLockConfigurationExtractor extends SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final Logger logger = LoggerFactory.getLogger(ScheduledMethodSpringLockConfigurationExtractor.class);
 
-    ScheduledMethodSpringLockConfigurationExtractor(
+    public ScheduledMethodSpringLockConfigurationExtractor(
         TemporalAmount defaultLockAtMostFor,
         TemporalAmount defaultLockAtLeastFor,
         StringValueResolver embeddedValueResolver

@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.spring.internal.ScheduledMethodSpringLockConfigurationExtractor;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.scheduling.TaskScheduler;

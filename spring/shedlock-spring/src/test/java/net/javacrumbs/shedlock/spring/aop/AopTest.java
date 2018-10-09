@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.spring.aop.AopConfig.TestBean;
@@ -24,16 +23,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.spring.AbstractSchedulerTest.hasName;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -96,9 +94,5 @@ public class AopTest {
         testBean.spel();
         verify(lockProvider).lock(hasName("spel"));
         verify(simpleLock).unlock();
-    }
-
-    static LockConfiguration hasName(String name) {
-        return argThat(c -> name.equals(c.getName()));
     }
 }

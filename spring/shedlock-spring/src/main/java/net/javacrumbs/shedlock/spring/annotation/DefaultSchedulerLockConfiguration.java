@@ -19,17 +19,18 @@ import net.javacrumbs.shedlock.spring.aop.ProxyScheduledLockAopBeanPostProcessor
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportAware;
 import org.springframework.context.annotation.Role;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
 
 @Configuration
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-class ProxySchedulerLockConfiguration extends AbstractSchedulerLockConfiguration {
-    private AnnotationAttributes annotationAttributes;
+class DefaultSchedulerLockConfiguration extends AbstractSchedulerLockConfiguration {
 
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    ProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
-        return new ProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
+    AnnotationBasedLockableTaskSchedulerFactoryBean proxyScheduledLockAopBeanPostProcessor() {
+        return new AnnotationBasedLockableTaskSchedulerFactoryBean(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
     }
 }

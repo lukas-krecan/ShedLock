@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.aop;
+package net.javacrumbs.shedlock.spring;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static net.javacrumbs.shedlock.spring.aop.AopTest.hasName;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = AopSchedulerConfig.class)
-public class AopSchedulerTest {
+public abstract class AbstractSchedulerTest {
 
     @Autowired
     private LockProvider lockProvider;
@@ -42,5 +37,10 @@ public class AopSchedulerTest {
     @Test
     public void shouldCallLockProvider() {
         await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(hasName("taskName")));
+    }
+
+
+    public static LockConfiguration hasName(String name) {
+        return argThat(c -> name.equals(c.getName()));
     }
 }

@@ -33,6 +33,7 @@ public class ProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryA
     private final String defaultLockAtLeastFor;
     private BeanFactory beanFactory;
     private StringValueResolver resolver;
+    private LockProvider lockProvider;
 
     public ProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
         this.defaultLockAtMostFor = defaultLockAtMostFor;
@@ -54,7 +55,9 @@ public class ProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryA
 
     @Override
     public void afterPropertiesSet() {
-        LockProvider lockProvider = beanFactory.getBean(LockProvider.class);
+        if (lockProvider == null) {
+            lockProvider = beanFactory.getBean(LockProvider.class);
+        }
         DefaultLockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
         this.advisor = new ScheduledLockAdvisor(new SpringLockConfigurationExtractor(toDuration(defaultLockAtMostFor), toDuration(defaultLockAtLeastFor), resolver), lockingTaskExecutor);
     }
@@ -63,4 +66,14 @@ public class ProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryA
         return Duration.parse(resolver.resolveStringValue(string));
     }
 
+    public LockProvider getLockProvider() {
+        return lockProvider;
+    }
+
+    /**
+     * Support for manually setting lockProvider
+     */
+    public void setLockProvider(LockProvider lockProvider) {
+        this.lockProvider = lockProvider;
+    }
 }

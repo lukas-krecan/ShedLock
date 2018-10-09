@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.internal.ScheduledMethodSpringLockConfigurationExtractor;
 import org.junit.Test;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringValueResolver;

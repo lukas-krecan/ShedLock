@@ -19,14 +19,19 @@ import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode;
+
 class SchedulerLockConfigurationSelector implements ImportSelector {
 
     @Override
     public String[] selectImports(AnnotationMetadata metadata) {
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
         Enum<?> mode = attributes.getEnum("mode");
-        if (EnableSchedulerLock.InterceptMode.PROXY.equals(mode)) {
+        if (InterceptMode.PROXY.equals(mode)) {
             return new String[]{ProxySchedulerLockConfiguration.class.getName()};
+        }
+        if (InterceptMode.SCHEDULER.equals(mode)) {
+            return new String[]{DefaultSchedulerLockConfiguration.class.getName()};
         }
         throw new UnsupportedOperationException();
     }
