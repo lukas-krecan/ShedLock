@@ -16,29 +16,33 @@
 package net.javacrumbs.shedlock.spring.annotation;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
+import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.LockableTaskScheduler;
 import net.javacrumbs.shedlock.spring.internal.ScheduledMethodSpringLockConfigurationExtractor;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.util.StringValueResolver;
 
 import java.time.Duration;
 
-class AnnotationBasedLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<LockableTaskScheduler> implements EmbeddedValueResolverAware, InitializingBean {
+class AnnotationBasedLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<LockableTaskScheduler> implements EmbeddedValueResolverAware {
 
     private final String defaultLockAtMostFor;
     private final String defaultLockAtLeastFor;
+
     private TaskScheduler taskScheduler;
     private StringValueResolver resolver;
 
     private LockProvider lockProvider;
     private BeanFactory beanFactory;
 
-    public AnnotationBasedLockableTaskSchedulerFactoryBean(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
+
+    AnnotationBasedLockableTaskSchedulerFactoryBean(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
         this.defaultLockAtMostFor = defaultLockAtMostFor;
         this.defaultLockAtLeastFor = defaultLockAtLeastFor;
     }
@@ -48,14 +52,17 @@ class AnnotationBasedLockableTaskSchedulerFactoryBean extends AbstractFactoryBea
         if (lockProvider == null) {
             lockProvider = beanFactory.getBean(LockProvider.class);
         }
+        if (taskScheduler == null) {
+            taskScheduler = beanFactory.getBean("taskScheduler", TaskScheduler.class);
+        }
         super.afterPropertiesSet();
     }
 
     @Override
-    protected LockableTaskScheduler createInstance() {
+    protected SelfRegisteringLockableTaskScheduler createInstance() {
         ScheduledMethodSpringLockConfigurationExtractor configurationExtractor
             = new ScheduledMethodSpringLockConfigurationExtractor(toDuration(defaultLockAtMostFor), toDuration(defaultLockAtLeastFor), resolver);
-        return new LockableTaskScheduler(
+        return new SelfRegisteringLockableTaskScheduler(
             taskScheduler,
             new DefaultLockManager(lockProvider, configurationExtractor)
         );
@@ -80,12 +87,23 @@ class AnnotationBasedLockableTaskSchedulerFactoryBean extends AbstractFactoryBea
 
     @Override
     public Class<?> getObjectType() {
-        return LockableTaskScheduler.class;
+        return SelfRegisteringLockableTaskScheduler.class;
     }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) {
         super.setBeanFactory(beanFactory);
         this.beanFactory = beanFactory;
+    }
+
+    static class SelfRegisteringLockableTaskScheduler extends LockableTaskScheduler implements SchedulingConfigurer {
+        SelfRegisteringLockableTaskScheduler(TaskScheduler taskScheduler, LockManager lockManager) {
+            super(taskScheduler, lockManager);
+        }
+
+        @Override
+        public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+            taskRegistrar.setTaskScheduler(this);
+        }
     }
 }

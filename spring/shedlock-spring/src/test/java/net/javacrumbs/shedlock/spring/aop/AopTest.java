@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.util.Optional;
 
-import static net.javacrumbs.shedlock.spring.AbstractSchedulerTest.hasName;
+import static net.javacrumbs.shedlock.spring.it.AbstractSchedulerTest.hasName;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;

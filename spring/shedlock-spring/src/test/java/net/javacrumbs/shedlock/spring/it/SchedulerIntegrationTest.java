@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring;
+package net.javacrumbs.shedlock.spring.it;
 
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
 
 import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.SCHEDULER;
@@ -30,5 +33,12 @@ public class SchedulerIntegrationTest extends AbstractSchedulerTest {
     @EnableScheduling
     @EnableSchedulerLock(mode = SCHEDULER, defaultLockAtMostFor = "PT30S")
     public static class AopSchedulerConfig extends AbstractSchedulerConfig {
+        @Bean
+        public TaskScheduler taskScheduler() {
+            ThreadPoolTaskScheduler newTaskScheduler = new ThreadPoolTaskScheduler();
+            newTaskScheduler.setPoolSize(10);
+            newTaskScheduler.initialize();
+            return newTaskScheduler;
+        }
     }
 }

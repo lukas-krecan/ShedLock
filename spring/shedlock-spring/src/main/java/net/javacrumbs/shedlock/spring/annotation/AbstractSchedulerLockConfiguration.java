@@ -23,12 +23,17 @@ class AbstractSchedulerLockConfiguration implements ImportAware {
     private AnnotationAttributes annotationAttributes;
 
     protected String getDefaultLockAtLeastFor() {
-        return annotationAttributes.getString("defaultLockAtLeastFor");
+        return getStringFromAnnotation("defaultLockAtLeastFor");
     }
 
     protected String getDefaultLockAtMostFor() {
-        return annotationAttributes.getString("defaultLockAtMostFor");
+        return getStringFromAnnotation("defaultLockAtMostFor");
     }
+
+    protected String getStringFromAnnotation(String defaultLockAtLeastFor) {
+        return annotationAttributes.getString(defaultLockAtLeastFor);
+    }
+
 
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
