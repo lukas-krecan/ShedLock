@@ -16,34 +16,28 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import static net.javacrumbs.shedlock.spring.aop.AopConfig.DEFAULT_LOCK_AT_LEAST_FOR;
-import static net.javacrumbs.shedlock.spring.aop.AopConfig.DEFAULT_LOCK_AT_MOST_FOR;
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY;
 import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
+@EnableSchedulerLock(mode = PROXY, defaultLockAtMostFor = "PT30S")
 public class AopSchedulerConfig {
     private static final Logger logger = LoggerFactory.getLogger(AopSchedulerTest.class);
 
     @Bean
     public LockProvider lockProvider() {
         return mock(LockProvider.class);
-    }
-
-    @Bean
-    public ScheduledLockAopConfiguration scheduledLockAopConfiguration(LockProvider lockProvider) {
-        return new ScheduledLockAopConfiguration(new DefaultLockingTaskExecutor(lockProvider), DEFAULT_LOCK_AT_MOST_FOR, DEFAULT_LOCK_AT_LEAST_FOR);
     }
 
     @Bean

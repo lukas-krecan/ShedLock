@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -28,29 +29,20 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY;
 import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
-@EnableAspectJAutoProxy
+@EnableSchedulerLock(mode = PROXY, defaultLockAtMostFor = "PT30S")
 @PropertySource("test.properties")
 public class AopConfig {
-    static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(30, ChronoUnit.MINUTES);
-    static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
 
     @Bean
     public LockProvider lockProvider() {
         return mock(LockProvider.class);
     }
 
-    @Bean
-    public ScheduledLockConfiguration scheduledLockAopConfiguration(LockProvider lockProvider) {
-        return ScheduledLockConfigurationBuilder
-              .withLockProvider(lockProvider)
-              .withDefaultLockAtMostFor(DEFAULT_LOCK_AT_MOST_FOR)
-              .withDefaultLockAtLeastFor(DEFAULT_LOCK_AT_LEAST_FOR)
-              .build();
-    }
 
     @Bean
     public TestBean testBean() {
