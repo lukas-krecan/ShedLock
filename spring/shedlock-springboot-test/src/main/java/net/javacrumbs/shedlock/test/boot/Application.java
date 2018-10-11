@@ -22,6 +22,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.ScheduledLockConfiguration;
 import net.javacrumbs.shedlock.spring.ScheduledLockConfigurationBuilder;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -33,19 +34,11 @@ import java.time.Duration;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
 public class Application {
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Application.class);
-    }
-
-    @Bean
-    public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
-        return ScheduledLockConfigurationBuilder
-                .withLockProvider(lockProvider)
-                .withPoolSize(10)
-                .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-                .build();
     }
 
     //    @Bean

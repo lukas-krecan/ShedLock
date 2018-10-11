@@ -53,12 +53,18 @@ public class MethodProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFa
     }
 
     @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
+        // this code can not be in afterPropertiesSet() since resolver is not initialized yet
+        DefaultLockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
+        this.advisor = new MethodProxyScheduledLockAdvisor(new SpringLockConfigurationExtractor(toDuration(defaultLockAtMostFor), toDuration(defaultLockAtLeastFor), resolver), lockingTaskExecutor);
+        return super.postProcessAfterInitialization(bean, beanName);
+    }
+
+    @Override
     public void afterPropertiesSet() {
         if (lockProvider == null) {
             lockProvider = beanFactory.getBean(LockProvider.class);
         }
-        DefaultLockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
-        this.advisor = new MethodProxyScheduledLockAdvisor(new SpringLockConfigurationExtractor(toDuration(defaultLockAtMostFor), toDuration(defaultLockAtLeastFor), resolver), lockingTaskExecutor);
     }
 
     private Duration toDuration(String string) {

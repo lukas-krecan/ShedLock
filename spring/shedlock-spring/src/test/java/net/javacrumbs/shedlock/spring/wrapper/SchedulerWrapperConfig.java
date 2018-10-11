@@ -31,7 +31,7 @@ import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(mode = WRAP_SCHEDULER, defaultLockAtMostFor = "PT30S")
+@EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
 @PropertySource("test.properties")
 public class SchedulerWrapperConfig {
 

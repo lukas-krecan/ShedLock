@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.util.Optional;
 
-import static net.javacrumbs.shedlock.spring.it.AbstractSchedulerTest.hasName;
+import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -65,21 +65,21 @@ public class MethodProxyAopTest {
     @Test
     public void shouldCallLockProviderOnDirectCall() {
         testBean.normal();
-        verify(lockProvider).lock(hasName("normal"));
+        verify(lockProvider).lock(hasParams("normal", 30_000, 100));
         verify(simpleLock).unlock();
     }
 
     @Test
     public void shouldRethrowRuntimeException() {
         assertThatThrownBy(() -> testBean.throwsRuntimeException()).isInstanceOf(RuntimeException.class);
-        verify(lockProvider).lock(hasName("runtimeException"));
+        verify(lockProvider).lock(hasParams("runtimeException", 100, 100));
         verify(simpleLock).unlock();
     }
 
     @Test
     public void shouldRethrowDeclaredException() {
         assertThatThrownBy(() -> testBean.throwsException()).isInstanceOf(IOException.class);
-        verify(lockProvider).lock(hasName("exception"));
+        verify(lockProvider).lock(hasParams("exception", 30_000, 100));
         verify(simpleLock).unlock();
     }
 
@@ -92,7 +92,7 @@ public class MethodProxyAopTest {
     @Test
     public void shouldReadSpringProperty() {
         testBean.spel();
-        verify(lockProvider).lock(hasName("spel"));
+        verify(lockProvider).lock(hasParams("spel", 30_000, 1_000));
         verify(simpleLock).unlock();
     }
 }

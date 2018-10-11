@@ -32,7 +32,8 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static net.javacrumbs.shedlock.spring.it.AbstractSchedulerTest.hasName;
+
+import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -63,7 +64,7 @@ public class SchedulerWrapperTest {
     public void shouldCallLockProviderOnSchedulerCall() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("annotatedMethod");
         taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasName("lockName"));
+        verify(lockProvider).lock(hasParams("lockName", 30_000, 100));
         verify(simpleLock).unlock();
     }
 
@@ -71,7 +72,7 @@ public class SchedulerWrapperTest {
     public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("spelMethod");
         taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasName("spel"));
+        verify(lockProvider).lock(hasParams("spel", 1000, 500));
         verify(simpleLock).unlock();
     }
 
@@ -79,7 +80,7 @@ public class SchedulerWrapperTest {
     public void shouldRethrowRuntimeException() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("throwsException");
         assertThatThrownBy(() -> schedule(task)).isInstanceOf(ExecutionException.class);
-        verify(lockProvider).lock(hasName("exception"));
+        verify(lockProvider).lock(hasParams("exception", 100, 100));
         verify(simpleLock).unlock();
     }
 
@@ -97,12 +98,12 @@ public class SchedulerWrapperTest {
         verifyZeroInteractions(lockProvider);
     }
 
-    @SchedulerLock(name = "lockName", lockAtMostFor = 100)
+    @SchedulerLock(name = "lockName")
     public void annotatedMethod() {
 
     }
 
-    @SchedulerLock(name = "${property.value}", lockAtMostFor = 100)
+    @SchedulerLock(name = "${property.value}", lockAtMostFor = 1000, lockAtLeastFor = 500)
     public void spelMethod() {
 
     }

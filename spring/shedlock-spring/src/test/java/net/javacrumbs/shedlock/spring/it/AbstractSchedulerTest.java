@@ -15,15 +15,15 @@
  */
 package net.javacrumbs.shedlock.spring.it;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.spring.TestUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
@@ -36,11 +36,6 @@ public abstract class AbstractSchedulerTest {
 
     @Test
     public void shouldCallLockProvider() {
-        await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(hasName("taskName")));
-    }
-
-
-    public static LockConfiguration hasName(String name) {
-        return argThat(c -> name.equals(c.getName()));
+        await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(hasParams("taskName", 30_000, 0)));
     }
 }

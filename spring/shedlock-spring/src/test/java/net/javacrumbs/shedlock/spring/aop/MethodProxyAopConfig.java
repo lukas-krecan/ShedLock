@@ -31,7 +31,7 @@ import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
+@EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
 @PropertySource("test.properties")
 public class MethodProxyAopConfig {
 
@@ -55,7 +55,7 @@ public class MethodProxyAopConfig {
         public void normal() {
         }
 
-        @SchedulerLock(name = "runtimeException")
+        @SchedulerLock(name = "runtimeException", lockAtMostFor = 100)
         public Void throwsRuntimeException() {
             throw new RuntimeException();
         }
@@ -70,7 +70,7 @@ public class MethodProxyAopConfig {
             return 0;
         }
 
-        @SchedulerLock(name = "${property.value}")
+        @SchedulerLock(name = "${property.value}", lockAtLeastFor = 1_000)
         public void spel() {
 
         }
