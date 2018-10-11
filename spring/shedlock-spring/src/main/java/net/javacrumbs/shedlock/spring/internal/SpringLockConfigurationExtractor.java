@@ -25,6 +25,7 @@ import org.springframework.util.StringValueResolver;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
@@ -98,7 +99,11 @@ public class SpringLockConfigurationExtractor {
             try {
                 return Duration.of(Long.valueOf(stringValueFromAnnotation), MILLIS);
             } catch (NumberFormatException nfe) {
-                throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long");
+                try {
+                    return Duration.parse(stringValueFromAnnotation);
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
+                }
             }
         } else {
             return defaultValue;

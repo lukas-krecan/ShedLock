@@ -35,6 +35,7 @@ import java.time.temporal.TemporalAmount;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -66,6 +67,14 @@ public class SpringLockConfigurationExtractorTest {
         SchedulerLock annotation = getAnnotation("annotatedMethodWithString");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(Duration.of(5, MILLIS));
+    }
+
+    @Test
+    public void shouldLockTimeFromAnnotationWithDurationString() throws NoSuchMethodException {
+        when(embeddedValueResolver.resolveStringValue("PT1S")).thenReturn("PT1S");
+        SchedulerLock annotation = getAnnotation("annotatedMethodWithDurationString");
+        TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
+        assertThat(lockAtMostFor).isEqualTo(Duration.of(1, SECONDS));
     }
 
     @Test
@@ -126,6 +135,11 @@ public class SpringLockConfigurationExtractorTest {
 
     @SchedulerLock(name = "lockName", lockAtMostForString = "${placeholder}")
     public void annotatedMethodWithString() {
+
+    }
+
+    @SchedulerLock(name = "lockName", lockAtMostForString = "PT1S")
+    public void annotatedMethodWithDurationString() {
 
     }
 

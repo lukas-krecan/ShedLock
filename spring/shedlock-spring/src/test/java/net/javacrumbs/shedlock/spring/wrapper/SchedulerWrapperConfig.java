@@ -42,7 +42,6 @@ public class SchedulerWrapperConfig {
 
 
     @Bean
-    @SuppressWarnings("unchecked")
     public TaskScheduler testBean() {
         return new ThreadPoolTaskScheduler();
     }

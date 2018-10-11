@@ -37,6 +37,9 @@ public @interface SchedulerLock {
      */
     long lockAtMostFor() default -1;
 
+    /**
+     * Lock at most for as string. Can be either number in ms or formatted as described in {@link java.time.Duration#parse(CharSequence)}
+     */
     String lockAtMostForString() default "";
 
     /**
@@ -47,5 +50,9 @@ public @interface SchedulerLock {
      */
     long lockAtLeastFor() default -1;
 
+
+    /**
+     * Lock at least for as string. Can be either number in ms or formatted as described in {@link java.time.Duration#parse(CharSequence)}
+     */
     String lockAtLeastForString() default "";
 }
