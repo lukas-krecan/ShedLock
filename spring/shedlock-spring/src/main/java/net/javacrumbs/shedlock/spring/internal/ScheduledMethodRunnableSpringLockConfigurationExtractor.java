@@ -31,10 +31,10 @@ import java.util.Optional;
  * <li>Annotation based scheduler</li>
  * </ol>
  */
-public class ScheduledMethodSpringLockConfigurationExtractor extends SpringLockConfigurationExtractor implements LockConfigurationExtractor {
-    private final Logger logger = LoggerFactory.getLogger(ScheduledMethodSpringLockConfigurationExtractor.class);
+public class ScheduledMethodRunnableSpringLockConfigurationExtractor extends SpringLockConfigurationExtractor implements LockConfigurationExtractor {
+    private final Logger logger = LoggerFactory.getLogger(ScheduledMethodRunnableSpringLockConfigurationExtractor.class);
 
-    public ScheduledMethodSpringLockConfigurationExtractor(
+    public ScheduledMethodRunnableSpringLockConfigurationExtractor(
         TemporalAmount defaultLockAtMostFor,
         TemporalAmount defaultLockAtLeastFor,
         StringValueResolver embeddedValueResolver

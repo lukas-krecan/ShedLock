@@ -18,9 +18,12 @@ package net.javacrumbs.shedlock.spring;
 import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockableRunnable;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.ScheduledFuture;
 
@@ -65,6 +68,31 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
 
     @Override
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, long delay) {
+        return taskScheduler.scheduleWithFixedDelay(wrap(task), delay);
+    }
+
+    @Override
+    public ScheduledFuture<?> schedule(Runnable task, Instant startTime) {
+        return taskScheduler.schedule(wrap(task), startTime);
+    }
+
+    @Override
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, Instant startTime, Duration period) {
+        return taskScheduler.scheduleAtFixedRate(wrap(task), startTime, period);
+    }
+
+    @Override
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, Duration period) {
+        return taskScheduler.scheduleAtFixedRate(wrap(task), period);
+    }
+
+    @Override
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, Instant startTime, Duration delay) {
+        return taskScheduler.scheduleWithFixedDelay(wrap(task), startTime, delay);
+    }
+
+    @Override
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, Duration delay) {
         return taskScheduler.scheduleWithFixedDelay(wrap(task), delay);
     }
 

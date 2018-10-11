@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.spring.annotation;
 
-import net.javacrumbs.shedlock.spring.aop.ProxyScheduledLockAopBeanPostProcessor;
+import net.javacrumbs.shedlock.spring.aop.MethodProxyScheduledLockAopBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,12 +24,12 @@ import org.springframework.core.annotation.AnnotationAttributes;
 
 @Configuration
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-class ProxySchedulerLockConfiguration extends AbstractSchedulerLockConfiguration {
+class MethodProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
     private AnnotationAttributes annotationAttributes;
 
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    ProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
-        return new ProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
+    MethodProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
+        return new MethodProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
     }
 }

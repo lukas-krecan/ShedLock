@@ -1,41 +1,44 @@
 /**
  * Copyright 2009-2018 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.aop;
+package net.javacrumbs.shedlock.spring.wrapper;
 
+import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.spring.LockableTaskScheduler;
+import net.javacrumbs.shedlock.spring.internal.ScheduledMethodRunnableSpringLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
-import org.springframework.aop.framework.autoproxy.AbstractBeanFactoryAwareAdvisingPostProcessor;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.EmbeddedValueResolverAware;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.StringValueResolver;
 
 import java.time.Duration;
 
-public class ProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryAwareAdvisingPostProcessor implements BeanPostProcessor, EmbeddedValueResolverAware, InitializingBean {
+public class SchedulerWrapperBeanPostProcessor implements BeanPostProcessor, EmbeddedValueResolverAware, BeanFactoryAware {
     private final String defaultLockAtMostFor;
     private final String defaultLockAtLeastFor;
     private BeanFactory beanFactory;
     private StringValueResolver resolver;
     private LockProvider lockProvider;
 
-    public ProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
+    public SchedulerWrapperBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
         this.defaultLockAtMostFor = defaultLockAtMostFor;
         this.defaultLockAtLeastFor = defaultLockAtLeastFor;
     }
@@ -53,13 +56,22 @@ public class ProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryA
         this.beanFactory = beanFactory;
     }
 
+
     @Override
-    public void afterPropertiesSet() {
-        if (lockProvider == null) {
-            lockProvider = beanFactory.getBean(LockProvider.class);
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof TaskScheduler) {
+            if (lockProvider == null) {
+                lockProvider = beanFactory.getBean(LockProvider.class);
+            }
+            ScheduledMethodRunnableSpringLockConfigurationExtractor lockConfigurationExtractor = new ScheduledMethodRunnableSpringLockConfigurationExtractor(
+                toDuration(defaultLockAtMostFor),
+                toDuration(defaultLockAtLeastFor),
+                resolver
+            );
+            return new LockableTaskScheduler((TaskScheduler) bean, new DefaultLockManager(lockProvider, lockConfigurationExtractor));
+        } else {
+            return bean;
         }
-        DefaultLockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
-        this.advisor = new ScheduledLockAdvisor(new SpringLockConfigurationExtractor(toDuration(defaultLockAtMostFor), toDuration(defaultLockAtLeastFor), resolver), lockingTaskExecutor);
     }
 
     private Duration toDuration(String string) {

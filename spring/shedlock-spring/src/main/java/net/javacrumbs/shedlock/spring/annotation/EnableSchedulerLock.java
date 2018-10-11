@@ -15,16 +15,16 @@ public @interface EnableSchedulerLock {
         /**
          * Default mode when custom TaskScheduler is used to ensure locks are placed
          */
-        SCHEDULER,
+        WRAP_SCHEDULER,
 
         /**
          * Locks are created thanks to AOP proxy
          */
-        PROXY
+        PROXY_METHOD
     }
 
 
-    InterceptMode mode() default InterceptMode.SCHEDULER;
+    InterceptMode mode() default InterceptMode.WRAP_SCHEDULER;
 
 
     /**

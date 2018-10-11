@@ -27,7 +27,7 @@ import java.time.Duration;
 import java.time.temporal.TemporalAmount;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static net.javacrumbs.shedlock.spring.internal.ScheduledMethodSpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
+import static net.javacrumbs.shedlock.spring.internal.ScheduledMethodRunnableSpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
 
 class DefaultScheduledLockConfigurationBuilder
     implements ScheduledLockConfigurationBuilder, ScheduledLockConfigurationBuilderWithoutTaskScheduler, ConfiguredScheduledLockConfigurationBuilder, ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor {

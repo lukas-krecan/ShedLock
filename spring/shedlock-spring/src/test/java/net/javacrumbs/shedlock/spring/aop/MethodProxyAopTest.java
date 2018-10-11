@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.spring.aop.AopConfig.TestBean;
+import net.javacrumbs.shedlock.spring.aop.MethodProxyAopConfig.TestBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,8 +39,8 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = AopConfig.class)
-public class AopTest {
+@ContextConfiguration(classes = MethodProxyAopConfig.class)
+public class MethodProxyAopTest {
     @Autowired
     private LockProvider lockProvider;
 

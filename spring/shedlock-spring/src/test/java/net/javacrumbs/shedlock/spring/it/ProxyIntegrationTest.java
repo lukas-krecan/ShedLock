@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ContextConfiguration;
 
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY;
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_METHOD;
 
 
 @ContextConfiguration(classes = ProxyIntegrationTest.AopSchedulerConfig.class)
@@ -28,7 +28,7 @@ public class ProxyIntegrationTest extends AbstractSchedulerTest {
 
     @Configuration
     @EnableScheduling
-    @EnableSchedulerLock(mode = PROXY, defaultLockAtMostFor = "PT30S")
+    @EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
     public static class AopSchedulerConfig extends AbstractSchedulerConfig {
     }
 }
