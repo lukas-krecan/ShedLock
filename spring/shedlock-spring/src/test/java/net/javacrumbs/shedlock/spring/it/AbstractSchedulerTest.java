@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.spring.it;
 
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.spring.TestUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,6 @@ public abstract class AbstractSchedulerTest {
 
     @Test
     public void shouldCallLockProvider() {
-        await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(hasParams("taskName", 30_000)));
+        await().untilAsserted(() -> verify(lockProvider, atLeastOnce()).lock(hasParams("taskName", 30_000, 0)));
     }
 }

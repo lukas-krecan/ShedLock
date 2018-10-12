@@ -66,7 +66,7 @@ public abstract class AbstractTaskSchedulerWrapperTest {
     public void shouldCallLockProviderOnSchedulerCall() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("annotatedMethod");
         taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasParams("lockName", 30_000));
+        verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
         verify(simpleLock).unlock();
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractTaskSchedulerWrapperTest {
     public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("spelMethod");
         taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasParams("spel", 1000));
+        verify(lockProvider).lock(hasParams("spel", 1000, 500));
         verify(simpleLock).unlock();
     }
 
@@ -82,7 +82,7 @@ public abstract class AbstractTaskSchedulerWrapperTest {
     public void shouldRethrowRuntimeException() throws NoSuchMethodException {
         Runnable task = task("throwsException");
         assertThatThrownBy(() -> schedule(task)).isInstanceOf(ExecutionException.class);
-        verify(lockProvider).lock(hasParams("exception", 1_500));
+        verify(lockProvider).lock(hasParams("exception", 1_500, getDefaultLockAtLeastFor()));
         verify(simpleLock).unlock();
     }
 

@@ -24,14 +24,15 @@ import static org.mockito.ArgumentMatchers.argThat;
 
 public class TestUtils {
 
-    private static final int GAP = 100;
+    private static final int GAP = 500;
 
     private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
 
-    public static LockConfiguration hasParams(String name, long lockAtMostFor) {
+    public static LockConfiguration hasParams(String name, long lockAtMostFor, long lockAtLeastFor) {
         return argThat(c ->
             name.equals(c.getName())
                 && isNearTo(lockAtMostFor, c.getLockAtMostUntil())
+                && isNearTo(lockAtLeastFor, c.getLockAtLeastUntil())
         );
     }
 
