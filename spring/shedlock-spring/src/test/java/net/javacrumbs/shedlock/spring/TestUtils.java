@@ -15,6 +15,8 @@ package net.javacrumbs.shedlock.spring; /**
  */
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 
@@ -22,18 +24,22 @@ import static org.mockito.ArgumentMatchers.argThat;
 
 public class TestUtils {
 
-    private static final int GAP = 50;
+    private static final int GAP = 100;
 
-    public static LockConfiguration hasParams(String name, long lockAtMostFor, long lockAtLeastFor) {
+    private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
+
+    public static LockConfiguration hasParams(String name, long lockAtMostFor) {
         return argThat(c ->
             name.equals(c.getName())
                 && isNearTo(lockAtMostFor, c.getLockAtMostUntil())
-                && isNearTo(lockAtLeastFor, c.getLockAtLeastUntil())
         );
     }
 
     private static boolean isNearTo(long expected, Instant time) {
         Instant now = Instant.now();
-        return !time.isAfter(now.plusMillis(expected)) && time.isAfter(now.plusMillis(expected - GAP));
+        Instant from = now.plusMillis(expected - GAP);
+        Instant to = now.plusMillis(expected);
+        logger.info("Asserting time={} to be between {} and {}", time, from, to);
+        return time.isAfter(from) && !time.isAfter(to);
     }
 }

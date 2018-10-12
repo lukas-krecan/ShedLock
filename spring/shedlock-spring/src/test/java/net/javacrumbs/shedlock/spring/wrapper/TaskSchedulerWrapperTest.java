@@ -31,8 +31,8 @@ import static org.mockito.Mockito.mock;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SchedulerWrapperTest.SchedulerWrapperConfig.class)
-public class SchedulerWrapperTest extends AbstractSchedulerWrapperTest {
+@ContextConfiguration(classes = TaskSchedulerWrapperTest.SchedulerWrapperConfig.class)
+public class TaskSchedulerWrapperTest extends AbstractTaskSchedulerWrapperTest {
 
     @Configuration
     @EnableScheduling

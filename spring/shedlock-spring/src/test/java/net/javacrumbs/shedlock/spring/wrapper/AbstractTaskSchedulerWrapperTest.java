@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-public abstract class AbstractSchedulerWrapperTest {
+public abstract class AbstractTaskSchedulerWrapperTest {
     @Autowired
     private LockProvider lockProvider;
 
@@ -66,7 +66,7 @@ public abstract class AbstractSchedulerWrapperTest {
     public void shouldCallLockProviderOnSchedulerCall() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("annotatedMethod");
         taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
+        verify(lockProvider).lock(hasParams("lockName", 30_000));
         verify(simpleLock).unlock();
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractSchedulerWrapperTest {
     public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("spelMethod");
         taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasParams("spel", 1000, 500));
+        verify(lockProvider).lock(hasParams("spel", 1000));
         verify(simpleLock).unlock();
     }
 
@@ -82,7 +82,7 @@ public abstract class AbstractSchedulerWrapperTest {
     public void shouldRethrowRuntimeException() throws NoSuchMethodException {
         Runnable task = task("throwsException");
         assertThatThrownBy(() -> schedule(task)).isInstanceOf(ExecutionException.class);
-        verify(lockProvider).lock(hasParams("exception", 200, getDefaultLockAtLeastFor()));
+        verify(lockProvider).lock(hasParams("exception", 1_500));
         verify(simpleLock).unlock();
     }
 
@@ -115,7 +115,7 @@ public abstract class AbstractSchedulerWrapperTest {
 
     }
 
-    @SchedulerLock(name = "exception", lockAtMostFor = 200)
+    @SchedulerLock(name = "exception", lockAtMostFor = 1_500)
     public void throwsException() {
         throw new NullPointerException("Just for test");
     }

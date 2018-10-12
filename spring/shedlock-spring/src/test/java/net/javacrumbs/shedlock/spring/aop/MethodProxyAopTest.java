@@ -65,21 +65,21 @@ public class MethodProxyAopTest {
     @Test
     public void shouldCallLockProviderOnDirectCall() {
         testBean.normal();
-        verify(lockProvider).lock(hasParams("normal", 30_000, 100));
+        verify(lockProvider).lock(hasParams("normal", 30_000));
         verify(simpleLock).unlock();
     }
 
     @Test
     public void shouldRethrowRuntimeException() {
         assertThatThrownBy(() -> testBean.throwsRuntimeException()).isInstanceOf(RuntimeException.class);
-        verify(lockProvider).lock(hasParams("runtimeException", 100, 100));
+        verify(lockProvider).lock(hasParams("runtimeException", 100));
         verify(simpleLock).unlock();
     }
 
     @Test
     public void shouldRethrowDeclaredException() {
         assertThatThrownBy(() -> testBean.throwsException()).isInstanceOf(IOException.class);
-        verify(lockProvider).lock(hasParams("exception", 30_000, 100));
+        verify(lockProvider).lock(hasParams("exception", 30_000));
         verify(simpleLock).unlock();
     }
 
@@ -92,7 +92,7 @@ public class MethodProxyAopTest {
     @Test
     public void shouldReadSpringProperty() {
         testBean.spel();
-        verify(lockProvider).lock(hasParams("spel", 30_000, 1_000));
+        verify(lockProvider).lock(hasParams("spel", 30_000));
         verify(simpleLock).unlock();
     }
 }
