@@ -24,7 +24,7 @@ public class TestUtils {
 
     private static final int GAP = 50;
 
-    public static LockConfiguration hasParams(String name, int lockAtMostFor, int lockAtLeastFor) {
+    public static LockConfiguration hasParams(String name, long lockAtMostFor, long lockAtLeastFor) {
         return argThat(c ->
             name.equals(c.getName())
                 && isNearTo(lockAtMostFor, c.getLockAtMostUntil())
@@ -32,8 +32,8 @@ public class TestUtils {
         );
     }
 
-    private static boolean isNearTo(int lockAtMostFor, Instant time) {
+    private static boolean isNearTo(long expected, Instant time) {
         Instant now = Instant.now();
-        return !time.isAfter(now.plusMillis(lockAtMostFor)) && time.isAfter(now.plusMillis(lockAtMostFor - GAP));
+        return !time.isAfter(now.plusMillis(expected)) && time.isAfter(now.plusMillis(expected - GAP));
     }
 }

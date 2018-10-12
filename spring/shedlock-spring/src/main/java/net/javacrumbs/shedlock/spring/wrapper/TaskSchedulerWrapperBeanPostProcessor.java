@@ -16,11 +16,11 @@
 package net.javacrumbs.shedlock.spring.wrapper;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.LockableTaskScheduler;
 import net.javacrumbs.shedlock.spring.internal.ScheduledMethodRunnableSpringLockConfigurationExtractor;
-import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -31,14 +31,16 @@ import org.springframework.util.StringValueResolver;
 
 import java.time.Duration;
 
-public class SchedulerWrapperBeanPostProcessor implements BeanPostProcessor, EmbeddedValueResolverAware, BeanFactoryAware {
+public class TaskSchedulerWrapperBeanPostProcessor implements BeanPostProcessor, EmbeddedValueResolverAware, BeanFactoryAware {
+    private static final Logger logger = LoggerFactory.getLogger(TaskSchedulerWrapperBeanPostProcessor.class);
+
     private final String defaultLockAtMostFor;
     private final String defaultLockAtLeastFor;
     private BeanFactory beanFactory;
     private StringValueResolver resolver;
     private LockProvider lockProvider;
 
-    public SchedulerWrapperBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
+    public TaskSchedulerWrapperBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
         this.defaultLockAtMostFor = defaultLockAtMostFor;
         this.defaultLockAtLeastFor = defaultLockAtLeastFor;
     }
@@ -63,6 +65,7 @@ public class SchedulerWrapperBeanPostProcessor implements BeanPostProcessor, Emb
             if (lockProvider == null) {
                 lockProvider = beanFactory.getBean(LockProvider.class);
             }
+            logger.debug("Wrapping TaskScheduler {} in LockableTaskScheduler.");
             ScheduledMethodRunnableSpringLockConfigurationExtractor lockConfigurationExtractor = new ScheduledMethodRunnableSpringLockConfigurationExtractor(
                 toDuration(defaultLockAtMostFor),
                 toDuration(defaultLockAtLeastFor),

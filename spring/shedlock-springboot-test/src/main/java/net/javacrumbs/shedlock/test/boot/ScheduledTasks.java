@@ -24,5 +24,6 @@ public class ScheduledTasks {
     @Scheduled(fixedRate = 1)
     @SchedulerLock(name = "reportCurrentTime", lockAtLeastForString = "${lock.at.most.for}")
     public void reportCurrentTime() {
+
     }
 }

@@ -43,7 +43,7 @@ public class IntegrationTest {
     private LockProvider lockProvider;
 
     @Test
-    public void testScheduler() throws InterruptedException {
+    public void testScheduler() {
         waitForScheduler();
         ArgumentCaptor<LockConfiguration> configCaptor = ArgumentCaptor.forClass(LockConfiguration.class);
         verify(lockProvider, atLeastOnce()).lock(configCaptor.capture());

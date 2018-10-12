@@ -16,100 +16,40 @@
 package net.javacrumbs.shedlock.spring.wrapper;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SchedulerLock;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.Before;
-import org.junit.Test;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
-
-import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SchedulerWrapperConfig.class)
-public class SchedulerWrapperTest {
-    @Autowired
-    private LockProvider lockProvider;
+@ContextConfiguration(classes = SchedulerWrapperTest.SchedulerWrapperConfig.class)
+public class SchedulerWrapperTest extends AbstractSchedulerWrapperTest {
 
-    @Autowired
-    private TaskScheduler taskScheduler;
+    @Configuration
+    @EnableScheduling
+    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
+    @PropertySource("test.properties")
+    static class SchedulerWrapperConfig {
 
-    private final SimpleLock simpleLock = mock(SimpleLock.class);
+        @Bean
+        public LockProvider lockProvider() {
+            return mock(LockProvider.class);
+        }
 
-    @Before
-    public void prepareMocks() {
-        Mockito.reset(lockProvider, simpleLock);
-        when(lockProvider.lock(any())).thenReturn(Optional.of(simpleLock));
 
-    }
+        @Bean
+        public TaskScheduler taskScheduler() {
+            return new ThreadPoolTaskScheduler();
+        }
 
-    @Test
-    public void shouldCallLockProviderOnSchedulerCall() throws NoSuchMethodException, ExecutionException, InterruptedException {
-        Runnable task = task("annotatedMethod");
-        taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasParams("lockName", 30_000, 100));
-        verify(simpleLock).unlock();
-    }
-
-    @Test
-    public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
-        Runnable task = task("spelMethod");
-        taskScheduler.schedule(task, Instant.now()).get();
-        verify(lockProvider).lock(hasParams("spel", 1000, 500));
-        verify(simpleLock).unlock();
-    }
-
-    @Test
-    public void shouldRethrowRuntimeException() throws NoSuchMethodException, ExecutionException, InterruptedException {
-        Runnable task = task("throwsException");
-        assertThatThrownBy(() -> schedule(task)).isInstanceOf(ExecutionException.class);
-        verify(lockProvider).lock(hasParams("exception", 100, 100));
-        verify(simpleLock).unlock();
-    }
-
-    private Object schedule(Runnable task) throws InterruptedException, ExecutionException {
-        return taskScheduler.schedule(task, Instant.now()).get();
-    }
-
-    private ScheduledMethodRunnable task(String methodName) throws NoSuchMethodException {
-        return new ScheduledMethodRunnable(this, methodName);
-    }
-
-    @Test
-    public void shouldNotLockProviderOnPureRunnable() throws ExecutionException, InterruptedException {
-        taskScheduler.schedule(() -> { }, Instant.now()).get();
-        verifyZeroInteractions(lockProvider);
-    }
-
-    @SchedulerLock(name = "lockName")
-    public void annotatedMethod() {
-
-    }
-
-    @SchedulerLock(name = "${property.value}", lockAtMostFor = 1000, lockAtLeastFor = 500)
-    public void spelMethod() {
-
-    }
-
-    @SchedulerLock(name = "exception", lockAtMostFor = 100)
-    public void throwsException() {
-        throw new NullPointerException();
     }
 }
