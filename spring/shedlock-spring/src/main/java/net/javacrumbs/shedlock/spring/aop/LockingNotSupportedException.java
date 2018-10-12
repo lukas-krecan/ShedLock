@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.core;
+package net.javacrumbs.shedlock.spring.aop;
 
-public interface LockingTaskExecutor {
-    /**
-     * Executes task if it's not already running.
-     */
-    void executeWithLock(Runnable task, LockConfiguration lockConfig);
+import net.javacrumbs.shedlock.support.LockException;
 
-    void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable;
-
-    @FunctionalInterface
-    interface Task {
-        void call() throws Throwable;
+class LockingNotSupportedException extends LockException {
+    LockingNotSupportedException() {
+        super("Can not lock method returning value (do not know what to return if it's locked)");
     }
 }

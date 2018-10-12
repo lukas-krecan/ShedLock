@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.core;
+package net.javacrumbs.shedlock.test.boot;
 
-public interface LockingTaskExecutor {
-    /**
-     * Executes task if it's not already running.
-     */
-    void executeWithLock(Runnable task, LockConfiguration lockConfig);
+import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-    void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable;
+@Component
+public class ScheduledTasks {
+    @Scheduled(fixedRate = 1)
+    @SchedulerLock(name = "reportCurrentTime", lockAtLeastForString = "${lock.at.most.for}")
+    public void reportCurrentTime() {
 
-    @FunctionalInterface
-    interface Task {
-        void call() throws Throwable;
     }
 }

@@ -22,8 +22,8 @@
     <version>1.3.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
-        <module>shedlock-spring</module>
-        <module>shedlock-springboot-test</module>
+        <module>spring/shedlock-spring</module>
+        <module>spring/shedlock-springboot-test</module>
         <module>shedlock-test-support</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
@@ -96,6 +96,12 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>3.10.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.3</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
