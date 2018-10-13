@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 2
+    }
+  },
+  "mappings": {
+    "properties": {
+      "lockUntil": {
+        "type": "date"
+      },
+      "lockedAt": {
+        "type": "date"
+      },
+      "lockedBy": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      }
+    }
+  }
+}
