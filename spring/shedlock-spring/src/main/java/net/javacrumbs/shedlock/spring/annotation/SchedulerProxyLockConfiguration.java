@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.spring.annotation;
 
-import net.javacrumbs.shedlock.spring.wrapper.TaskSchedulerWrapperBeanPostProcessor;
+import net.javacrumbs.shedlock.spring.aop.SchedulerProxyScheduledLockAopBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +27,7 @@ class SchedulerProxyLockConfiguration extends AbstractSchedulerLockConfiguration
 
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    TaskSchedulerWrapperBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
-        return new TaskSchedulerWrapperBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
+    SchedulerProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
+        return new SchedulerProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
     }
 }

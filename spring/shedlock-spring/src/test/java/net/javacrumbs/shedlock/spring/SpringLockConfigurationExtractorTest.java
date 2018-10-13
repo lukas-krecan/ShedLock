@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SchedulerLock;
-import net.javacrumbs.shedlock.spring.internal.ScheduledMethodRunnableSpringLockConfigurationExtractor;
+import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.junit.Test;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringValueResolver;
@@ -33,11 +33,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ScheduledMethodRunnableSpringLockConfigurationExtractorTest {
+public class SpringLockConfigurationExtractorTest {
     private static final Duration DEFAULT_LOCK_TIME = Duration.of(30, ChronoUnit.MINUTES);
     private static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
     private final StringValueResolver embeddedValueResolver = mock(StringValueResolver.class);
-    private final ScheduledMethodRunnableSpringLockConfigurationExtractor extractor = new ScheduledMethodRunnableSpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver);
+    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver);
 
 
     @Test

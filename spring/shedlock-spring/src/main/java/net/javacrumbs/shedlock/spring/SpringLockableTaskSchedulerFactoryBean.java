@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.spring.internal.ScheduledMethodRunnableSpringLockConfigurationExtractor;
+import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.scheduling.TaskScheduler;
@@ -61,7 +61,7 @@ public class SpringLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<
     protected LockableTaskScheduler createInstance() {
         return new LockableTaskScheduler(
             taskScheduler,
-            new DefaultLockManager(lockProvider, new ScheduledMethodRunnableSpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, embeddedValueResolver))
+            new DefaultLockManager(lockProvider, new SpringLockConfigurationExtractor(defaultLockAtMostFor, defaultLockAtLeastFor, embeddedValueResolver))
         );
     }
 
