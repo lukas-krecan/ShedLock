@@ -334,7 +334,7 @@ import net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvid
 ...
 
 @Bean
-public CouchbaseLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
+public CouchbaseLockProvider lockProvider(Bucket bucket) {
     return new CouchbaseLockProvider(bucket);
 }
 ```
