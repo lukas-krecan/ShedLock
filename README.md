@@ -19,6 +19,8 @@ using any transaction. In such case ShedLock may be right for you.
 
 
 + [Usage](#usage)
+  - [TaskScheduler proxy](#taskscheduler-proxy)
+  - [Scheduled method proxy](#scheduled-method-proxy)
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
   - [JdbcTemplate](#jdbctemplate)
@@ -81,11 +83,11 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 ...
-private static final int FOURTEEN_MIN = 14 * 60 * 1000;
+private static final String FOURTEEN_MIN = "PT14M";
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
-@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = FOURTEEN_MIN, lockAtLeastFor = FOURTEEN_MIN)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostForString = FOURTEEN_MIN, lockAtMostForString = FOURTEEN_MIN)
 public void scheduledTask() {
     // do something
 }
@@ -98,35 +100,46 @@ a time that is significantly larger than maximum estimated execution time.**  If
 it will be executed again.
 
 
-### Configure the task scheduler
-Now we need to integrate the library into Spring. It's done by wrapping standard Spring task scheduler.  
+### Enable Scheduler Locking
+Now we need to integrate the library into Spring. Since version 2.0.0 you can use simple annotation
 
 ```java
-import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
-
-...
-@Bean
-public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
-    return ScheduledLockConfigurationBuilder
-        .withLockProvider(lockProvider)
-        .withPoolSize(10)
-        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-        .build();
+@Configuration
+@EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
+class MySpringConfiguration {
+    ...
 }
 ```
 
-Or if you already have an instance of ScheduledExecutorService
+#### TaskScheduler proxy
+By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, default one
+is created for you. If you have special needs, just create a bean implementing `TaskScheduler` interface and it will get wrapped 
+into AOP proxy automatically.
 
-```java
+```java   
 @Bean
-public ScheduledLockConfiguration taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
-    return ScheduledLockConfigurationBuilder
-        .withLockProvider(lockProvider)
-        .withExecutorService(executorService)
-        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-        .build();
+public TaskScheduler taskScheduler() {
+    return new MySpecialTaskScheduler();
 }
 ```
+
+![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raq/master/documentation/scheduler_proxy.png)
+
+
+#### Scheduled Method proxy
+If you have even more special needs, you can use Scheduled Method proxy like this
+
+```java
+@EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
+```
+
+If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every scheduled method, with `@SchedulerLock` annotation. 
+The main advantage of this approach is that it does not depend on Spring scheduling. The disadvantage is, that the lock is applied even
+if you call the method directly. Be also aware, that only void returning methods are currently supported, an exception is thrown if you
+annotate a method with non-void return type.
+
+![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raq/master/documentation/method_proxy.png)  
 
 ### Configure LockProvider
 There are several implementations of LockProvider.  
