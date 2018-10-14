@@ -31,7 +31,7 @@ class SchedulerLockConfigurationSelector implements ImportSelector {
             return new String[]{MethodProxyLockConfiguration.class.getName()};
         }
         if (InterceptMode.PROXY_SCHEDULER.equals(mode)) {
-            return new String[]{SchedulerProxyLockConfiguration.class.getName()};
+            return new String[]{SchedulerProxyLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
         }
         throw new UnsupportedOperationException();
     }

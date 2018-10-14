@@ -18,19 +18,26 @@ package net.javacrumbs.shedlock.spring.it;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractSchedulerConfig {
     private static final Logger logger = LoggerFactory.getLogger(ProxyIntegrationTest.class);
 
     @Bean
     public LockProvider lockProvider() {
-        return mock(LockProvider.class);
+        LockProvider lockProvider = mock(LockProvider.class);
+        when(lockProvider.lock(any())).thenReturn(Optional.of(mock(SimpleLock.class)));
+        return lockProvider;
     }
 
     @Bean
