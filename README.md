@@ -124,7 +124,7 @@ public TaskScheduler taskScheduler() {
 }
 ```
 
-![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raq/master/documentation/scheduler_proxy.png)
+![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
 
 
 #### Scheduled Method proxy
@@ -139,7 +139,7 @@ The main advantage of this approach is that it does not depend on Spring schedul
 if you call the method directly. Be also aware, that only void returning methods are currently supported, an exception is thrown if you
 annotate a method with non-void return type.
 
-![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raq/master/documentation/method_proxy.png)  
+![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
 ### Configure LockProvider
 There are several implementations of LockProvider.  
@@ -151,7 +151,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -195,7 +195,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -221,7 +221,7 @@ For those who do not want to use jdbc-template, there is plain JDBC lock provide
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -251,7 +251,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -275,7 +275,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -302,7 +302,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -326,7 +326,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>1.3.0/version>
+    <version>2.0.1/version>
 </dependency>
 ```
 
@@ -350,7 +350,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>1.3.0/version>
+    <version>2.0.1/version>
 </dependency>
 ```
 
@@ -429,6 +429,9 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 2.0.1
+* AOP proxy and annotation configuration support
+
 ## 1.3.0
 * Can set Timezone to JdbcTemplateLock provider
 
