@@ -55,7 +55,7 @@ class RegisterDefaultTaskSchedulerPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public int getOrder() {
-        return 2147483647;
+        return Ordered.LOWEST_PRECEDENCE;
     }
 
     @Override
