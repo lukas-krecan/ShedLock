@@ -24,7 +24,6 @@ using any transaction. In such case ShedLock may be right for you.
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
   - [JdbcTemplate](#jdbctemplate)
-  - [Warning](#warning)
   - [ZooKeeper (using Curator)](#zookeeper--using-curator-)
   - [Redis (using Spring RedisConnectionFactory)](#redis--using-spring-redisconnectionfactory-)
   - [Redis (using Jedis)](#redis--using-jedis-)
