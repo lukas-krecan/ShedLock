@@ -101,7 +101,7 @@ it will be executed again.
 
 
 ### Enable Scheduler Locking
-Now we need to integrate the library into Spring. Since version 2.0.0 you can use simple annotation
+Now we need to integrate the library into Spring. Since version 2.0.0 you can use `@EnableSchedulerLock` annotation
 
 ```java
 @Configuration
@@ -134,7 +134,7 @@ If you have even more special needs, you can use Scheduled Method proxy like thi
 @EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
 ```
 
-If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every scheduled method with `@SchedulerLock` annotation. 
+If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every method with `@SchedulerLock` annotation. 
 The main advantage of this approach is that it does not depend on Spring scheduling. The disadvantage is that the lock is applied even
 if you call the method directly. Be also aware, that only void-returning methods are currently supported, an exception is thrown if you
 annotate and call a method with non-void return type.
