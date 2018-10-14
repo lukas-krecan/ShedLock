@@ -24,7 +24,6 @@ using any transaction. In such case ShedLock may be right for you.
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
   - [JdbcTemplate](#jdbctemplate)
-  - [Plain JDBC](#plain-jdbc)
   - [Warning](#warning)
   - [ZooKeeper (using Curator)](#zookeeper--using-curator-)
   - [Redis (using Spring RedisConnectionFactory)](#redis--using-spring-redisconnectionfactory-)
@@ -213,32 +212,6 @@ public LockProvider lockProvider(DataSource dataSource) {
 ```
 
 Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
-
-#### Plain JDBC
-For those who do not want to use jdbc-template, there is plain JDBC lock provider. Just import 
-
-```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>2.0.1</version>
-</dependency>
-```
-
-and configure
-
-```java
-import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-
-...
-
-@Bean
-public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcLockProvider(dataSource);
-}
-```
-the rest is the same as with JdbcTemplate lock provider.
-
 
 #### Warning
 **Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
