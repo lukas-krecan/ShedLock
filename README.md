@@ -442,7 +442,7 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 * Spring RedisLockProvider refactored to use RedisTemplate
 
 ## 1.1.0
-# Support for transaction manager in JdbcTemplateLockProvider (thanks to @grmblfrz)
+* Support for transaction manager in JdbcTemplateLockProvider (thanks to @grmblfrz)
 
 ## 1.0.0
 * Upgraded dependencies to Spring 5 and Spring Data 2
