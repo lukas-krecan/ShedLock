@@ -134,10 +134,10 @@ If you have even more special needs, you can use Scheduled Method proxy like thi
 @EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
 ```
 
-If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every scheduled method, with `@SchedulerLock` annotation. 
-The main advantage of this approach is that it does not depend on Spring scheduling. The disadvantage is, that the lock is applied even
-if you call the method directly. Be also aware, that only void returning methods are currently supported, an exception is thrown if you
-annotate a method with non-void return type.
+If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every scheduled method with `@SchedulerLock` annotation. 
+The main advantage of this approach is that it does not depend on Spring scheduling. The disadvantage is that the lock is applied even
+if you call the method directly. Be also aware, that only void-returning methods are currently supported, an exception is thrown if you
+annotate and call a method with non-void return type.
 
 ![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
