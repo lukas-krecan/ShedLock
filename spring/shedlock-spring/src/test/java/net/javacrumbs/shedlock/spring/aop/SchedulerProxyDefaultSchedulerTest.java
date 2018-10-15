@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.wrapper;
+package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
@@ -21,19 +21,20 @@ import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.mockito.Mockito.mock;
 
 
+/**
+ * Test creation of default task scheduler
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TaskSchedulerWrapperTest.SchedulerWrapperConfig.class)
-public class TaskSchedulerWrapperTest extends AbstractTaskSchedulerWrapperTest {
-
+@ContextConfiguration(classes = SchedulerProxyDefaultSchedulerTest.SchedulerWrapperConfig.class)
+public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTest {
+    
     @Configuration
     @EnableScheduling
     @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
@@ -44,12 +45,5 @@ public class TaskSchedulerWrapperTest extends AbstractTaskSchedulerWrapperTest {
         public LockProvider lockProvider() {
             return mock(LockProvider.class);
         }
-
-
-        @Bean
-        public TaskScheduler taskScheduler() {
-            return new ThreadPoolTaskScheduler();
-        }
-
     }
 }

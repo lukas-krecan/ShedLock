@@ -16,14 +16,11 @@
 package net.javacrumbs.shedlock.spring.it;
 
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
 
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.WRAP_SCHEDULER;
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER;
 
 
 @ContextConfiguration(classes = SchedulerIntegrationTest.AopSchedulerConfig.class)
@@ -31,14 +28,7 @@ public class SchedulerIntegrationTest extends AbstractSchedulerTest {
 
     @Configuration
     @EnableScheduling
-    @EnableSchedulerLock(mode = WRAP_SCHEDULER, defaultLockAtMostFor = "PT30S")
+    @EnableSchedulerLock(mode = PROXY_SCHEDULER, defaultLockAtMostFor = "PT30S")
     public static class AopSchedulerConfig extends AbstractSchedulerConfig {
-        @Bean
-        public TaskScheduler taskScheduler() {
-            ThreadPoolTaskScheduler newTaskScheduler = new ThreadPoolTaskScheduler();
-            newTaskScheduler.setPoolSize(10);
-            newTaskScheduler.initialize();
-            return newTaskScheduler;
-        }
     }
 }

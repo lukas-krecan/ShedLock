@@ -1,0 +1,27 @@
+http://plantuml.com/
+
+participant "Spring scheduling"
+participant "TaskScheduler AOP proxy" #white
+participant "TaskScheduler"
+participant "LockableRunnable" #white
+participant "ScheduledMethod"
+
+"Spring scheduling"->"TaskScheduler AOP proxy" : Runnable
+"TaskScheduler AOP proxy"->"TaskScheduler" : LockableRunnable
+"TaskScheduler"-->"LockableRunnable" : run
+"LockableRunnable" --> "ScheduledMethod": executeIfNotLocked
+
+-----------------------------------
+
+participant "Spring scheduling"
+participant "TaskScheduler"
+participant "Runnable"
+participant "ScheduledMethod AOP proxy" #white
+participant "ScheduledMethod"
+
+"Spring scheduling"->"TaskScheduler" : Runnable
+"TaskScheduler"-->"Runnable" : run
+"Runnable"-->"ScheduledMethod AOP proxy" : execute
+"ScheduledMethod AOP proxy" --> "ScheduledMethod": executeIfNotLocked
+
+
