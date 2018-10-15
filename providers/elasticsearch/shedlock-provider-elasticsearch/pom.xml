@@ -13,6 +13,7 @@
 
     <properties>
         <elasticsearch.version>6.4.0</elasticsearch.version>
+        <embedded-elasticsearch.version>2.7.0</embedded-elasticsearch.version>
     </properties>
 
     <dependencies>
@@ -34,6 +35,14 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>pl.allegro.tech</groupId>
+            <artifactId>embedded-elasticsearch</artifactId>
+            <version>${embedded-elasticsearch.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -45,7 +54,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.hazelcast
+                                net.javacrumbs.shedlock.provider.elasticsearch
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
