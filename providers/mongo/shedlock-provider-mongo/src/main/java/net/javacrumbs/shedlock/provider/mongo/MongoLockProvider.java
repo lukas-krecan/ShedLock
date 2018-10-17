@@ -143,11 +143,22 @@ public class MongoLockProvider extends StorageBasedLockProvider {
                 set(LOCKED_AT, now),
                 set(LOCKED_BY, hostname)
             );
-            Document result = getCollection().findOneAndUpdate(
-                and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
-                update
-            );
-            return result != null;
+            try {
+                Document result = getCollection().findOneAndUpdate(
+                        and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
+                        update,
+                        new FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
+                );
+                return result != null;
+            } catch (MongoServerException e) {
+                if (e.getCode() == 11000) { // duplicate key
+                    //Upsert attempts to insert when there were no filter matches.
+                    //This means there was a lock with matching ID with lockUntil > now.
+                    return false;
+                } else {
+                    throw e;
+                }
+            }
         }
 
         @Override

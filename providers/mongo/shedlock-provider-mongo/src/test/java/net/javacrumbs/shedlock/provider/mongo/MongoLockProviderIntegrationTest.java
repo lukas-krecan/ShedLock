@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
@@ -74,8 +75,12 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 
+    private MongoCollection<Document> getLockCollection() {
+        return mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME);
+    }
+
     private Document getLockDocument(String lockName) {
-        return mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME).find(eq(ID, lockName)).first();
+        return getLockCollection().find(eq(ID, lockName)).first();
     }
 
     @BeforeClass
@@ -94,7 +99,7 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertLocked(LOCK_NAME1);
 
-        DeleteResult result = mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME).deleteOne(eq(ID, LOCK_NAME1));
+        DeleteResult result = getLockCollection().deleteOne(eq(ID, LOCK_NAME1));
         assumeThat(result.getDeletedCount()).isEqualTo(1);
 
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
