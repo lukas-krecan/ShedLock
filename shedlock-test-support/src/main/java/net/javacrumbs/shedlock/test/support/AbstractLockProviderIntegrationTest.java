@@ -101,10 +101,9 @@ public abstract class AbstractLockProviderIntegrationTest {
     @Test
     public void shouldBeAbleToLockRightAfterUnlock() {
         LockConfiguration lockConfiguration = lockConfig(LOCK_NAME1);
-        LockProvider lockProvider = getLockProvider();
         for (int i = 0; i < 100; i++) {
-            Optional<SimpleLock> lock = lockProvider.lock(lockConfiguration);
-            assertThat(lockProvider.lock(lockConfiguration)).isEmpty();
+            Optional<SimpleLock> lock = getLockProvider().lock(lockConfiguration);
+            assertThat(getLockProvider().lock(lockConfiguration)).isEmpty();
             assertThat(lock).isNotEmpty();
             lock.get().unlock();
         }
