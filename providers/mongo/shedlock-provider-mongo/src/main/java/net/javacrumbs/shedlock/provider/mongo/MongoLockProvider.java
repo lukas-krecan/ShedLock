@@ -16,9 +16,10 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoCommandException;
+import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.ReturnDocument;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -27,12 +28,8 @@ import org.bson.conversions.Bson;
 
 import java.util.Date;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.lte;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
-import static com.mongodb.client.model.Updates.setOnInsert;
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Updates.*;
 
 /**
  * Distributed lock using MongoDB &gt;= 2.6. Requires mongo-java-driver &gt; 3.4.0
@@ -123,8 +120,8 @@ public class MongoLockProvider extends StorageBasedLockProvider {
                     new FindOneAndUpdateOptions().upsert(true)
                 );
                 return result == null;
-            } catch (MongoCommandException e) {
-                if (e.getErrorCode() == 11000) { // duplicate key
+            } catch (MongoServerException e) {
+                if (e.getCode() == 11000) { // duplicate key
                     // this should not normally happen, but it happened once in tests
                     return false;
                 } else {
