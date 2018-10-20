@@ -18,17 +18,10 @@ package net.javacrumbs.shedlock.support;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 public abstract class AbstractStorageAccessor implements StorageAccessor {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "unknown";
-        }
+        return Utils.getHostname();
     }
 }

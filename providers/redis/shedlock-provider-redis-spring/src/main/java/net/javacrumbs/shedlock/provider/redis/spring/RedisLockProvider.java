@@ -24,13 +24,12 @@ import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_ABSENT;
 
 /**
@@ -107,13 +106,6 @@ public class RedisLockProvider implements LockProvider {
         }
     }
 
-    private static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "unknown host";
-        }
-    }
 
     static String buildKey(String lockName, String env) {
         return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
