@@ -30,10 +30,7 @@ import java.net.UnknownHostException;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
@@ -41,19 +38,17 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
     private static final String COLLECTION_NAME = "Shedlock";
     private static final String DB_NAME = "db";
-    private MongoLockProvider lockProvider;
     private MongoClient mongo;
 
     @Before
     public void createLockProvider() throws UnknownHostException {
         mongo = mongoFactory.newMongo();
         mongo.getDatabase(DB_NAME).drop();
-        lockProvider = new MongoLockProvider(mongo, DB_NAME, COLLECTION_NAME);
     }
 
     @Override
     protected LockProvider getLockProvider() {
-        return lockProvider;
+        return new MongoLockProvider(mongo, DB_NAME, COLLECTION_NAME);
     }
 
     @Override
@@ -86,7 +81,7 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
     }
 
     @AfterClass
-    public static void stopMongo() throws IOException {
+    public static void stopMongo() {
         mongoFactory.shutdown();
     }
 }
