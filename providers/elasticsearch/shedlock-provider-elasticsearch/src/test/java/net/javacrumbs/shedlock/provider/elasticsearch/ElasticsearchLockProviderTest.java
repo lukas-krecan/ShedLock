@@ -17,9 +17,6 @@ import pl.allegro.tech.embeddedelasticsearch.IndexSettings;
 import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
@@ -31,6 +28,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
+    private static final int EMBEDDED_ELASTIC_PORT = 9350;
     private static EmbeddedElastic embeddedElastic;
     private RestHighLevelClient highLevelClient;
     private ElasticsearchLockProvider lockProvider;
@@ -39,7 +37,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     public void setUp() {
         highLevelClient = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("localhost", 9350, "http")));
+                        new HttpHost("localhost", EMBEDDED_ELASTIC_PORT, "http")));
         lockProvider = new ElasticsearchLockProvider(highLevelClient);
     }
 
@@ -87,11 +85,11 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     public static void startEmbeddedElastic() throws IOException, InterruptedException {
         embeddedElastic = EmbeddedElastic.builder()
                 .withElasticVersion("6.4.0")
-                .withSetting(PopularProperties.HTTP_PORT, 9350)
+                .withSetting(PopularProperties.HTTP_PORT, EMBEDDED_ELASTIC_PORT)
                 .withSetting(PopularProperties.CLUSTER_NAME, "my_cluster")
                 .withStartTimeout(2, MINUTES)
                 .withIndex(SCHEDLOCK_DEFAULT_INDEX, IndexSettings.builder()
-                        .withType("lock", getSystemResourceAsStream("shedlock.mapping.json"))
+                        .withType(SCHEDLOCK_DEFAULT_TYPE, getSystemResourceAsStream("shedlock.mapping.json"))
                         .withSettings(getSystemResourceAsStream("shedlock.settings.json"))
                         .build())
                 .build()
