@@ -19,17 +19,21 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.ReturnDocument;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.Utils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.Date;
+import java.util.Optional;
 
-import static com.mongodb.client.model.Filters.*;
-import static com.mongodb.client.model.Updates.*;
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.lte;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
 
 /**
  * Distributed lock using MongoDB &gt;= 2.6. Requires mongo-java-driver &gt; 3.4.0
@@ -62,11 +66,14 @@ import static com.mongodb.client.model.Updates.*;
  * </li>
  * </ol>
  */
-public class MongoLockProvider extends StorageBasedLockProvider {
+public class MongoLockProvider implements LockProvider {
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
+
+    private final String hostname;
+    private final MongoCollection<Document> collection;
 
     /**
      * Uses Mongo to coordinate locks
@@ -86,92 +93,64 @@ public class MongoLockProvider extends StorageBasedLockProvider {
      * @param collectionName collection to store the locks
      */
     public MongoLockProvider(MongoClient mongo, String databaseName, String collectionName) {
-        this(new MongoAccessor(mongo, databaseName, collectionName));
+        this.collection = mongo.getDatabase(databaseName).getCollection(collectionName);
+        this.hostname = Utils.getHostname();
     }
 
-    MongoLockProvider(MongoAccessor mongoAccessor) {
-        super(mongoAccessor);
+
+    @Override
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+        Date now = now();
+        Bson update = combine(
+            set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
+            set(LOCKED_AT, now),
+            set(LOCKED_BY, hostname)
+        );
+        try {
+            // There are three possible situations:
+            // 1. The lock document does not exist yet - it is inserted - we have the lock
+            // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
+            // 3. The lock document exists and lockUtil > now - Duplicate key exception is thrown
+            getCollection().findOneAndUpdate(
+                and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
+                update,
+                new FindOneAndUpdateOptions().upsert(true)
+            );
+            return Optional.of(new MongoLock(lockConfiguration));
+        } catch (MongoServerException e) {
+            if (e.getCode() == 11000) { // duplicate key
+                //Upsert attempts to insert when there were no filter matches.
+                //This means there was a lock with matching ID with lockUntil > now.
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
     }
 
-    static class MongoAccessor extends AbstractStorageAccessor {
-        private final MongoClient mongo;
-        private final String databaseName;
-        private final String collectionName;
-        private final String hostname;
+    private MongoCollection<Document> getCollection() {
+        return collection;
+    }
 
-        MongoAccessor(MongoClient mongo, String databaseName, String collectionName) {
-            this.mongo = mongo;
-            this.databaseName = databaseName;
-            this.collectionName = collectionName;
-            this.hostname = getHostname();
+    private Date now() {
+        return new Date();
+    }
+
+    private final class MongoLock implements SimpleLock {
+        private final LockConfiguration lockConfiguration;
+
+        private MongoLock(LockConfiguration lockConfiguration) {
+            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
-        public boolean insertRecord(LockConfiguration lockConfiguration) {
-            Bson update = combine(
-                setOnInsert(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
-                setOnInsert(LOCKED_AT, now()),
-                setOnInsert(LOCKED_BY, hostname)
-            );
-            try {
-                Document result = getCollection().findOneAndUpdate(
-                    eq(ID, lockConfiguration.getName()),
-                    update,
-                    new FindOneAndUpdateOptions().upsert(true)
-                );
-                return result == null;
-            } catch (MongoServerException e) {
-                if (e.getCode() == 11000) { // duplicate key
-                    // this should not normally happen, but it happened once in tests
-                    return false;
-                } else {
-                    throw e;
-                }
-
-            }
-        }
-
-        private Date now() {
-            return new Date();
-        }
-
-        @Override
-        public boolean updateRecord(LockConfiguration lockConfiguration) {
-            Date now = now();
-            Bson update = combine(
-                set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
-                set(LOCKED_AT, now),
-                set(LOCKED_BY, hostname)
-            );
-            try {
-                Document result = getCollection().findOneAndUpdate(
-                        and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
-                        update,
-                        new FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
-                );
-                return result != null;
-            } catch (MongoServerException e) {
-                if (e.getCode() == 11000) { // duplicate key
-                    //Upsert attempts to insert when there were no filter matches.
-                    //This means there was a lock with matching ID with lockUntil > now.
-                    return false;
-                } else {
-                    throw e;
-                }
-            }
-        }
-
-        @Override
-        public void unlock(LockConfiguration lockConfiguration) {
+        public void unlock() {
             // Set lockUtil to now or lockAtLeastUntil whichever is later
             getCollection().findOneAndUpdate(
                 eq(ID, lockConfiguration.getName()),
                 combine(set(LOCK_UNTIL, Date.from(lockConfiguration.getUnlockTime())))
             );
         }
-
-        private MongoCollection<Document> getCollection() {
-            return mongo.getDatabase(databaseName).getCollection(collectionName);
-        }
     }
+
 }
