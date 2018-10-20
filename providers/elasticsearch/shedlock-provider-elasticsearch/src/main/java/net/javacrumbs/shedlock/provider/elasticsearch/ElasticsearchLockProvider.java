@@ -7,6 +7,8 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.support.ActiveShardCount;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -19,9 +21,6 @@ import org.elasticsearch.script.ScriptType;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,13 +36,13 @@ import java.util.Map;
  *    "name" : "lock name",
  *    "lockUntil" :  {
  *      "type":   "date",
- *      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+ *      "format": "epoch_millis"
  *    },
  *    "lockedAt" : {
  *      "type":   "date",
- *      "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+ *      "format": "epoch_millis"
  *    }:
- *    "lockedBy" : "host name"
+ *    "lockedBy" : "hostname"
  * }
  * </pre>
  * <p>
@@ -74,7 +73,7 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
     static final String LOCKED_BY = "lockedBy";
     static final String NAME = "name";
 
-    protected ElasticsearchLockProvider(StorageAccessor storageAccessor) {
+    private ElasticsearchLockProvider(StorageAccessor storageAccessor) {
         super(storageAccessor);
     }
 
@@ -92,6 +91,13 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
 
     static class ElasticAccessor extends AbstractStorageAccessor {
 
+        public static final String UPDATE_SCRIPT = "if (ctx._source." + LOCK_UNTIL + " <= " + "params." + LOCKED_AT + ") { " +
+                "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " +
+                "ctx._source." + LOCKED_AT + " = params." + LOCKED_AT + "; " +
+                "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; " +
+                "} else { " +
+                "ctx.op = 'none' " +
+                "}";
         private final RestHighLevelClient highLevelClient;
         private final String hostname;
         private final String index;
@@ -111,7 +117,8 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
                         .index(index)
                         .type(type)
                         .id(lockConfiguration.getName())
-                        .source(recordBuilder(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now()));
+                        .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+                        .source(lockObject(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now()));
                 highLevelClient.index(ir, RequestOptions.DEFAULT);
                 return true;
             } catch (IOException e) {
@@ -127,22 +134,17 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
         @Override
         public boolean updateRecord(LockConfiguration lockConfiguration) {
             try {
-                Date now = now();
-                Map<String, Object> u = new HashMap<>();
-                u.put(NAME, lockConfiguration.getName());
-                u.put(LOCKED_BY, hostname);
-                u.put(LOCKED_AT, now.getTime()); // TODO check date
-                u.put(LOCK_UNTIL, now.getTime());
-
                 UpdateRequest ur = new UpdateRequest()
                         .index(index)
                         .type(type)
                         .id(lockConfiguration.getName())
                         .script(new Script(ScriptType.INLINE,
                                 "painless",
-                                "if (ctx._source.lockUntil <= params.lockUntil) { ctx._source.hostname = params.hostname; ctx._source.lockedAt = params.lockedAt; } else { ctx.op = 'none' }" ,
-                                u));
-
+                                UPDATE_SCRIPT,
+                                lockObject(lockConfiguration.getName(),
+                                        lockConfiguration.getLockAtMostUntil(),
+                                        now()))
+                        );
                 UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
                 return res.getResult() != DocWriteResponse.Result.NOOP;
             } catch (IOException e) {
@@ -163,7 +165,6 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
                         .index(index)
                         .type(type)
                         .id(lockConfiguration.getName())
-                        .retryOnConflict(2)
                         .script(new Script(ScriptType.INLINE,
                                 "painless",
                                 "ctx._source.lockUntil = params.unlockTime",
@@ -182,15 +183,13 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
             return new Date();
         }
 
-        private XContentBuilder recordBuilder(String name, Instant lockUntil, Date lockedAt) throws IOException {
-            return XContentFactory.jsonBuilder()
-                    .startObject()
-                        .field(NAME, name)
-                        .field(LOCKED_BY, hostname)
-                        .field(LOCKED_AT, lockedAt.getTime())
-                        .field(LOCK_UNTIL, lockUntil.toEpochMilli())
-                    .endObject();
+        private Map<String, Object> lockObject(String name, Instant lockUntil, Date lockedAt) throws IOException {
+            Map<String, Object> lock = new HashMap<>();
+            lock.put(NAME, name);
+            lock.put(LOCKED_BY, hostname);
+            lock.put(LOCKED_AT, lockedAt.getTime());
+            lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
+            return lock;
         }
-
     }
 }
