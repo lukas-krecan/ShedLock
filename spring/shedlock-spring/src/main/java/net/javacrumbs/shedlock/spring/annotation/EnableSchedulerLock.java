@@ -13,18 +13,20 @@ import java.lang.annotation.Target;
 public @interface EnableSchedulerLock {
     enum InterceptMode {
         /**
-         * Default mode when custom TaskScheduler is used to ensure locks are placed
+         * Default mode when a TaskScheduler is wrapped in a proxy to ensure locking. Only applies lock
+         * if the {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated method is called using scheduler.
          */
-        WRAP_SCHEDULER,
+        PROXY_SCHEDULER,
 
         /**
-         * Locks are created thanks to AOP proxy
+         * Scheduled method is proxied to ensure locking. Lock is created every time
+         * {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated is called (even if it is NOT called using Spring scheduler)
          */
         PROXY_METHOD
     }
 
 
-    InterceptMode mode() default InterceptMode.WRAP_SCHEDULER;
+    InterceptMode mode() default InterceptMode.PROXY_SCHEDULER;
 
 
     /**

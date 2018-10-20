@@ -24,13 +24,14 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static net.javacrumbs.shedlock.spring.internal.ScheduledMethodRunnableSpringLockConfigurationExtractor.DEFAULT_LOCK_AT_MOST_FOR;
-
 class DefaultScheduledLockConfigurationBuilder
     implements ScheduledLockConfigurationBuilder, ScheduledLockConfigurationBuilderWithoutTaskScheduler, ConfiguredScheduledLockConfigurationBuilder, ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor {
+    private static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
+
     private final LockProvider lockProvider;
 
     private TaskScheduler taskScheduler;

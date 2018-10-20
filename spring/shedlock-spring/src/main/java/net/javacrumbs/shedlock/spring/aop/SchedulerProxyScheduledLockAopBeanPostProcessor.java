@@ -15,19 +15,19 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 
-public class MethodProxyScheduledLockAopBeanPostProcessor extends AbstractProxyScheduledLockAopBeanPostProcessor {
-
-    public MethodProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
+public class SchedulerProxyScheduledLockAopBeanPostProcessor extends AbstractProxyScheduledLockAopBeanPostProcessor {
+    public SchedulerProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
         super(defaultLockAtMostFor, defaultLockAtLeastFor);
     }
 
     @Override
     protected AbstractPointcutAdvisor getAdvisor(LockProvider lockProvider) {
-        return new MethodProxyScheduledLockAdvisor(new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver()), new DefaultLockingTaskExecutor(lockProvider));
+        SpringLockConfigurationExtractor lockConfigurationExtractor = new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver());
+        return new SchedulerProxyScheduledLockAdvisor(new DefaultLockManager(lockProvider, lockConfigurationExtractor));
     }
 }

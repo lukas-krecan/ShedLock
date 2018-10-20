@@ -19,11 +19,11 @@ using any transaction. In such case ShedLock may be right for you.
 
 
 + [Usage](#usage)
+  - [TaskScheduler proxy](#taskscheduler-proxy)
+  - [Scheduled method proxy](#scheduled-method-proxy)
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
   - [JdbcTemplate](#jdbctemplate)
-  - [Plain JDBC](#plain-jdbc)
-  - [Warning](#warning)
   - [ZooKeeper (using Curator)](#zookeeper--using-curator-)
   - [Redis (using Spring RedisConnectionFactory)](#redis--using-spring-redisconnectionfactory-)
   - [Redis (using Jedis)](#redis--using-jedis-)
@@ -81,11 +81,11 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 ...
-private static final int FOURTEEN_MIN = 14 * 60 * 1000;
+private static final String FOURTEEN_MIN = "PT14M";
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
-@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = FOURTEEN_MIN, lockAtLeastFor = FOURTEEN_MIN)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostForString = FOURTEEN_MIN, lockAtMostForString = FOURTEEN_MIN)
 public void scheduledTask() {
     // do something
 }
@@ -98,35 +98,46 @@ a time that is significantly larger than maximum estimated execution time.**  If
 it will be executed again.
 
 
-### Configure the task scheduler
-Now we need to integrate the library into Spring. It's done by wrapping standard Spring task scheduler.  
+### Enable Scheduler Locking
+Now we need to integrate the library into Spring. Since version 2.0.0 you can use `@EnableSchedulerLock` annotation
 
 ```java
-import net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactory;
-
-...
-@Bean
-public ScheduledLockConfiguration taskScheduler(LockProvider lockProvider) {
-    return ScheduledLockConfigurationBuilder
-        .withLockProvider(lockProvider)
-        .withPoolSize(10)
-        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-        .build();
+@Configuration
+@EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
+class MySpringConfiguration {
+    ...
 }
 ```
 
-Or if you already have an instance of ScheduledExecutorService
+#### TaskScheduler proxy
+By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, default one
+is created for you. If you have special needs, just create a bean implementing `TaskScheduler` interface and it will get wrapped 
+into AOP proxy automatically.
 
-```java
+```java   
 @Bean
-public ScheduledLockConfiguration taskScheduler(ScheduledExecutorService executorService, LockProvider lockProvider) {
-    return ScheduledLockConfigurationBuilder
-        .withLockProvider(lockProvider)
-        .withExecutorService(executorService)
-        .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-        .build();
+public TaskScheduler taskScheduler() {
+    return new MySpecialTaskScheduler();
 }
 ```
+
+![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
+
+
+#### Scheduled Method proxy
+If you have even more special needs, you can use Scheduled Method proxy like this
+
+```java
+@EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
+```
+
+If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every method with `@SchedulerLock` annotation. 
+The main advantage of this approach is that it does not depend on Spring scheduling. The disadvantage is that the lock is applied even
+if you call the method directly. Be also aware, that only void-returning methods are currently supported, an exception is thrown if you
+annotate and call a method with non-void return type.
+
+![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
 ### Configure LockProvider
 There are several implementations of LockProvider.  
@@ -138,7 +149,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -182,7 +193,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -201,32 +212,6 @@ public LockProvider lockProvider(DataSource dataSource) {
 
 Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
 
-#### Plain JDBC
-For those who do not want to use jdbc-template, there is plain JDBC lock provider. Just import 
-
-```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>1.3.0</version>
-</dependency>
-```
-
-and configure
-
-```java
-import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-
-...
-
-@Bean
-public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcLockProvider(dataSource);
-}
-```
-the rest is the same as with JdbcTemplate lock provider.
-
-
 #### Warning
 **Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
@@ -238,7 +223,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -262,7 +247,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -289,7 +274,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -313,7 +298,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>1.3.0/version>
+    <version>2.0.1/version>
 </dependency>
 ```
 
@@ -337,7 +322,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>1.3.0/version>
+    <version>2.0.1/version>
 </dependency>
 ```
 
@@ -349,7 +334,7 @@ import net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvid
 ...
 
 @Bean
-public CouchbaseLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
+public CouchbaseLockProvider lockProvider(Bucket bucket) {
     return new CouchbaseLockProvider(bucket);
 }
 ```
@@ -416,6 +401,9 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 2.0.1
+* AOP proxy and annotation configuration support
+
 ## 1.3.0
 * Can set Timezone to JdbcTemplateLock provider
 
@@ -426,7 +414,7 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 * Spring RedisLockProvider refactored to use RedisTemplate
 
 ## 1.1.0
-# Support for transaction manager in JdbcTemplateLockProvider (thanks to @grmblfrz)
+* Support for transaction manager in JdbcTemplateLockProvider (thanks to @grmblfrz)
 
 ## 1.0.0
 * Upgraded dependencies to Spring 5 and Spring Data 2

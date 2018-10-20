@@ -16,9 +16,13 @@
 package net.javacrumbs.shedlock.spring.internal;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
@@ -34,16 +38,28 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
-public class SpringLockConfigurationExtractor {
-    public static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
+public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final TemporalAmount defaultLockAtMostFor;
     private final TemporalAmount defaultLockAtLeastFor;
     private final StringValueResolver embeddedValueResolver;
+    private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     public SpringLockConfigurationExtractor(TemporalAmount defaultLockAtMostFor, TemporalAmount defaultLockAtLeastFor, StringValueResolver embeddedValueResolver) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
         this.embeddedValueResolver = embeddedValueResolver;
+    }
+
+
+    @Override
+    public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
+        if (task instanceof ScheduledMethodRunnable) {
+            ScheduledMethodRunnable scheduledMethodRunnable = (ScheduledMethodRunnable) task;
+            return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod());
+        } else {
+            logger.debug("Unknown task type " + task);
+        }
+        return Optional.empty();
     }
 
     public Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {

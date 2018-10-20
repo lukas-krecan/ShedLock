@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.wrapper;
+package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -34,6 +41,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -43,12 +51,12 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-public abstract class AbstractTaskSchedulerWrapperTest {
+public abstract class AbstractSchedulerProxyTest {
     @Autowired
-    private LockProvider lockProvider;
+    protected LockProvider lockProvider;
 
     @Autowired
-    private TaskScheduler taskScheduler;
+    protected TaskScheduler taskScheduler;
 
     private final SimpleLock simpleLock = mock(SimpleLock.class);
 
@@ -86,6 +94,14 @@ public abstract class AbstractTaskSchedulerWrapperTest {
         verify(simpleLock).unlock();
     }
 
+    @Test
+    public void shouldNotLockTaskExecutorMethods() {
+        assertThat(taskScheduler).isInstanceOf(TaskExecutor.class);
+
+        ((TaskExecutor)taskScheduler).execute(() -> {});
+        verifyZeroInteractions(lockProvider);
+    }
+
     private long getDefaultLockAtLeastFor() {
         return Duration.parse(defaultLockAtLeastFor).toMillis();
     }
@@ -118,5 +134,24 @@ public abstract class AbstractTaskSchedulerWrapperTest {
     @SchedulerLock(name = "exception", lockAtMostFor = 1_500)
     public void throwsException() {
         throw new NullPointerException("Just for test");
+    }
+
+    @Configuration
+    @EnableScheduling
+    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
+    @PropertySource("test.properties")
+    static class SchedulerWrapperConfig {
+
+        @Bean
+        public LockProvider lockProvider() {
+            return mock(LockProvider.class);
+        }
+
+
+        @Bean
+        public TaskScheduler taskScheduler() {
+            return new ConcurrentTaskScheduler();
+        }
+
     }
 }
