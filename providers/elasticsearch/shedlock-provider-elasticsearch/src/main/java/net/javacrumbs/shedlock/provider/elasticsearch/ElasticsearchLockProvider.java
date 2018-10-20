@@ -2,19 +2,17 @@ package net.javacrumbs.shedlock.provider.elasticsearch;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.StorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.support.ActiveShardCount;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -64,7 +62,6 @@ import java.util.Map;
  * </li>
  * </ol>
  */
-
 public class ElasticsearchLockProvider extends StorageBasedLockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
     static final String SCHEDLOCK_DEFAULT_TYPE = "lock";
@@ -91,12 +88,13 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
 
     static class ElasticAccessor extends AbstractStorageAccessor {
 
-        public static final String UPDATE_SCRIPT = "if (ctx._source." + LOCK_UNTIL + " <= " + "params." + LOCKED_AT + ") { " +
-                "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " +
-                "ctx._source." + LOCKED_AT + " = params." + LOCKED_AT + "; " +
-                "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; " +
+        static final String UPDATE_SCRIPT =
+                "if (ctx._source." + LOCK_UNTIL + " <= " + "params." + LOCKED_AT + ") { " +
+                    "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " +
+                    "ctx._source." + LOCKED_AT + " = params." + LOCKED_AT + "; " +
+                    "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; " +
                 "} else { " +
-                "ctx.op = 'none' " +
+                    "ctx.op = 'none' " +
                 "}";
         private final RestHighLevelClient highLevelClient;
         private final String hostname;
@@ -112,23 +110,21 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
 
         @Override
         public boolean insertRecord(LockConfiguration lockConfiguration) {
+            // request immediate refresh so that changes are immediately available
             try {
                 IndexRequest ir = new IndexRequest()
                         .index(index)
                         .type(type)
                         .id(lockConfiguration.getName())
                         .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
-                        .source(lockObject(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now()));
+                        .source(lockObject(lockConfiguration.getName(),
+                                lockConfiguration.getLockAtMostUntil(),
+                                now()));
                 highLevelClient.index(ir, RequestOptions.DEFAULT);
                 return true;
-            } catch (IOException e) {
-                return false;
-            } catch (ElasticsearchException ese) {
-                if (ese.status() == RestStatus.CONFLICT) {
-                    return false;
-                }
+            } catch (IOException | ElasticsearchException e) {
+                return handleException(e);
             }
-            return false;
         }
 
         @Override
@@ -147,14 +143,9 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
                         );
                 UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
                 return res.getResult() != DocWriteResponse.Result.NOOP;
-            } catch (IOException e) {
-                return false;
-            } catch (ElasticsearchException ese) {
-                if (ese.status() == RestStatus.CONFLICT) {
-                    return false;
-                }
+            } catch (IOException | ElasticsearchException e) {
+                return handleException(e);
             }
-            return false;
         }
 
         @Override
@@ -170,12 +161,8 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
                                 "ctx._source.lockUntil = params.unlockTime",
                                 Collections.singletonMap("unlockTime", lockConfiguration.getUnlockTime().toEpochMilli())));
                 highLevelClient.update(ur, RequestOptions.DEFAULT);
-            } catch (IOException e) {
-                // TODO
-            } catch (ElasticsearchException ese) {
-                if (ese.status() == RestStatus.CONFLICT) {
-                    //TODO
-                }
+            } catch (IOException | ElasticsearchException e) {
+                handleException(e);
             }
         }
 
@@ -183,7 +170,7 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
             return new Date();
         }
 
-        private Map<String, Object> lockObject(String name, Instant lockUntil, Date lockedAt) throws IOException {
+        private Map<String, Object> lockObject(String name, Instant lockUntil, Date lockedAt) {
             Map<String, Object> lock = new HashMap<>();
             lock.put(NAME, name);
             lock.put(LOCKED_BY, hostname);
@@ -191,5 +178,13 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
             lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
             return lock;
         }
+
+        private boolean handleException(Exception e) {
+            if (e instanceof ElasticsearchException && ((ElasticsearchException) e).status() != RestStatus.CONFLICT) {
+                throw new LockException("Unexpected exception occurred", e);
+            }
+            return false;
+        }
     }
+
 }
