@@ -153,4 +153,12 @@ public class MongoLockProvider implements LockProvider {
         }
     }
 
+    /**
+     * MongoLockProvider does not use cache any more
+     */
+    @Deprecated
+    public void clearCache() {
+
+    }
+
 }
