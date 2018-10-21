@@ -22,11 +22,11 @@ import net.javacrumbs.shedlock.support.LockException;
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
@@ -117,14 +117,6 @@ public class JedisLockProvider implements LockProvider {
 
     private static long getMsUntil(Instant instant) {
         return Duration.between(Instant.now(), instant).toMillis();
-    }
-
-    private static String getHostname() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "unknown host";
-        }
     }
 
     static String buildKey(String lockName, String env) {

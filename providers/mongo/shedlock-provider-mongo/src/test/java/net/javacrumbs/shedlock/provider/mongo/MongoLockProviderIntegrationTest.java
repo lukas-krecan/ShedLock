@@ -16,6 +16,8 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.DeleteResult;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -24,6 +26,7 @@ import org.bson.Document;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -32,6 +35,7 @@ import java.util.Date;
 import static com.mongodb.client.model.Filters.eq;
 import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private static MongodForTestsFactory mongoFactory;
@@ -71,8 +75,12 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 
+    private MongoCollection<Document> getLockCollection() {
+        return mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME);
+    }
+
     private Document getLockDocument(String lockName) {
-        return mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME).find(eq(ID, lockName)).first();
+        return getLockCollection().find(eq(ID, lockName)).first();
     }
 
     @BeforeClass
@@ -83,5 +91,18 @@ public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegr
     @AfterClass
     public static void stopMongo() {
         mongoFactory.shutdown();
+    }
+
+    @Test
+    public void shouldLockWhenDocumentRemovedExternally() {
+        LockProvider provider = getLockProvider();
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
+        assertLocked(LOCK_NAME1);
+
+        DeleteResult result = getLockCollection().deleteOne(eq(ID, LOCK_NAME1));
+        assumeThat(result.getDeletedCount()).isEqualTo(1);
+
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
+        assertLocked(LOCK_NAME1);
     }
 }
