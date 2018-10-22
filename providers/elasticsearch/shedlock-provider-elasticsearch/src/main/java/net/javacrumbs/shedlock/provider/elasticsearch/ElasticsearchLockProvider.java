@@ -1,13 +1,11 @@
 package net.javacrumbs.shedlock.provider.elasticsearch;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.StorageAccessor;
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -23,6 +21,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
 
 /**
  * Lock using ElasticSearch &gt;= 6.4.0.
@@ -62,7 +63,7 @@ import java.util.Map;
  * </li>
  * </ol>
  */
-public class ElasticsearchLockProvider extends StorageBasedLockProvider {
+public class ElasticsearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
     static final String SCHEDLOCK_DEFAULT_TYPE = "lock";
     static final String LOCK_UNTIL = "lockUntil";
@@ -70,13 +71,28 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
     static final String LOCKED_BY = "lockedBy";
     static final String NAME = "name";
 
-    private ElasticsearchLockProvider(StorageAccessor storageAccessor) {
-        super(storageAccessor);
+
+    private static final String UPDATE_SCRIPT =
+        "if (ctx._source." + LOCK_UNTIL + " <= " + "params." + LOCKED_AT + ") { " +
+            "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " +
+            "ctx._source." + LOCKED_AT + " = params." + LOCKED_AT + "; " +
+            "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; " +
+            "} else { " +
+            "ctx.op = 'none' " +
+            "}";
+
+    private final RestHighLevelClient highLevelClient;
+    private final String hostname;
+    private final String index;
+    private final String type;
+
+    private ElasticsearchLockProvider(RestHighLevelClient highLevelClient, String index, String type) {
+        this.highLevelClient = highLevelClient;
+        this.hostname = getHostname();
+        this.index = index;
+        this.type = type;
     }
 
-    public ElasticsearchLockProvider(RestHighLevelClient highLevelClient, String shedLockIndex, String documentType) {
-        this(new ElasticAccessor(highLevelClient, shedLockIndex, documentType));
-    }
 
     public ElasticsearchLockProvider(RestHighLevelClient highLevelClient, String documentType) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
@@ -86,50 +102,12 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
     }
 
-    static class ElasticAccessor extends AbstractStorageAccessor {
-
-        static final String UPDATE_SCRIPT =
-                "if (ctx._source." + LOCK_UNTIL + " <= " + "params." + LOCKED_AT + ") { " +
-                    "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " +
-                    "ctx._source." + LOCKED_AT + " = params." + LOCKED_AT + "; " +
-                    "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; " +
-                "} else { " +
-                    "ctx.op = 'none' " +
-                "}";
-        private final RestHighLevelClient highLevelClient;
-        private final String hostname;
-        private final String index;
-        private final String type;
-
-        ElasticAccessor(RestHighLevelClient highLevelClient, String index, String type) {
-            this.highLevelClient = highLevelClient;
-            this.hostname = getHostname();
-            this.index = index;
-            this.type = type;
-        }
-
-        @Override
-        public boolean insertRecord(LockConfiguration lockConfiguration) {
-            // request immediate refresh so that changes are immediately available
+    @Override
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
             try {
-                IndexRequest ir = new IndexRequest()
-                        .index(index)
-                        .type(type)
-                        .id(lockConfiguration.getName())
-                        .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
-                        .source(lockObject(lockConfiguration.getName(),
-                                lockConfiguration.getLockAtMostUntil(),
-                                now()));
-                highLevelClient.index(ir, RequestOptions.DEFAULT);
-                return true;
-            } catch (IOException | ElasticsearchException e) {
-                return handleException(e);
-            }
-        }
-
-        @Override
-        public boolean updateRecord(LockConfiguration lockConfiguration) {
-            try {
+                Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
+                    lockConfiguration.getLockAtMostUntil(),
+                    now());
                 UpdateRequest ur = new UpdateRequest()
                         .index(index)
                         .type(type)
@@ -137,54 +115,64 @@ public class ElasticsearchLockProvider extends StorageBasedLockProvider {
                         .script(new Script(ScriptType.INLINE,
                                 "painless",
                                 UPDATE_SCRIPT,
-                                lockObject(lockConfiguration.getName(),
-                                        lockConfiguration.getLockAtMostUntil(),
-                                        now()))
-                        );
+                            lockObject)
+                        )
+                    .upsert(lockObject)
+                    .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
                 UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
-                return res.getResult() != DocWriteResponse.Result.NOOP;
+                if (res.getResult() != DocWriteResponse.Result.NOOP) {
+                    return Optional.of(new ElasticsearchSimpleLock(lockConfiguration));
+                } else {
+                    return Optional.empty();
+                }
             } catch (IOException | ElasticsearchException e) {
-                return handleException(e);
+                if (e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == RestStatus.CONFLICT) {
+                    return Optional.empty();
+                } else {
+                    throw new LockException("Unexpected exception occurred", e);
+                }
+
+
             }
+        }
+
+    private Date now() {
+        return new Date();
+    }
+
+    private Map<String, Object> lockObject(String name, Instant lockUntil, Date lockedAt) {
+        Map<String, Object> lock = new HashMap<>();
+        lock.put(NAME, name);
+        lock.put(LOCKED_BY, hostname);
+        lock.put(LOCKED_AT, lockedAt.getTime());
+        lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
+        return lock;
+    }
+
+
+    private final class ElasticsearchSimpleLock implements SimpleLock {
+        private final LockConfiguration lockConfiguration;
+
+        private ElasticsearchSimpleLock(LockConfiguration lockConfiguration) {
+            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
-        public void unlock(LockConfiguration lockConfiguration) {
+        public void unlock() {
             // Set lockUtil to now or lockAtLeastUntil whichever is later
             try {
                 UpdateRequest ur = new UpdateRequest()
-                        .index(index)
-                        .type(type)
-                        .id(lockConfiguration.getName())
-                        .script(new Script(ScriptType.INLINE,
-                                "painless",
-                                "ctx._source.lockUntil = params.unlockTime",
-                                Collections.singletonMap("unlockTime", lockConfiguration.getUnlockTime().toEpochMilli())));
+                    .index(index)
+                    .type(type)
+                    .id(lockConfiguration.getName())
+                    .script(new Script(ScriptType.INLINE,
+                        "painless",
+                        "ctx._source.lockUntil = params.unlockTime",
+                        Collections.singletonMap("unlockTime", lockConfiguration.getUnlockTime().toEpochMilli())));
                 highLevelClient.update(ur, RequestOptions.DEFAULT);
             } catch (IOException | ElasticsearchException e) {
-                handleException(e);
-            }
-        }
-
-        private Date now() {
-            return new Date();
-        }
-
-        private Map<String, Object> lockObject(String name, Instant lockUntil, Date lockedAt) {
-            Map<String, Object> lock = new HashMap<>();
-            lock.put(NAME, name);
-            lock.put(LOCKED_BY, hostname);
-            lock.put(LOCKED_AT, lockedAt.getTime());
-            lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
-            return lock;
-        }
-
-        private boolean handleException(Exception e) {
-            if (e instanceof ElasticsearchException && ((ElasticsearchException) e).status() != RestStatus.CONFLICT) {
                 throw new LockException("Unexpected exception occurred", e);
             }
-            return false;
         }
     }
-
 }
