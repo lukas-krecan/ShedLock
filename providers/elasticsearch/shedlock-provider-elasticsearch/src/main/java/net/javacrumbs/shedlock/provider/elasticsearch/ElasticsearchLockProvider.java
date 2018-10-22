@@ -93,7 +93,6 @@ public class ElasticsearchLockProvider implements LockProvider {
         this.type = type;
     }
 
-
     public ElasticsearchLockProvider(RestHighLevelClient highLevelClient, String documentType) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
     }
@@ -131,8 +130,6 @@ public class ElasticsearchLockProvider implements LockProvider {
                 } else {
                     throw new LockException("Unexpected exception occurred", e);
                 }
-
-
             }
         }
 
@@ -148,7 +145,6 @@ public class ElasticsearchLockProvider implements LockProvider {
         lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
         return lock;
     }
-
 
     private final class ElasticsearchSimpleLock implements SimpleLock {
         private final LockConfiguration lockConfiguration;
