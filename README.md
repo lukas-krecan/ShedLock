@@ -149,7 +149,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -193,7 +193,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -223,7 +223,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -247,7 +247,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -274,7 +274,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -298,7 +298,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>2.0.1/version>
+    <version>2.1.0/version>
 </dependency>
 ```
 
@@ -322,7 +322,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>2.0.1/version>
+    <version>2.1.0/version>
 </dependency>
 ```
 
@@ -336,6 +336,30 @@ import net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvid
 @Bean
 public CouchbaseLockProvider lockProvider(Bucket bucket) {
     return new CouchbaseLockProvider(bucket);
+}
+```
+
+#### Elasticsearch
+I am really not sure that it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-elasticsearch</artifactId>
+    <version>2.1.0/version>
+</dependency>
+```
+
+Configure:
+
+```java
+import import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider;
+
+...
+
+@Bean
+public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClient) {
+    return new ElasticsearchLockProvider(highLevelClient);
 }
 ```
 
@@ -401,6 +425,10 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 2.1.0
+* MongoLockProvider rewritten to use upsert
+* ElasticsearchLockProvider added
+
 ## 2.0.1
 * AOP proxy and annotation configuration support
 
