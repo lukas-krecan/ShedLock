@@ -41,8 +41,7 @@ public abstract class AbstractStorageBasedLockProviderIntegrationTest extends Ab
         provider.clearCache();
 
         // lock is still locked
-        Optional<SimpleLock> lockAgain = provider.lock(configuration);
-        assertThat(lockAgain).isEmpty();
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isEmpty();
 
         lock.get().unlock();
     }
