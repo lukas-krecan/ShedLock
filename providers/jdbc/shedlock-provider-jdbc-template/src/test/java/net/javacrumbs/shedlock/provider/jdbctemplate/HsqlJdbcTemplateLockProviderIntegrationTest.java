@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -27,7 +27,7 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
     private static final TimeZone TIME_ZONE = TimeZone.getTimeZone("CEST");
 
     @Override
-    protected LockProvider getLockProvider() {
+    protected StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
             .withTimeZone(TIME_ZONE)

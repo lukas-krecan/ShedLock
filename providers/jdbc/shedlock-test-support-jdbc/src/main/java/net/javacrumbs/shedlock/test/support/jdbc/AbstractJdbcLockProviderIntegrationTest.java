@@ -15,22 +15,20 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     protected JdbcTestUtils testUtils;
 
     @Before

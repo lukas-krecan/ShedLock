@@ -20,8 +20,8 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.JsonDocument;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -34,7 +34,7 @@ import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLoc
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest{
+public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String BUCKET_NAME = "test";
     private static final String HOST = "127.0.0.1";
@@ -73,7 +73,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractLockProviderIn
     }
 
     @Override
-    protected LockProvider getLockProvider() {
+    protected StorageBasedLockProvider getLockProvider() {
         return lockProvider;
     }
 
