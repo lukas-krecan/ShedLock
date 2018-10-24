@@ -73,14 +73,17 @@ public class StorageBasedLockProvider implements LockProvider {
         String name = lockConfiguration.getName();
 
         if (!lockRecordRegistry.lockRecordRecentlyCreated(name)) {
-            // create document in case it does not exist yet
+            // create record in case it does not exist yet
             if (storageAccessor.insertRecord(lockConfiguration)) {
                 lockRecordRegistry.addLockRecord(name);
+                // we were able to create the record, we have the lock
                 return true;
             }
+            // we were not able to create the record, it already exists, let's put it to the cache so we do not try again
             lockRecordRegistry.addLockRecord(name);
         }
 
+        // let's try to update the record, if successful, we have the lock
         return storageAccessor.updateRecord(lockConfiguration);
     }
 
