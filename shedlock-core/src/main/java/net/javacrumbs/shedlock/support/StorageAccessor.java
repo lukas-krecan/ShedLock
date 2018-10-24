@@ -19,7 +19,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 
 public interface StorageAccessor {
     /**
-     * Inserts a record
+     * Inserts a record, if it does not already exists. If it exists, returns false.
      *
      * @param lockConfiguration LockConfiguration
      * @return true if inserted
@@ -27,7 +27,8 @@ public interface StorageAccessor {
     boolean insertRecord(LockConfiguration lockConfiguration);
 
     /**
-     * Updates record
+     * Tries to update the lock record. If there is already a valid lock record (the lock is held by someone else)
+     * update should not do anything and this method returns false.
      *
      * @param lockConfiguration LockConfiguration
      * @return true if updated
