@@ -18,11 +18,18 @@ package net.javacrumbs.shedlock.support;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class Utils {
+public final class Utils {
+
+    private static final String hostname = initHostname();
+
     private Utils() {
     }
 
     public static String getHostname() {
+        return hostname;
+    }
+
+    private static String initHostname() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
