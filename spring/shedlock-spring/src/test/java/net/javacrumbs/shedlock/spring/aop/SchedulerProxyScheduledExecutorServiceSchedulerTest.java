@@ -22,9 +22,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 
@@ -32,12 +37,11 @@ import static org.mockito.Mockito.mock;
  * Test creation of default task scheduler
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SchedulerProxyDefaultSchedulerTest.SchedulerWrapperConfig.class)
-public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTest {
-
+@ContextConfiguration(classes = SchedulerProxyScheduledExecutorServiceSchedulerTest.SchedulerWrapperConfig.class)
+public class SchedulerProxyScheduledExecutorServiceSchedulerTest extends AbstractSchedulerProxyTest {
     @Override
     protected void assertRightSchedulerUsed() {
-
+        assertThat(Thread.currentThread().getName()).startsWith("my-thread");
     }
 
     @Configuration
@@ -49,6 +53,11 @@ public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTe
         @Bean
         public LockProvider lockProvider() {
             return mock(LockProvider.class);
+        }
+
+        @Bean
+        public ScheduledExecutorService executorService() {
+            return Executors.newScheduledThreadPool(10, new CustomizableThreadFactory("my-thread"));
         }
     }
 }
