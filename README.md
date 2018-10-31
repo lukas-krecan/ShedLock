@@ -45,7 +45,7 @@ using any transaction. In such case ShedLock may be right for you.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>1.3.0</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
