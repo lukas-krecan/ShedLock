@@ -25,8 +25,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -39,6 +42,11 @@ public class SchedulerProxyTest extends AbstractSchedulerProxyTest {
     @Test
     public void shouldNotCreateDefaultScheduler() {
         assertThat(taskScheduler).isInstanceOf(MyInterface.class);
+    }
+
+    @Override
+    protected void assertRightSchedulerUsed() {
+        assertThat(Thread.currentThread().getName()).startsWith("my-thread");
     }
 
     @Configuration
@@ -62,6 +70,8 @@ public class SchedulerProxyTest extends AbstractSchedulerProxyTest {
     interface MyInterface {}
 
     private static class MyTaskScheduler extends ConcurrentTaskScheduler implements MyInterface {
-
+        MyTaskScheduler() {
+            super(Executors.newScheduledThreadPool(10, new CustomizableThreadFactory("my-thread")));
+        }
     }
 }

@@ -18,20 +18,14 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -70,6 +64,8 @@ public abstract class AbstractSchedulerProxyTest {
 
     }
 
+    protected abstract void assertRightSchedulerUsed();
+
     @Test
     public void shouldCallLockProviderOnSchedulerCall() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("annotatedMethod");
@@ -77,6 +73,7 @@ public abstract class AbstractSchedulerProxyTest {
         verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
         verify(simpleLock).unlock();
     }
+
 
     @Test
     public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
@@ -123,7 +120,7 @@ public abstract class AbstractSchedulerProxyTest {
 
     @SchedulerLock(name = "lockName")
     public void annotatedMethod() {
-
+        assertRightSchedulerUsed();
     }
 
     @SchedulerLock(name = "${property.value}", lockAtMostFor = 1000, lockAtLeastFor = 500)
@@ -136,22 +133,4 @@ public abstract class AbstractSchedulerProxyTest {
         throw new NullPointerException("Just for test");
     }
 
-    @Configuration
-    @EnableScheduling
-    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
-    @PropertySource("test.properties")
-    static class SchedulerWrapperConfig {
-
-        @Bean
-        public LockProvider lockProvider() {
-            return mock(LockProvider.class);
-        }
-
-
-        @Bean
-        public TaskScheduler taskScheduler() {
-            return new ConcurrentTaskScheduler();
-        }
-
-    }
 }
