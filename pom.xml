@@ -36,10 +36,12 @@
         <module>providers/hazelcast/shedlock-provider-hazelcast</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
+        <module>providers/dynamodb/shedlock-provider-dynamodb</module>
     </modules>
 
     <properties>
         <spring.version>5.0.6.RELEASE</spring.version>
+        <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
     </properties>
 
     <dependencies>
@@ -132,7 +134,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <forkCount>3</forkCount>
                     <argLine>-Xmx512m</argLine>

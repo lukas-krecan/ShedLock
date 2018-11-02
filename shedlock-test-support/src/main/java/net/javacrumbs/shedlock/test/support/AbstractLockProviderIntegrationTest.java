@@ -19,9 +19,12 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -30,7 +33,10 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 public abstract class AbstractLockProviderIntegrationTest {
+    Logger log = LoggerFactory.getLogger(AbstractLockProviderIntegrationTest.class);
+
     protected static final String LOCK_NAME1 = "name";
     public static final Duration LOCK_AT_LEAST_FOR = Duration.of(2, SECONDS);
 

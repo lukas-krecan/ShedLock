@@ -168,6 +168,44 @@ public LockProvider lockProvider(MongoClient mongo) {
 
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.4.0
 
+#### Dynamodb
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-dynamodb</artifactId>
+    <version>2.0.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.dynamodb.DynamodbLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.AmazonDynamoDB amazonDynamoDB) {
+    return new DynamodbLockProvider(amazonDynamoDB);
+}
+```
+or
+```
+
+import net.javacrumbs.shedlock.provider.dynamodb.DynamodbLockProvider;
+...
+@Bean
+public LockProvider lockProvider(com.amazonaws.regions.Regions dynamodbRegion, String profileCredentialProvider) {
+    AmazonDynamoDBClientBuilder.standard()
+                        .withRegion(dynamodbRegion)
+                        .withCredentials(new com.amazonaws.auth.profile.ProfileCredentialsProvider(profileCredentialProvider))
+                        .build();
+    return new DynamodbLockProvider(amazonDynamoDB);
+}
+
+```
 
 #### JdbcTemplate
 
