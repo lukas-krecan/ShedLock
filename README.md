@@ -85,7 +85,7 @@ private static final String FOURTEEN_MIN = "PT14M";
 ...
 
 @Scheduled(cron = "0 */15 * * * *")
-@SchedulerLock(name = "scheduledTaskName", lockAtMostForString = FOURTEEN_MIN, lockAtMostForString = FOURTEEN_MIN)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
 public void scheduledTask() {
     // do something
 }
