@@ -12,7 +12,7 @@
     <version>2.5.1-SNAPSHOT</version>
 
     <properties>
-        <elasticsearch.version>6.4.0</elasticsearch.version>
+        <elasticsearch.version>7.0.1</elasticsearch.version>
         <embedded-elasticsearch.version>2.7.0</embedded-elasticsearch.version>
     </properties>
 

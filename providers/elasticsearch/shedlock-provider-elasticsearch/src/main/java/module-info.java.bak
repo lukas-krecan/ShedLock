@@ -1,0 +1,9 @@
+// elasticsearch client does not support modules - https://github.com/elastic/elasticsearch/issues/37901
+module net.javacrumbs.shedlock.provider.elasticsearch {
+    requires transitive net.javacrumbs.shedlock.core;
+    requires org.slf4j;
+    requires elasticsearch.rest.high.level.client;
+    requires elasticsearch;
+    requires elasticsearch.rest.client;
+    exports net.javacrumbs.shedlock.provider.elasticsearch;
+}

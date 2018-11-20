@@ -43,6 +43,8 @@
 
     <properties>
         <spring.version>5.0.7.RELEASE</spring.version>
+        <java.version>9</java.version>
+        <moditect.version>1.0.0.Beta2</moditect.version>
     </properties>
 
     <dependencies>
@@ -116,36 +118,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <configuration>
-                            <!-- compile everything to ensure module-info contains right entries -->
-                            <release>9</release>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>base-compile</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <!-- recompile everything for target VM except the module-info.java -->
-                        <configuration>
-                            <excludes>
-                                <exclude>module-info.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
+                <version>3.8.1</version>
                 <configuration>
-                    <!-- Only required when JAVA_HOME isn't at least Java 9 and when haven't configured the maven-toolchains-plugin -->
-                    <jdkToolchain>
-                        <version>9</version>
-                    </jdkToolchain>
-                    <source>9</source>
-                    <target>9</target>
-                    <release>8</release>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <release>${java.version}</release>
+                    <!--                    <excludes>-->
+                    <!--                        <exclude>module-info.java</exclude>-->
+                    <!--                    </excludes>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -162,7 +142,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>3.0.0-M3</version>
                 <configuration>
                     <forkCount>3</forkCount>
                     <argLine>${argLine} -Xmx512m</argLine>
@@ -202,6 +182,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <configuration>
+                    <jvmVersion>9</jvmVersion>
+                    <moduleInfoFile>./src/java/module-info.java</moduleInfoFile>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -214,6 +202,24 @@
                         <parallel>classes</parallel>
                         <threadCount>3</threadCount>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.moditect</groupId>
+                    <artifactId>moditect-maven-plugin</artifactId>
+                    <version>${moditect.version}</version>
+                    <executions>
+                        <execution>
+                            <id>add-module-infos</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>add-module-info</goal>
+                            </goals>
+                            <configuration>
+                                <jvmVersion>9</jvmVersion>
+                                <moduleInfoFile>./src/module/module-info.java</moduleInfoFile>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
