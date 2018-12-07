@@ -168,6 +168,33 @@ public LockProvider lockProvider(MongoClient mongo) {
 
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.4.0
 
+#### DynamoDB
+Import the project
+
+ ```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-dynamodb</artifactId>
+    <version>2.1.0</version>
+</dependency>
+```
+
+Configure:
+ 
+ ```java
+import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.AmazonDynamoDB amazonDynamoDB) {
+return new DynamoDBLockProvider(amazonDynamoDB);
+}
+```
+
+> Please note that the lock table must be created externally.
+> `DynamoDBLockProvider#createLockTable` may be used for creating it programmatically.
+> A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
 #### JdbcTemplate
 
