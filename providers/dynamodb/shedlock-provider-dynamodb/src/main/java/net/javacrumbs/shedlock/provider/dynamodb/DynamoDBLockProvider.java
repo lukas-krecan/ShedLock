@@ -19,7 +19,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
@@ -32,19 +31,16 @@ import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
-import com.sun.org.apache.bcel.internal.generic.TABLESWITCH;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.util.Date;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Optional;
 
 /**
@@ -86,6 +82,8 @@ public class DynamoDBLockProvider implements LockProvider {
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
 
+    static final String DEFAULT_TABLE_NAME = "shedLock";
+
     private static final String OBTAIN_LOCK_QUERY =
             "set " + LOCK_UNTIL + " = :lockUntil, " + LOCKED_AT + " = :lockedAt, " + LOCKED_BY + " = :lockedBy";
     private static final String OBTAIN_LOCK_CONDITION =
@@ -93,11 +91,40 @@ public class DynamoDBLockProvider implements LockProvider {
     private static final String RELEASE_LOCK_QUERY =
             "set " + LOCK_UNTIL + " = :lockUntil";
 
-    static final String DEFAULT_TABLE_NAME = "shedLock";
+    /**
+     * A {@link DateTimeFormatter} like {@link DateTimeFormatter#ISO_INSTANT} with
+     * the exception that it always appends exactly three fractional digits (nano seconds).
+     * <p>
+     * This is required in order to guarantee natural sorting, which enables us to use
+     * <code>&lt;=</code> comparision in queries.
+     *
+     * <pre>
+     * 2018-12-07T12:30:37.000Z
+     * 2018-12-07T12:30:37.810Z
+     * 2018-12-07T12:30:37.819Z
+     * 2018-12-07T12:30:37.820Z
+     * </pre>
+     *
+     * When using variable fractional digit count as done in {@link DateTimeFormatter#ISO_INSTANT ISO_INSTANT}
+     * and {@link DateTimeFormatter#ISO_OFFSET_DATE_TIME ISO_OFFSET_DATE_TIME} the following sorting
+     * occurs:
+     *
+     * <pre>
+     * 2018-12-07T12:30:37.819Z
+     * 2018-12-07T12:30:37.81Z
+     * 2018-12-07T12:30:37.820Z
+     * 2018-12-07T12:30:37Z
+     * </pre>
+     *
+     * @see <a href="https://stackoverflow.com/a/5098252">natural sorting of ISO 8601 time format</a>
+     */
+    private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .appendInstant(3)
+            .toFormatter();
 
     private final String hostname;
     private final Table table;
-
 
     /**
      * Uses DynamoDB to coordinate locks stored in table {@value DEFAULT_TABLE_NAME}.
@@ -121,8 +148,7 @@ public class DynamoDBLockProvider implements LockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        Instant now = now();
-        String nowIso = toIsoString(now);
+        String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
         UpdateItemSpec request = new UpdateItemSpec()
@@ -152,7 +178,7 @@ public class DynamoDBLockProvider implements LockProvider {
 
     private String toIsoString(Instant temporal) {
         OffsetDateTime utc = temporal.atOffset(ZoneOffset.UTC);
-        return DateTimeFormatter.ISO_DATE_TIME.format(utc);
+        return formatter.format(utc);
     }
 
     private Instant now() {
