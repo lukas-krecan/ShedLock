@@ -66,7 +66,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
-                    <argLine>-Dsqlite4java.library.path=${basedir}/target/dependencies</argLine>
+                    <argLine>-Dsqlite4java.library.path=${project.build.directory}/native-libs</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -81,7 +81,9 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+                            <outputDirectory>${project.build.directory}/native-libs</outputDirectory>
+                            <includeScope>test</includeScope>
+                            <includeTypes>so,dll,dylib</includeTypes>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
