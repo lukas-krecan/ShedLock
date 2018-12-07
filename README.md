@@ -23,6 +23,7 @@ using any transaction. In such case ShedLock may be right for you.
   - [Scheduled method proxy](#scheduled-method-proxy)
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
+  - [DynamoDB](#dynamodb)
   - [JdbcTemplate](#jdbctemplate)
   - [ZooKeeper (using Curator)](#zookeeper--using-curator-)
   - [Redis (using Spring RedisConnectionFactory)](#redis--using-spring-redisconnectionfactory-)
@@ -188,7 +189,7 @@ import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 
 @Bean
 public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.AmazonDynamoDB amazonDynamoDB) {
-return new DynamoDBLockProvider(amazonDynamoDB);
+    return new DynamoDBLockProvider(amazonDynamoDB);
 }
 ```
 
