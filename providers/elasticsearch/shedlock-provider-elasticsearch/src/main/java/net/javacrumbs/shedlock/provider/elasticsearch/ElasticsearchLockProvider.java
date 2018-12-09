@@ -18,7 +18,6 @@ import org.elasticsearch.script.ScriptType;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -133,15 +132,15 @@ public class ElasticsearchLockProvider implements LockProvider {
             }
         }
 
-    private Date now() {
-        return new Date();
+    private Instant now() {
+        return Instant.now();
     }
 
-    private Map<String, Object> lockObject(String name, Instant lockUntil, Date lockedAt) {
+    private Map<String, Object> lockObject(String name, Instant lockUntil, Instant lockedAt) {
         Map<String, Object> lock = new HashMap<>();
         lock.put(NAME, name);
         lock.put(LOCKED_BY, hostname);
-        lock.put(LOCKED_AT, lockedAt.getTime());
+        lock.put(LOCKED_AT, lockedAt.toEpochMilli());
         lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
         return lock;
     }
