@@ -188,13 +188,13 @@ import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 ...
 
 @Bean
-public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.AmazonDynamoDB amazonDynamoDB) {
-    return new DynamoDBLockProvider(amazonDynamoDB);
+public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB) {
+    return new DynamoDBLockProvider(dynamoDB.getTable("existingTableName"));
 }
 ```
 
 > Please note that the lock table must be created externally.
-> `DynamoDBLockProvider#createLockTable` may be used for creating it programmatically.
+> `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
 #### JdbcTemplate

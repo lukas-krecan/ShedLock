@@ -43,6 +43,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
 /**
  * Distributed lock using DynamoDB.
  * Depends on <code>aws-java-sdk-dynamodb</code>.
@@ -82,8 +84,6 @@ public class DynamoDBLockProvider implements LockProvider {
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
 
-    static final String DEFAULT_TABLE_NAME = "shedLock";
-
     private static final String OBTAIN_LOCK_QUERY =
             "set " + LOCK_UNTIL + " = :lockUntil, " + LOCKED_AT + " = :lockedAt, " + LOCKED_BY + " = :lockedBy";
     private static final String OBTAIN_LOCK_CONDITION =
@@ -91,58 +91,16 @@ public class DynamoDBLockProvider implements LockProvider {
     private static final String RELEASE_LOCK_QUERY =
             "set " + LOCK_UNTIL + " = :lockUntil";
 
-    /**
-     * A {@link DateTimeFormatter} like {@link DateTimeFormatter#ISO_INSTANT} with
-     * the exception that it always appends exactly three fractional digits (nano seconds).
-     * <p>
-     * This is required in order to guarantee natural sorting, which enables us to use
-     * <code>&lt;=</code> comparision in queries.
-     *
-     * <pre>
-     * 2018-12-07T12:30:37.000Z
-     * 2018-12-07T12:30:37.810Z
-     * 2018-12-07T12:30:37.819Z
-     * 2018-12-07T12:30:37.820Z
-     * </pre>
-     *
-     * When using variable fractional digit count as done in {@link DateTimeFormatter#ISO_INSTANT ISO_INSTANT}
-     * and {@link DateTimeFormatter#ISO_OFFSET_DATE_TIME ISO_OFFSET_DATE_TIME} the following sorting
-     * occurs:
-     *
-     * <pre>
-     * 2018-12-07T12:30:37.819Z
-     * 2018-12-07T12:30:37.81Z
-     * 2018-12-07T12:30:37.820Z
-     * 2018-12-07T12:30:37Z
-     * </pre>
-     *
-     * @see <a href="https://stackoverflow.com/a/5098252">natural sorting of ISO 8601 time format</a>
-     */
-    private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-            .parseCaseInsensitive()
-            .appendInstant(3)
-            .toFormatter();
-
     private final String hostname;
     private final Table table;
 
     /**
-     * Uses DynamoDB to coordinate locks stored in table {@value DEFAULT_TABLE_NAME}.
-     *
-     * @param dynamodb  DynamoDB to be used
-     */
-    public DynamoDBLockProvider(AmazonDynamoDB dynamodb) {
-        this(dynamodb, DEFAULT_TABLE_NAME);
-    }
-
-    /**
      * Uses DynamoDB to coordinate locks
      *
-     * @param dynamodb  DynamoDB to be used
-     * @param tableName table to be used
+     * @param table existing DynamoDB table to be used
      */
-    public DynamoDBLockProvider(AmazonDynamoDB dynamodb, String tableName) {
-        this.table = new DynamoDB(dynamodb).getTable(tableName);
+    public DynamoDBLockProvider(Table table) {
+        this.table = table;
         this.hostname = Utils.getHostname();
     }
 
@@ -176,11 +134,6 @@ public class DynamoDBLockProvider implements LockProvider {
         }
     }
 
-    private String toIsoString(Instant temporal) {
-        OffsetDateTime utc = temporal.atOffset(ZoneOffset.UTC);
-        return formatter.format(utc);
-    }
-
     private Instant now() {
         return Instant.now();
     }
@@ -206,33 +159,5 @@ public class DynamoDBLockProvider implements LockProvider {
             UpdateItemOutcome updated = table.updateItem(request);
             assert unlockTimeIso.equals(updated.getItem().getString(LOCK_UNTIL));
         }
-    }
-
-    /**
-     * Creates a locking table with the given name.
-     * <p>
-     * This method does not check if a table with the given name exists already.
-     *
-     * @param dynamodb   DynamoDB to be used
-     * @param tableName  table to be used
-     * @param throughput AWS {@link ProvisionedThroughput throughput requirements} for the given lock setup
-     * @return           a {@link TableDescription table description}
-     *
-     * @throws ResourceInUseException
-     *         The operation conflicts with the resource's availability. You attempted to recreate an
-     *         existing table.
-     */
-    public static TableDescription createLockTable(
-            AmazonDynamoDB dynamodb,
-            String tableName,
-            ProvisionedThroughput throughput
-    ) {
-
-        CreateTableRequest request = new CreateTableRequest()
-                .withTableName(tableName)
-                .withKeySchema(new KeySchemaElement(ID, KeyType.HASH))
-                .withAttributeDefinitions(new AttributeDefinition(ID, ScalarAttributeType.S))
-                .withProvisionedThroughput(throughput);
-        return dynamodb.createTable(request).getTableDescription();
     }
 }

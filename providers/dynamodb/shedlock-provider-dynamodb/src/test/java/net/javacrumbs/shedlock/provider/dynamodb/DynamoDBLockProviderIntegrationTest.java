@@ -53,7 +53,7 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
     @Before
     public void createLockProvider() {
         dynamodb = dynamodbFactory.amazonDynamoDB();
-        DynamoDBLockProvider.createLockTable(dynamodb, TABLE_NAME, new ProvisionedThroughput(1L, 1L));
+        DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, new ProvisionedThroughput(1L, 1L));
     }
 
     @After
@@ -63,7 +63,8 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
 
     @Override
     protected LockProvider getLockProvider() {
-        return new DynamoDBLockProvider(dynamodb, TABLE_NAME);
+        Table table = new DynamoDB(dynamodb).getTable(TABLE_NAME);
+        return new DynamoDBLockProvider(table);
     }
 
     @Override
