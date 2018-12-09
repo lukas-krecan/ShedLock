@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_ABSENT;
 
 /**
@@ -122,7 +123,7 @@ public class RedisLockProvider implements LockProvider {
         }
 
         private byte[] buildValue() {
-            return serialize(String.format("ADDED:%s@%s", Instant.now().toString(), getHostname()));
+            return serialize(String.format("ADDED:%s@%s", toIsoString(Instant.now()), getHostname()));
         }
 
         private byte[] serialize(String string) {

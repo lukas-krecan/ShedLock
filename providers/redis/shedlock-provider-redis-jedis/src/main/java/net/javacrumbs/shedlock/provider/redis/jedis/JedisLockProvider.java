@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
@@ -124,6 +125,6 @@ public class JedisLockProvider implements LockProvider {
     }
 
     private static String buildValue() {
-        return String.format("ADDED:%s@%s", Instant.now().toString(), getHostname());
+        return String.format("ADDED:%s@%s", toIsoString(Instant.now()), getHostname());
     }
 }

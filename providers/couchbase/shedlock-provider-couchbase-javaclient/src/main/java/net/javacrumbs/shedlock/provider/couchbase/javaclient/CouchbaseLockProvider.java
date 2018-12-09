@@ -41,6 +41,8 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 
 import java.time.Instant;
 
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
 /**
  * Distributed lock using CouchbaseDB
  * <p>
@@ -102,8 +104,8 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
                 JsonObject content = JsonObject.empty();
                 content.put(LOCK_NAME, lockConfiguration.getName());
-                content.put(LOCK_UNTIL, format(lockConfiguration.getLockAtMostUntil()));
-                content.put(LOCKED_AT, format(Instant.now()));
+                content.put(LOCK_UNTIL, toIsoString(lockConfiguration.getLockAtMostUntil()));
+                content.put(LOCKED_AT, toIsoString(Instant.now()));
                 content.put(LOCKED_BY, getHostname());
                 JsonDocument document = JsonDocument.create(lockConfiguration.getName(), content);
 
@@ -116,14 +118,9 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         }
 
-        private String format(Instant instant) {
-            return instant.toString();
-        }
-
         private Instant parse(Object instant) {
             return Instant.parse((String) instant);
         }
-
 
         @Override
         public boolean updateRecord(LockConfiguration lockConfiguration) {
@@ -135,8 +132,8 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
                     return false;
                 }
 
-                document.content().put(LOCK_UNTIL, format(lockConfiguration.getLockAtMostUntil()));
-                document.content().put(LOCKED_AT, format(now));
+                document.content().put(LOCK_UNTIL, toIsoString(lockConfiguration.getLockAtMostUntil()));
+                document.content().put(LOCKED_AT, toIsoString(now));
                 document.content().put(LOCKED_BY, getHostname());
 
                 bucket.replace(document);
@@ -151,7 +148,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         @Override
         public void unlock(LockConfiguration lockConfiguration) {
             JsonDocument document = bucket.get(lockConfiguration.getName());
-            document.content().put(LOCK_UNTIL, format(lockConfiguration.getUnlockTime()));
+            document.content().put(LOCK_UNTIL, toIsoString(lockConfiguration.getUnlockTime()));
             bucket.replace(document);
         }
     }
