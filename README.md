@@ -292,8 +292,10 @@ public LockProvider lockProvider(RedisConnectionFactory connectionFactory) {
     return new RedisLockProvider(connectionFactory, ENV);
 }
 ```
-
+ 
 If you have dependency on spring-data-redis 2 use ShedLock 1.x.x, if you have dependency on spring-data-redis 1 use ShedLock 0.x.x.
+Please note that there is a bug #105 when ShedLock is used with spring-data-redis 1 so it's recommended to use either spring-data-redis 2
+with newest ShedLock or Jedis provider.
 
 
 #### Redis (using Jedis)
