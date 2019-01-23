@@ -93,7 +93,16 @@ public class MongoLockProvider implements LockProvider {
      * @param collectionName collection to store the locks
      */
     public MongoLockProvider(MongoClient mongo, String databaseName, String collectionName) {
-        this.collection = mongo.getDatabase(databaseName).getCollection(collectionName);
+        this(mongo.getDatabase(databaseName).getCollection(collectionName));
+    }
+
+    /**
+     * Uses Mongo to coordinate locks
+     *
+     * @param collection Mongo collection to be used
+     */
+    public MongoLockProvider(MongoCollection<Document> collection) {
+        this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
