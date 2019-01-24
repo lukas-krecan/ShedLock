@@ -150,7 +150,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -176,7 +176,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -221,7 +221,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -251,7 +251,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -275,7 +275,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -304,7 +304,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -328,7 +328,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>2.2.0/version>
+    <version>2.2.1/version>
 </dependency>
 ```
 
@@ -352,7 +352,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>2.2.0/version>
+    <version>2.2.1/version>
 </dependency>
 ```
 
@@ -376,7 +376,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>2.2.0/version>
+    <version>2.2.1/version>
 </dependency>
 ```
 
@@ -455,6 +455,9 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 2.2.1
+* MongoLockProvider accepts MongoCollection as a constructor param
+
 ## 2.2.0
 * DynamoDBLockProvider added
 
