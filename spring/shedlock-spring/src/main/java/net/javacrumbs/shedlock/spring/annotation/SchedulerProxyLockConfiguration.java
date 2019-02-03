@@ -17,17 +17,39 @@ package net.javacrumbs.shedlock.spring.annotation;
 
 import net.javacrumbs.shedlock.spring.aop.SchedulerProxyScheduledLockAopBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.annotation.Role;
+import org.springframework.core.type.AnnotationMetadata;
 
 @Configuration
+@Import(SchedulerProxyLockConfiguration.Registrar.class)
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-class SchedulerProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
+class SchedulerProxyLockConfiguration {
 
-    @Bean
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    SchedulerProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
-        return new SchedulerProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
+    static class Registrar implements ImportBeanDefinitionRegistrar {
+        private static final String BEAN_NAME = "schedulerProxyScheduledLockAopBeanPostProcessor";
+
+        @Override
+        public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+            if (!registry.containsBeanDefinition(BEAN_NAME)) {
+                AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
+                    .genericBeanDefinition(SchedulerProxyScheduledLockAopBeanPostProcessor.class)
+                    .addConstructorArgValue("PT10M") //fixme
+                    .addConstructorArgValue("PT10M") //fixme
+                    .addConstructorArgReference("lockProvider") //fixme
+                    .setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
+                    .getBeanDefinition();
+
+                // We don't need this one to be post processed otherwise it can cause a
+                // cascade of bean instantiation that we would rather avoid.
+                beanDefinition.setSynthetic(true); // fixme
+                registry.registerBeanDefinition(BEAN_NAME, beanDefinition);
+            }
+        }
     }
 }

@@ -23,7 +23,7 @@ import org.springframework.aop.support.AbstractPointcutAdvisor;
 public class MethodProxyScheduledLockAopBeanPostProcessor extends AbstractProxyScheduledLockAopBeanPostProcessor {
 
     public MethodProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
-        super(defaultLockAtMostFor, defaultLockAtLeastFor);
+        super(defaultLockAtMostFor, defaultLockAtLeastFor, null);
     }
 
     @Override
