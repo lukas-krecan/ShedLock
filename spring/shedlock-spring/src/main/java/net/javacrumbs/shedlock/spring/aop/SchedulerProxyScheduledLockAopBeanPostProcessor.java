@@ -21,8 +21,8 @@ import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 
 public class SchedulerProxyScheduledLockAopBeanPostProcessor extends AbstractProxyScheduledLockAopBeanPostProcessor {
-    public SchedulerProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
-        super(defaultLockAtMostFor, defaultLockAtLeastFor);
+    public SchedulerProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor, LockProvider lockProvider) {
+        super(defaultLockAtMostFor, defaultLockAtLeastFor, lockProvider);
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.spring.annotation;
 
+import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.aop.SchedulerProxyScheduledLockAopBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +28,7 @@ class SchedulerProxyLockConfiguration extends AbstractSchedulerLockConfiguration
 
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    SchedulerProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor() {
-        return new SchedulerProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor());
+    SchedulerProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor(LockProvider lockProvider) {
+        return new SchedulerProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor(), lockProvider);
     }
 }

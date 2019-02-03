@@ -18,24 +18,22 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockProvider;
 import org.springframework.aop.framework.autoproxy.AbstractBeanFactoryAwareAdvisingPostProcessor;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.util.StringValueResolver;
 
 import java.time.Duration;
 
-abstract class AbstractProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryAwareAdvisingPostProcessor implements BeanPostProcessor, EmbeddedValueResolverAware, InitializingBean {
+abstract class AbstractProxyScheduledLockAopBeanPostProcessor extends AbstractBeanFactoryAwareAdvisingPostProcessor implements BeanPostProcessor, EmbeddedValueResolverAware {
     private final String defaultLockAtMostFor;
     private final String defaultLockAtLeastFor;
-    private BeanFactory beanFactory;
+    private final LockProvider lockProvider;
     private StringValueResolver resolver;
-    private LockProvider lockProvider;
 
-    AbstractProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor) {
+    AbstractProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor, LockProvider lockProvider) {
         this.defaultLockAtMostFor = defaultLockAtMostFor;
         this.defaultLockAtLeastFor = defaultLockAtLeastFor;
+        this.lockProvider = lockProvider;
     }
 
     /**
@@ -44,11 +42,6 @@ abstract class AbstractProxyScheduledLockAopBeanPostProcessor extends AbstractBe
     @Override
     public void setEmbeddedValueResolver(StringValueResolver resolver) {
         this.resolver = resolver;
-    }
-
-    @Override
-    public void setBeanFactory(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
     }
 
     @Override
@@ -73,25 +66,11 @@ abstract class AbstractProxyScheduledLockAopBeanPostProcessor extends AbstractBe
     }
 
 
-    @Override
-    public void afterPropertiesSet() {
-        if (lockProvider == null) {
-            lockProvider = beanFactory.getBean(LockProvider.class);
-        }
-    }
-
     private Duration toDuration(String string) {
         return Duration.parse(resolver.resolveStringValue(string));
     }
 
     public LockProvider getLockProvider() {
         return lockProvider;
-    }
-
-    /**
-     * Support for manually setting lockProvider
-     */
-    public void setLockProvider(LockProvider lockProvider) {
-        this.lockProvider = lockProvider;
     }
 }
