@@ -19,11 +19,13 @@ import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+
 @Component
 public class ScheduledTasks {
     @Scheduled(fixedRate = 1)
     @SchedulerLock(name = "reportCurrentTime", lockAtLeastForString = "${lock.at.most.for}")
     public void reportCurrentTime() {
-
+        System.out.println(new Date());
     }
 }
