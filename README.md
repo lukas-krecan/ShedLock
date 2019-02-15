@@ -100,7 +100,7 @@ it will be executed again.
 
 
 ### Enable Scheduler Locking
-Now we need to integrate the library into Spring. Since version 2.0.0 you can use `@EnableSchedulerLock` annotation
+Now we need to integrate the library into Spring. In order to enable schedule locking use `@EnableSchedulerLock` annotation
 
 ```java
 @Configuration
