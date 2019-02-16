@@ -210,7 +210,7 @@ public LockProvider lockProvider(DataSource dataSource) {
 Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
 
 #### Warning
-**Do not manually delete lock row or document from DB table or Mongo collection.** ShedLock has an in-memory cache of existing locks
+**Do not manually delete lock row or document from DB table.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
 that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
  
@@ -352,7 +352,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 Configure:
 
 ```java
-import import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider;
 
 ...
 
