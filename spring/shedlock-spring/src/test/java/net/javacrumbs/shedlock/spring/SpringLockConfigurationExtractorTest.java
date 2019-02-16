@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotatedpackage.Schedulers;
 import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.junit.Test;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
@@ -77,6 +78,13 @@ public class SpringLockConfigurationExtractorTest {
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(new AnnotatedClass(), "annotatedMethod");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("annotatedMethod");
+    }
+
+    @Test
+    public void shouldGetNameFromTheMethodNameIfPackageIsAnnotated() throws NoSuchMethodException {
+        ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(new Schedulers(), "methodWithoutAnnotation");
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("methodWithoutAnnotation");
     }
 
 

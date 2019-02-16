@@ -152,9 +152,14 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         SchedulerLock annotationFromMethod = AnnotatedElementUtils.findMergedAnnotation(method, SchedulerLock.class);
         if (annotationFromMethod != null) {
             return annotationFromMethod;
-        } else {
-            return AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), SchedulerLock.class);
         }
+
+        SchedulerLock annotationFromClass = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), SchedulerLock.class);
+        if (annotationFromClass != null) {
+            return annotationFromClass;
+        }
+
+        return AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass().getPackage(), SchedulerLock.class);
     }
 
     private boolean shouldLock(SchedulerLock annotation) {
