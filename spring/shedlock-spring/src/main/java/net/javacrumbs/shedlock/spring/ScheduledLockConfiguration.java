@@ -15,8 +15,12 @@
  */
 package net.javacrumbs.shedlock.spring;
 
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+
 /**
  * Scheduled lock configuration. Instance of this class is used by Spring to configure all that's needed.
+ * @deprecated Use {@link EnableSchedulerLock} instead
  */
+@Deprecated
 public interface ScheduledLockConfiguration {
 }

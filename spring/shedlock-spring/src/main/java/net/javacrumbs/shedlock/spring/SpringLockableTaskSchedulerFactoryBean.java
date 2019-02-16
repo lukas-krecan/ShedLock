@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.EmbeddedValueResolverAware;
@@ -29,7 +30,10 @@ import java.time.temporal.TemporalAmount;
 /**
  * Helper class to simplify configuration of Spring LockableTaskScheduler. embeddedValueResolver is injected by Spring automatically.
  * That's why this class implements FactoryBean.
+ *
+ * @deprecated Use {@link EnableSchedulerLock} instead
  */
+@Deprecated
 public class SpringLockableTaskSchedulerFactoryBean extends AbstractFactoryBean<LockableTaskScheduler> implements EmbeddedValueResolverAware, ScheduledLockConfiguration {
     private final TaskScheduler taskScheduler;
 

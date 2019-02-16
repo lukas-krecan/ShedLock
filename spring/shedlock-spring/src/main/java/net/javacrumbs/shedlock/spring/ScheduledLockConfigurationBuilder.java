@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.time.temporal.TemporalAmount;
@@ -37,7 +38,10 @@ import java.util.concurrent.ScheduledExecutorService;
  *   }
  * }
  * </pre>
+ *
+ * @deprecated Use {@link EnableSchedulerLock} instead
  */
+@Deprecated
 public interface ScheduledLockConfigurationBuilder {
 
     /**

@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.concurrent.ScheduledExecutorService;
 
+@Deprecated
 class DefaultScheduledLockConfigurationBuilder
     implements ScheduledLockConfigurationBuilder, ScheduledLockConfigurationBuilderWithoutTaskScheduler, ConfiguredScheduledLockConfigurationBuilder, ScheduledLockConfigurationBuilderWithoutDefaultLockAtMostFor {
     private static final Duration DEFAULT_LOCK_AT_MOST_FOR = Duration.of(1, ChronoUnit.HOURS);
