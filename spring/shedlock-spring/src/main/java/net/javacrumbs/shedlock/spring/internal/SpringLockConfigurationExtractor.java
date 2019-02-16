@@ -30,7 +30,6 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
@@ -65,22 +64,24 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
     public Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
         SchedulerLock annotation = findAnnotation(target, method);
         if (shouldLock(annotation)) {
-            return Optional.of(getLockConfiguration(annotation));
+            return Optional.of(getLockConfigurationInternal(annotation, method));
         } else {
             return Optional.empty();
         }
     }
 
-    public LockConfiguration getLockConfiguration(SchedulerLock annotation) {
+    private LockConfiguration getLockConfigurationInternal(SchedulerLock annotation, Method method) {
         Instant now = now();
         return new LockConfiguration(
-            getName(annotation),
+            getName(annotation, method),
             now.plus(getLockAtMostFor(annotation)),
             now.plus(getLockAtLeastFor(annotation)));
     }
 
-    private String getName(SchedulerLock annotation) {
-        if (embeddedValueResolver != null) {
+    private String getName(SchedulerLock annotation, Method method) {
+        if ("".equals(annotation.name())) {
+            return method.getName();
+        } else if (embeddedValueResolver != null) {
             return embeddedValueResolver.resolveStringValue(annotation.name());
         } else {
             return annotation.name();
@@ -148,7 +149,12 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
     }
 
     SchedulerLock findAnnotation(Method method) {
-        return AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
+        SchedulerLock annotationFromMethod = AnnotatedElementUtils.findMergedAnnotation(method, SchedulerLock.class);
+        if (annotationFromMethod != null) {
+            return annotationFromMethod;
+        } else {
+            return AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), SchedulerLock.class);
+        }
     }
 
     private boolean shouldLock(SchedulerLock annotation) {

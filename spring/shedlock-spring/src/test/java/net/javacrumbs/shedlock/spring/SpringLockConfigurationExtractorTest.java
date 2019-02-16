@@ -65,6 +65,21 @@ public class SpringLockConfigurationExtractorTest {
         assertThat(lockConfiguration.getName()).isEqualTo("lockNameX");
     }
 
+    @Test
+    public void shouldGetNameFromTheMethodNameIfClassIsAnnotated() throws NoSuchMethodException {
+        ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(new AnnotatedClass(), "methodWithoutAnnotation");
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("methodWithoutAnnotation");
+    }
+
+    @Test
+    public void shouldGetNameFromTheMethodNameIfClassAndMethodIsAnnotated() throws NoSuchMethodException {
+        ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(new AnnotatedClass(), "annotatedMethod");
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("annotatedMethod");
+    }
+
+
     public void methodWithoutAnnotation() {
 
     }
@@ -78,5 +93,18 @@ public class SpringLockConfigurationExtractorTest {
     @SchedulerLock(name = "${name}")
     public void annotatedMethodWithNameVariable() {
 
+    }
+
+
+    @SchedulerLock
+    private static final class AnnotatedClass {
+        public void methodWithoutAnnotation() {
+
+        }
+
+        @SchedulerLock
+        public void annotatedMethod() {
+
+        }
     }
 }
