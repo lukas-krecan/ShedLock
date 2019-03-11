@@ -23,8 +23,10 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HazelcastLockProvider.
@@ -88,7 +90,7 @@ public class HazelcastLockProvider implements LockProvider {
         final IMap<String, HazelcastLock> store = getStore();
         try {
             // lock the map key entry
-            store.lock(lockName);
+            store.lock(lockName, keyLockTime(lockConfiguration), TimeUnit.MILLISECONDS);
             // just one thread at a time, in the cluster, can run this code
             // each thread waits until the lock to be unlock
             if (tryLock(lockConfiguration, now)) {
@@ -99,6 +101,11 @@ public class HazelcastLockProvider implements LockProvider {
             store.unlock(lockName);
         }
         return Optional.empty();
+    }
+
+    private long keyLockTime(LockConfiguration lockConfiguration) {
+        Duration between = Duration.between(Instant.now(), lockConfiguration.getLockAtMostUntil());
+        return between.toMillis();
     }
 
     private boolean tryLock(final LockConfiguration lockConfiguration, final Instant now) {
