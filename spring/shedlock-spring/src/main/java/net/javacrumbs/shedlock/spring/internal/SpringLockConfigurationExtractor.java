@@ -133,7 +133,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         } else {
             // Try to find annotation on proxied class
             Class<?> targetClass = AopUtils.getTargetClass(target);
-            if (targetClass != null && !target.getClass().equals(targetClass)) {
+            if (targetClass != null) {
                 try {
                     Method methodOnTarget = targetClass
                         .getMethod(method.getName(), method.getParameterTypes());
