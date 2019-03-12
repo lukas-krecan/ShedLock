@@ -462,12 +462,12 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
-# 2.4.0
+## 2.4.0
 * Fixed potential deadlock in Hazelcast (thanks @HubertTatar)
 * Finding class level annotation in proxy method mode (thanks @volkovs)
 * ScheduledLockConfigurationBuilder deprecated
 
-# 2.3.0
+## 2.3.0
 * LockProvides is initialized lazilly so it does not change DataSource initialization order
 
 ## 2.2.1
