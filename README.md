@@ -80,6 +80,8 @@ at the same time.
 
 You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
 executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
+**You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
+`lockAtMostFor` the resulting behavior may be unpredictable (more processes will effectively hold the lock).
 
 Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept. 
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
@@ -106,7 +108,7 @@ By setting `lockAtMostFor` we make sure that the lock is released even if the no
 we make sure it's not executed more than once in fifteen minutes. 
 Please note that **`lockAtMostFor` is just a safety net for a case that the node executing the task dies, so set it to 
 a time that is significantly larger than maximum estimated execution time.**  If the task takes longer than `lockAtMostFor`,
-it will be executed again.
+it may be executed again and the results will be unpredictable (more processes will hold the lock).
 
 ### Configure LockProvider
 There are several implementations of LockProvider.  
