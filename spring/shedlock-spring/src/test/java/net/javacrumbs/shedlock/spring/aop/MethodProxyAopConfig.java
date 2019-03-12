@@ -46,6 +46,11 @@ public class MethodProxyAopConfig {
         return new TestBean();
     }
 
+    @Bean
+    public AnotherTestBean anotherTestBean() {
+        return new AnotherTestBeanImpl();
+    }
+
     static class TestBean {
 
         public void noAnnotation() {
@@ -72,6 +77,19 @@ public class MethodProxyAopConfig {
 
         @SchedulerLock(name = "${property.value}", lockAtLeastFor = 1_000)
         public void spel() {
+
+        }
+    }
+
+    interface AnotherTestBean {
+        void runManually();
+    }
+
+    static class AnotherTestBeanImpl implements AnotherTestBean {
+
+        @Override
+        @SchedulerLock(name = "classAnnotation")
+        public void runManually() {
 
         }
     }

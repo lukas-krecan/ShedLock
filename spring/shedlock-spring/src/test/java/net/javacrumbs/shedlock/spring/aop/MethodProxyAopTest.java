@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.spring.aop.MethodProxyAopConfig.AnotherTestBean;
 import net.javacrumbs.shedlock.spring.aop.MethodProxyAopConfig.TestBean;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,9 @@ public class MethodProxyAopTest {
 
     @Autowired
     private TestBean testBean;
+
+    @Autowired
+    private AnotherTestBean anotherTestBean;
 
     private final SimpleLock simpleLock = mock(SimpleLock.class);
 
@@ -94,5 +98,12 @@ public class MethodProxyAopTest {
         testBean.spel();
         verify(lockProvider).lock(hasParams("spel", 30_000, 1_000));
         verify(simpleLock).unlock();
+    }
+
+    @Test
+    public void shouldReadAnnotationFromImplementationClass() {
+      anotherTestBean.runManually();
+      verify(lockProvider).lock(hasParams("classAnnotation", 30_000, 100));
+      verify(simpleLock).unlock();
     }
 }
