@@ -50,6 +50,7 @@ public class HazelcastLockProvider implements LockProvider {
     private static final Logger log = LoggerFactory.getLogger(HazelcastLockProvider.class);
 
     static final String LOCK_STORE_KEY_DEFAULT = "shedlock_storage";
+    private static final Duration DEFAULT_LOCK_LEASE_TIME = Duration.ofSeconds(30);
 
     /**
      * Key used for get the lock container (an {@link IMap}) inside {@link #hazelcastInstance}.
@@ -62,12 +63,14 @@ public class HazelcastLockProvider implements LockProvider {
      */
     private final HazelcastInstance hazelcastInstance;
 
+    private final long lockLeaseTimeMs;
+
     /**
      * Instantiate the provider.
      *
      * @param hazelcastInstance The Hazelcast engine used by the application.
      */
-    public HazelcastLockProvider(final HazelcastInstance hazelcastInstance) {
+    public HazelcastLockProvider(HazelcastInstance hazelcastInstance) {
         this(hazelcastInstance, LOCK_STORE_KEY_DEFAULT);
     }
 
@@ -77,9 +80,23 @@ public class HazelcastLockProvider implements LockProvider {
      * @param hazelcastInstance The Hazelcast engine used by the application
      * @param lockStoreKey      The key where the locks store is associate {@link #hazelcastInstance} (by default {@link #LOCK_STORE_KEY_DEFAULT}).
      */
-    public HazelcastLockProvider(final HazelcastInstance hazelcastInstance, final String lockStoreKey) {
+    public HazelcastLockProvider(HazelcastInstance hazelcastInstance, String lockStoreKey) {
+        this(hazelcastInstance, lockStoreKey, DEFAULT_LOCK_LEASE_TIME);
+    }
+
+    /**
+     * Instantiate the provider.
+     *
+     * @param hazelcastInstance The Hazelcast engine used by the application
+     * @param lockStoreKey      The key where the locks store is associate {@link #hazelcastInstance} (by default {@link #LOCK_STORE_KEY_DEFAULT}).
+     * @param lockLeaseTime     When lock is being obtained there is a Hazelcast lock used to make it thread-safe.
+     *                          This lock should be released quite fast but if the process dies while holding the lock, it is held forever.
+     *                          lockLeaseTime is used as a safety-net for such situations.
+     */
+    public HazelcastLockProvider(HazelcastInstance hazelcastInstance, String lockStoreKey, Duration lockLeaseTime) {
         this.hazelcastInstance = hazelcastInstance;
         this.lockStoreKey = lockStoreKey;
+        this.lockLeaseTimeMs = lockLeaseTime.toMillis();
     }
 
     @Override
@@ -172,7 +189,7 @@ public class HazelcastLockProvider implements LockProvider {
         final Instant now = Instant.now();
         final IMap<String, HazelcastLock> store = getStore();
         try {
-            store.lock(lockName);
+            store.lock(lockName, lockLeaseTimeMs, TimeUnit.MILLISECONDS);
             final HazelcastLock lock = getLock(lockName);
             unlockProperly(lock, now);
         } finally {
