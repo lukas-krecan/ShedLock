@@ -453,7 +453,7 @@ annotate and call a method with non-void return type.
 Help, ShedLock does not do what it's supposed to do!
 
 1. Check the storage. If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured. 
-If there is more than one record with the same name, you are missing primary key.
+If there is more than one record with the same name, you are missing a primary key.
 2. Use ShedLock debug log. ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`.
 It should help you to see what's going on. 
 3. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
