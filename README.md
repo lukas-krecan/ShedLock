@@ -172,7 +172,7 @@ public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.Dyna
 There are two lock providers based on JDBC. JdbcTemplateLockProvider which uses Spring's JDBC template, supports transactions etc, and plain
 JdbcLockProvider which asseses JDBC directly. They should work more or less the same, if in doubt, use JdbcTemplateLockProvider.
   
-First, create the table
+First, create the table (**please note that `name` has to be primary key**)
 
 ```sql
 CREATE TABLE shedlock(
