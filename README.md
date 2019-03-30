@@ -29,6 +29,7 @@ executed repeatedly.
   - [Hazelcast](#hazelcast)
 + [Spring XML configuration](#spring-xml-configuration)
 + [Running without Spring](#running-without-spring)
++ [Troubleshooting](#troubleshooting)
 + [Versions](#versions)
 
 ## Usage
@@ -447,6 +448,20 @@ if you call the method directly. Be also aware, that only void-returning methods
 annotate and call a method with non-void return type.
 
 ![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
+
+## Troubleshooting
+Help, Shedlock does not do what it's supposed to do!
+
+1. Check the storage. 
+If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured. 
+If there is more than one record with the same name, you are missing primary key.
+2. Switch logging on
+ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`. You should see what's 
+going on there.
+3. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
+after each other, `lockAtLeastFor` can prevent it. 
+ 
+   
 
 ## Requirements and dependencies
 * Java 8
