@@ -450,7 +450,7 @@ annotate and call a method with non-void return type.
 ![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
 ## Troubleshooting
-Help, Shedlock does not do what it's supposed to do!
+Help, ShedLock does not do what it's supposed to do!
 
 1. Check the storage. 
 If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured. 
