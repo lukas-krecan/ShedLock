@@ -24,6 +24,7 @@
         <module>shedlock-core</module>
         <module>spring/shedlock-spring</module>
         <module>spring/shedlock-springboot-test</module>
+        <module>spring/shedlock-springboot22-test</module>
         <module>spring/shedlock-testng-test</module>
         <module>shedlock-test-support</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
