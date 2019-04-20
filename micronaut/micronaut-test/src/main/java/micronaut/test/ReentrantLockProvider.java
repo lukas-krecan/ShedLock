@@ -15,24 +15,30 @@
  */
 package micronaut.test;
 
-import io.micronaut.context.annotation.Factory;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Singleton;
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
-@Factory
-public class LockProviderFactory {
+/**
+ * Lock provider based on {@link ReentrantLock}. Only one task per
+ * SimpleLockProvider can be running. Useful mainly for testing.
+ */
+@Singleton
+public class ReentrantLockProvider implements LockProvider {
+    private final ReentrantLock lock = new ReentrantLock();
 
-    @Singleton
-    LockProvider lockProvider() {
-        return new LockProvider() {
-            @Override
-            public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-                return Optional.empty();
-            }
-        };
+    @Override
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+        if (lock.tryLock()) {
+            return Optional.of(lock::unlock);
+        } else {
+            return Optional.empty();
+        }
     }
 }
