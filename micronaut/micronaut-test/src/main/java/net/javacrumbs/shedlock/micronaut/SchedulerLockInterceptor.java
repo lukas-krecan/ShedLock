@@ -24,6 +24,7 @@ import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
 
 import javax.inject.Singleton;
+import java.time.Instant;
 import java.util.Optional;
 
 @Singleton
@@ -34,7 +35,7 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
         lockManager = new DefaultLockManager(lockProvider, new LockConfigurationExtractor() {
             @Override
             public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
-                return Optional.empty();
+                return Optional.of(new LockConfiguration("test", Instant.now().plusSeconds(10)));
             }
         });
     }
