@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -50,14 +51,22 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         if (lock.isPresent()) {
             try {
-                logger.debug("Locked {}.", lockConfig.getName());
+                logger.debug("Locked '{}', lock will be held at most until {}", lockConfig.getName(), lockConfig.getLockAtMostUntil());
                 task.call();
             } finally {
                 lock.get().unlock();
-                logger.debug("Unlocked {}.", lockConfig.getName());
+                if (logger.isDebugEnabled()) {
+                    Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();
+                    Instant now = Instant.now();
+                    if (lockAtLeastUntil.isAfter(now)) {
+                        logger.debug("Task finished, lock '{}' will be released at {}", lockConfig.getName(), lockAtLeastUntil);
+                    } else {
+                        logger.debug("Task finished, lock '{}' released", lockConfig.getName());
+                    }
+                }
             }
         } else {
-            logger.debug("Not executing {}. It's locked.", lockConfig.getName());
+            logger.debug("Not executing '{}'. It's locked.", lockConfig.getName());
         }
     }
 }
