@@ -46,7 +46,7 @@ First of all we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -121,7 +121,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -147,7 +147,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -192,7 +192,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -222,7 +222,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -238,8 +238,7 @@ public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework c
     return new ZookeeperCuratorLockProvider(client);
 }
 ```
-By default, ephemeral nodes for locks will be created under `/shedlock` node. **Zookeeper lock provider does not support 
-`lockAtLeastFor` and `lockAtMostFor` parameters**.
+By default, nodes for locks will be created under `/shedlock` node. 
 
 #### Redis (using Spring RedisConnectionFactory)
 Import 
@@ -247,7 +246,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -276,7 +275,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
 </dependency>
 ```
 
@@ -300,7 +299,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>2.4.0/version>
+    <version>2.5.0/version>
 </dependency>
 ```
 
@@ -324,7 +323,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>2.4.0/version>
+    <version>2.5.0/version>
 </dependency>
 ```
 
@@ -348,7 +347,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>2.4.0/version>
+    <version>2.5.0/version>
 </dependency>
 ```
 
@@ -476,6 +475,10 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 2.5.0
+* Zookeeper supports *locAtMostFor* and *lockAtleastFor* params
+* Better debug logging
+
 ## 2.4.0
 * Fixed potential deadlock in Hazelcast (thanks @HubertTatar)
 * Finding class level annotation in proxy method mode (thanks @volkovs)
