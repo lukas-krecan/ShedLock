@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.provider.zookeeper.curator;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -23,7 +22,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
-import org.apache.zookeeper.data.Stat;
+import org.apache.zookeeper.CreateMode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private TestingServer zkTestServer;
@@ -60,30 +58,16 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
         return client;
     }
 
-    @Override
-    public void shouldTimeout() throws InterruptedException {
-        // pass
-    }
-
     @Test
-    public void shouldRemoveLockWhenClientStops() throws InterruptedException {
-        LockConfiguration config = lockConfig(LOCK_NAME1);
-        Optional<SimpleLock> lock1 = getLockProvider().lock(config);
-        assertThat(lock1).isNotEmpty();
+    public void shouldNotOverwriteLockCreatedByPreviousVersion() throws Exception {
+        client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(getNodePath(LOCK_NAME1));
 
-        client.close();
+        Optional<SimpleLock> lock1 = zookeeperCuratorLockProvider.lock(lockConfig(LOCK_NAME1));
+        assertThat(lock1).isEmpty();
 
-        CuratorFramework newClient = newClient();
-        Optional<SimpleLock> lock2 = new ZookeeperCuratorLockProvider(newClient).lock(config);
+        client.delete().forPath(getNodePath(LOCK_NAME1));
+        Optional<SimpleLock> lock2 = zookeeperCuratorLockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock2).isNotEmpty();
-        newClient.close();
-    }
-
-    @Test
-    @Override
-    public void shouldLockAtLeastFor() throws InterruptedException {
-        LockConfiguration configWithAtLeastFor = lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR, LOCK_AT_LEAST_FOR);
-        assertThatThrownBy(() -> getLockProvider().lock(configWithAtLeastFor)).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Override
@@ -93,19 +77,23 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
 
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(getNodeStat(lockName)).isNull();
+        try {
+            assertThat(zookeeperCuratorLockProvider.isLocked(getNodePath(lockName))).isFalse();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(getNodeStat(lockName)).isNotNull();
+        try {
+            assertThat(zookeeperCuratorLockProvider.isLocked(getNodePath(lockName))).isTrue();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-    private Stat getNodeStat(String lockName) {
-        try {
-            return client.checkExists().forPath("/shedlock/" + lockName);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private String getNodePath(String lockName) {
+        return zookeeperCuratorLockProvider.getNodePath(lockName);
     }
 }

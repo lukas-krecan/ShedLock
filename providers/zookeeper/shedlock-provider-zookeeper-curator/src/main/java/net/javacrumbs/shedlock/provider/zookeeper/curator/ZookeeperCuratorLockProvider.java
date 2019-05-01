@@ -23,20 +23,27 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
-import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
- * Locks kept using ZooKeeper. When locking, creates an ephemeral node with node name = lock name, when unlocking, removes the node.
+ * Locks kept using ZooKeeper. When locking, creates a PERSISTENT  node with node name = lock_name and value containing lock data,
+ * when unlocking, keeps the node and changes node data to release the lock.
  */
 public class ZookeeperCuratorLockProvider implements LockProvider {
     public static final String DEFAULT_PATH = "/shedlock";
     private final String path;
     private final CuratorFramework client;
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperCuratorLockProvider.class);
 
     public ZookeeperCuratorLockProvider(CuratorFramework client) {
         this(client, DEFAULT_PATH);
@@ -49,38 +56,98 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        Instant now = now();
-        if (lockConfiguration.getLockAtLeastUntil().isAfter(now)) {
-            throw new UnsupportedOperationException("ZookeeperCuratorLockProvider does not support nonzero lockAtLeastUntil yet.");
-        }
+        String nodePath = getNodePath(lockConfiguration.getName());
+
         try {
-            String nodePath = getNodePath(lockConfiguration);
-            client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(nodePath);
-            return Optional.of(new CuratorLock(nodePath, client));
-        } catch (KeeperException.NodeExistsException ex) {
+            Stat stat = new Stat();
+            byte[] data = client.getData().storingStatIn(stat).forPath(nodePath);
+            if (isLocked(data)) {
+                return Optional.empty();
+            } else {
+                return tryLock(lockConfiguration, nodePath, stat);
+            }
+        } catch (KeeperException.NoNodeException e) {
+            // node does not exists
+            if (createNode(lockConfiguration, nodePath)) {
+                return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
+            } else {
+                logger.trace("Node not created, must have been created by a parallel process");
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            throw new LockException("Can not obtain lock node", e);
+        }
+    }
+
+    private Optional<SimpleLock> tryLock(LockConfiguration lockConfiguration, String nodePath, Stat stat) throws Exception {
+        try {
+            client.setData().withVersion(stat.getVersion()).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+            return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
+        } catch (KeeperException.BadVersionException e) {
+            logger.trace("Node value can not be set, must have been set by a parallel process");
             return Optional.empty();
+        }
+    }
+
+    private boolean createNode(LockConfiguration lockConfiguration, String nodePath) {
+        try {
+            client.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+            return true;
+        } catch (KeeperException.NodeExistsException e) {
+            return false;
         } catch (Exception e) {
             throw new LockException("Can not create node", e);
         }
     }
 
-    private String getNodePath(LockConfiguration lockConfiguration) {
-        return path + "/" + lockConfiguration.getName();
+    boolean isLocked(String nodePath) throws Exception {
+        byte[] data = client.getData().forPath(nodePath);
+        return isLocked(data);
+    }
+
+    private boolean isLocked(byte[] data) {
+        if (data == null || data.length == 0) {
+            // most likely created by previous version of the library
+            return true;
+        }
+        try {
+            Instant lockedUntil = parse(data);
+            return lockedUntil.isAfter(Instant.now());
+        } catch (DateTimeParseException e) {
+            // most likely created by previous version of the library
+            logger.debug("Can not parse date", e);
+            return true;
+        }
+    }
+
+    private static byte[] serialize(Instant date) {
+        return toIsoString(date).getBytes();
+    }
+
+    private static Instant parse(byte[] data) {
+        return Instant.parse(new String(data));
+    }
+
+    String getNodePath(String lockName) {
+        return path + "/" + lockName;
     }
 
     private static final class CuratorLock implements SimpleLock {
         private final String nodePath;
         private final CuratorFramework client;
+        private final LockConfiguration lockConfiguration;
 
-        private CuratorLock(String nodePath, CuratorFramework client) {
+        private CuratorLock(String nodePath, CuratorFramework client, LockConfiguration lockConfiguration) {
             this.nodePath = nodePath;
             this.client = client;
+            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
         public void unlock() {
             try {
-                client.delete().forPath(nodePath);
+                Instant unlockTime = lockConfiguration.getUnlockTime();
+                client.setData().forPath(nodePath, serialize(unlockTime));
             } catch (Exception e) {
                 throw new LockException("Can not remove node", e);
             }

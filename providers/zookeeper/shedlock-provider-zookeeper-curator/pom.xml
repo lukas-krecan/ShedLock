@@ -12,7 +12,7 @@
     <version>2.4.1-SNAPSHOT</version>
 
     <properties>
-        <curator.version>4.0.1</curator.version>
+        <curator.version>4.2.0</curator.version>
     </properties>
 
     <dependencies>
@@ -39,6 +39,12 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
