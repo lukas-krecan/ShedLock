@@ -239,8 +239,7 @@ public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework c
 }
 ```
 By default, ephemeral nodes for locks will be created under `/shedlock` node. **Zookeeper lock provider does not support 
-`lockAtLeastFor` and `lockAtMostFor` parameters**. If you have some idea how it could be implemented, feeel free to send 
-a PR or describe it in an issue. 
+`lockAtLeastFor` and `lockAtMostFor` parameters**.
 
 #### Redis (using Spring RedisConnectionFactory)
 Import 
