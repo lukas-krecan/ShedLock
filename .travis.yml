@@ -9,6 +9,10 @@ language: java
 jdk:
 - oraclejdk8
 - openjdk11
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
 cache:
   directories:
   - $HOME/.embedmongo
