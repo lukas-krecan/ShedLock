@@ -75,7 +75,7 @@ public class JedisLockProvider implements LockProvider {
                 SET_EXPIRE_TIME_IN_MS,
                 expireTime);
 
-            if (rez != null && "OK".equals(rez)) {
+            if ("OK".equals(rez)) {
                 return Optional.of(new RedisLock(key, jedisPool, lockConfiguration));
             }
         }

@@ -20,23 +20,31 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+import org.apache.curator.framework.recipes.locks.Locker;
 import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
-import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
- * Locks kept using ZooKeeper. When locking, creates an ephemeral node with node name = lock name, when unlocking, removes the node.
+ * Locks kept using ZooKeeper. Uses node "/shedlock/lockName" to store lock data and InterProcessMutex in path
+ * "/shedlock/lockName_shedlock_sync" to prevent multiple processes to update lock data.
  */
 public class ZookeeperCuratorLockProvider implements LockProvider {
     public static final String DEFAULT_PATH = "/shedlock";
     private final String path;
     private final CuratorFramework client;
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperCuratorLockProvider.class);
 
     public ZookeeperCuratorLockProvider(CuratorFramework client) {
         this(client, DEFAULT_PATH);
@@ -49,38 +57,77 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        Instant now = now();
-        if (lockConfiguration.getLockAtLeastUntil().isAfter(now)) {
-            throw new UnsupportedOperationException("ZookeeperCuratorLockProvider does not support nonzero lockAtLeastUntil yet.");
+        String nodePath = getNodePath(lockConfiguration.getName());
+        // prevents multiple processes to set the same lock
+        InterProcessMutex lock = new InterProcessMutex(client, nodePath + "_shedlock_sync");
+        try (Locker locker = new Locker(lock)) {
+            if (!isLocked(nodePath)) {
+                client.setData().forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+                return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
+            } else {
+                return Optional.empty();
+            }
+        } catch (KeeperException.NoNodeException ex) {
+            // node does not exists
+            createNode(lockConfiguration, nodePath);
+            return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
+        } catch (Exception e) {
+            throw new LockException("Can not obtain lock", e);
         }
+    }
+
+    private void createNode(LockConfiguration lockConfiguration, String nodePath) {
         try {
-            String nodePath = getNodePath(lockConfiguration);
-            client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(nodePath);
-            return Optional.of(new CuratorLock(nodePath, client));
-        } catch (KeeperException.NodeExistsException ex) {
-            return Optional.empty();
+            client.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
         } catch (Exception e) {
             throw new LockException("Can not create node", e);
         }
     }
 
-    private String getNodePath(LockConfiguration lockConfiguration) {
-        return path + "/" + lockConfiguration.getName();
+    boolean isLocked(String nodePath) throws Exception {
+        byte[] data = client.getData().forPath(nodePath);
+        if (data == null || data.length == 0) {
+            // most likely created by previous version of the library
+            return true;
+        }
+        try {
+            Instant lockedUntil = parse(data);
+            return lockedUntil.isAfter(Instant.now());
+        } catch (DateTimeParseException e) {
+            // most likely created by previous version of the library
+            logger.debug("Can not parse date", e);
+            return true;
+        }
+    }
+
+    private static byte[] serialize(Instant date) {
+        return toIsoString(date).getBytes();
+    }
+
+    private static Instant parse(byte[] data) {
+        return Instant.parse(new String(data));
+    }
+
+    String getNodePath(String lockName) {
+        return path + "/" + lockName;
     }
 
     private static final class CuratorLock implements SimpleLock {
         private final String nodePath;
         private final CuratorFramework client;
+        private final LockConfiguration lockConfiguration;
 
-        private CuratorLock(String nodePath, CuratorFramework client) {
+        private CuratorLock(String nodePath, CuratorFramework client, LockConfiguration lockConfiguration) {
             this.nodePath = nodePath;
             this.client = client;
+            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
         public void unlock() {
             try {
-                client.delete().forPath(nodePath);
+                Instant unlockTime = lockConfiguration.getUnlockTime();
+                client.setData().forPath(nodePath, serialize(unlockTime));
             } catch (Exception e) {
                 throw new LockException("Can not remove node", e);
             }
