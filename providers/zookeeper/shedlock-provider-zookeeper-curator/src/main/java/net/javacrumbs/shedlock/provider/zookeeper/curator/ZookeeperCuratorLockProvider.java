@@ -20,11 +20,10 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.locks.InterProcessMutex;
-import org.apache.curator.framework.recipes.locks.Locker;
 import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +35,8 @@ import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
- * Locks kept using ZooKeeper. Uses node "/shedlock/lockName" to store lock data and InterProcessMutex in path
- * "/shedlock/lockName_shedlock_sync" to prevent multiple processes to update lock data.
+ * Locks kept using ZooKeeper. When locking, creates a PERSISTENT  node with node name = lock_name and value containing lock data,
+ * when unlocking, keeps the node and changes node data to release the lock.
  */
 public class ZookeeperCuratorLockProvider implements LockProvider {
     public static final String DEFAULT_PATH = "/shedlock";
@@ -58,27 +57,44 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String nodePath = getNodePath(lockConfiguration.getName());
-        // prevents multiple processes to set the same lock
-        InterProcessMutex lock = new InterProcessMutex(client, nodePath + "_shedlock_sync");
-        try (Locker locker = new Locker(lock)) {
-            if (!isLocked(nodePath)) {
-                client.setData().forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+
+        try {
+            Stat stat = new Stat();
+            byte[] data = client.getData().storingStatIn(stat).forPath(nodePath);
+            if (isLocked(data)) {
+                return Optional.empty();
+            } else {
+                return tryLock(lockConfiguration, nodePath, stat);
+            }
+        } catch (KeeperException.NoNodeException e) {
+            // node does not exists
+            if (createNode(lockConfiguration, nodePath)) {
                 return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
             } else {
+                logger.trace("Node not created, must have been created by a parallel process");
                 return Optional.empty();
             }
-        } catch (KeeperException.NoNodeException ex) {
-            // node does not exists
-            createNode(lockConfiguration, nodePath);
-            return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
         } catch (Exception e) {
-            throw new LockException("Can not obtain lock", e);
+            throw new LockException("Can not obtain lock node", e);
         }
     }
 
-    private void createNode(LockConfiguration lockConfiguration, String nodePath) {
+    private Optional<SimpleLock> tryLock(LockConfiguration lockConfiguration, String nodePath, Stat stat) throws Exception {
+        try {
+            client.setData().withVersion(stat.getVersion()).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+            return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
+        } catch (KeeperException.BadVersionException e) {
+            logger.trace("Node value can not be set, must have been set by a parallel process");
+            return Optional.empty();
+        }
+    }
+
+    private boolean createNode(LockConfiguration lockConfiguration, String nodePath) {
         try {
             client.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+            return true;
+        } catch (KeeperException.NodeExistsException e) {
+            return false;
         } catch (Exception e) {
             throw new LockException("Can not create node", e);
         }
@@ -86,6 +102,10 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     boolean isLocked(String nodePath) throws Exception {
         byte[] data = client.getData().forPath(nodePath);
+        return isLocked(data);
+    }
+
+    private boolean isLocked(byte[] data) {
         if (data == null || data.length == 0) {
             // most likely created by previous version of the library
             return true;
