@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 
 public class TestUtils {
 
-    private static final int GAP = 500;
+    private static final int GAP = 1000;
 
     private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
 
@@ -40,7 +40,8 @@ public class TestUtils {
 
             @Override
             public String toString() {
-                return "hasParams(\"" + name + "\", " + lockAtLeastFor + ", " + lockAtLeastFor + ")";
+                Instant now = Instant.now();
+                return "hasParams(\"" + name + "\", " + now.plusMillis(lockAtMostFor) + ", " + now.plusMillis(lockAtLeastFor) + ")";
             }
         });
     }
