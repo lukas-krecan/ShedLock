@@ -43,7 +43,7 @@
 
     <properties>
         <spring.version>5.0.7.RELEASE</spring.version>
-        <java.version>9</java.version>
+        <java.version>8</java.version>
         <moditect.version>1.0.0.Beta2</moditect.version>
     </properties>
 
@@ -55,8 +55,8 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
         </dependency>
 
         <dependency>
@@ -78,9 +78,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>5.4.2</version>
                 <scope>test</scope>
             </dependency>
 
@@ -123,9 +123,9 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <release>${java.version}</release>
-                    <!--                    <excludes>-->
-                    <!--                        <exclude>module-info.java</exclude>-->
-                    <!--                    </excludes>-->
+                    <excludes>
+                        <exclude>module-info.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -140,13 +140,10 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <configuration>
-                    <forkCount>3</forkCount>
-                    <argLine>${argLine} -Xmx512m</argLine>
-                </configuration>
+                <groupId>de.sormuras.junit</groupId>
+                <artifactId>junit-platform-maven-plugin</artifactId>
+                <version>1.0.0-M5</version>
+                <extensions>true</extensions> <!-- Necessary to execute it in 'test' phase. -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -194,15 +191,6 @@
 
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                    <configuration>
-                        <parallel>classes</parallel>
-                        <threadCount>3</threadCount>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <groupId>org.moditect</groupId>
                     <artifactId>moditect-maven-plugin</artifactId>
