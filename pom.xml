@@ -53,8 +53,8 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
         </dependency>
 
         <dependency>
@@ -76,9 +76,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>5.4.2</version>
                 <scope>test</scope>
             </dependency>
 
@@ -133,13 +133,10 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
-                <configuration>
-                    <forkCount>3</forkCount>
-                    <argLine>${argLine} -Xmx512m</argLine>
-                </configuration>
+                <groupId>de.sormuras.junit</groupId>
+                <artifactId>junit-platform-maven-plugin</artifactId>
+                <version>1.0.0-M5</version>
+                <extensions>true</extensions> <!-- Necessary to execute it in 'test' phase. -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
