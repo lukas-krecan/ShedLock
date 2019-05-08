@@ -458,7 +458,7 @@ If there is more than one record with the same name, you are missing a primary k
 It should help you to see what's going on. 
 3. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
 after each other, `lockAtLeastFor` can prevent it.
-4. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check #115 or 
+4. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check https://github.com/lukas-krecan/ShedLock/issues/115 or 
 [this StackOverflow quesiton](https://stackoverflow.com/questions/56017382/how-to-fix-websockets-and-shedlock-compatibility-in-spring-boot-application/56036601#56036601) 
  
    
