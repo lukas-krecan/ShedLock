@@ -19,6 +19,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -69,7 +70,10 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                     preparedStatement.setString(4, getHostname());
                 });
                 return insertedRows > 0;
+            } catch (DuplicateKeyException e) {
+                return false;
             } catch (DataIntegrityViolationException e) {
+                logger.warn("Unexpected exception", e);
                 return false;
             }
         });
