@@ -15,6 +15,8 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import javax.sql.DataSource;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,6 +69,13 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @Test
     public void fuzzTestShouldWorkWithTransaction() throws ExecutionException, InterruptedException {
         TransactionalFuzzTester.fuzzTestShouldWorkWithTransaction(getLockProvider(), getDatasource());
+    }
+
+    @Test
+    public void shouldNotFailIfKeyNameTooLong() {
+        LockConfiguration configuration = lockConfig("lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+        Optional<SimpleLock> lock = getLockProvider().lock(configuration);
+        assertThat(lock).isEmpty();
     }
 
     protected Calendar now() {
