@@ -478,7 +478,7 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 ## Change log
 ## 2.5.0
-* Zookeeper supports *locAtMostFor* and *lockAtleastFor* params
+* Zookeeper supports *lockAtMostFor* and *lockAtLeastFor* params
 * Better debug logging
 
 ## 2.4.0
