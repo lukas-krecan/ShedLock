@@ -97,11 +97,11 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
 
-    private void setTimestamp(PreparedStatement preparedStatement, int patameterIndex, Instant time) throws SQLException {
+    private void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, Instant time) throws SQLException {
         if (timeZone == null) {
-            preparedStatement.setTimestamp(patameterIndex, Timestamp.from(time));
+            preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time));
         } else {
-            preparedStatement.setTimestamp(patameterIndex, Timestamp.from(time), Calendar.getInstance(timeZone));
+            preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time), Calendar.getInstance(timeZone));
         }
     }
 
