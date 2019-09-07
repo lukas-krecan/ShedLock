@@ -15,6 +15,13 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import java.time.Instant;
+import java.util.Optional;
+
 public interface SimpleLock {
     void unlock();
+
+    default Optional<SimpleLock> extend(Instant lockAtMostUntil, Instant lockAtLeastUntil) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -96,6 +96,22 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         });
     }
 
+    @Override
+    public boolean extend(LockConfiguration lockConfiguration) {
+        String sql = "UPDATE " + tableName
+            + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
+
+        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        return transactionTemplate.execute(status -> {
+            int updatedRows = jdbcTemplate.update(sql, statement -> {
+                setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
+                statement.setString(2, lockConfiguration.getName());
+                statement.setString(3, getHostname());
+                setTimestamp(statement, 4, Instant.now());
+            });
+            return updatedRows > 0;
+        });
+    }
 
     private void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, Instant time) throws SQLException {
         if (timeZone == null) {

@@ -36,4 +36,8 @@ public interface StorageAccessor {
     boolean updateRecord(LockConfiguration lockConfiguration);
 
     void unlock(LockConfiguration lockConfiguration);
+
+    default boolean extend(LockConfiguration lockConfiguration) {
+        throw new UnsupportedOperationException();
+    }
 }

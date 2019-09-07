@@ -19,6 +19,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -99,6 +100,16 @@ public class StorageBasedLockProvider implements LockProvider {
         @Override
         public void unlock() {
             storageAccessor.unlock(lockConfiguration);
+        }
+
+        @Override
+        public Optional<SimpleLock> extend(Instant lockAtMostUntil, Instant lockAtLeastUntil) {
+            LockConfiguration newConfig = new LockConfiguration(lockConfiguration.getName(), lockAtMostUntil, lockAtLeastUntil);
+            if (storageAccessor.extend(newConfig)) {
+                return Optional.of(new StorageLock(newConfig, storageAccessor));
+            } else {
+                return Optional.empty();
+            }
         }
     }
 

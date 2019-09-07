@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class AbstractStorageBasedLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+public abstract class AbstractStorageBasedLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
 
     @Override
     protected abstract StorageBasedLockProvider getLockProvider();

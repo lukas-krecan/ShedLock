@@ -146,6 +146,26 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
+        public boolean extend(LockConfiguration lockConfiguration) {
+            try {
+                JsonDocument document = bucket.get(lockConfiguration.getName());
+                Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
+                Instant now = Instant.now();
+                if (lockUntil.isBefore(now) || !document.content().get(LOCKED_BY).equals(getHostname())) {
+                    return false;
+                }
+
+                document.content().put(LOCK_UNTIL, toIsoString(lockConfiguration.getLockAtMostUntil()));
+
+                bucket.replace(document);
+                return true;
+
+            } catch (CASMismatchException e) {
+                return false;
+            }
+        }
+
+        @Override
         public void unlock(LockConfiguration lockConfiguration) {
             JsonDocument document = bucket.get(lockConfiguration.getName());
             document.content().put(LOCK_UNTIL, toIsoString(lockConfiguration.getUnlockTime()));
