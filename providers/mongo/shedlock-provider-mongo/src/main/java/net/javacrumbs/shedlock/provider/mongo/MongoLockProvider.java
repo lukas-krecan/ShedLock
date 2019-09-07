@@ -26,11 +26,13 @@ import net.javacrumbs.shedlock.support.Utils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
@@ -125,7 +127,7 @@ public class MongoLockProvider implements LockProvider {
                 update,
                 new FindOneAndUpdateOptions().upsert(true)
             );
-            return Optional.of(new MongoLock(lockConfiguration));
+            return Optional.of(new MongoLock(lockConfiguration, this));
         } catch (MongoServerException e) {
             if (e.getCode() == 11000) { // duplicate key
                 //Upsert attempts to insert when there were no filter matches.
@@ -137,6 +139,33 @@ public class MongoLockProvider implements LockProvider {
         }
     }
 
+    private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
+        Date now = now();
+        Bson update = set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil()));
+
+        Document updatedDocument = getCollection().findOneAndUpdate(
+            and(
+                eq(ID, lockConfiguration.getName()),
+                gt(LOCK_UNTIL, now),
+                eq(LOCKED_BY, hostname)
+            ),
+            update
+        );
+        if (updatedDocument != null) {
+            return Optional.of(new MongoLock(lockConfiguration, this));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private void unlock(LockConfiguration lockConfiguration) {
+        // Set lockUtil to now or lockAtLeastUntil whichever is later
+        getCollection().findOneAndUpdate(
+            eq(ID, lockConfiguration.getName()),
+            combine(set(LOCK_UNTIL, Date.from(lockConfiguration.getUnlockTime())))
+        );
+    }
+
     private MongoCollection<Document> getCollection() {
         return collection;
     }
@@ -145,20 +174,24 @@ public class MongoLockProvider implements LockProvider {
         return new Date();
     }
 
-    private final class MongoLock implements SimpleLock {
+    private static final class MongoLock implements SimpleLock {
         private final LockConfiguration lockConfiguration;
+        private final MongoLockProvider mongoLockProvider;
 
-        private MongoLock(LockConfiguration lockConfiguration) {
+        private MongoLock(LockConfiguration lockConfiguration, MongoLockProvider mongoLockProvider) {
             this.lockConfiguration = lockConfiguration;
+            this.mongoLockProvider = mongoLockProvider;
         }
 
         @Override
         public void unlock() {
-            // Set lockUtil to now or lockAtLeastUntil whichever is later
-            getCollection().findOneAndUpdate(
-                eq(ID, lockConfiguration.getName()),
-                combine(set(LOCK_UNTIL, Date.from(lockConfiguration.getUnlockTime())))
-            );
+            mongoLockProvider.unlock(lockConfiguration);
+        }
+
+        @Override
+        public Optional<SimpleLock> extend(Instant lockAtMostUntil, Instant lockAtLeastUntil) {
+            LockConfiguration newLockConfiguration = new LockConfiguration(lockConfiguration.getName(), lockAtMostUntil, lockAtLeastUntil);
+            return mongoLockProvider.extend(newLockConfiguration);
         }
     }
 
