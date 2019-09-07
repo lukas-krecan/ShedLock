@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.redis.jedis;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -82,19 +83,18 @@ public class JedisLockProvider implements LockProvider {
         return Optional.empty();
     }
 
-    private static final class RedisLock implements SimpleLock {
+    private static final class RedisLock extends AbstractSimpleLock {
         private final String key;
         private final Pool<Jedis> jedisPool;
-        private final LockConfiguration lockConfiguration;
 
         private RedisLock(String key, Pool<Jedis> jedisPool, LockConfiguration lockConfiguration) {
+            super(lockConfiguration);
             this.key = key;
             this.jedisPool = jedisPool;
-            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             long keepLockFor = getMsUntil(lockConfiguration.getLockAtLeastUntil());
 
             // lock at least until is in the past

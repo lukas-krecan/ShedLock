@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.test.support;
 
 import net.javacrumbs.shedlock.core.SimpleLock;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -23,6 +24,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class AbstractExtensibleLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
@@ -52,9 +54,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         lock.get().unlock();
         assertUnlocked(LOCK_NAME1);
 
-        Optional<SimpleLock> newLock = lock.get().extend(Instant.now().plusSeconds(10), Instant.now());
-        assertThat(newLock).isEmpty();
-        assertUnlocked(LOCK_NAME1);
+        assertInvalidLock(() -> lock.get().extend(Instant.now().plusSeconds(10), Instant.now()));
     }
 
     @Test
@@ -67,6 +67,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         assertUnlocked(LOCK_NAME1);
     }
 
+
     @Test
     public void shouldBeAbleToExtendAtLeast() {
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
@@ -76,5 +77,29 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         assertThat(newLock).isNotEmpty();
         newLock.get().unlock();
         assertLocked(LOCK_NAME1);
+    }
+
+    @Test
+    public void lockCanNotBeExtendedTwice() {
+        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
+        assertThat(lock).isNotEmpty();
+        Optional<SimpleLock> newLock = lock.get().extend(Instant.now().plusSeconds(10), Instant.now().plusSeconds(9));
+        assertThat(newLock).isNotEmpty();
+
+        assertInvalidLock(() -> lock.get().extend(Instant.now().plusSeconds(10), Instant.now().plusSeconds(9)));
+    }
+
+    @Test
+    public void lockCanNotBeUnlockedAfterExtending() {
+        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
+        assertThat(lock).isNotEmpty();
+        Optional<SimpleLock> newLock = lock.get().extend(Instant.now().plusSeconds(10), Instant.now().plusSeconds(9));
+        assertThat(newLock).isNotEmpty();
+
+        assertInvalidLock(() -> lock.get().unlock());
+    }
+
+    void assertInvalidLock(ThrowableAssert.ThrowingCallable operation) {
+        assertThatThrownBy(operation).isInstanceOf(IllegalStateException.class);
     }
 }

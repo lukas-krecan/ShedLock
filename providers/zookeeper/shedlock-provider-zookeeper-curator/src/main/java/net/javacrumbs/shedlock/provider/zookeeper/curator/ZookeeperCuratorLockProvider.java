@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.zookeeper.curator;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -132,19 +133,18 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         return path + "/" + lockName;
     }
 
-    private static final class CuratorLock implements SimpleLock {
+    private static final class CuratorLock extends AbstractSimpleLock {
         private final String nodePath;
         private final CuratorFramework client;
-        private final LockConfiguration lockConfiguration;
 
         private CuratorLock(String nodePath, CuratorFramework client, LockConfiguration lockConfiguration) {
+            super(lockConfiguration);
             this.nodePath = nodePath;
             this.client = client;
-            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             try {
                 Instant unlockTime = lockConfiguration.getUnlockTime();
                 client.setData().forPath(nodePath, serialize(unlockTime));

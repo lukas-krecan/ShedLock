@@ -19,6 +19,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -26,7 +27,6 @@ import net.javacrumbs.shedlock.support.Utils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -174,23 +174,21 @@ public class MongoLockProvider implements LockProvider {
         return new Date();
     }
 
-    private static final class MongoLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
+    private static final class MongoLock extends AbstractSimpleLock {
         private final MongoLockProvider mongoLockProvider;
 
         private MongoLock(LockConfiguration lockConfiguration, MongoLockProvider mongoLockProvider) {
-            this.lockConfiguration = lockConfiguration;
+            super(lockConfiguration);
             this.mongoLockProvider = mongoLockProvider;
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             mongoLockProvider.unlock(lockConfiguration);
         }
 
         @Override
-        public Optional<SimpleLock> extend(Instant lockAtMostUntil, Instant lockAtLeastUntil) {
-            LockConfiguration newLockConfiguration = new LockConfiguration(lockConfiguration.getName(), lockAtMostUntil, lockAtLeastUntil);
+        public Optional<SimpleLock> doExtend(LockConfiguration newLockConfiguration) {
             return mongoLockProvider.extend(newLockConfiguration);
         }
     }
