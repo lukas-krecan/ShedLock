@@ -67,5 +67,14 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         assertUnlocked(LOCK_NAME1);
     }
 
-    //at least
+    @Test
+    public void shouldBeAbleToExtendAtLeast() {
+        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
+        assertThat(lock).isNotEmpty();
+
+        Optional<SimpleLock> newLock = lock.get().extend(Instant.now().plusSeconds(10), Instant.now().plusSeconds(9));
+        assertThat(newLock).isNotEmpty();
+        newLock.get().unlock();
+        assertLocked(LOCK_NAME1);
+    }
 }
