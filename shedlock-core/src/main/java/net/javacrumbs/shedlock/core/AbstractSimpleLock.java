@@ -19,7 +19,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 public abstract class AbstractSimpleLock implements SimpleLock {
-    private volatile boolean valid = true;
+    private boolean valid = true;
     protected final LockConfiguration lockConfiguration;
 
     protected AbstractSimpleLock(LockConfiguration lockConfiguration) {
@@ -49,7 +49,7 @@ public abstract class AbstractSimpleLock implements SimpleLock {
 
     private void checkValidity() {
         if (!valid) {
-            throw new IllegalStateException("Lock is not valid it has been already unlocked or extended");
+            throw new IllegalStateException("Lock is not valid, it has already been unlocked or extended");
         }
     }
 }
