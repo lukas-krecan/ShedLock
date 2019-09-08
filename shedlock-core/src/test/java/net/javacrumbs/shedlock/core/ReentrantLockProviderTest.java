@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.core;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -36,7 +37,7 @@ public class ReentrantLockProviderTest {
     private final LockProvider lockProvider = new ReentrantLockProvider();
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
-    private final LockConfiguration configuration = mock(LockConfiguration.class);
+    private final LockConfiguration configuration = new LockConfiguration("test", Instant.now().plusSeconds(60));
 
     @Before
     public void configureMocks() {

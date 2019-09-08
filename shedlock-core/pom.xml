@@ -10,6 +10,14 @@
     <artifactId>shedlock-core</artifactId>
     <version>2.5.1-SNAPSHOT</version>
 
+    <dependencies>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+    </dependencies>
+
+
     <build>
         <plugins>
             <plugin>
@@ -27,5 +35,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
