@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.support;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -87,18 +88,26 @@ public class StorageBasedLockProvider implements LockProvider {
         return storageAccessor.updateRecord(lockConfiguration);
     }
 
-    private static class StorageLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
+    private static class StorageLock extends AbstractSimpleLock {
         private final StorageAccessor storageAccessor;
 
         StorageLock(LockConfiguration lockConfiguration, StorageAccessor storageAccessor) {
-            this.lockConfiguration = lockConfiguration;
+            super(lockConfiguration);
             this.storageAccessor = storageAccessor;
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             storageAccessor.unlock(lockConfiguration);
+        }
+
+        @Override
+        public Optional<SimpleLock> doExtend(LockConfiguration newConfig) {
+            if (storageAccessor.extend(newConfig)) {
+                return Optional.of(new StorageLock(newConfig, storageAccessor));
+            } else {
+                return Optional.empty();
+            }
         }
     }
 

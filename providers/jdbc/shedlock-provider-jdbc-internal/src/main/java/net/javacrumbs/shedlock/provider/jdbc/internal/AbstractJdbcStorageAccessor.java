@@ -86,6 +86,28 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
         }
     }
 
+    @Override
+    public boolean extend(LockConfiguration lockConfiguration) {
+        String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
+
+        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+
+        try (
+            Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            connection.setAutoCommit(true); // just to be sure, should be set by default
+            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
+            statement.setString(2, lockConfiguration.getName());
+            statement.setString(3, getHostname());
+            statement.setTimestamp(4, Timestamp.from(Instant.now()));
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            handleUnlockException(sql, e);
+            return false;
+        }
+    }
+
     protected abstract void handleUpdateException(String sql, SQLException e);
 
     @Override

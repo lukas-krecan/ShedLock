@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.elasticsearch;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -145,15 +146,14 @@ public class ElasticsearchLockProvider implements LockProvider {
         return lock;
     }
 
-    private final class ElasticsearchSimpleLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
+    private final class ElasticsearchSimpleLock extends AbstractSimpleLock {
 
         private ElasticsearchSimpleLock(LockConfiguration lockConfiguration) {
-            this.lockConfiguration = lockConfiguration;
+            super(lockConfiguration);
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             // Set lockUtil to now or lockAtLeastUntil whichever is later
             try {
                 UpdateRequest ur = new UpdateRequest()

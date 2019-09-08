@@ -49,7 +49,6 @@ public abstract class AbstractLockProviderIntegrationTest {
         assertLocked(LOCK_NAME1);
         lock.get().unlock();
         assertUnlocked(LOCK_NAME1);
-
     }
 
     @Test
@@ -131,6 +130,14 @@ public abstract class AbstractLockProviderIntegrationTest {
         Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));
         assertThat(lock3).describedAs("Can acquire the lock after grace period").isNotEmpty();
         lock3.get().unlock();
+    }
+
+    protected void sleepFor(Duration duration) {
+        try {
+            sleep(duration.toMillis());
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     protected static LockConfiguration lockConfig(String name) {

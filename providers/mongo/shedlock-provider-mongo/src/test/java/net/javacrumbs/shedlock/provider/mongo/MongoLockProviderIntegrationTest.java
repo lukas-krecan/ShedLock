@@ -21,7 +21,7 @@ import com.mongodb.client.result.DeleteResult;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.bson.Document;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,11 +33,14 @@ import java.net.UnknownHostException;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.*;
+import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-public class MongoLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
     private static MongodForTestsFactory mongoFactory;
 
     private static final String COLLECTION_NAME = "Shedlock";

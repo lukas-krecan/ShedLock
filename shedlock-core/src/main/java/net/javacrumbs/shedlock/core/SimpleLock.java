@@ -15,6 +15,29 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import java.time.Instant;
+import java.util.Optional;
+
 public interface SimpleLock {
+
+    /**
+     * Unlocks the lock. Once you unlock it, you should not use for any other operation.
+     *
+     * @throws IllegalStateException if the lock has already been unlocked or extended
+     */
     void unlock();
+
+    /**
+     * Extends the lock. If the lock can be extended a new lock is returned. After calling extend, no other operation
+     * can be called on current lock.
+     * <p>
+     * This method is NOT supported by all lock providers.
+     *
+     * @return a new lock or empty optional if the lock can not be extended
+     * @throws IllegalStateException         if the lock has already been unlocked or extended
+     * @throws UnsupportedOperationException if the lock extension is not supported by LockProvider.
+     */
+    default Optional<SimpleLock> extend(Instant lockAtMostUntil, Instant lockAtLeastUntil) {
+        throw new UnsupportedOperationException();
+    }
 }
