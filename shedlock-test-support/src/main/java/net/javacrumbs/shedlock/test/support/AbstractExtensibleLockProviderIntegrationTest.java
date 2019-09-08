@@ -60,6 +60,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
     @Test
     public void shouldNotBeAbleToExtendExpiredLock() {
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(1), Duration.ZERO));
+        sleepFor(Duration.ofMillis(1));
         assertThat(lock).isNotEmpty();
 
         Optional<SimpleLock> newLock = lock.get().extend(Instant.now().plusSeconds(10), Instant.now());
