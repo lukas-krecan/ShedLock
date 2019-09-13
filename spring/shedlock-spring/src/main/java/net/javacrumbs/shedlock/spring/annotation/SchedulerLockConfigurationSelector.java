@@ -26,16 +26,16 @@ class SchedulerLockConfigurationSelector implements ImportSelector {
     @Override
     public String[] selectImports(AnnotationMetadata metadata) {
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
-        Enum<?> mode = attributes.getEnum("mode");
-        if (InterceptMode.PROXY_METHOD.equals(mode)) {
-            return new String[]{MethodProxyLockConfiguration.class.getName()};
+        InterceptMode mode = attributes.getEnum("mode");
+        switch (mode) {
+            case PROXY_METHOD:
+                return new String[]{MethodProxyLockConfiguration.class.getName()};
+            case PROXY_SCHEDULER:
+                return new String[]{SchedulerProxyLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
+            case PROXY_SCHEDULER_CGLIB:
+                return new String[]{SchedulerProxyCglibLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
+            default:
+                throw new UnsupportedOperationException("Unknown mode " + mode);
         }
-        if (InterceptMode.PROXY_SCHEDULER.equals(mode)) {
-            return new String[]{SchedulerProxyLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
-        }
-        if (InterceptMode.PROXY_SCHEDULER_CGLIB.equals(mode)) {
-            return new String[]{SchedulerProxyCglibLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
-        }
-        throw new UnsupportedOperationException();
     }
 }
