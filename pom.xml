@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.5.1-SNAPSHOT</version>
+    <version>2.6.0</version>
     <modules>
         <module>shedlock-core</module>
         <module>spring/shedlock-spring</module>
