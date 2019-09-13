@@ -104,8 +104,8 @@ public abstract class AbstractSchedulerProxyTest {
     }
 
 
-    private Object schedule(Runnable task) throws InterruptedException, ExecutionException {
-        return taskScheduler.schedule(task, Instant.now()).get();
+    private void schedule(Runnable task) throws InterruptedException, ExecutionException {
+        taskScheduler.schedule(task, Instant.now()).get();
     }
 
     private ScheduledMethodRunnable task(String methodName) throws NoSuchMethodException {
