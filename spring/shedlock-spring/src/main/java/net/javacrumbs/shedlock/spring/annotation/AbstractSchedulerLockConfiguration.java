@@ -15,12 +15,17 @@
  */
 package net.javacrumbs.shedlock.spring.annotation;
 
+import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.StringValueResolver;
 
-class AbstractSchedulerLockConfiguration implements ImportAware {
+import java.time.Duration;
+
+class AbstractSchedulerLockConfiguration implements ImportAware, EmbeddedValueResolverAware {
     private AnnotationAttributes annotationAttributes;
+    private StringValueResolver resolver;
 
     protected String getDefaultLockAtLeastFor() {
         return getStringFromAnnotation("defaultLockAtLeastFor");
@@ -34,11 +39,6 @@ class AbstractSchedulerLockConfiguration implements ImportAware {
         return annotationAttributes.getString(defaultLockAtLeastFor);
     }
 
-    protected boolean getProxyTargetClass() {
-        return annotationAttributes.getBoolean("proxyTargetClass");
-    }
-
-
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
         this.annotationAttributes = AnnotationAttributes.fromMap(
@@ -47,5 +47,26 @@ class AbstractSchedulerLockConfiguration implements ImportAware {
             throw new IllegalArgumentException(
                 "@EnableSchedulerLock is not present on importing class " + importMetadata.getClassName());
         }
+    }
+
+    @Override
+    public void setEmbeddedValueResolver(StringValueResolver resolver) {
+        this.resolver = resolver;
+    }
+
+    protected Duration defaultLockAtLeastForDuration() {
+        return toDuration(getDefaultLockAtLeastFor());
+    }
+
+    protected Duration defaultLockAtMostForDuration() {
+        return toDuration(getDefaultLockAtMostFor());
+    }
+
+    protected StringValueResolver getResolver() {
+        return resolver;
+    }
+
+    private Duration toDuration(String string) {
+        return Duration.parse(resolver.resolveStringValue(string));
     }
 }

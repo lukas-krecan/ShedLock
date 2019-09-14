@@ -15,8 +15,10 @@
  */
 package net.javacrumbs.shedlock.spring.annotation;
 
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.spring.aop.MethodProxyScheduledLockAopBeanPostProcessor;
+import net.javacrumbs.shedlock.spring.aop.MethodProxyScheduledLockAdvisor;
+import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +30,8 @@ import org.springframework.context.annotation.Role;
 class MethodProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    MethodProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
-        return new MethodProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor(), lockProvider, getProxyTargetClass());
+    MethodProxyScheduledLockAdvisor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
+        return new MethodProxyScheduledLockAdvisor(new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver()), new DefaultLockingTaskExecutor(lockProvider));
+
     }
 }
