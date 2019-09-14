@@ -27,7 +27,6 @@ executed repeatedly.
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
   - [Hazelcast](#hazelcast)
-+ [Spring XML configuration](#spring-xml-configuration)
 + [Running without Spring](#running-without-spring)
 + [Troubleshooting](#troubleshooting)
 + [Versions](#versions)
@@ -366,43 +365,7 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
 
 
 ### Spring XML configuration
-
-If you are using Spring XML config, use this configuration
-
-```xml
-<!-- lock provider of your choice (jdbc/zookeeper/mongo/whatever) -->
-<bean id="lockProvider" class="net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider">
-    <constructor-arg ref="dataSource"/>
-</bean>
-
-<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactoryBean">
-    <constructor-arg>
-        <task:scheduler id="sch" pool-size="10"/>
-    </constructor-arg>
-    <constructor-arg ref="lockProvider"/>
-    <constructor-arg name="defaultLockAtMostFor">
-        <bean class="java.time.Duration" factory-method="ofMinutes">
-            <constructor-arg value="10"/>
-        </bean>
-    </constructor-arg>
-</bean>
-
-
-<!-- Your task(s) without change (or annotated with @Scheduled)-->
-<task:scheduled-tasks scheduler="scheduler">
-    <task:scheduled ref="task" method="run" fixed-delay="1" fixed-rate="1"/>
-</task:scheduled-tasks>
-```
-
-Annotate scheduler method(s)
-
-
-```java
-@SchedulerLock(name = "taskName")
-public void run() {
-
-}
-```
+Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.7.0 or file an issue explaining why it is needed.
 
 ### Running without Spring
 It is possible to use ShedLock without Spring
