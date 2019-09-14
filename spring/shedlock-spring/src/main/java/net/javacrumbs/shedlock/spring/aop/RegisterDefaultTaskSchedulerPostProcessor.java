@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.annotation;
+package net.javacrumbs.shedlock.spring.aop;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

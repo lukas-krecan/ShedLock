@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.annotation;
+package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.core.DefaultLockManager;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.spring.aop.SchedulerProxyScheduledLockAdvisor;
 import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
@@ -27,11 +26,11 @@ import org.springframework.context.annotation.Role;
 
 @Configuration
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-class SchedulerProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
+class MethodProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    SchedulerProxyScheduledLockAdvisor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
-        SpringLockConfigurationExtractor lockConfigurationExtractor = new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver());
-        return new SchedulerProxyScheduledLockAdvisor(new DefaultLockManager(lockProvider, lockConfigurationExtractor));
+    MethodProxyScheduledLockAdvisor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
+        return new MethodProxyScheduledLockAdvisor(new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver()), new DefaultLockingTaskExecutor(lockProvider));
+
     }
 }

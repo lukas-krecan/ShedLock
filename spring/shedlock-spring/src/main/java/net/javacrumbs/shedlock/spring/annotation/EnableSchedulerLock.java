@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.spring.annotation;
 
+import net.javacrumbs.shedlock.spring.aop.SchedulerLockConfigurationSelector;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Import;
 

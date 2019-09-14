@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.annotation;
+package net.javacrumbs.shedlock.spring.aop;
 
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.context.annotation.AutoProxyRegistrar;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -24,7 +25,7 @@ import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.Inte
 import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_METHOD;
 import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER;
 
-class SchedulerLockConfigurationSelector implements ImportSelector {
+public class SchedulerLockConfigurationSelector implements ImportSelector {
 
     @Override
     public String[] selectImports(AnnotationMetadata metadata) {
