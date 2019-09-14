@@ -192,13 +192,4 @@ public class MongoLockProvider implements LockProvider {
             return mongoLockProvider.extend(newLockConfiguration);
         }
     }
-
-    /**
-     * MongoLockProvider does not use cache any more
-     */
-    @Deprecated
-    public void clearCache() {
-
-    }
-
 }
