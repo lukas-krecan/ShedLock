@@ -28,6 +28,11 @@ public @interface EnableSchedulerLock {
     }
 
 
+    /**
+     * Mode of integration, either TaskScheduler is wrapped in a proxy or the scheduled method is proxied to ensure locking
+     *
+     * @see <a href="https://github.com/lukas-krecan/ShedLock#modes-of-spring-integration">Modes of Spring integration</a>
+     */
     InterceptMode interceptMode() default InterceptMode.PROXY_SCHEDULER;
 
 
@@ -53,14 +58,10 @@ public @interface EnableSchedulerLock {
 
 
     /**
+     * Since 3.0.0 use {@link #interceptMode()} to configure the intercept mode. Had to be renamed to make it compatible
+     * with Spring AOP infrastructure. Sorry.
+     *
      * Indicate how caching advice should be applied.
-     * <p><b>The default is {@link AdviceMode#PROXY}.</b>
-     * Please note that proxy mode allows for interception of calls through the proxy
-     * only. Local calls within the same class cannot get intercepted that way;
-     * a caching annotation on such a method within a local call will be ignored
-     * since Spring's interceptor does not even kick in for such a runtime scenario.
-     * For a more advanced mode of interception, consider switching this to
-     * {@link AdviceMode#ASPECTJ}.
      */
     AdviceMode mode() default AdviceMode.PROXY;
 
