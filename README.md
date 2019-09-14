@@ -17,8 +17,6 @@ executed repeatedly.
 
 
 + [Usage](#usage)
-  - [TaskScheduler proxy](#taskscheduler-proxy)
-  - [Scheduled method proxy](#scheduled-method-proxy)
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
@@ -29,6 +27,9 @@ executed repeatedly.
   - [Hazelcast](#hazelcast)
 + [Running without Spring](#running-without-spring)
 + [Troubleshooting](#troubleshooting)
++ [Modes of Spring integration](#modes-of-spring-integration)
+  - [TaskScheduler proxy](#taskscheduler-proxy)
+  - [Scheduled method proxy](#scheduled-method-proxy)
 + [Versions](#versions)
 
 ## Usage
