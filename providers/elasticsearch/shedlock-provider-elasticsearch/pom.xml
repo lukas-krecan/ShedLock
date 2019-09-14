@@ -12,8 +12,8 @@
     <version>2.6.1-SNAPSHOT</version>
 
     <properties>
-        <elasticsearch.version>6.4.0</elasticsearch.version>
-        <embedded-elasticsearch.version>2.7.0</embedded-elasticsearch.version>
+        <elasticsearch.version>7.3.2</elasticsearch.version>
+        <embedded-elasticsearch.version>2.10.0</embedded-elasticsearch.version>
     </properties>
 
     <dependencies>

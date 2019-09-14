@@ -21,13 +21,13 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-dynamodb</artifactId>
-            <version>1.11.463</version>
+            <version>1.11.631</version>
         </dependency>
 
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>DynamoDBLocal</artifactId>
-            <version>1.11.119</version>
+            <version>1.11.477</version>
             <scope>test</scope>
         </dependency>
 
