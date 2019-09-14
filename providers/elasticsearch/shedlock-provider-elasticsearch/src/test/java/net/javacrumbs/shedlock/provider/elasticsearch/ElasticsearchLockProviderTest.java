@@ -1,3 +1,18 @@
+/**
+ * Copyright 2009-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.javacrumbs.shedlock.provider.elasticsearch;
 
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -22,7 +37,12 @@ import java.util.Map;
 
 import static java.lang.ClassLoader.getSystemResourceAsStream;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.*;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.NAME;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -36,8 +56,8 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     @Before
     public void setUp() {
         highLevelClient = new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("localhost", EMBEDDED_ELASTIC_PORT, "http")));
+            RestClient.builder(
+                new HttpHost("localhost", EMBEDDED_ELASTIC_PORT, "http")));
         lockProvider = new ElasticsearchLockProvider(highLevelClient);
     }
 
@@ -84,16 +104,16 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     @BeforeClass
     public static void startEmbeddedElastic() throws IOException, InterruptedException {
         embeddedElastic = EmbeddedElastic.builder()
-                .withElasticVersion("6.4.0")
-                .withSetting(PopularProperties.HTTP_PORT, EMBEDDED_ELASTIC_PORT)
-                .withSetting(PopularProperties.CLUSTER_NAME, "my_cluster")
-                .withStartTimeout(2, MINUTES)
-                .withIndex(SCHEDLOCK_DEFAULT_INDEX, IndexSettings.builder()
-                        .withType(SCHEDLOCK_DEFAULT_TYPE, getSystemResourceAsStream("shedlock.mapping.json"))
-                        .withSettings(getSystemResourceAsStream("shedlock.settings.json"))
-                        .build())
-                .build()
-                .start();
+            .withElasticVersion("6.4.0")
+            .withSetting(PopularProperties.HTTP_PORT, EMBEDDED_ELASTIC_PORT)
+            .withSetting(PopularProperties.CLUSTER_NAME, "my_cluster")
+            .withStartTimeout(2, MINUTES)
+            .withIndex(SCHEDLOCK_DEFAULT_INDEX, IndexSettings.builder()
+                .withType(SCHEDLOCK_DEFAULT_TYPE, getSystemResourceAsStream("shedlock.mapping.json"))
+                .withSettings(getSystemResourceAsStream("shedlock.settings.json"))
+                .build())
+            .build()
+            .start();
     }
 
     @AfterClass

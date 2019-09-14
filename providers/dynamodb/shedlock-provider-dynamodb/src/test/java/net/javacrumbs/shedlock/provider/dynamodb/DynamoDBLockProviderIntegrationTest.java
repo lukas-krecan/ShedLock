@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,10 @@ import org.junit.BeforeClass;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.*;
+import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

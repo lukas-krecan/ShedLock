@@ -1,3 +1,18 @@
+/**
+ * Copyright 2009-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.javacrumbs.shedlock.provider.elasticsearch;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
@@ -103,35 +118,35 @@ public class ElasticsearchLockProvider implements LockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-            try {
-                Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
-                    lockConfiguration.getLockAtMostUntil(),
-                    now());
-                UpdateRequest ur = new UpdateRequest()
-                        .index(index)
-                        .type(type)
-                        .id(lockConfiguration.getName())
-                        .script(new Script(ScriptType.INLINE,
-                                "painless",
-                                UPDATE_SCRIPT,
-                            lockObject)
-                        )
-                    .upsert(lockObject)
-                    .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
-                UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
-                if (res.getResult() != DocWriteResponse.Result.NOOP) {
-                    return Optional.of(new ElasticsearchSimpleLock(lockConfiguration));
-                } else {
-                    return Optional.empty();
-                }
-            } catch (IOException | ElasticsearchException e) {
-                if (e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == RestStatus.CONFLICT) {
-                    return Optional.empty();
-                } else {
-                    throw new LockException("Unexpected exception occurred", e);
-                }
+        try {
+            Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
+                lockConfiguration.getLockAtMostUntil(),
+                now());
+            UpdateRequest ur = new UpdateRequest()
+                .index(index)
+                .type(type)
+                .id(lockConfiguration.getName())
+                .script(new Script(ScriptType.INLINE,
+                    "painless",
+                    UPDATE_SCRIPT,
+                    lockObject)
+                )
+                .upsert(lockObject)
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+            UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
+            if (res.getResult() != DocWriteResponse.Result.NOOP) {
+                return Optional.of(new ElasticsearchSimpleLock(lockConfiguration));
+            } else {
+                return Optional.empty();
+            }
+        } catch (IOException | ElasticsearchException e) {
+            if (e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == RestStatus.CONFLICT) {
+                return Optional.empty();
+            } else {
+                throw new LockException("Unexpected exception occurred", e);
             }
         }
+    }
 
     private Instant now() {
         return Instant.now();

@@ -122,13 +122,15 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.9.0</version>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>3.0</version>
                 <configuration>
                     <header>header.txt</header>
                     <excludes>
                         <exclude>LICENSE.txt</exclude>
+                        <exclude>*.xml</exclude>
+                        <exclude>*.properties</exclude>
                     </excludes>
                 </configuration>
             </plugin>
