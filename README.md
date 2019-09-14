@@ -365,7 +365,7 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
 
 
 ### Spring XML configuration
-Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.7.0 or file an issue explaining why it is needed.
+Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
 ### Running without Spring
 It is possible to use ShedLock without Spring
