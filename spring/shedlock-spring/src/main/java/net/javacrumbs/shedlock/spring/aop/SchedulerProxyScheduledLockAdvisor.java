@@ -30,12 +30,12 @@ import org.springframework.aop.support.NameMatchMethodPointcut;
 import org.springframework.aop.support.RootClassFilter;
 import org.springframework.scheduling.TaskScheduler;
 
-class SchedulerProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
+public class SchedulerProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     private final Pointcut pointcut = new TaskSchedulerPointcut();
     private final Advice advice;
     private static final Logger logger = LoggerFactory.getLogger(SchedulerProxyScheduledLockAdvisor.class);
 
-    SchedulerProxyScheduledLockAdvisor(LockManager lockManager) {
+    public SchedulerProxyScheduledLockAdvisor(LockManager lockManager) {
         this.advice = new LockingInterceptor(lockManager);
     }
 

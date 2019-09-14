@@ -31,7 +31,7 @@ import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
+@EnableSchedulerLock(interceptMode = PROXY_METHOD, defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
 @PropertySource("test.properties")
 public class MethodProxyAopConfig {
 

@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.spring.annotation;
 
+import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -26,7 +27,7 @@ public @interface EnableSchedulerLock {
     }
 
 
-    InterceptMode mode() default InterceptMode.PROXY_SCHEDULER;
+    InterceptMode interceptMode() default InterceptMode.PROXY_SCHEDULER;
 
 
     /**
@@ -49,9 +50,22 @@ public @interface EnableSchedulerLock {
      */
     String defaultLockAtLeastFor() default "PT0S";
 
+
+    /**
+     * Indicate how caching advice should be applied.
+     * <p><b>The default is {@link AdviceMode#PROXY}.</b>
+     * Please note that proxy mode allows for interception of calls through the proxy
+     * only. Local calls within the same class cannot get intercepted that way;
+     * a caching annotation on such a method within a local call will be ignored
+     * since Spring's interceptor does not even kick in for such a runtime scenario.
+     * For a more advanced mode of interception, consider switching this to
+     * {@link AdviceMode#ASPECTJ}.
+     */
+    AdviceMode mode() default AdviceMode.PROXY;
+
     /**
      * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
-     * to standard Java interface-based proxies. The default is {@code false}.
+     * to standard Java interface-based proxies.
      */
     boolean proxyTargetClass() default false;
 }

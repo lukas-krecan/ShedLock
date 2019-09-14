@@ -26,11 +26,11 @@ import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 
-class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
+public class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     private final AnnotationMatchingPointcut pointcut = AnnotationMatchingPointcut.forMethodAnnotation(SchedulerLock.class);
     private final Advice advice;
 
-    MethodProxyScheduledLockAdvisor(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
+    public MethodProxyScheduledLockAdvisor(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
         this.advice = new LockingInterceptor(lockConfigurationExtractor, lockingTaskExecutor);
     }
 

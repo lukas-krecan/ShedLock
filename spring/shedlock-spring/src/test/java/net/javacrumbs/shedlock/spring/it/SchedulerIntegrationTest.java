@@ -28,7 +28,7 @@ public class SchedulerIntegrationTest extends AbstractSchedulerTest {
 
     @Configuration
     @EnableScheduling
-    @EnableSchedulerLock(mode = PROXY_SCHEDULER, defaultLockAtMostFor = "PT30S")
+    @EnableSchedulerLock(interceptMode = PROXY_SCHEDULER, defaultLockAtMostFor = "PT30S")
     public static class AopSchedulerConfig extends AbstractSchedulerConfig {
     }
 }
