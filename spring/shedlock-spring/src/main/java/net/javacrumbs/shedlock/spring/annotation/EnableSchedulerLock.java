@@ -61,7 +61,7 @@ public @interface EnableSchedulerLock {
      * Since 3.0.0 use {@link #interceptMode()} to configure the intercept mode. Had to be renamed to make it compatible
      * with Spring AOP infrastructure. Sorry.
      *
-     * Indicate how caching advice should be applied.
+     * Indicate how advice should be applied.
      */
     AdviceMode mode() default AdviceMode.PROXY;
 
