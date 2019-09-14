@@ -29,6 +29,6 @@ class MethodProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     MethodProxyScheduledLockAopBeanPostProcessor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
-        return new MethodProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor(), lockProvider);
+        return new MethodProxyScheduledLockAopBeanPostProcessor(getDefaultLockAtMostFor(), getDefaultLockAtLeastFor(), lockProvider, getProxyTargetClass());
     }
 }

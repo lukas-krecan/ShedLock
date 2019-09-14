@@ -13,20 +13,11 @@ import java.lang.annotation.Target;
 public @interface EnableSchedulerLock {
     enum InterceptMode {
         /**
-         * Default mode when TaskScheduler is wrapped in a CGLIB proxy to ensure locking. Only applies lock
+         * Default mode when a TaskScheduler is wrapped in a proxy to ensure locking. Only applies lock
          * if the {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated method is called using scheduler.
-         *
-         * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#aop-proxying">Proxying Mechanisms</a>
-         * @since 2.7.0
-         */
-        PROXY_SCHEDULER_CGLIB,
-        /**
-         * TaskScheduler is wrapped in a JDK dynamic proxy to ensure locking. Only applies lock
-         * if the {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated method is called using scheduler.
-         *
-         * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#aop-proxying">Proxying Mechanisms</a>
          */
         PROXY_SCHEDULER,
+
         /**
          * Scheduled method is proxied to ensure locking. Lock is created every time
          * {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated is called (even if it is NOT called using Spring scheduler)
@@ -35,7 +26,7 @@ public @interface EnableSchedulerLock {
     }
 
 
-    InterceptMode mode() default InterceptMode.PROXY_SCHEDULER_CGLIB;
+    InterceptMode mode() default InterceptMode.PROXY_SCHEDULER;
 
 
     /**
@@ -57,4 +48,10 @@ public @interface EnableSchedulerLock {
      * lock will be kept at least for given period of time. Can be overridden in each ScheduledLock annotation.
      */
     String defaultLockAtLeastFor() default "PT0S";
+
+    /**
+     * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
+     * to standard Java interface-based proxies. The default is {@code false}.
+     */
+    boolean proxyTargetClass() default false;
 }

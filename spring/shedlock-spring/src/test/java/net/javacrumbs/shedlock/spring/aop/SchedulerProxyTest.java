@@ -42,6 +42,7 @@ public class SchedulerProxyTest extends AbstractSchedulerProxyTest {
     @Test
     public void shouldNotCreateDefaultScheduler() {
         assertThat(taskScheduler).isInstanceOf(MyInterface.class);
+        assertThat(taskScheduler).isNotInstanceOf(MyTaskScheduler.class);
     }
 
     @Override

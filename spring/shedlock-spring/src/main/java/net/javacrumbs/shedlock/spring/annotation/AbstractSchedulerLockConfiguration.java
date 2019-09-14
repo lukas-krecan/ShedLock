@@ -34,6 +34,10 @@ class AbstractSchedulerLockConfiguration implements ImportAware {
         return annotationAttributes.getString(defaultLockAtLeastFor);
     }
 
+    protected boolean getProxyTargetClass() {
+        return annotationAttributes.getBoolean("proxyTargetClass");
+    }
+
 
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
