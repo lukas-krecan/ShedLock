@@ -381,6 +381,7 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 ```
 
+
 ## Modes of Spring integration
 ShedLock supports two modes of Spring integration.
 
@@ -395,6 +396,9 @@ public TaskScheduler taskScheduler() {
     return new MySpecialTaskScheduler();
 }
 ```
+
+Alternatively, you cen define a bean of type `ScheduledExecutorService` and it will automatically get used by the tasks 
+scheduling mechanism.
 
 ![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
 
