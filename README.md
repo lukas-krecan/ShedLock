@@ -386,7 +386,7 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 ShedLock supports two modes of Spring integration.
 
 #### TaskScheduler proxy
-By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, default one
+By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, a default one
 is created for you. If you have special needs, just create a bean implementing `TaskScheduler` interface and it will get wrapped 
 into AOP proxy automatically.
 
@@ -397,7 +397,7 @@ public TaskScheduler taskScheduler() {
 }
 ```
 
-Alternatively, you cen define a bean of type `ScheduledExecutorService` and it will automatically get used by the tasks 
+Alternatively, you can define a bean of type `ScheduledExecutorService` and it will automatically get used by the tasks 
 scheduling mechanism.
 
 ![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
