@@ -389,9 +389,9 @@ public LockProvider lockProvider(CosmosContainer container) {
 }
 ```
 
-*ATTENTION*: The [integration test](src/test/java/net/javacrumbs/shedlock/provider/cosmosdb/CosmosDbProviderIntegrationTest.java) is ignored (annotated with @Ignore) because you need a CosmosDB instance on Azure, or the [CosmosDB local emulator](https://docs.microsoft.com/azure/cosmos-db/local-emulator).
-The instance parameter must be set in con [config.properties](src/test/resources/config.properties).
-When you create the collection you need to create the stored procedure [checkLockAndAcquire.js](storedprocedures/checkLockAndAcquire.js).
+*ATTENTION*: The [integration test](https://github.com/jesty/ShedLock/tree/master/providers/cosmosdb/shedlock-provider-cosmosdb/src/test/java/net/javacrumbs/shedlock/provider/cosmosdb/CosmosDbProviderIntegrationTest.java) is ignored (annotated with @Ignore) because you need a CosmosDB instance on Azure, or the [CosmosDB local emulator](https://docs.microsoft.com/azure/cosmos-db/local-emulator).
+The instance parameter must be set in con [config.properties](https://github.com/jesty/ShedLock/tree/master/providers/cosmosdb/shedlock-provider-cosmosdb/src/test/resources/config.properties).
+When you create the collection you need to create the stored procedure [checkLockAndAcquire.js](https://github.com/jesty/ShedLock/tree/master/providers/cosmosdb/shedlock-provider-cosmosdb/storedprocedures/checkLockAndAcquire.js).
 
 
 ### Spring XML configuration
