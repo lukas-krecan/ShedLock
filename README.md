@@ -372,7 +372,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cosmosdb</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
