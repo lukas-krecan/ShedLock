@@ -17,8 +17,6 @@ executed repeatedly.
 
 
 + [Usage](#usage)
-  - [TaskScheduler proxy](#taskscheduler-proxy)
-  - [Scheduled method proxy](#scheduled-method-proxy)
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
@@ -28,9 +26,11 @@ executed repeatedly.
   - [Redis (using Jedis)](#redis-using-jedis)
   - [Hazelcast](#hazelcast)
   - [CosmosDB](#cosmosdb)
-+ [Spring XML configuration](#spring-xml-configuration)
 + [Running without Spring](#running-without-spring)
 + [Troubleshooting](#troubleshooting)
++ [Modes of Spring integration](#modes-of-spring-integration)
+  - [TaskScheduler proxy](#taskscheduler-proxy)
+  - [Scheduled method proxy](#scheduled-method-proxy)
 + [Versions](#versions)
 
 ## Usage
@@ -47,7 +47,7 @@ First of all we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -122,7 +122,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -148,7 +148,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -193,7 +193,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -223,7 +223,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -247,7 +247,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -276,7 +276,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -300,7 +300,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>2.5.0/version>
+    <version>3.0.0/version>
 </dependency>
 ```
 
@@ -324,7 +324,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>2.5.0/version>
+    <version>3.0.0/version>
 </dependency>
 ```
 
@@ -348,7 +348,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>2.5.0/version>
+    <version>3.0.0/version>
 </dependency>
 ```
 
@@ -395,43 +395,7 @@ When you create the collection you need to create the stored procedure [checkLoc
 
 
 ### Spring XML configuration
-
-If you are using Spring XML config, use this configuration
-
-```xml
-<!-- lock provider of your choice (jdbc/zookeeper/mongo/whatever) -->
-<bean id="lockProvider" class="net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider">
-    <constructor-arg ref="dataSource"/>
-</bean>
-
-<bean id="scheduler" class="net.javacrumbs.shedlock.spring.SpringLockableTaskSchedulerFactoryBean">
-    <constructor-arg>
-        <task:scheduler id="sch" pool-size="10"/>
-    </constructor-arg>
-    <constructor-arg ref="lockProvider"/>
-    <constructor-arg name="defaultLockAtMostFor">
-        <bean class="java.time.Duration" factory-method="ofMinutes">
-            <constructor-arg value="10"/>
-        </bean>
-    </constructor-arg>
-</bean>
-
-
-<!-- Your task(s) without change (or annotated with @Scheduled)-->
-<task:scheduled-tasks scheduler="scheduler">
-    <task:scheduled ref="task" method="run" fixed-delay="1" fixed-rate="1"/>
-</task:scheduled-tasks>
-```
-
-Annotate scheduler method(s)
-
-
-```java
-@SchedulerLock(name = "taskName")
-public void run() {
-
-}
-```
+Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
 ### Running without Spring
 It is possible to use ShedLock without Spring
@@ -446,11 +410,12 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 ```
 
+
 ## Modes of Spring integration
 ShedLock supports two modes of Spring integration.
 
 #### TaskScheduler proxy
-By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, default one
+By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, a default one
 is created for you. If you have special needs, just create a bean implementing `TaskScheduler` interface and it will get wrapped 
 into AOP proxy automatically.
 
@@ -461,6 +426,9 @@ public TaskScheduler taskScheduler() {
 }
 ```
 
+Alternatively, you can define a bean of type `ScheduledExecutorService` and it will automatically get used by the tasks
+scheduling mechanism.
+
 ![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
 
 
@@ -468,7 +436,7 @@ public TaskScheduler taskScheduler() {
 If you have even more special needs, you can use Scheduled Method proxy like this
 
 ```java
-@EnableSchedulerLock(mode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
+@EnableSchedulerLock(interceptMode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
 ```
 
 If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every method with `@SchedulerLock` annotation. 
@@ -506,6 +474,16 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 3.0.0
+* `EnableSchedulerLock.mode` renamed to `interceptMode`
+* Use standard Spring AOP configuration to honor Spring Boot config (supports `proxyTargetClass` flag)
+* Removed deprecated SpringLockableTaskSchedulerFactoryBean and related classes
+* Removed support for XML configuration
+
+## 2.6.0
+* Updated dependency to Spring 2.1.9
+* Support for lock extensions (beta)
+
 ## 2.5.0
 * Zookeeper supports *lockAtMostFor* and *lockAtLeastFor* params
 * Better debug logging

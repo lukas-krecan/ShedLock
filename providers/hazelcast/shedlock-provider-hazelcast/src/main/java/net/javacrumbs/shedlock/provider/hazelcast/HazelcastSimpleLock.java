@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,24 @@
  */
 package net.javacrumbs.shedlock.provider.hazelcast;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
 /**
  * Implementation of {@link SimpleLock} for unlock {@link HazelcastLock}.
  */
-class HazelcastSimpleLock implements SimpleLock {
-
-    private final String lockName;
-
+class HazelcastSimpleLock extends AbstractSimpleLock {
     private final HazelcastLockProvider lockProvider;
 
-    HazelcastSimpleLock(final HazelcastLockProvider lockProvider, final String lockName) {
+    HazelcastSimpleLock(HazelcastLockProvider lockProvider, LockConfiguration lockConfiguration) {
+        super(lockConfiguration);
         this.lockProvider = lockProvider;
-        this.lockName = lockName;
     }
 
 
     @Override
-    public void unlock() {
-        lockProvider.unlock(lockName);
+    public void doUnlock() {
+        lockProvider.unlock(lockConfiguration);
     }
 }

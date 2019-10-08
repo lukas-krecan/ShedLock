@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.redis.spring;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -79,20 +80,19 @@ public class RedisLockProvider implements LockProvider {
         return Duration.between(Instant.now(), until).toMillis();
     }
 
-    private static final class RedisLock implements SimpleLock {
+    private static final class RedisLock extends AbstractSimpleLock {
 
         private final String key;
         private final ShedlockRedisTemplate redisTemplate;
-        private final LockConfiguration lockConfiguration;
 
         private RedisLock(String key, ShedlockRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
+            super(lockConfiguration);
             this.key = key;
             this.redisTemplate = redisTemplate;
-            this.lockConfiguration = lockConfiguration;
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             Expiration keepLockFor = getExpiration(lockConfiguration.getLockAtLeastUntil());
             // lock at least until is in the past
             if (keepLockFor.getExpirationTimeInMilliseconds() <= 0) {

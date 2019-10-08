@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,28 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             return updatedRows > 0;
         } catch (SQLException e) {
             handleUpdateException(sql, e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean extend(LockConfiguration lockConfiguration) {
+        String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
+
+        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+
+        try (
+            Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            connection.setAutoCommit(true); // just to be sure, should be set by default
+            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
+            statement.setString(2, lockConfiguration.getName());
+            statement.setString(3, getHostname());
+            statement.setTimestamp(4, Timestamp.from(Instant.now()));
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            handleUnlockException(sql, e);
             return false;
         }
     }

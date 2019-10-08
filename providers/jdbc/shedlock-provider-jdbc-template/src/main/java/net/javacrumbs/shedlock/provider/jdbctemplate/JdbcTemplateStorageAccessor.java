@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,12 +96,28 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         });
     }
 
+    @Override
+    public boolean extend(LockConfiguration lockConfiguration) {
+        String sql = "UPDATE " + tableName
+            + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
 
-    private void setTimestamp(PreparedStatement preparedStatement, int patameterIndex, Instant time) throws SQLException {
+        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        return transactionTemplate.execute(status -> {
+            int updatedRows = jdbcTemplate.update(sql, statement -> {
+                setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
+                statement.setString(2, lockConfiguration.getName());
+                statement.setString(3, getHostname());
+                setTimestamp(statement, 4, Instant.now());
+            });
+            return updatedRows > 0;
+        });
+    }
+
+    private void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, Instant time) throws SQLException {
         if (timeZone == null) {
-            preparedStatement.setTimestamp(patameterIndex, Timestamp.from(time));
+            preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time));
         } else {
-            preparedStatement.setTimestamp(patameterIndex, Timestamp.from(time), Calendar.getInstance(timeZone));
+            preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time), Calendar.getInstance(timeZone));
         }
     }
 

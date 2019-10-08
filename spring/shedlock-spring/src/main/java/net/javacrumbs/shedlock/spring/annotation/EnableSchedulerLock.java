@@ -1,5 +1,22 @@
+/**
+ * Copyright 2009-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.javacrumbs.shedlock.spring.annotation;
 
+import net.javacrumbs.shedlock.spring.aop.SchedulerLockConfigurationSelector;
+import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -26,7 +43,12 @@ public @interface EnableSchedulerLock {
     }
 
 
-    InterceptMode mode() default InterceptMode.PROXY_SCHEDULER;
+    /**
+     * Mode of integration, either TaskScheduler is wrapped in a proxy or the scheduled method is proxied to ensure locking
+     *
+     * @see <a href="https://github.com/lukas-krecan/ShedLock#modes-of-spring-integration">Modes of Spring integration</a>
+     */
+    InterceptMode interceptMode() default InterceptMode.PROXY_SCHEDULER;
 
 
     /**
@@ -48,4 +70,19 @@ public @interface EnableSchedulerLock {
      * lock will be kept at least for given period of time. Can be overridden in each ScheduledLock annotation.
      */
     String defaultLockAtLeastFor() default "PT0S";
+
+
+    /**
+     * Since 3.0.0 use {@link #interceptMode()} to configure the intercept mode. Had to be renamed to make it compatible
+     * with Spring AOP infrastructure. Sorry.
+     *
+     * Indicate how advice should be applied.
+     */
+    AdviceMode mode() default AdviceMode.PROXY;
+
+    /**
+     * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
+     * to standard Java interface-based proxies.
+     */
+    boolean proxyTargetClass() default false;
 }

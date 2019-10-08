@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.support;
 
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -87,18 +88,26 @@ public class StorageBasedLockProvider implements LockProvider {
         return storageAccessor.updateRecord(lockConfiguration);
     }
 
-    private static class StorageLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
+    private static class StorageLock extends AbstractSimpleLock {
         private final StorageAccessor storageAccessor;
 
         StorageLock(LockConfiguration lockConfiguration, StorageAccessor storageAccessor) {
-            this.lockConfiguration = lockConfiguration;
+            super(lockConfiguration);
             this.storageAccessor = storageAccessor;
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             storageAccessor.unlock(lockConfiguration);
+        }
+
+        @Override
+        public Optional<SimpleLock> doExtend(LockConfiguration newConfig) {
+            if (storageAccessor.extend(newConfig)) {
+                return Optional.of(new StorageLock(newConfig, storageAccessor));
+            } else {
+                return Optional.empty();
+            }
         }
     }
 

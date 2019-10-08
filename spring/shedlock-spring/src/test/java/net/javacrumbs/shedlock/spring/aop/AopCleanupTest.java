@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,49 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring;
+package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.junit.Test;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.TaskScheduler;
-
-import java.time.Duration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-public class CleanupTest {
+public class AopCleanupTest {
     @Test
-    public void shouldCloseTaskExecutor() throws Exception {
+    public void shouldCloseTaskExecutor() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
         context.start();
-        LockableTaskScheduler taskScheduler = context.getBean(LockableTaskScheduler.class);
-        assertThat(taskScheduler).isNotNull();
         context.close();
-
-
-        verify(Config.taskScheduler).destroy();
+        assertThat(context.isActive()).isFalse();
     }
 
-    @Configuration
-    static class Config {
-        interface DisposableTaskScheduler extends TaskScheduler, DisposableBean {};
 
+    @Configuration
+    @EnableScheduling
+    @EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
+    static class Config {
         private static LockProvider lockProvider = mock(LockProvider.class);
-        private static DisposableTaskScheduler taskScheduler = mock(DisposableTaskScheduler.class);
 
         @Bean
-        public ScheduledLockConfiguration shedlockConfig() {
-            return ScheduledLockConfigurationBuilder
-                .withLockProvider(lockProvider)
-                .withTaskScheduler(taskScheduler)
-                .withDefaultLockAtMostFor(Duration.ofMinutes(10))
-                .build();
+        public LockProvider lockProvider() {
+            return lockProvider;
+        }
+
+        @Scheduled(fixedRate = 10_000)
+        @SchedulerLock(name = "task")
+        public void task() {
+
         }
     }
 }

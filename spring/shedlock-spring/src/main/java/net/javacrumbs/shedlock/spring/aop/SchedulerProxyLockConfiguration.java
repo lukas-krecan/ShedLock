@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor;
-import org.springframework.aop.support.AbstractPointcutAdvisor;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Role;
 
-public class SchedulerProxyScheduledLockAopBeanPostProcessor extends AbstractProxyScheduledLockAopBeanPostProcessor {
-    public SchedulerProxyScheduledLockAopBeanPostProcessor(String defaultLockAtMostFor, String defaultLockAtLeastFor, LockProvider lockProvider) {
-        super(defaultLockAtMostFor, defaultLockAtLeastFor, lockProvider);
-    }
-
-    @Override
-    protected AbstractPointcutAdvisor getAdvisor(LockProvider lockProvider) {
+@Configuration
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+class SchedulerProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
+    @Bean
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    SchedulerProxyScheduledLockAdvisor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
         SpringLockConfigurationExtractor lockConfigurationExtractor = new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver());
         return new SchedulerProxyScheduledLockAdvisor(new DefaultLockManager(lockProvider, lockConfigurationExtractor));
     }

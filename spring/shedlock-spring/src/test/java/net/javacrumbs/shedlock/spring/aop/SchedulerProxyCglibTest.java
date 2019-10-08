@@ -17,38 +17,62 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.concurrent.Executors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 
-/**
- * Test creation of default task scheduler
- */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SchedulerProxyDefaultSchedulerTest.SchedulerWrapperConfig.class)
-public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTest {
+@ContextConfiguration(classes = SchedulerProxyCglibTest.SchedulerWrapperConfig.class)
+public class SchedulerProxyCglibTest extends AbstractSchedulerProxyTest {
+
+    @Test
+    public void shouldNotCreateDefaultScheduler() {
+        assertThat(taskScheduler).isInstanceOf(MyTaskScheduler.class);
+    }
 
     @Override
     protected void assertRightSchedulerUsed() {
-
+        assertThat(Thread.currentThread().getName()).startsWith("my-thread");
     }
 
     @Configuration
     @EnableScheduling
-    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
+    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}", proxyTargetClass = true)
     @PropertySource("test.properties")
     static class SchedulerWrapperConfig {
 
         @Bean
         public LockProvider lockProvider() {
             return mock(LockProvider.class);
+        }
+
+
+        @Bean
+        public TaskScheduler taskScheduler() {
+            return new MyTaskScheduler();
+        }
+    }
+
+    interface MyInterface {
+    }
+
+    private static class MyTaskScheduler extends ConcurrentTaskScheduler implements MyInterface {
+        MyTaskScheduler() {
+            super(Executors.newScheduledThreadPool(10, new CustomizableThreadFactory("my-thread")));
         }
     }
 }

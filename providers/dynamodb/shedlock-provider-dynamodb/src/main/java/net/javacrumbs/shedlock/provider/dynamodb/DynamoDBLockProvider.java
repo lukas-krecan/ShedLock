@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -124,15 +125,13 @@ public class DynamoDBLockProvider implements LockProvider {
         return Instant.now();
     }
 
-    private final class DynamoDBLock implements SimpleLock {
-        private final LockConfiguration lockConfiguration;
-
+    private final class DynamoDBLock extends AbstractSimpleLock {
         private DynamoDBLock(LockConfiguration lockConfiguration) {
-            this.lockConfiguration = lockConfiguration;
+            super(lockConfiguration);
         }
 
         @Override
-        public void unlock() {
+        public void doUnlock() {
             // Set lockUntil to now or lockAtLeastUntil whichever is later
             String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
             UpdateItemSpec request = new UpdateItemSpec()

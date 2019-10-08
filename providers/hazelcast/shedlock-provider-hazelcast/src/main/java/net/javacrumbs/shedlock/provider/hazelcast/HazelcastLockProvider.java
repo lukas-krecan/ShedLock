@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class HazelcastLockProvider implements LockProvider {
             // just one thread at a time, in the cluster, can run this code
             // each thread waits until the lock to be unlock
             if (tryLock(lockConfiguration, now)) {
-                return Optional.of(new HazelcastSimpleLock(this, lockName));
+                return Optional.of(new HazelcastSimpleLock(this, lockConfiguration));
             }
         } finally {
             // released the map lock for the others threads
@@ -182,9 +182,10 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Unlock the lock with its name.
      *
-     * @param lockName the name of the lock to unlock.
+     * @param lockConfiguration the name of the lock to unlock.
      */
-    /* package */ void unlock(final String lockName) {
+    /* package */ void unlock(LockConfiguration lockConfiguration) {
+        String lockName = lockConfiguration.getName();
         log.trace("unlock - attempt : {}", lockName);
         final Instant now = Instant.now();
         final IMap<String, HazelcastLock> store = getStore();
