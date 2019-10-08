@@ -6,7 +6,7 @@ ShedLock does one and only one thing. It makes sure your scheduled tasks are exe
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
  
-ShedLock uses external store like Mongo, JDBC database, Redis, Hazelcast, ZooKeeper or others for coordination.
+ShedLock uses external store like Mongo, JDBC database, Redis, Hazelcast, ZooKeeper, CosmosDB or others for coordination.
 
 Feedback and pull-requests welcome!
 
@@ -27,6 +27,7 @@ executed repeatedly.
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
   - [Hazelcast](#hazelcast)
+  - [CosmosDB](#cosmosdb)
 + [Spring XML configuration](#spring-xml-configuration)
 + [Running without Spring](#running-without-spring)
 + [Troubleshooting](#troubleshooting)
@@ -364,6 +365,33 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
 }
 ```
 
+#### CosmosDB
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-cosmosdb</artifactId>
+    <version>2.5.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.cosmosdb.CosmosDBLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(CosmosContainer container) {
+    return new MongoLockProvider(container, "lockGroup"); //lockGroup is the partition key
+}
+
+*ATTENTION*: The [integration test](src/test/java/net/javacrumbs/shedlock/provider/cosmosdb/CosmosDbProviderIntegrationTest.java) is ignored (annotated with @Ignore) because you need a CosmosDB instance on Azure, or the [CosmosDB local emulator](https://docs.microsoft.com/azure/cosmos-db/local-emulator).
+The instance parameter must be set in con [config.properties](src/test/resources/config.properties).
+When you create the collection you need to create the stored procedure [checkLockAndAcquire.js](storedprocedures/checkLockAndAcquire.js).
+```
 
 ### Spring XML configuration
 
