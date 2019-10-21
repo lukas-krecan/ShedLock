@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Objects;
 
-public class CosmosDBLock implements SimpleLock {
+class CosmosDBLock implements SimpleLock {
     private final CosmosContainer container;
     private final LockConfiguration lockConfiguration;
     private final String lockGroup;

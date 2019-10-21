@@ -46,7 +46,7 @@ import java.util.Optional;
  * has been inserted, returns lock.
  * </li>
  * <li>
- * We will invoke a stored procedure (checkLockAndAcquire.js) to check if the locke exists and update table.
+ * We will invoke a stored procedure (checkLockAndAcquire.js) to check if the lock exists and update table.
  * </li>
  * <li>
  * If the stored procedure returns false, it means that there isn't a lock, so, we have the lock. Otherwise somebody else holds the lock
@@ -60,7 +60,7 @@ public class CosmosDBProvider implements LockProvider {
 
     public static final String ACQUIRE_LOCK_STORED_PROCEDURE = "acquireLock";
     private final CosmosContainer container;
-    private String lockGroup;
+    private final String lockGroup;
     private final String hostname;
 
     public CosmosDBProvider(CosmosContainer container, String lockGroup) {
