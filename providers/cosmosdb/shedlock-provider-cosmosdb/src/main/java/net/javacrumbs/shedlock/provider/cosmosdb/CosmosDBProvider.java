@@ -88,7 +88,7 @@ public class CosmosDBProvider implements LockProvider {
         }
     }
 
-    protected Object[] getProcedureParams(LockConfiguration lockConfiguration, long now) {
+    private Object[] getProcedureParams(LockConfiguration lockConfiguration, long now) {
         return new Object[]{lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil().toEpochMilli(), now, hostname, lockGroup};
     }
 

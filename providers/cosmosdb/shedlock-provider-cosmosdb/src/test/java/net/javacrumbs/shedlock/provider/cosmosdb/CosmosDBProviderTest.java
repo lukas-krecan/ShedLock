@@ -15,20 +15,29 @@
  */
 package net.javacrumbs.shedlock.provider.cosmosdb;
 
-import com.azure.data.cosmos.*;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.Utils;
-import org.junit.Before;
-import org.junit.Test;
-import reactor.core.publisher.Mono;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.azure.data.cosmos.CosmosContainer;
+import com.azure.data.cosmos.CosmosScripts;
+import com.azure.data.cosmos.CosmosStoredProcedure;
+import com.azure.data.cosmos.CosmosStoredProcedureRequestOptions;
+import com.azure.data.cosmos.CosmosStoredProcedureResponse;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.Utils;
+import reactor.core.publisher.Mono;
 
 public class CosmosDBProviderTest {
 
@@ -69,7 +78,7 @@ public class CosmosDBProviderTest {
     @Test
     public void getProcedureParamsTest() {
         CosmosDBProvider cosmosDBProvider = new CosmosDBProvider(container, LOCK_GROUP);
-        Object[] procedureParams = cosmosDBProvider.getProcedureParams(this.lockConfiguration, 0);
+        Object[] procedureParams = getProcedureParams(this.lockConfiguration, 0);
         assertThat(procedureParams).isEqualTo(new Object[]{"name", 1570543520L, 0L, Utils.getHostname(), LOCK_GROUP});
     }
 
@@ -85,6 +94,10 @@ public class CosmosDBProviderTest {
         when(lockConfiguration.getLockAtMostUntil()).thenReturn(Instant.ofEpochMilli(1570543520));
         when(container.getScripts()).thenReturn(cosmosScripts);
         when(cosmosScripts.getStoredProcedure(CosmosDBProvider.ACQUIRE_LOCK_STORED_PROCEDURE)).thenReturn(cosmosStoredProcedure);
+    }
+
+    private Object[] getProcedureParams(LockConfiguration lockConfiguration, long now) {
+        return new Object[]{lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil().toEpochMilli(), now, Utils.getHostname(), LOCK_GROUP};
     }
 
 }
