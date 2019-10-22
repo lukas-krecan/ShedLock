@@ -1,3 +1,5 @@
+dist: trusty
+
 services:
 - docker
 
@@ -15,7 +17,7 @@ after_success:
 
 cache:
   directories:
-  - $HOME/.embedmongo
-  - $HOME/.embedmysql
-  - $HOME/.embedpostgresql
-  - $HOME/.m2
+    - $HOME/.embedmongo
+    - $HOME/.embedmysql
+    - $HOME/.embedpostgresql
+    - $HOME/.m2
