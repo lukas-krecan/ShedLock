@@ -25,6 +25,9 @@ executed repeatedly.
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
   - [Hazelcast](#hazelcast)
+  - [Couchbase](#couchbase)
+  - [ElasticSearch](#elasticsearch)
+  - [CosmoDB](#cosmodb)
 + [Running without Spring](#running-without-spring)
 + [Troubleshooting](#troubleshooting)
 + [Modes of Spring integration](#modes-of-spring-integration)
@@ -363,6 +366,9 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
     return new ElasticsearchLockProvider(highLevelClient);
 }
 ```
+
+#### CosmoDB
+CosmoDB support is provided by a third-party module available [here](https://github.com/jesty/shedlock-provider-cosmosdb)
 
 
 ### Spring XML configuration
