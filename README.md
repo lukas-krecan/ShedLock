@@ -27,7 +27,7 @@ executed repeatedly.
   - [Hazelcast](#hazelcast)
   - [Couchbase](#couchbase)
   - [ElasticSearch](#elasticsearch)
-  - [CosmoDB](#cosmodb)
+  - [CosmosDB](#cosmosdb)
 + [Running without Spring](#running-without-spring)
 + [Troubleshooting](#troubleshooting)
 + [Modes of Spring integration](#modes-of-spring-integration)
@@ -367,8 +367,8 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
 }
 ```
 
-#### CosmoDB
-CosmoDB support is provided by a third-party module available [here](https://github.com/jesty/shedlock-provider-cosmosdb)
+#### CosmosDB
+CosmosDB support is provided by a third-party module available [here](https://github.com/jesty/shedlock-provider-cosmosdb)
 
 
 ### Spring XML configuration
