@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -45,7 +46,7 @@ public class RedisLockProvider implements LockProvider {
     private final ShedlockRedisTemplate redisTemplate;
     private final String environment;
 
-    public RedisLockProvider(RedisConnectionFactory redisConn) {
+    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
@@ -56,13 +57,14 @@ public class RedisLockProvider implements LockProvider {
      * @param environment environment is part of the key and thus makes sure there is not key conflict between
      *                    multiple ShedLock instances running on the same Redis
      */
-    public RedisLockProvider(RedisConnectionFactory redisConn, String environment) {
+    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment) {
         this.redisTemplate = new ShedlockRedisTemplate(redisConn);
         this.environment = environment;
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName(), this.environment);
         Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
         if (redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT)) {

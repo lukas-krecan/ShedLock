@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbc;
 
 import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -24,7 +25,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 
 class JdbcStorageAccessor extends AbstractJdbcStorageAccessor {
 
-    JdbcStorageAccessor(DataSource dataSource, String tableName) {
+    JdbcStorageAccessor(@NotNull DataSource dataSource, @NotNull String tableName) {
         super(dataSource, tableName);
     }
 

@@ -15,9 +15,11 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Executes task if not locked.
  */
 public interface LockManager {
-    void executeWithLock(Runnable task);
+    void executeWithLock(@NotNull Runnable task);
 }

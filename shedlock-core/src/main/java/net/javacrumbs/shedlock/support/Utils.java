@@ -15,6 +15,8 @@
  */
 package net.javacrumbs.shedlock.support;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Instant;
@@ -66,11 +68,12 @@ public final class Utils {
         return hostname;
     }
 
-    public static String toIsoString(Instant instant) {
+    public static String toIsoString(@NotNull Instant instant) {
         OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
         return formatter.format(utc);
     }
 
+    @NotNull
     private static String initHostname() {
         try {
             return InetAddress.getLocalHost().getHostName();

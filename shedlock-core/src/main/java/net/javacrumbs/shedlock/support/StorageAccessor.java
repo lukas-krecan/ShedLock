@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.support;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 public interface StorageAccessor {
     /**
@@ -24,7 +25,7 @@ public interface StorageAccessor {
      * @param lockConfiguration LockConfiguration
      * @return true if inserted
      */
-    boolean insertRecord(LockConfiguration lockConfiguration);
+    boolean insertRecord(@NotNull LockConfiguration lockConfiguration);
 
     /**
      * Tries to update the lock record. If there is already a valid lock record (the lock is held by someone else)
@@ -33,11 +34,11 @@ public interface StorageAccessor {
      * @param lockConfiguration LockConfiguration
      * @return true if updated
      */
-    boolean updateRecord(LockConfiguration lockConfiguration);
+    boolean updateRecord(@NotNull LockConfiguration lockConfiguration);
 
-    void unlock(LockConfiguration lockConfiguration);
+    void unlock(@NotNull LockConfiguration lockConfiguration);
 
-    default boolean extend(LockConfiguration lockConfiguration) {
+    default boolean extend(@NotNull LockConfiguration lockConfiguration) {
         throw new UnsupportedOperationException();
     }
 }

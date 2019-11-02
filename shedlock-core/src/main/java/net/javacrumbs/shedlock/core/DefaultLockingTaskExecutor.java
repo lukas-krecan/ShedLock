@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,14 +29,15 @@ import static java.util.Objects.requireNonNull;
  */
 public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultLockingTaskExecutor.class);
+    @NotNull
     private final LockProvider lockProvider;
 
-    public DefaultLockingTaskExecutor(LockProvider lockProvider) {
+    public DefaultLockingTaskExecutor(@NotNull LockProvider lockProvider) {
         this.lockProvider = requireNonNull(lockProvider);
     }
 
     @Override
-    public void executeWithLock(Runnable task, LockConfiguration lockConfig) {
+    public void executeWithLock(@NotNull Runnable task, @NotNull LockConfiguration lockConfig) {
         try {
             executeWithLock((Task) task::run, lockConfig);
         } catch (RuntimeException | Error e) {
@@ -47,7 +49,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     }
 
     @Override
-    public void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable{
+    public void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         if (lock.isPresent()) {
             try {

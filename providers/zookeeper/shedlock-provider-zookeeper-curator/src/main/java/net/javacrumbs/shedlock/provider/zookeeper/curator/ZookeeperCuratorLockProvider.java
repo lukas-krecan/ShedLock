@@ -25,6 +25,7 @@ import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,17 +47,18 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperCuratorLockProvider.class);
 
-    public ZookeeperCuratorLockProvider(CuratorFramework client) {
+    public ZookeeperCuratorLockProvider(@NotNull CuratorFramework client) {
         this(client, DEFAULT_PATH);
     }
 
-    public ZookeeperCuratorLockProvider(CuratorFramework client, String path) {
+    public ZookeeperCuratorLockProvider(@NotNull CuratorFramework client, @NotNull String path) {
         this.client = requireNonNull(client);
         this.path = PathUtils.validatePath(path);
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         String nodePath = getNodePath(lockConfiguration.getName());
 
         try {

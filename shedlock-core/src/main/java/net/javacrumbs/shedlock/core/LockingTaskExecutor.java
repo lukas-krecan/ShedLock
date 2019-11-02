@@ -15,13 +15,15 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface LockingTaskExecutor {
     /**
      * Executes task if it's not already running.
      */
-    void executeWithLock(Runnable task, LockConfiguration lockConfig);
+    void executeWithLock(@NotNull Runnable task, @NotNull LockConfiguration lockConfig);
 
-    void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable;
+    void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable;
 
     @FunctionalInterface
     interface Task {

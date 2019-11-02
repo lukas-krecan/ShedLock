@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.jdbc;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 
@@ -42,10 +43,11 @@ import javax.sql.DataSource;
  * </ol>
  */
 public class JdbcLockProvider extends StorageBasedLockProvider {
-    public JdbcLockProvider(DataSource datasource) {
+    public JdbcLockProvider(@NotNull DataSource datasource) {
         this(datasource, "shedlock");
     }
-    public JdbcLockProvider(DataSource datasource, String tableName) {
+
+    public JdbcLockProvider(@NotNull DataSource datasource, @NotNull String tableName) {
         super(new JdbcStorageAccessor(datasource, tableName));
     }
 }

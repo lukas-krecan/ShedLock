@@ -23,6 +23,7 @@ import com.couchbase.client.java.error.DocumentAlreadyExistsException;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 
@@ -84,7 +85,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean insertRecord(LockConfiguration lockConfiguration) {
+        public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
             try {
 
                 JsonObject content = JsonObject.empty();
@@ -108,7 +109,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean updateRecord(LockConfiguration lockConfiguration) {
+        public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
                 Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
@@ -131,7 +132,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean extend(LockConfiguration lockConfiguration) {
+        public boolean extend(@NotNull LockConfiguration lockConfiguration) {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
                 Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
@@ -151,7 +152,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public void unlock(LockConfiguration lockConfiguration) {
+        public void unlock(@NotNull LockConfiguration lockConfiguration) {
             JsonDocument document = bucket.get(lockConfiguration.getName());
             document.content().put(LOCK_UNTIL, toIsoString(lockConfiguration.getUnlockTime()));
             bucket.replace(document);

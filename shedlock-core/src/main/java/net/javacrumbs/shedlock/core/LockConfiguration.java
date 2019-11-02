@@ -15,6 +15,8 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -34,11 +36,11 @@ public class LockConfiguration {
      */
     private final Instant lockAtLeastUntil;
 
-    public LockConfiguration(String name, Instant lockAtMostUntil) {
+    public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil) {
         this(name, lockAtMostUntil, Instant.now());
     }
 
-    public LockConfiguration(String name, Instant lockAtMostUntil, Instant lockAtLeastUntil) {
+    public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
         this.name = Objects.requireNonNull(name);
         this.lockAtMostUntil = Objects.requireNonNull(lockAtMostUntil);
         this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);

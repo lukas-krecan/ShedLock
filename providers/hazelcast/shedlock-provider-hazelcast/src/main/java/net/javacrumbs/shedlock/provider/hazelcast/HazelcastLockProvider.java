@@ -20,6 +20,7 @@ import com.hazelcast.core.IMap;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +71,7 @@ public class HazelcastLockProvider implements LockProvider {
      *
      * @param hazelcastInstance The Hazelcast engine used by the application.
      */
-    public HazelcastLockProvider(HazelcastInstance hazelcastInstance) {
+    public HazelcastLockProvider(@NotNull HazelcastInstance hazelcastInstance) {
         this(hazelcastInstance, LOCK_STORE_KEY_DEFAULT);
     }
 
@@ -80,7 +81,7 @@ public class HazelcastLockProvider implements LockProvider {
      * @param hazelcastInstance The Hazelcast engine used by the application
      * @param lockStoreKey      The key where the locks store is associate {@link #hazelcastInstance} (by default {@link #LOCK_STORE_KEY_DEFAULT}).
      */
-    public HazelcastLockProvider(HazelcastInstance hazelcastInstance, String lockStoreKey) {
+    public HazelcastLockProvider(@NotNull HazelcastInstance hazelcastInstance, @NotNull String lockStoreKey) {
         this(hazelcastInstance, lockStoreKey, DEFAULT_LOCK_LEASE_TIME);
     }
 
@@ -93,14 +94,15 @@ public class HazelcastLockProvider implements LockProvider {
      *                          This lock should be released quite fast but if the process dies while holding the lock, it is held forever.
      *                          lockLeaseTime is used as a safety-net for such situations.
      */
-    public HazelcastLockProvider(HazelcastInstance hazelcastInstance, String lockStoreKey, Duration lockLeaseTime) {
+    public HazelcastLockProvider(@NotNull HazelcastInstance hazelcastInstance, @NotNull String lockStoreKey, @NotNull Duration lockLeaseTime) {
         this.hazelcastInstance = hazelcastInstance;
         this.lockStoreKey = lockStoreKey;
         this.lockLeaseTimeMs = lockLeaseTime.toMillis();
     }
 
     @Override
-    public Optional<SimpleLock> lock(final LockConfiguration lockConfiguration) {
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         log.trace("lock - Attempt : {}", lockConfiguration);
         final Instant now = Instant.now();
         final String lockName = lockConfiguration.getName();

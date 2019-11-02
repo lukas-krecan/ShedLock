@@ -15,6 +15,8 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.Instant;
 import java.util.Optional;
 
@@ -37,7 +39,8 @@ public interface SimpleLock {
      * @throws IllegalStateException         if the lock has already been unlocked or extended
      * @throws UnsupportedOperationException if the lock extension is not supported by LockProvider.
      */
-    default Optional<SimpleLock> extend(Instant lockAtMostUntil, Instant lockAtLeastUntil) {
+    @NotNull
+    default Optional<SimpleLock> extend(@NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
         throw new UnsupportedOperationException();
     }
 }

@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,17 +33,17 @@ public class DefaultLockManager implements LockManager {
     private final LockingTaskExecutor lockingTaskExecutor;
     private final LockConfigurationExtractor lockConfigurationExtractor;
 
-    public DefaultLockManager(LockProvider lockProvider, LockConfigurationExtractor lockConfigurationExtractor) {
+    public DefaultLockManager(@NotNull LockProvider lockProvider, @NotNull LockConfigurationExtractor lockConfigurationExtractor) {
         this(new DefaultLockingTaskExecutor(lockProvider), lockConfigurationExtractor);
     }
 
-    public DefaultLockManager(LockingTaskExecutor lockingTaskExecutor, LockConfigurationExtractor lockConfigurationExtractor) {
+    public DefaultLockManager(@NotNull LockingTaskExecutor lockingTaskExecutor, @NotNull LockConfigurationExtractor lockConfigurationExtractor) {
         this.lockingTaskExecutor = requireNonNull(lockingTaskExecutor);
         this.lockConfigurationExtractor = requireNonNull(lockConfigurationExtractor);
     }
 
     @Override
-    public void executeWithLock(Runnable task) {
+    public void executeWithLock(@NotNull Runnable task) {
         Optional<LockConfiguration> lockConfigOptional = lockConfigurationExtractor.getLockConfiguration(task);
         if (!lockConfigOptional.isPresent()) {
             logger.debug("No lock configuration for {}. Executing without lock.", task);

@@ -30,6 +30,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -101,23 +102,24 @@ public class ElasticsearchLockProvider implements LockProvider {
     private final String index;
     private final String type;
 
-    private ElasticsearchLockProvider(RestHighLevelClient highLevelClient, String index, String type) {
+    private ElasticsearchLockProvider(@NotNull RestHighLevelClient highLevelClient, @NotNull String index, @NotNull String type) {
         this.highLevelClient = highLevelClient;
         this.hostname = getHostname();
         this.index = index;
         this.type = type;
     }
 
-    public ElasticsearchLockProvider(RestHighLevelClient highLevelClient, String documentType) {
+    public ElasticsearchLockProvider(@NotNull RestHighLevelClient highLevelClient, @NotNull String documentType) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
     }
 
-    public ElasticsearchLockProvider(RestHighLevelClient highLevelClient) {
+    public ElasticsearchLockProvider(@NotNull RestHighLevelClient highLevelClient) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         try {
             Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
                 lockConfiguration.getLockAtMostUntil(),

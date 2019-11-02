@@ -26,6 +26,7 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.Optional;
@@ -83,7 +84,7 @@ public class MongoLockProvider implements LockProvider {
      * @param mongo        Mongo to be used
      * @param databaseName database to be used
      */
-    public MongoLockProvider(MongoClient mongo, String databaseName) {
+    public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName) {
         this(mongo, databaseName, "shedLock");
     }
 
@@ -94,7 +95,7 @@ public class MongoLockProvider implements LockProvider {
      * @param databaseName   database to be used
      * @param collectionName collection to store the locks
      */
-    public MongoLockProvider(MongoClient mongo, String databaseName, String collectionName) {
+    public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
         this(mongo.getDatabase(databaseName).getCollection(collectionName));
     }
 
@@ -103,14 +104,15 @@ public class MongoLockProvider implements LockProvider {
      *
      * @param collection Mongo collection to be used
      */
-    public MongoLockProvider(MongoCollection<Document> collection) {
+    public MongoLockProvider(@NotNull MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         Date now = now();
         Bson update = combine(
             set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),

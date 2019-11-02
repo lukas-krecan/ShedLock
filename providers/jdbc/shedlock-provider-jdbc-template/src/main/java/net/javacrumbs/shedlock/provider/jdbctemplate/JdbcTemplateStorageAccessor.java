@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -46,7 +47,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final TransactionTemplate transactionTemplate;
     private final TimeZone timeZone;
 
-    JdbcTemplateStorageAccessor(Configuration configuration) {
+    JdbcTemplateStorageAccessor(@NotNull Configuration configuration) {
         this.jdbcTemplate = requireNonNull(configuration.getJdbcTemplate(), "jdbcTemplate can not be null");
         this.tableName = requireNonNull(configuration.getTableName(), "tableName can not be null");
         PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null ?
@@ -59,7 +60,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean insertRecord(LockConfiguration lockConfiguration) {
+    public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
         String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)";
         return transactionTemplate.execute(status -> {
             try {
@@ -80,7 +81,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean updateRecord(LockConfiguration lockConfiguration) {
+    public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName
             + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
         return transactionTemplate.execute(status -> {
@@ -97,7 +98,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean extend(LockConfiguration lockConfiguration) {
+    public boolean extend(@NotNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName
             + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
 
@@ -122,7 +123,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public void unlock(LockConfiguration lockConfiguration) {
+    public void unlock(@NotNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ?";
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override

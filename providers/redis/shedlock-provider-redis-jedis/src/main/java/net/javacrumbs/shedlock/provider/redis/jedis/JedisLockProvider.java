@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
@@ -48,7 +49,7 @@ public class JedisLockProvider implements LockProvider {
     private final Pool<Jedis> jedisPool;
     private final String environment;
 
-    public JedisLockProvider(Pool<Jedis> jedisPool) {
+    public JedisLockProvider(@NotNull Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
     }
 
@@ -58,13 +59,14 @@ public class JedisLockProvider implements LockProvider {
       * @param environment environment is part of the key and thus makes sure there is not key conflict between
       *        multiple ShedLock instances running on the same Redis
       */
-    public JedisLockProvider(Pool<Jedis> jedisPool, String environment) {
+    public JedisLockProvider(@NotNull Pool<Jedis> jedisPool, @NotNull String environment) {
         this.jedisPool = jedisPool;
         this.environment = environment;
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NotNull
+    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), this.environment);
