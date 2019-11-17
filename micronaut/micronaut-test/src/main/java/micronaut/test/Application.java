@@ -2,7 +2,7 @@ package micronaut.test;
 
 import io.micronaut.runtime.Micronaut;
 import io.micronaut.scheduling.annotation.Scheduled;
-import net.javacrumbs.shedlock.micronaut.annotation.SchedulerLock;
+import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 
 public class Application {
 

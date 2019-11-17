@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.micronaut.annotation;
+package net.javacrumbs.shedlock.micronaut;
 
 
 import io.micronaut.aop.Around;

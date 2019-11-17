@@ -19,7 +19,7 @@ import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.ExecutableMethod;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.micronaut.annotation.SchedulerLock;
+import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
