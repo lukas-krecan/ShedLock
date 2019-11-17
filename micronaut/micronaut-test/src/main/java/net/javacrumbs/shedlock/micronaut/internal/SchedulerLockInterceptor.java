@@ -13,36 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.micronaut;
+package net.javacrumbs.shedlock.micronaut.internal;
 
 import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
-import net.javacrumbs.shedlock.core.DefaultLockManager;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
-import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
 import javax.inject.Singleton;
-import java.time.Instant;
+import java.time.Duration;
 import java.util.Optional;
 
 @Singleton
-public class SchedulerLockInterceptor implements MethodInterceptor<Object, Object> {
-    private final LockManager lockManager;
+public
+class SchedulerLockInterceptor implements MethodInterceptor<Object, Object> {
+    private final LockingTaskExecutor lockingTaskExecutor;
+    private final MicronautLockConfigurationExtractor micronautLockConfigurationExtractor;
 
     public SchedulerLockInterceptor(LockProvider lockProvider) {
-        lockManager = new DefaultLockManager(lockProvider, new LockConfigurationExtractor() {
-            @Override
-            public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
-                return Optional.of(new LockConfiguration("test", Instant.now().plusSeconds(10)));
-            }
-        });
+        lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
+        micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(Duration.ofSeconds(100), Duration.ofSeconds(10)); //FIXME
     }
 
     @Override
     public Object intercept(MethodInvocationContext<Object, Object> context) {
-        lockManager.executeWithLock(context::proceed);
-        return null;
+        Optional<LockConfiguration> lockConfiguration = micronautLockConfigurationExtractor.getLockConfiguration(context.getExecutableMethod());
+        if (lockConfiguration.isPresent()) {
+            lockingTaskExecutor.executeWithLock((Runnable) context::proceed, lockConfiguration.get());
+            return null;
+        } else {
+            return context.proceed();
+        }
     }
 }
