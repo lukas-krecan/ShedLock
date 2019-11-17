@@ -21,8 +21,6 @@ import io.micronaut.inject.ExecutableMethod;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -37,7 +35,6 @@ import static java.util.Objects.requireNonNull;
 class MicronautLockConfigurationExtractor {
     private final TemporalAmount defaultLockAtMostFor;
     private final TemporalAmount defaultLockAtLeastFor;
-    private final Logger logger = LoggerFactory.getLogger(MicronautLockConfigurationExtractor.class);
 
     MicronautLockConfigurationExtractor(@NotNull TemporalAmount defaultLockAtMostFor, @NotNull TemporalAmount defaultLockAtLeastFor) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
@@ -47,15 +44,11 @@ class MicronautLockConfigurationExtractor {
 
     @NotNull
     Optional<LockConfiguration> getLockConfiguration(@NotNull ExecutableMethod<Object, Object> method) {
-        AnnotationData annotation = findAnnotation(method);
-        if (shouldLock(annotation)) {
-            return Optional.of(getLockConfiguration(annotation));
-        } else {
-            return Optional.empty();
-        }
+        Optional<AnnotationValue<SchedulerLock>> annotation = findAnnotation(method);
+        return annotation.map(this::getLockConfiguration);
     }
 
-    private LockConfiguration getLockConfiguration(AnnotationData annotation) {
+    private LockConfiguration getLockConfiguration(AnnotationValue<SchedulerLock> annotation) {
         Instant now = now();
         return new LockConfiguration(
             getName(annotation),
@@ -63,32 +56,29 @@ class MicronautLockConfigurationExtractor {
             now.plus(getLockAtLeastFor(annotation)));
     }
 
-    private String getName(AnnotationData annotation) {
-        return annotation.getName();
+    private String getName(AnnotationValue<SchedulerLock> annotation) {
+        return annotation.getRequiredValue("name", String.class);
     }
 
-    TemporalAmount getLockAtMostFor(AnnotationData annotation) {
+    TemporalAmount getLockAtMostFor(AnnotationValue<SchedulerLock> annotation) {
         return getValue(
-            annotation.getLockAtMostFor(),
-            annotation.getLockAtMostForString(),
+            annotation,
             this.defaultLockAtMostFor,
-            "lockAtMostForString"
+            "lockAtMostFor"
         );
     }
 
-    TemporalAmount getLockAtLeastFor(AnnotationData annotation) {
+    TemporalAmount getLockAtLeastFor(AnnotationValue<SchedulerLock> annotation) {
         return getValue(
-            annotation.getLockAtLeastFor(),
-            annotation.getLockAtLeastForString(),
+            annotation,
             this.defaultLockAtLeastFor,
-            "lockAtLeastForString"
+            "lockAtLeastFor"
         );
     }
 
-    private TemporalAmount getValue(long valueFromAnnotation, String stringValueFromAnnotation, TemporalAmount defaultValue, final String paramName) {
-        if (valueFromAnnotation >= 0) {
-            return Duration.of(valueFromAnnotation, MILLIS);
-        } else if (StringUtils.hasText(stringValueFromAnnotation)) {
+    private TemporalAmount getValue(AnnotationValue<SchedulerLock> annotation, TemporalAmount defaultValue, String paramName) {
+        String stringValueFromAnnotation = annotation.get(paramName, String.class).orElse("");
+        if (StringUtils.hasText(stringValueFromAnnotation)) {
             try {
                 return Duration.of(Long.parseLong(stringValueFromAnnotation), MILLIS);
             } catch (NumberFormatException nfe) {
@@ -98,60 +88,14 @@ class MicronautLockConfigurationExtractor {
                     throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
                 }
             }
+
         } else {
             return defaultValue;
         }
     }
 
-    AnnotationData findAnnotation(ExecutableMethod<Object, Object> method) {
-        Optional<AnnotationValue<SchedulerLock>> annotationValue = method.findAnnotation(SchedulerLock.class);
-        return annotationValue.map(schedulerLockAnnotationValue -> new AnnotationData(
-            schedulerLockAnnotationValue.get("name", String.class).orElseThrow(() -> new IllegalStateException("name param not specified")),
-            schedulerLockAnnotationValue.get("lockAtMostFor", Long.class).orElseThrow(() -> new IllegalStateException("lockAtMostFor param not specified")),
-            schedulerLockAnnotationValue.get("lockAtMostForString", String.class).orElseThrow(() -> new IllegalStateException("lockAtMostForString param not specified")),
-            schedulerLockAnnotationValue.get("lockAtLeastFor", Long.class).orElseThrow(() -> new IllegalStateException("lockAtLeastFor param not specified")),
-            schedulerLockAnnotationValue.get("lockAtLeastForString", String.class).orElseThrow(() -> new IllegalStateException("lockAtLeastForString param not specified"))
-        )).orElse(null);
-    }
-
-    private boolean shouldLock(AnnotationData annotation) {
-        return annotation != null;
-    }
-
-    static class AnnotationData {
-        private final String name;
-        private final long lockAtMostFor;
-        private final String lockAtMostForString;
-        private final long lockAtLeastFor;
-        private final String lockAtLeastForString;
-
-        private AnnotationData(String name, long lockAtMostFor, String lockAtMostForString, long lockAtLeastFor, String lockAtLeastForString) {
-            this.name = name;
-            this.lockAtMostFor = lockAtMostFor;
-            this.lockAtMostForString = lockAtMostForString;
-            this.lockAtLeastFor = lockAtLeastFor;
-            this.lockAtLeastForString = lockAtLeastForString;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public long getLockAtMostFor() {
-            return lockAtMostFor;
-        }
-
-        public String getLockAtMostForString() {
-            return lockAtMostForString;
-        }
-
-        public long getLockAtLeastFor() {
-            return lockAtLeastFor;
-        }
-
-        public String getLockAtLeastForString() {
-            return lockAtLeastForString;
-        }
+    Optional<AnnotationValue<SchedulerLock>> findAnnotation(ExecutableMethod<Object, Object> method) {
+        return method.findAnnotation(SchedulerLock.class);
     }
 }
 

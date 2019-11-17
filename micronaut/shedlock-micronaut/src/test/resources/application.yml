@@ -1,0 +1,8 @@
+shedlock:
+  defaults:
+    lock-at-most-for: PT30S
+    lock-at-least-for: PT0.1S
+
+property:
+  value: property
+  lock-at-least-for: PT1S

@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.micronaut.internal;
 
 import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
+import io.micronaut.context.annotation.Value;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -27,18 +28,26 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Singleton
-public
-class SchedulerLockInterceptor implements MethodInterceptor<Object, Object> {
+public class SchedulerLockInterceptor implements MethodInterceptor<Object, Object> {
     private final LockingTaskExecutor lockingTaskExecutor;
     private final MicronautLockConfigurationExtractor micronautLockConfigurationExtractor;
 
-    public SchedulerLockInterceptor(LockProvider lockProvider) {
+    public SchedulerLockInterceptor(
+        LockProvider lockProvider,
+        @Value("${shedlock.defaults.lock-at-most-for}") String defaultLockAtMostFor,
+        @Value("${shedlock.defaults.lock-at-least-for:PT0S}") String defaultLockAtLeastFor
+    ) {
         lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
-        micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(Duration.ofSeconds(100), Duration.ofSeconds(10)); //FIXME
+        micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(Duration.parse(defaultLockAtMostFor), Duration.parse(defaultLockAtLeastFor));
     }
 
     @Override
     public Object intercept(MethodInvocationContext<Object, Object> context) {
+        Class<?> returnType = context.getReturnType().getType();
+        if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
+            throw new LockingNotSupportedException();
+        }
+
         Optional<LockConfiguration> lockConfiguration = micronautLockConfigurationExtractor.getLockConfiguration(context.getExecutableMethod());
         if (lockConfiguration.isPresent()) {
             lockingTaskExecutor.executeWithLock((Runnable) context::proceed, lockConfiguration.get());

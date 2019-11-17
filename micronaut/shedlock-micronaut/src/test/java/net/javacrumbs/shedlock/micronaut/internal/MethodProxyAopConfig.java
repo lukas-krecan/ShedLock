@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.micronaut.internal;
 
 
+import io.micronaut.context.annotation.Factory;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 
@@ -24,6 +25,7 @@ import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
 
+@Factory
 public class MethodProxyAopConfig {
 
     @Singleton
@@ -33,15 +35,6 @@ public class MethodProxyAopConfig {
 
 
     @Singleton
-    public TestBean testBean() {
-        return new TestBean();
-    }
-
-    @Singleton
-    public AnotherTestBean anotherTestBean() {
-        return new AnotherTestBeanImpl();
-    }
-
     static class TestBean {
 
         public void noAnnotation() {
@@ -51,7 +44,7 @@ public class MethodProxyAopConfig {
         public void normal() {
         }
 
-        @SchedulerLock(name = "runtimeException", lockAtMostFor = 100)
+        @SchedulerLock(name = "runtimeException", lockAtMostFor = "100")
         public Void throwsRuntimeException() {
             throw new RuntimeException();
         }
@@ -66,16 +59,18 @@ public class MethodProxyAopConfig {
             return 0;
         }
 
-        @SchedulerLock(name = "${property.value}", lockAtLeastForString = "${property.lockAtMostFor}")
-        public void spel() {
+        @SchedulerLock(name = "${property.value}", lockAtLeastFor = "${property.lock-at-least-for}")
+        public void property() {
 
         }
     }
+
 
     interface AnotherTestBean {
         void runManually();
     }
 
+    @Singleton
     static class AnotherTestBeanImpl implements AnotherTestBean {
 
         @Override
