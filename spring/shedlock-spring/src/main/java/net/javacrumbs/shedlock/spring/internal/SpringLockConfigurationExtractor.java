@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.spring.internal;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
-import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -65,7 +65,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
     }
 
     public Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
-        SchedulerLock annotation = findAnnotation(target, method);
+        AnnotationData annotation = findAnnotation(target, method);
         if (shouldLock(annotation)) {
             return Optional.of(getLockConfiguration(annotation));
         } else {
@@ -73,7 +73,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         }
     }
 
-    private LockConfiguration getLockConfiguration(SchedulerLock annotation) {
+    private LockConfiguration getLockConfiguration(AnnotationData annotation) {
         Instant now = now();
         return new LockConfiguration(
             getName(annotation),
@@ -81,27 +81,27 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
             now.plus(getLockAtLeastFor(annotation)));
     }
 
-    private String getName(SchedulerLock annotation) {
+    private String getName(AnnotationData annotation) {
         if (embeddedValueResolver != null) {
-            return embeddedValueResolver.resolveStringValue(annotation.name());
+            return embeddedValueResolver.resolveStringValue(annotation.getName());
         } else {
-            return annotation.name();
+            return annotation.getName();
         }
     }
 
-    TemporalAmount getLockAtMostFor(SchedulerLock annotation) {
+    TemporalAmount getLockAtMostFor(AnnotationData annotation) {
         return getValue(
-            annotation.lockAtMostFor(),
-            annotation.lockAtMostForString(),
+            annotation.getLockAtMostFor(),
+            annotation.getLockAtMostForString(),
             this.defaultLockAtMostFor,
             "lockAtMostForString"
         );
     }
 
-    TemporalAmount getLockAtLeastFor(SchedulerLock annotation) {
+    TemporalAmount getLockAtLeastFor(AnnotationData annotation) {
         return getValue(
-            annotation.lockAtLeastFor(),
-            annotation.lockAtLeastForString(),
+            annotation.getLockAtLeastFor(),
+            annotation.getLockAtLeastForString(),
             this.defaultLockAtLeastFor,
             "lockAtLeastForString"
         );
@@ -128,8 +128,8 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         }
     }
 
-    SchedulerLock findAnnotation(Object target, Method method) {
-        SchedulerLock annotation = findAnnotation(method);
+    AnnotationData findAnnotation(Object target, Method method) {
+        AnnotationData annotation = findAnnotation(method);
         if (annotation != null) {
             return annotation;
         } else {
@@ -149,11 +149,57 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         }
     }
 
-    private SchedulerLock findAnnotation(Method method) {
-        return AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
+    private AnnotationData findAnnotation(Method method) {
+        net.javacrumbs.shedlock.core.SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, net.javacrumbs.shedlock.core.SchedulerLock.class);
+        if (annotation != null) {
+            return new AnnotationData(annotation.name(), annotation.lockAtMostFor(), annotation.lockAtMostForString(), annotation.lockAtLeastFor(), annotation.lockAtLeastForString());
+        }
+        SchedulerLock annotation2 = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
+        if (annotation2 != null) {
+            return new AnnotationData(annotation2.name(), annotation2.lockAtMostFor(), annotation2.lockAtMostForString(), annotation2.lockAtLeastFor(), annotation2.lockAtLeastForString());
+        }
+        return null;
     }
 
-    private boolean shouldLock(SchedulerLock annotation) {
+    private boolean shouldLock(AnnotationData annotation) {
         return annotation != null;
     }
+
+    static class AnnotationData {
+        private final String name;
+        private final long lockAtMostFor;
+        private final String lockAtMostForString;
+        private final long lockAtLeastFor;
+        private final String lockAtLeastForString;
+
+        private AnnotationData(String name, long lockAtMostFor, String lockAtMostForString, long lockAtLeastFor, String lockAtLeastForString) {
+            this.name = name;
+            this.lockAtMostFor = lockAtMostFor;
+            this.lockAtMostForString = lockAtMostForString;
+            this.lockAtLeastFor = lockAtLeastFor;
+            this.lockAtLeastForString = lockAtLeastForString;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public long getLockAtMostFor() {
+            return lockAtMostFor;
+        }
+
+        public String getLockAtMostForString() {
+            return lockAtMostForString;
+        }
+
+        public long getLockAtLeastFor() {
+            return lockAtLeastFor;
+        }
+
+        public String getLockAtLeastForString() {
+            return lockAtLeastForString;
+        }
+    }
 }
+
+

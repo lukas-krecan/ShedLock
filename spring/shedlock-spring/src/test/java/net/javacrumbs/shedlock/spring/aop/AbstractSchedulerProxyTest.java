@@ -16,8 +16,8 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SchedulerLock;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,6 +74,13 @@ public abstract class AbstractSchedulerProxyTest {
         verify(simpleLock).unlock();
     }
 
+    @Test
+    public void shouldCallLockProviderOnSchedulerCallDeprecatedAnnotation() throws NoSuchMethodException, ExecutionException, InterruptedException {
+        Runnable task = task("oldMethod");
+        taskScheduler.schedule(task, Instant.now()).get();
+        verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
+        verify(simpleLock).unlock();
+    }
 
     @Test
     public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
@@ -116,6 +123,11 @@ public abstract class AbstractSchedulerProxyTest {
     public void shouldNotLockProviderOnPureRunnable() throws ExecutionException, InterruptedException {
         taskScheduler.schedule(() -> { }, Instant.now()).get();
         verifyZeroInteractions(lockProvider);
+    }
+
+    @net.javacrumbs.shedlock.core.SchedulerLock(name = "lockName")
+    public void oldMethod() {
+        assertRightSchedulerUsed();
     }
 
     @SchedulerLock(name = "lockName")
