@@ -2,9 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>micronaut.test</groupId>
+
+    <parent>
+        <artifactId>shedlock-parent</artifactId>
+        <groupId>net.javacrumbs.shedlock</groupId>
+        <version>3.0.1-SNAPSHOT</version>
+    </parent>
+
     <artifactId>micronaut-test</artifactId>
-    <version>0.1</version>
+    <version>3.0.1-SNAPSHOT</version>
+
     <properties>
         <micronaut.version>1.1.0.RC2</micronaut.version>
         <jdk.version>1.8</jdk.version>
@@ -80,14 +87,6 @@
             <artifactId>shedlock-core</artifactId>
             <version>3.0.1-SNAPSHOT</version>
             <scope>compile</scope>
-        </dependency>
-
-        <!-- Remove me -->
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>17.0.0</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
