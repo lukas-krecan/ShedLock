@@ -115,7 +115,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
                 stringValueFromAnnotation = embeddedValueResolver.resolveStringValue(stringValueFromAnnotation);
             }
             try {
-                return Duration.of(Long.valueOf(stringValueFromAnnotation), MILLIS);
+                return Duration.of(Long.parseLong(stringValueFromAnnotation), MILLIS);
             } catch (NumberFormatException nfe) {
                 try {
                     return Duration.parse(stringValueFromAnnotation);
