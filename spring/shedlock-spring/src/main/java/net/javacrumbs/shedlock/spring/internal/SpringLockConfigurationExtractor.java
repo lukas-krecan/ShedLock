@@ -73,7 +73,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         }
     }
 
-    public LockConfiguration getLockConfiguration(SchedulerLock annotation) {
+    private LockConfiguration getLockConfiguration(SchedulerLock annotation) {
         Instant now = now();
         return new LockConfiguration(
             getName(annotation),
@@ -149,7 +149,7 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
         }
     }
 
-    SchedulerLock findAnnotation(Method method) {
+    private SchedulerLock findAnnotation(Method method) {
         return AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
     }
 
