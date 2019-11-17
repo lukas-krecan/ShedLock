@@ -90,14 +90,14 @@ class MethodProxyAopTest {
     }
 
     @Test
-    void shouldReadSpringProperty() {
-        testBean.spel();
-        verify(lockProvider).lock(hasParams("spel", 30_000, 1_000));
+    void shouldReadConfigurationProperty() {
+        testBean.property();
+        verify(lockProvider).lock(hasParams("property", 30_000, 1_000));
         verify(simpleLock).unlock();
     }
 
     @Test
-    public void shouldReadAnnotationFromImplementationClass() {
+    void shouldReadAnnotationFromImplementationClass() {
         anotherTestBean.runManually();
         verify(lockProvider).lock(hasParams("classAnnotation", 30_000, 100));
         verify(simpleLock).unlock();
