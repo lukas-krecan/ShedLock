@@ -2,7 +2,7 @@ package net.javacrumbs.shedlock.micronaut.internal;
 
 import io.micronaut.context.AbstractExecutableMethod;
 import io.micronaut.core.type.Argument;
-import net.javacrumbs.shedlock.micronaut.annotation.SchedulerLock;
+import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 import net.javacrumbs.shedlock.micronaut.internal.MicronautLockConfigurationExtractor.AnnotationData;
 import org.junit.jupiter.api.Test;
 

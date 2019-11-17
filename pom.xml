@@ -22,6 +22,7 @@
     <version>3.0.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
+        <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/micronaut-test</module>
         <module>spring/shedlock-spring</module>
         <module>spring/shedlock-springboot-test</module>
