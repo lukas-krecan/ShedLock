@@ -28,17 +28,17 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 public class SpringLockConfigurationExtractorTest extends AbstractSpringLockConfigurationExtractorTest {
 
-    @SchedulerLock(name = "lockName", lockAtMostFor = 100)
+    @SchedulerLock(name = "lockName", lockAtMostFor = "100")
     public void annotatedMethod() {
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtMostForString = "${placeholder}")
+    @SchedulerLock(name = "lockName", lockAtMostFor = "${placeholder}")
     public void annotatedMethodWithString() {
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtMostForString = "PT1S")
+    @SchedulerLock(name = "lockName", lockAtMostFor = "PT1S")
     public void annotatedMethodWithDurationString() {
 
     }
@@ -53,17 +53,17 @@ public class SpringLockConfigurationExtractorTest extends AbstractSpringLockConf
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtLeastFor = 0)
+    @SchedulerLock(name = "lockName", lockAtLeastFor = "0")
     public void annotatedMethodWithZeroGracePeriod() {
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtLeastFor = 10)
+    @SchedulerLock(name = "lockName", lockAtLeastFor = "10")
     public void annotatedMethodWithPositiveGracePeriod() {
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtLeastForString = "10")
+    @SchedulerLock(name = "lockName", lockAtLeastFor = "10")
     public void annotatedMethodWithPositiveGracePeriodWithString() {
 
     }
@@ -87,7 +87,7 @@ public class SpringLockConfigurationExtractorTest extends AbstractSpringLockConf
         String cron() default "";
 
         @AliasFor(annotation = SchedulerLock.class, attribute = "lockAtMostFor")
-        long lockAtMostFor() default 20L;
+        String lockAtMostFor() default "20";
 
         @AliasFor(annotation = SchedulerLock.class, attribute = "name")
         String name();

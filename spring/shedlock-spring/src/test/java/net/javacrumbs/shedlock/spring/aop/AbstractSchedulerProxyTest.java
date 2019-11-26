@@ -135,12 +135,12 @@ public abstract class AbstractSchedulerProxyTest {
         assertRightSchedulerUsed();
     }
 
-    @SchedulerLock(name = "${property.value}", lockAtMostFor = 1000, lockAtLeastFor = 500)
+    @SchedulerLock(name = "${property.value}", lockAtMostFor = "1000", lockAtLeastFor = "500")
     public void spelMethod() {
 
     }
 
-    @SchedulerLock(name = "exception", lockAtMostFor = 1_500)
+    @SchedulerLock(name = "exception", lockAtMostFor = "1500")
     public void throwsException() {
         throw new NullPointerException("Just for test");
     }

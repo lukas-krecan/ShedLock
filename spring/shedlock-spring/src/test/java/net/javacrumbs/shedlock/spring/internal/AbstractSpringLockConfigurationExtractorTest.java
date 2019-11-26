@@ -53,6 +53,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockTimeFromAnnotation() throws NoSuchMethodException {
+        mockResolvedValue("100", "100");
         AnnotationData annotation = getAnnotation("annotatedMethod");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(Duration.of(100, MILLIS));
@@ -60,7 +61,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockTimeFromAnnotationWithString() throws NoSuchMethodException {
-        when(embeddedValueResolver.resolveStringValue("${placeholder}")).thenReturn("5");
+        mockResolvedValue("${placeholder}", "5");
         AnnotationData annotation = getAnnotation("annotatedMethodWithString");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(Duration.of(5, MILLIS));
@@ -68,7 +69,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockTimeFromAnnotationWithDurationString() throws NoSuchMethodException {
-        when(embeddedValueResolver.resolveStringValue("PT1S")).thenReturn("PT1S");
+        mockResolvedValue("PT1S", "PT1S");
         AnnotationData annotation = getAnnotation("annotatedMethodWithDurationString");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(Duration.of(1, SECONDS));
@@ -76,6 +77,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetZeroGracePeriodFromAnnotation() throws NoSuchMethodException {
+        mockResolvedValue("0", "0");
         AnnotationData annotation = getAnnotation("annotatedMethodWithZeroGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.ZERO);
@@ -83,6 +85,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotation() throws NoSuchMethodException {
+        mockResolvedValue("10", "10");
         AnnotationData annotation = getAnnotation("annotatedMethodWithPositiveGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
@@ -90,7 +93,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotationWithString() throws NoSuchMethodException {
-        when(embeddedValueResolver.resolveStringValue("10")).thenReturn("10");
+        mockResolvedValue("10", "10");
         AnnotationData annotation = getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
@@ -98,6 +101,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldExtractComposedAnnotation() throws NoSuchMethodException {
+        mockResolvedValue("20", "20");
         AnnotationData annotation = getAnnotation("composedAnnotation");
         TemporalAmount atMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(annotation.getName()).isEqualTo("lockName1");
@@ -123,7 +127,8 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetNameAndLockTimeFromAnnotation() throws NoSuchMethodException {
-        when(embeddedValueResolver.resolveStringValue("lockName")).thenReturn("lockName");
+        mockResolvedValue("lockName", "lockName");
+        mockResolvedValue("100", "100");
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethod");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName");
@@ -133,10 +138,14 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetNameFromSpringVariable() throws NoSuchMethodException {
-        when(embeddedValueResolver.resolveStringValue("${name}")).thenReturn("lockNameX");
+        mockResolvedValue("${name}", "lockNameX");
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethodWithNameVariable");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockNameX");
+    }
+
+    private void mockResolvedValue(String expression, String resolved) {
+        when(embeddedValueResolver.resolveStringValue(expression)).thenReturn(resolved);
     }
 
     private void doTestFindAnnotationOnProxy(Class<?> config) throws NoSuchMethodException {
