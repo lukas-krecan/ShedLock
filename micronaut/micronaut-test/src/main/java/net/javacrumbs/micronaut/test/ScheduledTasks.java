@@ -24,8 +24,8 @@ import java.util.Date;
 @Singleton
 public class ScheduledTasks {
 
-    @Scheduled(fixedDelay = "10s")
-    @SchedulerLock(name = "reportCurrentTime", lockAtLeastFor = "${lock.at.most.for}")
+    @Scheduled(fixedDelay = "1s")
+    @SchedulerLock(name = "reportCurrentTime")
     public void reportCurrentTime() {
         System.out.println(new Date());
     }

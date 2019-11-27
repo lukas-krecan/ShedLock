@@ -2,6 +2,9 @@ micronaut:
   application:
     name: micronaut-test
 
+shedlock:
+  defaults:
+    lock-at-most-for: 1m
 
 datasources.default: {}
 

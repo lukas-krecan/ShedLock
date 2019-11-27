@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.micronaut;
 
 
 import io.micronaut.aop.Around;
+import io.micronaut.context.annotation.Executable;
 import io.micronaut.context.annotation.Type;
 import net.javacrumbs.shedlock.micronaut.internal.SchedulerLockInterceptor;
 
@@ -31,6 +32,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Around
+@Executable
 @Type(SchedulerLockInterceptor.class)
 public @interface SchedulerLock {
     /**
