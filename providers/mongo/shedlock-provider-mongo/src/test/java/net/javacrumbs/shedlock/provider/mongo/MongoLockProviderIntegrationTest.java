@@ -18,8 +18,11 @@ package net.javacrumbs.shedlock.provider.mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodProcess;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.bson.Document;
@@ -29,7 +32,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -41,15 +43,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
-    private static MongodForTestsFactory mongoFactory;
+    private static final MongodStarter starter = MongodStarter.getDefaultInstance();
 
     private static final String COLLECTION_NAME = "Shedlock";
     private static final String DB_NAME = "db";
-    private MongoClient mongo;
+
+    private static MongodExecutable mongodExe;
+    private static MongodProcess mongod;
+
+    private static MongoClient mongo;
+
+    @BeforeClass
+    public static void startMongo() throws IOException {
+        mongodExe = starter.prepare(new MongodConfigBuilder()
+            .version(Version.Main.V3_6)
+            .build());
+        mongod = mongodExe.start();
+
+        mongo = new MongoClient("localhost", mongod.getConfig().net().getPort());
+    }
+
+    @AfterClass
+    public static void stopMongo() {
+        mongo.close();
+        mongod.stop();
+        mongodExe.stop();
+    }
+
 
     @Before
-    public void createLockProvider() throws UnknownHostException {
-        mongo = mongoFactory.newMongo();
+    public void cleanDb() {
         mongo.getDatabase(DB_NAME).drop();
     }
 
@@ -84,16 +107,6 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
 
     private Document getLockDocument(String lockName) {
         return getLockCollection().find(eq(ID, lockName)).first();
-    }
-
-    @BeforeClass
-    public static void startMongo() throws IOException {
-        mongoFactory = new MongodForTestsFactory(Version.Main.V3_2);
-    }
-
-    @AfterClass
-    public static void stopMongo() {
-        mongoFactory.shutdown();
     }
 
     @Test
