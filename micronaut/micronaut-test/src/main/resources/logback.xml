@@ -10,7 +10,9 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
+    <logger name="net.javacrumbs" level="DEBUG"/>
+
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
