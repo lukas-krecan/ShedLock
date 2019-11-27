@@ -18,12 +18,16 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static org.mockito.Mockito.mock;
 
@@ -49,6 +53,11 @@ public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTe
         @Bean
         public LockProvider lockProvider() {
             return mock(LockProvider.class);
+        }
+
+        @Bean
+        public ScheduledExecutorService feedUpdateScheduler(@Value("${thread-pool.size:10}") int threadPoolSize) {
+            return new ScheduledThreadPoolExecutor(threadPoolSize);
         }
     }
 }
