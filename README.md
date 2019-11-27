@@ -49,7 +49,7 @@ First of all we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -124,7 +124,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -150,7 +150,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -195,7 +195,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -225,7 +225,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -249,7 +249,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -278,7 +278,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
@@ -302,7 +302,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>3.0.0/version>
+    <version>3.0.1/version>
 </dependency>
 ```
 
@@ -326,7 +326,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>3.0.0/version>
+    <version>3.0.1/version>
 </dependency>
 ```
 
@@ -350,7 +350,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>3.0.0/version>
+    <version>3.0.1/version>
 </dependency>
 ```
 
@@ -451,6 +451,9 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 3.0.1
+* Fixed bean definition configuration #171
+
 ## 3.0.0
 * `EnableSchedulerLock.mode` renamed to `interceptMode`
 * Use standard Spring AOP configuration to honor Spring Boot config (supports `proxyTargetClass` flag)
