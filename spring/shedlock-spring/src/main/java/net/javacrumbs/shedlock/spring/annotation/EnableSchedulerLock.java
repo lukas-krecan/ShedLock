@@ -48,7 +48,7 @@ public @interface EnableSchedulerLock {
      *
      * @see <a href="https://github.com/lukas-krecan/ShedLock#modes-of-spring-integration">Modes of Spring integration</a>
      */
-    InterceptMode interceptMode() default InterceptMode.PROXY_SCHEDULER;
+    InterceptMode interceptMode() default InterceptMode.PROXY_METHOD;
 
 
     /**

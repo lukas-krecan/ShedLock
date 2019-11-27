@@ -29,6 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER;
 import static org.mockito.Mockito.mock;
 
 
@@ -46,7 +47,7 @@ public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTe
 
     @Configuration
     @EnableScheduling
-    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
+    @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}", interceptMode = PROXY_SCHEDULER)
     @PropertySource("test.properties")
     static class SchedulerWrapperConfig {
 

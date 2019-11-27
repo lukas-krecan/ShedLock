@@ -26,12 +26,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
 
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_METHOD;
 import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(interceptMode = PROXY_METHOD, defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
+@EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
 @PropertySource("test.properties")
 public class MethodProxyAopConfig {
 
