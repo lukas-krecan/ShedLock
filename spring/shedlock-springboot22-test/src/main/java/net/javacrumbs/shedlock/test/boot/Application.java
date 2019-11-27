@@ -18,15 +18,12 @@ package net.javacrumbs.shedlock.test.boot;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.sql.DataSource;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 @SpringBootApplication
 @EnableScheduling
@@ -40,10 +37,5 @@ public class Application {
     @Bean
     public LockProvider lockProvider(DataSource dataSource) {
         return new JdbcTemplateLockProvider(dataSource, "myapp.shedlock");
-    }
-
-    @Bean
-    public ScheduledExecutorService feedUpdateScheduler(@Value("${thread-pool.size:10}") int threadPoolSize) {
-        return new ScheduledThreadPoolExecutor(threadPoolSize);
     }
 }

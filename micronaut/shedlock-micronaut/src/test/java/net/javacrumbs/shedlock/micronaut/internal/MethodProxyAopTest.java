@@ -78,7 +78,7 @@ class MethodProxyAopTest {
 
     @Test
     void shouldRethrowDeclaredException() {
-        assertThatThrownBy(() -> testBean.throwsException()).isInstanceOf(IOException.class);
+        assertThatThrownBy(() -> testBean.throwsException()).hasCauseInstanceOf(IOException.class);
         verify(lockProvider).lock(hasParams("exception", 30_000, 100));
         verify(simpleLock).unlock();
     }

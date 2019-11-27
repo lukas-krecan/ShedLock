@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.micronaut.internal;
 import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.core.convert.ConversionService;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -34,11 +35,17 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
 
     public SchedulerLockInterceptor(
         LockProvider lockProvider,
+        Optional<ConversionService<?>> conversionService,
         @Value("${shedlock.defaults.lock-at-most-for}") String defaultLockAtMostFor,
         @Value("${shedlock.defaults.lock-at-least-for:PT0S}") String defaultLockAtLeastFor
     ) {
+        ConversionService<?> resolvedConversionService = conversionService.orElse(ConversionService.SHARED);
+
         lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
-        micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(Duration.parse(defaultLockAtMostFor), Duration.parse(defaultLockAtLeastFor));
+        micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(
+            resolvedConversionService.convert(defaultLockAtMostFor, Duration.class).orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtMostFor' value")),
+            resolvedConversionService.convert(defaultLockAtLeastFor, Duration.class).orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtLeastFor' value")),
+            resolvedConversionService);
     }
 
     @Override

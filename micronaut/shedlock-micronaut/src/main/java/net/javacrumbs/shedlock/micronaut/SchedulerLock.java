@@ -40,8 +40,8 @@ public @interface SchedulerLock {
 
     /**
      * How long (in ms) the lock should be kept in case the machine which obtained the lock died before releasing it.
-     * This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes. Can be either
-     * number in ms or formatted as described in {@link java.time.Duration#parse(CharSequence)}
+     * This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes. Can be a format
+     * supported by <a href="https://docs.micronaut.io/latest/guide/config.html#_duration_conversion">Duration Conversion</a>
      * <p>
      */
     String lockAtMostFor() default "";
@@ -50,8 +50,8 @@ public @interface SchedulerLock {
      * The lock will be held at least for X millis. Can be used if you really need to execute the task
      * at most once in given period of time. If the duration of the task is shorter than clock difference between nodes, the task can
      * be theoretically executed more than once (one node after another). By setting this parameter, you can make sure that the
-     * lock will be kept at least for given period of time. Can be either number in ms or formatted as described in
-     * {@link java.time.Duration#parse(CharSequence)}
+     * lock will be kept at least for given period of time. Can be a format
+     * supported by <a href="https://docs.micronaut.io/latest/guide/config.html#_duration_conversion">Duration Conversion</a>
      */
     String lockAtLeastFor() default "";
 }

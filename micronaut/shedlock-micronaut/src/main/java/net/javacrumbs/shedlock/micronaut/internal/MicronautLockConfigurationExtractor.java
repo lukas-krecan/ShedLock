@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.micronaut.internal;
 
 import io.micronaut.core.annotation.AnnotationValue;
+import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.ExecutableMethod;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -24,21 +25,21 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
 class MicronautLockConfigurationExtractor {
     private final TemporalAmount defaultLockAtMostFor;
     private final TemporalAmount defaultLockAtLeastFor;
+    private final ConversionService<?> conversionService;
 
-    MicronautLockConfigurationExtractor(@NotNull TemporalAmount defaultLockAtMostFor, @NotNull TemporalAmount defaultLockAtLeastFor) {
+    MicronautLockConfigurationExtractor(@NotNull TemporalAmount defaultLockAtMostFor, @NotNull TemporalAmount defaultLockAtLeastFor, @NotNull ConversionService<?> conversionService) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
+        this.conversionService = conversionService;
     }
 
 
@@ -79,16 +80,8 @@ class MicronautLockConfigurationExtractor {
     private TemporalAmount getValue(AnnotationValue<SchedulerLock> annotation, TemporalAmount defaultValue, String paramName) {
         String stringValueFromAnnotation = annotation.get(paramName, String.class).orElse("");
         if (StringUtils.hasText(stringValueFromAnnotation)) {
-            try {
-                return Duration.of(Long.parseLong(stringValueFromAnnotation), MILLIS);
-            } catch (NumberFormatException nfe) {
-                try {
-                    return Duration.parse(stringValueFromAnnotation);
-                } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
-                }
-            }
-
+            return conversionService.convert(stringValueFromAnnotation, Duration.class)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into duration"));
         } else {
             return defaultValue;
         }

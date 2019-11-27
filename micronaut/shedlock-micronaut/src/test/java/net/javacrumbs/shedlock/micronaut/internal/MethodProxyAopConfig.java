@@ -44,7 +44,7 @@ public class MethodProxyAopConfig {
         public void normal() {
         }
 
-        @SchedulerLock(name = "runtimeException", lockAtMostFor = "100")
+        @SchedulerLock(name = "runtimeException", lockAtMostFor = "100ms")
         public Void throwsRuntimeException() {
             throw new RuntimeException();
         }
