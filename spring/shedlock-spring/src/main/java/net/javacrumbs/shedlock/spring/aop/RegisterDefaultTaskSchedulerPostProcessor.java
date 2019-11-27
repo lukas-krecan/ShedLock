@@ -25,13 +25,13 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.Ordered;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.DEFAULT_TASK_SCHEDULER_BEAN_NAME;
 
 /**
@@ -49,15 +49,17 @@ class RegisterDefaultTaskSchedulerPostProcessor implements BeanDefinitionRegistr
             String[] scheduledExecutorsBeanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(listableBeanFactory, ScheduledExecutorService.class);
             if (scheduledExecutorsBeanNames.length != 1) {
                 logger.debug("Registering default TaskScheduler");
-                registry.registerBeanDefinition(DEFAULT_TASK_SCHEDULER_BEAN_NAME, new RootBeanDefinition(ConcurrentTaskScheduler.class));
+                registry.registerBeanDefinition(DEFAULT_TASK_SCHEDULER_BEAN_NAME, rootBeanDefinition(ConcurrentTaskScheduler.class).getBeanDefinition());
                 if (scheduledExecutorsBeanNames.length != 0) {
                     logger.warn("Multiple ScheduledExecutorService found, do not know which one to use.");
                 }
             } else {
                 logger.debug("Registering default TaskScheduler with existing ScheduledExecutorService {}", scheduledExecutorsBeanNames[0]);
-                RootBeanDefinition taskSchedulerBeanDefinition = new RootBeanDefinition(ConcurrentTaskScheduler.class);
-                taskSchedulerBeanDefinition.getPropertyValues().add("scheduledExecutor", listableBeanFactory.getBean(scheduledExecutorsBeanNames[0]));
-                registry.registerBeanDefinition(DEFAULT_TASK_SCHEDULER_BEAN_NAME, taskSchedulerBeanDefinition);
+                registry.registerBeanDefinition(DEFAULT_TASK_SCHEDULER_BEAN_NAME,
+                    rootBeanDefinition(ConcurrentTaskScheduler.class)
+                        .addPropertyReference("scheduledExecutor", scheduledExecutorsBeanNames[0])
+                        .getBeanDefinition()
+                );
             }
         }
     }
