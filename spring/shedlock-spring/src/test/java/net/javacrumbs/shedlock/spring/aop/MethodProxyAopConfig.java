@@ -40,7 +40,6 @@ public class MethodProxyAopConfig {
         return mock(LockProvider.class);
     }
 
-
     @Bean
     public TestBean testBean() {
         return new TestBean();
