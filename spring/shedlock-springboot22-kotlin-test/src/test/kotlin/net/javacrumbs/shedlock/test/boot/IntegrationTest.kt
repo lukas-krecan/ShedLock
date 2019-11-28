@@ -15,52 +15,31 @@
  */
 package net.javacrumbs.shedlock.test.boot
 
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.atLeastOnce
+import com.nhaarman.mockitokotlin2.verify
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.core.LockProvider
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility.await
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.junit4.SpringRunner
-import java.lang.Thread.sleep
-import java.util.*
 
 @SpringBootTest
 @RunWith(SpringRunner::class)
 class IntegrationTest {
-    @Autowired
+    @MockBean
     private lateinit var lockProvider: LockProvider
 
     @Test
     fun testScheduler() {
-        waitForScheduler()
-        val configCaptor = ArgumentCaptor.forClass(LockConfiguration::class.java)
-        verify(lockProvider, atLeastOnce()).lock(configCaptor.capture())
-        assertThat(configCaptor.value.name).isEqualTo("reportCurrentTime")
-
-    }
-
-    @TestConfiguration
-    open class MockConfig {
-        @Bean
-        open fun lockProvider(): LockProvider {
-            val mock = mock<LockProvider>()
-            whenever(mock.lock(any())).thenReturn(Optional.empty())
-            return mock
+        await().untilAsserted {
+            val configCaptor = ArgumentCaptor.forClass(LockConfiguration::class.java)
+            verify(lockProvider, atLeastOnce()).lock(configCaptor.capture())
+            assertThat(configCaptor.value.name).isEqualTo("reportCurrentTime")
         }
-    }
-
-    private fun waitForScheduler() {
-        try {
-            sleep(2) // wait for scheduler to be called
-        } catch (e: InterruptedException) {
-            throw RuntimeException(e)
-        }
-
     }
 }

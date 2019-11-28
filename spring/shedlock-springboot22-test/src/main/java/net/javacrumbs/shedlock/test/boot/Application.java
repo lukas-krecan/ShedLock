@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
+@EnableSchedulerLock(defaultLockAtMostFor = "PT10M", interceptMode = EnableSchedulerLock.InterceptMode.PROXY_METHOD)
 public class Application {
 
     public static void main(String[] args) {
