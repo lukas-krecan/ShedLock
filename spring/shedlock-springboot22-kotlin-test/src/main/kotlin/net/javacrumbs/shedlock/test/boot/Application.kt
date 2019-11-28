@@ -27,7 +27,7 @@ import javax.sql.DataSource
 
 @SpringBootApplication
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
+@EnableSchedulerLock(defaultLockAtMostFor = "PT10M", interceptMode = EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER)
 open class Application {
 
     @Bean
@@ -36,7 +36,6 @@ open class Application {
     }
 
     companion object {
-
         @JvmStatic
         fun main(args: Array<String>) {
             SpringApplication.run(Application::class.java)

@@ -24,10 +24,14 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
-import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
+import org.springframework.aop.support.ComposablePointcut;
+
+import static org.springframework.aop.support.annotation.AnnotationMatchingPointcut.forMethodAnnotation;
 
 class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
-    private final AnnotationMatchingPointcut pointcut = AnnotationMatchingPointcut.forMethodAnnotation(SchedulerLock.class);
+    private final Pointcut pointcut = new ComposablePointcut(forMethodAnnotation(SchedulerLock.class))
+        .union(forMethodAnnotation(net.javacrumbs.shedlock.spring.annotation.SchedulerLock.class));
+
     private final Advice advice;
 
     MethodProxyScheduledLockAdvisor(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {

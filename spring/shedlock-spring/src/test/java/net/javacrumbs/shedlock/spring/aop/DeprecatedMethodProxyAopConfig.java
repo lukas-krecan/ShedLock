@@ -1,12 +1,12 @@
 /**
  * Copyright 2009-2019 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,8 +17,8 @@ package net.javacrumbs.shedlock.spring.aop;
 
 
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SchedulerLock;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
 @PropertySource("test.properties")
-public class MethodProxyAopConfig {
+public class DeprecatedMethodProxyAopConfig {
 
     @Bean
     public LockProvider lockProvider() {
@@ -58,7 +58,7 @@ public class MethodProxyAopConfig {
         public void normal() {
         }
 
-        @SchedulerLock(name = "runtimeException", lockAtMostFor = "100")
+        @SchedulerLock(name = "runtimeException", lockAtMostFor = 100)
         public Void throwsRuntimeException() {
             throw new RuntimeException();
         }
@@ -73,7 +73,7 @@ public class MethodProxyAopConfig {
             return 0;
         }
 
-        @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1000")
+        @SchedulerLock(name = "${property.value}", lockAtLeastFor = 1_000)
         public void spel() {
 
         }
