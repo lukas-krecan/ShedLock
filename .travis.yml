@@ -12,6 +12,11 @@ jdk:
 - oraclejdk8
 - openjdk11
 
+script:
+- mvn test
+- spring/shedlock-springboot22-kotlin-gradle-test/gradlew -b spring/shedlock-springboot22-kotlin-gradle-test/build.gradle.kts test
+
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
