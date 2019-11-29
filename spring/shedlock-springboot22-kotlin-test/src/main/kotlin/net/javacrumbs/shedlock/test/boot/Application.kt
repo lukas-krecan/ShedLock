@@ -27,11 +27,11 @@ import javax.sql.DataSource
 
 @SpringBootApplication
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT10M", interceptMode = EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER)
-open class Application {
+@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
+class Application {
 
     @Bean
-    open fun lockProvider(dataSource: DataSource): LockProvider {
+    fun lockProvider(dataSource: DataSource): LockProvider {
         return JdbcTemplateLockProvider(dataSource, "myapp.shedlock")
     }
 
