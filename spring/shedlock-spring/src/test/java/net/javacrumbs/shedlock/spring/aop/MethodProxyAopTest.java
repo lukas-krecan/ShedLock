@@ -101,6 +101,11 @@ public class MethodProxyAopTest {
     }
 
     @Test
+    public void shouldFailOnNotLockedMethod() {
+        assertThatThrownBy(() -> testBean.finalNotLocked()).hasMessageStartingWith("The task is not locked.");
+    }
+
+    @Test
     public void shouldReadAnnotationFromImplementationClass() {
         anotherTestBean.runManually();
         verify(lockProvider).lock(hasParams("classAnnotation", 30_000, 100));

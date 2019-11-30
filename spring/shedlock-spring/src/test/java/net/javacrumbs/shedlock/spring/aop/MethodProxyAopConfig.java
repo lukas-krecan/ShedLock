@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
 
+import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 import static org.mockito.Mockito.mock;
 
 @Configuration
@@ -60,22 +61,30 @@ public class MethodProxyAopConfig {
 
         @SchedulerLock(name = "runtimeException", lockAtMostFor = "100")
         public Void throwsRuntimeException() {
+            assertLocked();
             throw new RuntimeException();
         }
 
         @SchedulerLock(name = "exception")
         public void throwsException() throws Exception {
+            assertLocked();
             throw new IOException();
         }
 
         @SchedulerLock(name = "returnsValue")
         public int returnsValue() {
+            assertLocked();
             return 0;
         }
 
         @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1s")
         public void spel() {
 
+        }
+
+        @SchedulerLock(name = "${finalNotLocked}", lockAtLeastFor = "10ms")
+        public final void finalNotLocked() {
+            assertLocked();
         }
     }
 

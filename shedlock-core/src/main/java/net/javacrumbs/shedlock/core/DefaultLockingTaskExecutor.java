@@ -53,9 +53,11 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         if (lock.isPresent()) {
             try {
+                LockAssert.startLock();
                 logger.debug("Locked '{}', lock will be held at most until {}", lockConfig.getName(), lockConfig.getLockAtMostUntil());
                 task.call();
             } finally {
+                LockAssert.endLock();
                 lock.get().unlock();
                 if (logger.isDebugEnabled()) {
                     Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();

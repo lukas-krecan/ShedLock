@@ -57,8 +57,8 @@ class MethodProxyAopTest {
     }
 
     @Test
-    void shouldNotCollLockProviderWithNoAnnotation() {
-        testBean.noAnnotation();
+    void shouldNotCallLockProviderWithNoAnnotation() {
+        assertThatThrownBy(() -> testBean.noAnnotation()).hasMessageStartingWith("The task is not locked.");
         verifyZeroInteractions(lockProvider);
     }
 

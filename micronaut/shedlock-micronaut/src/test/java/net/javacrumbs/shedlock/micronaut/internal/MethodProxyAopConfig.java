@@ -23,6 +23,7 @@ import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 import javax.inject.Singleton;
 import java.io.IOException;
 
+import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 import static org.mockito.Mockito.mock;
 
 @Factory
@@ -38,10 +39,12 @@ public class MethodProxyAopConfig {
     static class TestBean {
 
         public void noAnnotation() {
+            assertLocked();
         }
 
         @SchedulerLock(name = "normal")
         public void normal() {
+            assertLocked();
         }
 
         @SchedulerLock(name = "runtimeException", lockAtMostFor = "100ms")
