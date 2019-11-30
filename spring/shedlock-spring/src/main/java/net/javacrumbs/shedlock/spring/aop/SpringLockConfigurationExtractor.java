@@ -122,7 +122,11 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
                 stringValueFromAnnotation = embeddedValueResolver.resolveStringValue(stringValueFromAnnotation);
             }
             try {
-                return durationConverter.convert(stringValueFromAnnotation);
+                Duration result = durationConverter.convert(stringValueFromAnnotation);
+                if (result.isNegative()) {
+                    throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot set negative duration");
+                }
+                return result;
             } catch (IllegalStateException nfe) {
                 throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
             }

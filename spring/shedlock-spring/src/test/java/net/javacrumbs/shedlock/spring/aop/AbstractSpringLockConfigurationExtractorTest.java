@@ -34,6 +34,8 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +55,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockTimeFromAnnotation() throws NoSuchMethodException {
-        mockResolvedValue("100", "100");
+        noopResolver();
         AnnotationData annotation = getAnnotation("annotatedMethod");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(Duration.of(100, MILLIS));
@@ -69,7 +71,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockTimeFromAnnotationWithDurationString() throws NoSuchMethodException {
-        mockResolvedValue("PT1S", "PT1S");
+        noopResolver();
         AnnotationData annotation = getAnnotation("annotatedMethodWithDurationString");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(Duration.of(1, SECONDS));
@@ -77,7 +79,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetZeroGracePeriodFromAnnotation() throws NoSuchMethodException {
-        mockResolvedValue("0", "0");
+        noopResolver();
         AnnotationData annotation = getAnnotation("annotatedMethodWithZeroGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.ZERO);
@@ -85,7 +87,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotation() throws NoSuchMethodException {
-        mockResolvedValue("10", "10");
+        noopResolver();
         AnnotationData annotation = getAnnotation("annotatedMethodWithPositiveGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
@@ -93,10 +95,17 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotationWithString() throws NoSuchMethodException {
-        mockResolvedValue("10", "10");
+        noopResolver();
         AnnotationData annotation = getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
+    }
+
+    @Test
+    public void shoulFailOnNegativeLockAtMostFor() throws NoSuchMethodException {
+        noopResolver();
+        AnnotationData annotation = getAnnotation("annotatedMethodWithNegativeGracePeriod");
+        assertThatThrownBy(() -> extractor.getLockAtLeastFor(annotation)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -146,6 +155,10 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
 
     private void mockResolvedValue(String expression, String resolved) {
         when(embeddedValueResolver.resolveStringValue(expression)).thenReturn(resolved);
+    }
+
+    private void noopResolver() {
+        when(embeddedValueResolver.resolveStringValue(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     private void doTestFindAnnotationOnProxy(Class<?> config) throws NoSuchMethodException {

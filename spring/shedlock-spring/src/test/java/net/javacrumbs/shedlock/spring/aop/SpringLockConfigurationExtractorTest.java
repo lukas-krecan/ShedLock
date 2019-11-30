@@ -63,8 +63,13 @@ public class SpringLockConfigurationExtractorTest extends AbstractSpringLockConf
 
     }
 
-    @SchedulerLock(name = "lockName", lockAtLeastFor = "10")
+    @SchedulerLock(name = "lockName", lockAtLeastFor = "10ms")
     public void annotatedMethodWithPositiveGracePeriodWithString() {
+
+    }
+
+    @SchedulerLock(name = "lockName", lockAtLeastFor = "-1s")
+    public void annotatedMethodWithNegativeGracePeriod() {
 
     }
 

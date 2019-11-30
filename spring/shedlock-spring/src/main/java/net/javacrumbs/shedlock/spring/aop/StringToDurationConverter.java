@@ -86,8 +86,7 @@ class StringToDurationConverter implements Converter<String, Duration> {
             ChronoUnit unit = getUnit(matcher.group(2));
             return Duration.of(amount, unit);
         } catch (Exception ex) {
-            throw new IllegalStateException("'" + source + "' is not a valid duration",
-                ex);
+            throw new IllegalStateException("'" + source + "' is not a valid duration", ex);
         }
     }
 

@@ -68,6 +68,11 @@ public class DeprecatedSpringLockConfigurationExtractorTest extends AbstractSpri
 
     }
 
+    @SchedulerLock(name = "lockName", lockAtLeastForString = "-1s")
+    public void annotatedMethodWithNegativeGracePeriod() {
+
+    }
+
     @ScheduledLocked(name = "lockName1")
     public void composedAnnotation() {
 
