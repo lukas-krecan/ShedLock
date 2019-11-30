@@ -27,7 +27,7 @@ import org.mockito.ArgumentCaptor
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.junit4.SpringRunner
-import java.util.concurrent.TimeUnit.SECONDS
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 @RunWith(SpringRunner::class)
@@ -37,7 +37,7 @@ class IntegrationTest {
 
     @Test
     fun testScheduler() {
-        await().timeout(1, SECONDS).untilAsserted {
+        await().timeout(1, TimeUnit.SECONDS).untilAsserted {
             val configCaptor = ArgumentCaptor.forClass(LockConfiguration::class.java)
             verify(lockProvider, atLeastOnce()).lock(configCaptor.capture())
             assertThat(configCaptor.value.name).isEqualTo("reportCurrentTime")
