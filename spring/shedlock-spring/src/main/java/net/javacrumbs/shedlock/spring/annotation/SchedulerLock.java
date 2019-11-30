@@ -33,7 +33,7 @@ public @interface SchedulerLock {
      * How long the lock should be kept in case the machine which obtained the lock died before releasing it.
      * This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
      *
-     * Can be either number in ms or formatted as described in {@link java.time.Duration#parse(CharSequence)}
+     * Can be either time with suffix like 10s or ISO8601 duration as described in {@link java.time.Duration#parse(CharSequence)}, for example PT30S.
      */
     String lockAtMostFor() default "";
 
@@ -44,7 +44,7 @@ public @interface SchedulerLock {
      * be theoretically executed more than once (one node after another). By setting this parameter, you can make sure that the
      * lock will be kept at least for given period of time.
      *
-     * Can be either number in ms or formatted as described in {@link java.time.Duration#parse(CharSequence)}
+     * Can be either time with suffix like 10s or ISO8601 duration as described in {@link java.time.Duration#parse(CharSequence)}, for example PT30S.
      */
     String lockAtLeastFor() default "";
 }

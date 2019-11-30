@@ -73,7 +73,7 @@ public class MethodProxyAopConfig {
             return 0;
         }
 
-        @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1000")
+        @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1s")
         public void spel() {
 
         }

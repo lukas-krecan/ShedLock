@@ -28,6 +28,8 @@ class AbstractSchedulerLockConfiguration implements ImportAware, EmbeddedValueRe
     private AnnotationAttributes annotationAttributes;
     private StringValueResolver resolver;
 
+    private final StringToDurationConverter durationConverter = StringToDurationConverter.INSTANCE;
+
     protected String getDefaultLockAtLeastFor() {
         return getStringFromAnnotation("defaultLockAtLeastFor");
     }
@@ -67,7 +69,11 @@ class AbstractSchedulerLockConfiguration implements ImportAware, EmbeddedValueRe
         return resolver;
     }
 
+    public StringToDurationConverter getDurationConverter() {
+        return durationConverter;
+    }
+
     private Duration toDuration(String string) {
-        return Duration.parse(resolver.resolveStringValue(string));
+        return durationConverter.convert(resolver.resolveStringValue(string));
     }
 }

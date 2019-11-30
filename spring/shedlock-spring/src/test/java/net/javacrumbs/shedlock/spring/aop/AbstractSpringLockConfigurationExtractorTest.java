@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.internal;
+package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.spring.internal.SpringLockConfigurationExtractor.AnnotationData;
+import net.javacrumbs.shedlock.spring.aop.SpringLockConfigurationExtractor.AnnotationData;
 import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
 import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
 import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
@@ -41,7 +41,7 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
     private static final Duration DEFAULT_LOCK_TIME = Duration.of(30, ChronoUnit.MINUTES);
     private static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
     private final StringValueResolver embeddedValueResolver = mock(StringValueResolver.class);
-    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver);
+    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver, new StringToDurationConverter());
 
 
     @Test

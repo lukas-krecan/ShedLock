@@ -29,7 +29,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -107,7 +106,7 @@ public abstract class AbstractSchedulerProxyTest {
     }
 
     private long getDefaultLockAtLeastFor() {
-        return Duration.parse(defaultLockAtLeastFor).toMillis();
+        return StringToDurationConverter.INSTANCE.convert(defaultLockAtLeastFor).toMillis();
     }
 
 

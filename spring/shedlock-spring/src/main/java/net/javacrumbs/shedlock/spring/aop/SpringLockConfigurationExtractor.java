@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.internal;
+package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
@@ -31,7 +32,6 @@ import org.springframework.util.StringValueResolver;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
@@ -39,15 +39,22 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
-public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
+class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final TemporalAmount defaultLockAtMostFor;
     private final TemporalAmount defaultLockAtLeastFor;
     private final StringValueResolver embeddedValueResolver;
+    private final Converter<String, Duration> durationConverter;
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
-    public SpringLockConfigurationExtractor(@NotNull TemporalAmount defaultLockAtMostFor, @NotNull TemporalAmount defaultLockAtLeastFor, @Nullable StringValueResolver embeddedValueResolver) {
+    public SpringLockConfigurationExtractor(
+        @NotNull TemporalAmount defaultLockAtMostFor,
+        @NotNull TemporalAmount defaultLockAtLeastFor,
+        @Nullable StringValueResolver embeddedValueResolver,
+        @NotNull Converter<String, Duration> durationConverter
+    ) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
+        this.durationConverter = requireNonNull(durationConverter);
         this.embeddedValueResolver = embeddedValueResolver;
     }
 
@@ -115,13 +122,9 @@ public class SpringLockConfigurationExtractor implements LockConfigurationExtrac
                 stringValueFromAnnotation = embeddedValueResolver.resolveStringValue(stringValueFromAnnotation);
             }
             try {
-                return Duration.of(Long.parseLong(stringValueFromAnnotation), MILLIS);
-            } catch (NumberFormatException nfe) {
-                try {
-                    return Duration.parse(stringValueFromAnnotation);
-                } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
-                }
+                return durationConverter.convert(stringValueFromAnnotation);
+            } catch (IllegalStateException nfe) {
+                throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
             }
         } else {
             return defaultValue;
