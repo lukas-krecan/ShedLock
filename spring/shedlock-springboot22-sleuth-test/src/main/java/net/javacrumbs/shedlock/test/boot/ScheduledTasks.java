@@ -21,11 +21,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
+
 @Component
 public class ScheduledTasks {
     @Scheduled(fixedRate = 1)
     @SchedulerLock(name = "reportCurrentTime", lockAtLeastFor = "${lock.at.most.for}")
     public void reportCurrentTime() {
+        assertLocked();
         System.out.println(new Date());
     }
 }

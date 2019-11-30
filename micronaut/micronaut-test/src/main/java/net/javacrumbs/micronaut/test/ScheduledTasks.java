@@ -21,12 +21,15 @@ import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 import javax.inject.Singleton;
 import java.util.Date;
 
+import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
+
 @Singleton
 public class ScheduledTasks {
 
     @Scheduled(fixedDelay = "1s")
     @SchedulerLock(name = "reportCurrentTime")
     public void reportCurrentTime() {
+        assertLocked();
         System.out.println(new Date());
     }
 }
