@@ -25,8 +25,8 @@ import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 
 @Component
 public class ScheduledTasks {
-    @Scheduled(fixedRate = 1)
-    @SchedulerLock(name = "reportCurrentTime", lockAtLeastForString = "${lock.at.most.for}")
+    @Scheduled(fixedRate = 100)
+    @SchedulerLock(name = "reportCurrentTime", lockAtMostForString = "${lock.at.most.for}")
     public void reportCurrentTime() {
         assertLocked();
         System.out.println(new Date());

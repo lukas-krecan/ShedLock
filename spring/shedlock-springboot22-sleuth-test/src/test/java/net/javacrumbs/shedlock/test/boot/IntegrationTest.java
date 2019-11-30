@@ -24,8 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.atLeastOnce;
@@ -40,7 +38,7 @@ class IntegrationTest {
 
     @Test
     void testScheduler() {
-        await().timeout(1, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().untilAsserted(() -> {
             ArgumentCaptor<LockConfiguration> configCaptor = ArgumentCaptor.forClass(LockConfiguration.class);
             verify(lockProvider, atLeastOnce()).lock(configCaptor.capture());
             assertThat(configCaptor.getValue().getName()).isEqualTo("reportCurrentTime");
