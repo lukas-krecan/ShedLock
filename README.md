@@ -57,7 +57,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -82,6 +82,8 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 @Scheduled(...)
 @SchedulerLock(name = "scheduledTaskName")
 public void scheduledTask() {
+    // To assert that the lock is held (prevents misconfiguration errors)
+    LockAssert.assertLocked();
     // do something
 }
 ```
@@ -129,7 +131,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -155,7 +157,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -200,7 +202,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -230,7 +232,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -254,7 +256,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -283,7 +285,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>3.0.1</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -307,7 +309,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>3.0.1/version>
+    <version>4.0.0/version>
 </dependency>
 ```
 
@@ -331,7 +333,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>3.0.1/version>
+    <version>4.0.0/version>
 </dependency>
 ```
 
@@ -355,7 +357,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>3.0.1/version>
+    <version>4.0.0/version>
 </dependency>
 ```
 
@@ -474,6 +476,22 @@ scheduling mechanism.
 ### Spring XML configuration
 Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
+## Lock assert
+To prevent misconfiguration errors, you can assert that the lock works by using LockAssert:
+
+@Scheduled(...)
+@SchedulerLock(..)
+public void scheduledTask() {
+    // To assert that the lock is held (prevents misconfiguration errors)
+    LockAssert.assertLocked();
+    // do something
+}
+```
+
+## Kotlin gotchas
+The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
+annotation, everyting should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you 
+have to open the method by yourself. 
 
 ## Troubleshooting
 Help, ShedLock does not do what it's supposed to do!
