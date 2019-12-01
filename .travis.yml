@@ -13,7 +13,7 @@ jdk:
 - openjdk11
 
 script:
-  - mvn test javadoc: javadoc
+  - mvn test javadoc:javadoc
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
