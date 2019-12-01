@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 /**
  * Marks locked method
  *
- * @deprecated This annotation has been replaced by {@link net.javacrumbs.shedlock.spring.annotation.SchedulerLock} I am really sorry to do such a step,
+ * @deprecated This annotation has been replaced by 'net.javacrumbs.shedlock.spring.annotation.SchedulerLock' I am really sorry to do such a step,
  * but this annotation is in wrong module and stands in way of non-spring integrations. This class will not be removed before 2022.
  */
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
