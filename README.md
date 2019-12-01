@@ -527,9 +527,9 @@ Version 4.0.0 is a major release changing quite a lot stuff
 was too complex. Please use the new annotation, the old one still works, but in few years it will be removed.
 * Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there was lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
 use `PROXY_SCHEDULER` mode if you specifay it manually.
-* Support for more readable (duration strings)[#duration-specification]
+* Support for more readable [duration strings](#duration-specification)
 * Support for lock assertion `LockAssert.assertLocked()`  
-* (Support for Micronaut)[Micronaut integration] added 
+* [Support for Micronaut](Micronaut integration) added 
 
 ## 3.0.1
 * Fixed bean definition configuration #171
