@@ -529,7 +529,7 @@ was too complex. Please use the new annotation, the old one still works, but in 
 use `PROXY_SCHEDULER` mode if you specifay it manually.
 * Support for more readable [duration strings](#duration-specification)
 * Support for lock assertion `LockAssert.assertLocked()`  
-* [Support for Micronaut](Micronaut integration) added 
+* [Support for Micronaut](#micronaut-integration) added 
 
 ## 3.0.1
 * Fixed bean definition configuration #171
