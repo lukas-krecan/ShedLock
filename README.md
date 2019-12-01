@@ -95,7 +95,7 @@ at the same time.
 You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
 executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
 **You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
-`lockAtMostFor` the resulting behavior may be unpredictable (more processes will effectively hold the lock).
+`lockAtMostFor` the resulting behavior may be unpredictable (more then one process will effectively hold the lock).
 
 Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept. 
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
@@ -405,20 +405,20 @@ shedlock:
 
 Configure lock provider:
 ```java
-    @Singleton
-    public LockProvider lockProvider() {
-        ... select and configure your lock provider
-    }
+@Singleton
+public LockProvider lockProvider() {
+    ... select and configure your lock provider
+}
 ``` 
 
 Configure the scheduled task:
 ```java
-    @Scheduled(fixedDelay = "1s")
-    @SchedulerLock(name = "myTask")
-    public void myTask() {
-        assertLocked();
-        ...
-    }
+@Scheduled(fixedDelay = "1s")
+@SchedulerLock(name = "myTask")
+public void myTask() {
+    assertLocked();
+    ...
+}
 ```
 
 ## Locking without a framework
@@ -452,7 +452,7 @@ Final and non-public methods are not proxied so either you have to make your sch
 ![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
 #### TaskScheduler proxy
-This mode wraps Spring `TaskScheduler` into an AOP proxy. The mode is switched-on like this (this was the default method before 4.0.0):
+This mode wraps Spring `TaskScheduler` in an AOP proxy. The mode is switched-on like this (PROXY_SCHEDULER was the default method before 4.0.0):
 
 ```java
 @EnableSchedulerLock(interceptMode = PROXY_SCHEDULER)
@@ -479,6 +479,7 @@ Spring XML configuration is not supported as of version 3.0.0. If you need it, p
 ## Lock assert
 To prevent misconfiguration errors, you can assert that the lock works by using LockAssert:
 
+```java
 @Scheduled(...)
 @SchedulerLock(..)
 public void scheduledTask() {
