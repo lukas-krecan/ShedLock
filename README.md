@@ -2,7 +2,7 @@ ShedLock
 ========
 [![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt) [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 
-ShedLock does one and only one thing. It makes sure your scheduled tasks are executed at most once at the same time. 
+ShedLock makes sure that your scheduled tasks are executed at most once at the same time. 
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
  
@@ -15,7 +15,7 @@ Please note that ShedLock is not and will never be full-fledged scheduler, it's 
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly.
 
-
++ [Components](#components)
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
   - [Mongo](#mongo)
@@ -28,12 +28,20 @@ executed repeatedly.
   - [Couchbase](#couchbase)
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
-+ [Running without Spring](#running-without-spring)
++ [Duration specification](#duration-specification)
++ [Micronaut integration](#micronaut-integration)
++ [Locking without a framework](#locking-without-a-framework)
 + [Troubleshooting](#troubleshooting)
 + [Modes of Spring integration](#modes-of-spring-integration)
   - [TaskScheduler proxy](#taskscheduler-proxy)
   - [Scheduled method proxy](#scheduled-method-proxy)
 + [Versions](#versions)
+
+## Components
+Shedlock consists of three parts
+* Core - The locking mechanism
+* Integration - integration with your application, using Spring AOP, Micronaut AOP or manual code
+* Lock provider - provides the lock using an external process like SQL database, Mongo, Redis and others  
 
 ## Usage
 To use ShedLock, you do the following
@@ -42,8 +50,8 @@ To use ShedLock, you do the following
 3) Configure a Lock Provider
 
 
-### Enable and configure Scheduled locking
-First of all we have to import the project
+### Enable and configure Scheduled locking (Spring)
+First of all, we have to import the project
 
 ```xml
 <dependency>
@@ -53,12 +61,12 @@ First of all we have to import the project
 </dependency>
 ```
 
-Now we need to integrate the library into Spring. In order to enable schedule locking use `@EnableSchedulerLock` annotation
+Now we need to integrate the library with Spring. In order to enable schedule locking use `@EnableSchedulerLock` annotation
 
 ```java
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
+@EnableSchedulerLock(defaultLockAtMostFor = "30s")
 class MySpringConfiguration {
     ...
 }
@@ -67,7 +75,7 @@ class MySpringConfiguration {
 ### Annotate your scheduled tasks
  
  ```java
-import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 ...
 
@@ -97,12 +105,9 @@ Moreover, you want to execute it at most once per 15 minutes. In such case, you 
  ```java
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
-...
-private static final String FOURTEEN_MIN = "PT14M";
-...
 
 @Scheduled(cron = "0 */15 * * * *")
-@SchedulerLock(name = "scheduledTaskName", lockAtMostForString = FOURTEEN_MIN, lockAtLeastForString = FOURTEEN_MIN)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = "14m", lockAtLeastFor = "14m")
 public void scheduledTask() {
     // do something
 }
@@ -370,12 +375,52 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
 #### CosmosDB
 CosmosDB support is provided by a third-party module available [here](https://github.com/jesty/shedlock-provider-cosmosdb)
 
+## Duration specification
+All the annotations where you need to specify a duration support the following formats
 
-### Spring XML configuration
-Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
+* duration+unit - `1s`, `5ms`, `5m`, `1d` (Since 4.0.0)
+* duration in ms - `100` (only Spring integration)
+* ISO-8601 - `PT15M` (see [Duration.parse()](https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-) documentation)   
 
-### Running without Spring
-It is possible to use ShedLock without Spring
+## Micronaut integration
+Since version 4.0.0, it's possible to use Micronaut framework for integration
+
+Import the project:
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-micronaut</artifactId>
+    <version>4.0.0</version>
+</dependency>
+``` 
+
+Configure default lockAtMostFor value (application.yml):
+```yaml
+shedlock:
+  defaults:
+    lock-at-most-for: 1m
+```
+
+Configure lock provider:
+```java
+    @Singleton
+    public LockProvider lockProvider() {
+        ... select and configure your lock provider
+    }
+``` 
+
+Configure the scheduled task:
+```java
+    @Scheduled(fixedDelay = "1s")
+    @SchedulerLock(name = "myTask")
+    public void myTask() {
+        assertLocked();
+        ...
+    }
+```
+
+## Locking without a framework
+It is possible to use ShedLock without a framework
 
 ```java
 LockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
@@ -391,10 +436,28 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 ## Modes of Spring integration
 ShedLock supports two modes of Spring integration.
 
+
+#### Scheduled Method proxy
+Since version 4.0.0, the default mode of Spring integration is an AOP proxy around the annotated method.
+
+The main advantage of this mode, is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism. 
+The disadvantage is that the lock is applied even if you call the method directly. Be also aware that only void-returning methods are currently supported, 
+an exception is thrown if you annotate and call a method with non-void return type. 
+
+Final and non-public methods are not proxied so either you have to make your scheduled methods public and non-final or use TaskScheduler proxy.  
+
+
+![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
+
 #### TaskScheduler proxy
-By default ShedLock creates AOP proxy around Spring `TaskScheduler`. If you do not specify your task scheduler, a default one
-is created for you. If you have special needs, just create a bean implementing `TaskScheduler` interface and it will get wrapped 
-into AOP proxy automatically.
+This mode wraps Spring `TaskScheduler` into an AOP proxy. The mode is switched-on like this (this was the default method before 4.0.0):
+
+```java
+@EnableSchedulerLock(interceptMode = PROXY_SCHEDULER)
+``` 
+ 
+If you do not specify your task scheduler, a default one is created for you. If you have special needs, just create a bean implementing `TaskScheduler` 
+interface and it will get wrapped into the AOP proxy automatically.
 
 ```java   
 @Bean
@@ -408,20 +471,9 @@ scheduling mechanism.
 
 ![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
 
+### Spring XML configuration
+Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
-#### Scheduled Method proxy
-If you have even more special needs, you can use Scheduled Method proxy like this
-
-```java
-@EnableSchedulerLock(interceptMode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
-```
-
-If `PROXY_METHOD` mode is selected, ShedLock creates AOP proxy around every method with `@SchedulerLock` annotation. 
-The main advantage of this approach is that it does not depend on Spring scheduling. The disadvantage is that the lock is applied even
-if you call the method directly. Be also aware, that only void-returning methods are currently supported, an exception is thrown if you
-annotate and call a method with non-void return type.
-
-![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
 ## Troubleshooting
 Help, ShedLock does not do what it's supposed to do!
@@ -440,7 +492,6 @@ after each other, `lockAtLeastFor` can prevent it.
 ## Requirements and dependencies
 * Java 8
 * slf4j-api
-* Spring Framework (optional)
 
 ## Versions
 Version 1.x.x is compiled and tested with Spring 5 and Spring Data 2. It should be safe to use ShedLock 1.x.x with Spring 4
@@ -451,6 +502,16 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 ## Change log
+## 4.0.0
+Version 4.0.0 is a major release changing quite a lot stuff
+* `net.javacrumbs.shedlock.core.SchedulerLock` has been replaced by `net.javacrumbs.shedlock.spring.annotation.SchedulerLock`. The original annotation has been in wrong module and 
+was too complex. Please use the new annotation, the old one still works, but in few years it will be removed.
+* Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there was lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
+use `PROXY_SCHEDULER` mode if you specifay it manually.
+* Support for more readable (duration strings)[#duration-specification]
+* Support for lock assertion `LockAssert.assertLocked()`  
+* (Support for Micronaut)[Micronaut integration] added 
+
 ## 3.0.1
 * Fixed bean definition configuration #171
 
