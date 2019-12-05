@@ -15,33 +15,26 @@
  */
 package net.javacrumbs.shedlock.test.boot;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 class IntegrationTest {
 
-    @MockBean
-    private LockProvider lockProvider;
+    @Autowired
+    private ScheduledTasks scheduledTasks;
 
     @Test
     void testScheduler() {
         await().untilAsserted(() -> {
-            ArgumentCaptor<LockConfiguration> configCaptor = ArgumentCaptor.forClass(LockConfiguration.class);
-            verify(lockProvider, atLeastOnce()).lock(configCaptor.capture());
-            assertThat(configCaptor.getValue().getName()).isEqualTo("reportCurrentTime");
+            assertThat(scheduledTasks.wasCalled()).isTrue();
         });
     }
 }

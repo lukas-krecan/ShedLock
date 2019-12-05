@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -57,7 +58,7 @@ public class MethodProxyAopTest {
     public void prepareMocks() {
         Mockito.reset(lockProvider, simpleLock);
         when(lockProvider.lock(any())).thenReturn(Optional.of(simpleLock));
-
+        testBean.reset();
     }
 
     @Test
@@ -71,6 +72,7 @@ public class MethodProxyAopTest {
         testBean.normal();
         verify(lockProvider).lock(hasParams("normal", 30_000, 100));
         verify(simpleLock).unlock();
+        assertThat(testBean.wasMethodCalled()).isTrue();
     }
 
     @Test
@@ -78,6 +80,7 @@ public class MethodProxyAopTest {
         assertThatThrownBy(() -> testBean.throwsRuntimeException()).isInstanceOf(RuntimeException.class);
         verify(lockProvider).lock(hasParams("runtimeException", 100, 100));
         verify(simpleLock).unlock();
+        assertThat(testBean.wasMethodCalled()).isTrue();
     }
 
     @Test
@@ -85,6 +88,7 @@ public class MethodProxyAopTest {
         assertThatThrownBy(() -> testBean.throwsException()).isInstanceOf(IOException.class);
         verify(lockProvider).lock(hasParams("exception", 30_000, 100));
         verify(simpleLock).unlock();
+        assertThat(testBean.wasMethodCalled()).isTrue();
     }
 
     @Test
@@ -98,6 +102,7 @@ public class MethodProxyAopTest {
         testBean.spel();
         verify(lockProvider).lock(hasParams("spel", 30_000, 1_000));
         verify(simpleLock).unlock();
+        assertThat(testBean.wasMethodCalled()).isTrue();
     }
 
     @Test

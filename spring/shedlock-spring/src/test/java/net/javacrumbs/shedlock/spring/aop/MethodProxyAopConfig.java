@@ -25,6 +25,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 import static org.mockito.Mockito.mock;
@@ -51,35 +52,49 @@ public class MethodProxyAopConfig {
     }
 
     static class TestBean {
+        private final AtomicBoolean called = new AtomicBoolean(false);
+
+        void reset() {
+            called.set(false);
+        }
+
+        boolean wasMethodCalled() {
+            return called.get();
+        }
 
         public void noAnnotation() {
+            called.set(true);
         }
 
         @SchedulerLock(name = "normal")
         public void normal() {
+            called.set(true);
         }
 
         @SchedulerLock(name = "runtimeException", lockAtMostFor = "100")
         public Void throwsRuntimeException() {
+            called.set(true);
             assertLocked();
             throw new RuntimeException();
         }
 
         @SchedulerLock(name = "exception")
         public void throwsException() throws Exception {
+            called.set(true);
             assertLocked();
             throw new IOException();
         }
 
         @SchedulerLock(name = "returnsValue")
         public int returnsValue() {
+            called.set(true);
             assertLocked();
             return 0;
         }
 
         @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1s")
         public void spel() {
-
+            called.set(true);
         }
 
         @SchedulerLock(name = "${finalNotLocked}", lockAtLeastFor = "10ms")
