@@ -15,6 +15,8 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Asserts lock presence. The Spring ecosystem is so complicated, so one can not be sure that the lock is applied. This class
  * makes sure that the task is indeed locked.
@@ -23,21 +25,25 @@ package net.javacrumbs.shedlock.core;
  * broken by Sleuth,.
  */
 public class LockAssert {
-    private static ThreadLocal<Boolean> isLocked = ThreadLocal.withInitial(() -> false);
+    private static ThreadLocal<String> currentLockName = ThreadLocal.withInitial(() -> null);
 
-    static void startLock() {
-        isLocked.set(true);
+    static void startLock(String name) {
+        currentLockName.set(name);
+    }
+
+    static boolean alreadyLockedBy(@NotNull String name) {
+        return name.equals(currentLockName.get());
     }
 
     static void endLock() {
-        isLocked.remove();
+        currentLockName.remove();
     }
 
     /**
      * Throws an exception if the lock is not present.
      */
     public static void assertLocked() {
-        if (!isLocked.get()) {
+        if (currentLockName.get() == null) {
             throw new IllegalStateException("The task is not locked.");
         }
     }

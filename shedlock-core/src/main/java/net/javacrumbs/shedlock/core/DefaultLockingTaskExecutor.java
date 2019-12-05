@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.core.LockAssert.alreadyLockedBy;
 
 /**
  * Default {@link LockingTaskExecutor} implementation.
@@ -51,10 +52,15 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     @Override
     public void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
-        if (lock.isPresent()) {
+        String lockName = lockConfig.getName();
+
+        if (alreadyLockedBy(lockName)) {
+            logger.debug("Already locked '{}'", lockName);
+            task.call();
+        } else if (lock.isPresent()) {
             try {
-                LockAssert.startLock();
-                logger.debug("Locked '{}', lock will be held at most until {}", lockConfig.getName(), lockConfig.getLockAtMostUntil());
+                LockAssert.startLock(lockName);
+                logger.debug("Locked '{}', lock will be held at most until {}", lockName, lockConfig.getLockAtMostUntil());
                 task.call();
             } finally {
                 LockAssert.endLock();
@@ -63,14 +69,14 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
                     Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();
                     Instant now = Instant.now();
                     if (lockAtLeastUntil.isAfter(now)) {
-                        logger.debug("Task finished, lock '{}' will be released at {}", lockConfig.getName(), lockAtLeastUntil);
+                        logger.debug("Task finished, lock '{}' will be released at {}", lockName, lockAtLeastUntil);
                     } else {
-                        logger.debug("Task finished, lock '{}' released", lockConfig.getName());
+                        logger.debug("Task finished, lock '{}' released", lockName);
                     }
                 }
             }
         } else {
-            logger.debug("Not executing '{}'. It's locked.", lockConfig.getName());
+            logger.debug("Not executing '{}'. It's locked.", lockName);
         }
     }
 }
