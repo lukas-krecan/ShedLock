@@ -33,7 +33,7 @@ public class StorageBasedLockProviderTest {
     private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plus(5, ChronoUnit.MINUTES));
     private static final LockException LOCK_EXCEPTION = new LockException("Test");
 
-    private StorageAccessor storageAccessor = mock(StorageAccessor.class);
+    private final StorageAccessor storageAccessor = mock(StorageAccessor.class);
 
     private final StorageBasedLockProvider lockProvider = new StorageBasedLockProvider(storageAccessor);
 

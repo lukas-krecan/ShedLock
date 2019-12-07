@@ -23,11 +23,7 @@ public class DefaultLockingTaskExecutorTest {
 
         AtomicBoolean called = new AtomicBoolean(false);
 
-        executor.executeWithLock((Runnable) () -> {
-            executor.executeWithLock((Runnable) () -> {
-                called.set(true);
-            }, lockConfig);
-        }, lockConfig);
+        executor.executeWithLock((Runnable) () -> executor.executeWithLock((Runnable) () -> called.set(true), lockConfig), lockConfig);
 
         assertThat(called.get()).isTrue();
     }
