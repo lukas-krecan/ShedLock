@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
  * broken by Sleuth,.
  */
 public class LockAssert {
-    private static ThreadLocal<String> currentLockName = ThreadLocal.withInitial(() -> null);
+    private static final ThreadLocal<String> currentLockName = ThreadLocal.withInitial(() -> null);
 
     static void startLock(String name) {
         currentLockName.set(name);

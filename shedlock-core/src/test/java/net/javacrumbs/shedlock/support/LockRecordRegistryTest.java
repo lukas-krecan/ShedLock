@@ -15,18 +15,18 @@
  */
 package net.javacrumbs.shedlock.support;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LockRecordRegistryTest {
+class LockRecordRegistryTest {
     private static final String NAME = "name";
     private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
 
     @Test
-    public void unusedKeysShouldBeGarbageCollected() {
+    void unusedKeysShouldBeGarbageCollected() {
         int records = 1_000_000;
         for (int i = 0; i < records; i++) {
             lockRecordRegistry.addLockRecord(UUID.randomUUID().toString());
@@ -35,18 +35,18 @@ public class LockRecordRegistryTest {
     }
 
     @Test
-    public void shouldRememberKeys() {
+    void shouldRememberKeys() {
         lockRecordRegistry.addLockRecord(NAME);
         assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isTrue();
     }
 
     @Test
-    public void shouldNotLie() {
+    void shouldNotLie() {
         assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isFalse();
     }
 
     @Test
-    public void shouldClear() {
+    void shouldClear() {
         lockRecordRegistry.addLockRecord(NAME);
         assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isTrue();
         lockRecordRegistry.clear();

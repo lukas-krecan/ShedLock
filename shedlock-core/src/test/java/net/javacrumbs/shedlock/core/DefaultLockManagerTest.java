@@ -16,7 +16,7 @@
 package net.javacrumbs.shedlock.core;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import java.time.Instant;
@@ -28,9 +28,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class DefaultLockManagerTest {
+class DefaultLockManagerTest {
 
-    public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plusSeconds(10));
+    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plusSeconds(10));
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final Runnable task = mock(Runnable.class);
@@ -40,7 +40,7 @@ public class DefaultLockManagerTest {
 
 
     @Test
-    public void noConfigNoLock() {
+    void noConfigNoLock() {
         when(lockConfigurationExtractor.getLockConfiguration(task)).thenReturn(Optional.empty());
 
         defaultLockManager.executeWithLock(task);
@@ -49,7 +49,7 @@ public class DefaultLockManagerTest {
     }
 
     @Test
-    public void executeIfLockAvailable() {
+    void executeIfLockAvailable() {
         when(lockConfigurationExtractor.getLockConfiguration(task)).thenReturn(Optional.of(LOCK_CONFIGURATION));
         when(lockProvider.lock(LOCK_CONFIGURATION)).thenReturn(Optional.of(lock));
 
@@ -61,7 +61,7 @@ public class DefaultLockManagerTest {
     }
 
     @Test
-    public void doNotExecuteIfAlreadyLocked() {
+    void doNotExecuteIfAlreadyLocked() {
         when(lockConfigurationExtractor.getLockConfiguration(task)).thenReturn(Optional.of(LOCK_CONFIGURATION));
         when(lockProvider.lock(LOCK_CONFIGURATION)).thenReturn(Optional.empty());
 

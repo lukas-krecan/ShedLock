@@ -1,6 +1,6 @@
 package net.javacrumbs.shedlock.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -9,15 +9,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class LockAssertTest {
+class LockAssertTest {
 
     @Test
-    public void assertLockedShouldFailIfLockNotHeld() {
+    void assertLockedShouldFailIfLockNotHeld() {
         assertThatThrownBy(LockAssert::assertLocked).hasMessageStartingWith("The task is not locked");
     }
 
     @Test
-    public void assertLockedShouldNotFailIfLockHeld() {
+    void assertLockedShouldNotFailIfLockHeld() {
         LockConfiguration lockConfiguration = new LockConfiguration("test", Instant.now().plusSeconds(10));
 
         LockProvider lockProvider = mock(LockProvider.class);
