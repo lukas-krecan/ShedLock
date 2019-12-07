@@ -16,7 +16,7 @@
 package net.javacrumbs.shedlock.support;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.support;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 

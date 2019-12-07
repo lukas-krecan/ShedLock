@@ -15,8 +15,8 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class ReentrantLockProviderTest {
     private final LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
     private final LockConfiguration configuration = new LockConfiguration("test", Instant.now().plusSeconds(60));
 
-    @Before
+    @BeforeEach
     public void configureMocks() {
         when(lockConfigurationExtractor.getLockConfiguration(any(Runnable.class))).thenReturn(Optional.of(configuration));
     }
