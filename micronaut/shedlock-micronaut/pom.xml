@@ -5,12 +5,12 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.0.2</version>
+        <version>4.0.3-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.0.2</version>
+    <version>4.0.3-SNAPSHOT</version>
 
     <properties>
         <micronaut.version>1.2.6</micronaut.version>
