@@ -51,6 +51,13 @@
             <version>5.0.3.RELEASE</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-data-20</artifactId>
+            <version>3.11.6</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -22,6 +22,10 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.redisson.spring.data.connection.RedissonConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -31,6 +35,7 @@ import redis.embedded.RedisServer;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import static net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider.buildKey;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,8 +52,12 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     private final static String ENV = "test";
 
     @Parameters
-    public static Collection<RedisConnectionFactory> data() {
-        return Arrays.asList(createJedisConnectionFactory(), createLettuceConnectionFactory());
+    public static Collection<Supplier<RedisConnectionFactory>> data() {
+        return Arrays.asList(
+            RedisLockProviderIntegrationTest::createJedisConnectionFactory,
+            RedisLockProviderIntegrationTest::createLettuceConnectionFactory,
+            RedisLockProviderIntegrationTest::createRedissonConnectionFactory
+        );
     }
 
     @BeforeClass
@@ -62,7 +71,8 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
         redisServer.stop();
     }
 
-    public RedisLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
+    public RedisLockProviderIntegrationTest(Supplier<RedisConnectionFactory> connectionFactorySupplier) {
+        RedisConnectionFactory connectionFactory = connectionFactorySupplier.get();
         lockProvider = new RedisLockProvider(connectionFactory, ENV);
         redisTemplate = new StringRedisTemplate(connectionFactory);
     }
@@ -82,7 +92,6 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
         assertThat(redisTemplate.getExpire(buildKey(lockName, ENV))).isGreaterThan(0);
     }
 
-
     private static RedisConnectionFactory createJedisConnectionFactory() {
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setHostName(HOST);
@@ -95,5 +104,13 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(HOST, PORT);
         lettuceConnectionFactory.afterPropertiesSet();
         return lettuceConnectionFactory;
+    }
+
+    private static RedisConnectionFactory createRedissonConnectionFactory() {
+        Config config = new Config();
+        config.useSingleServer()
+            .setAddress("redis://" + HOST + ":" + PORT);
+        RedissonClient redisson = Redisson.create(config);
+        return new RedissonConnectionFactory(redisson);
     }
 }

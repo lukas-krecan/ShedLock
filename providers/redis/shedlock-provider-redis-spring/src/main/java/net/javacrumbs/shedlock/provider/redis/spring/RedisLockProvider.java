@@ -31,6 +31,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Boolean.TRUE;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_ABSENT;
@@ -67,7 +68,7 @@ public class RedisLockProvider implements LockProvider {
     public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName(), this.environment);
         Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
-        if (redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT)) {
+        if (TRUE.equals(redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT))) {
             return Optional.of(new RedisLock(key, redisTemplate, lockConfiguration));
         } else {
             return Optional.empty();
