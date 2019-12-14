@@ -18,9 +18,9 @@ executed repeatedly.
 + [Components](#components)
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
+  - [JdbcTemplate](#jdbctemplate)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
-  - [JdbcTemplate](#jdbctemplate)
   - [ZooKeeper (using Curator)](#zookeeper-using-curator)
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
@@ -57,7 +57,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
@@ -124,6 +124,51 @@ it may be executed again and the results will be unpredictable (more processes w
 ### Configure LockProvider
 There are several implementations of LockProvider.  
 
+#### JdbcTemplate
+First, create lock table (**please note that `name` has to be primary key**)
+
+```sql
+CREATE TABLE shedlock(
+    name VARCHAR(64), 
+    lock_until TIMESTAMP(3) NULL, 
+    locked_at TIMESTAMP(3) NULL, 
+    locked_by  VARCHAR(255), 
+    PRIMARY KEY (name)
+) 
+```
+script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227) and for Oracle [here](https://github.com/lukas-krecan/ShedLock/issues/81#issue-355599950)
+
+Add dependency
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jdbc-template</artifactId>
+    <version>4.0.2</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(DataSource dataSource) {
+    return new JdbcTemplateLockProvider(dataSource);
+}
+```
+
+Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
+
+#### Warning
+**Do not manually delete lock row or document from DB table.** ShedLock has an in-memory cache of existing locks
+so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
+that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
+ 
+
 #### Mongo
 Import the project
 
@@ -131,7 +176,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
@@ -157,7 +202,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
@@ -178,61 +223,13 @@ public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.Dyna
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
-#### JdbcTemplate
-
-There are two lock providers based on JDBC. JdbcTemplateLockProvider which uses Spring's JDBC template, supports transactions etc, and plain
-JdbcLockProvider which asseses JDBC directly. They should work more or less the same, if in doubt, use JdbcTemplateLockProvider.
-  
-First, create the table (**please note that `name` has to be primary key**)
-
-```sql
-CREATE TABLE shedlock(
-    name VARCHAR(64), 
-    lock_until TIMESTAMP(3) NULL, 
-    locked_at TIMESTAMP(3) NULL, 
-    locked_by  VARCHAR(255), 
-    PRIMARY KEY (name)
-) 
-```
-script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227) and for Oracle [here](https://github.com/lukas-krecan/ShedLock/issues/81#issue-355599950)
-
-Add dependency
-
-```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.0.1</version>
-</dependency>
-```
-
-Configure:
-
-```java
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-
-...
-
-@Bean
-public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcTemplateLockProvider(dataSource);
-}
-```
-
-Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
-
-#### Warning
-**Do not manually delete lock row or document from DB table.** ShedLock has an in-memory cache of existing locks
-so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
-that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
- 
 #### ZooKeeper (using Curator)
 Import 
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
@@ -256,7 +253,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
@@ -285,7 +282,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
@@ -309,7 +306,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.0.1/version>
+    <version>4.0.2/version>
 </dependency>
 ```
 
@@ -333,7 +330,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.0.1/version>
+    <version>4.0.2/version>
 </dependency>
 ```
 
@@ -357,7 +354,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.0.1/version>
+    <version>4.0.2/version>
 </dependency>
 ```
 
@@ -392,7 +389,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 </dependency>
 ``` 
 
@@ -521,6 +518,8 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 # Change log
+## 4.0.2
+* Fix NPE caused by Redisson #178
 ## 4.0.1
 * DefaultLockingTaskExecutor made reentrant #175
 ## 4.0.0
