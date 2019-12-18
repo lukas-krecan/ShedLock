@@ -41,11 +41,12 @@ import static org.springframework.data.redis.connection.RedisStringCommands.SetO
  * See https://redis.io/commands/set
  */
 public class RedisLockProvider implements LockProvider {
-    private static final String KEY_PREFIX = "job-lock";
+    private static final String KEY_PREFIX_DEFAULT = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
     private final ShedlockRedisTemplate redisTemplate;
     private final String environment;
+    private final String keyPrefix;
 
     public RedisLockProvider(@NotNull RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
@@ -59,14 +60,27 @@ public class RedisLockProvider implements LockProvider {
      *                    multiple ShedLock instances running on the same Redis
      */
     public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment) {
+        this(redisConn, environment, KEY_PREFIX_DEFAULT);
+    }
+
+    /**
+     * Creates RedisLockProvider
+     *
+     * @param redisConn   RedisConnectionFactory
+     * @param environment environment is part of the key and thus makes sure there is not key conflict between
+     *                    multiple ShedLock instances running on the same Redis
+     * @param keyPrefix   prefix of the key in Redis.
+     */
+    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment, @NotNull String keyPrefix) {
         this.redisTemplate = new ShedlockRedisTemplate(redisConn);
         this.environment = environment;
+        this.keyPrefix = keyPrefix;
     }
 
     @Override
     @NotNull
     public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
-        String key = buildKey(lockConfiguration.getName(), this.environment);
+        String key = buildKey(lockConfiguration.getName(), this.environment, this.keyPrefix);
         Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
         if (TRUE.equals(redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT))) {
             return Optional.of(new RedisLock(key, redisTemplate, lockConfiguration));
@@ -111,8 +125,8 @@ public class RedisLockProvider implements LockProvider {
     }
 
 
-    static String buildKey(String lockName, String env) {
-        return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
+    static String buildKey(String lockName, String env, String keyPrefix) {
+        return String.format("%s:%s:%s", keyPrefix, env, lockName);
     }
 
 
