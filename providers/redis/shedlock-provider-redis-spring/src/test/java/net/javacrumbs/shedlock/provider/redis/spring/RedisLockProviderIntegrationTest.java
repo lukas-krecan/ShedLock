@@ -50,6 +50,7 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
     final static int PORT = 6380;
     final static String HOST = "localhost";
     private final static String ENV = "test";
+    private final static String KEY_PREFIX = "test-prefix";
 
     @Parameters
     public static Collection<Supplier<RedisConnectionFactory>> data() {
@@ -73,7 +74,7 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
     public RedisLockProviderIntegrationTest(Supplier<RedisConnectionFactory> connectionFactorySupplier) {
         RedisConnectionFactory connectionFactory = connectionFactorySupplier.get();
-        lockProvider = new RedisLockProvider(connectionFactory, ENV);
+        lockProvider = new RedisLockProvider(connectionFactory, ENV, KEY_PREFIX);
         redisTemplate = new StringRedisTemplate(connectionFactory);
     }
 
@@ -84,12 +85,12 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(redisTemplate.hasKey(buildKey(lockName, ENV))).isFalse();
+        assertThat(redisTemplate.hasKey(buildKey(lockName, ENV, KEY_PREFIX))).isFalse();
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(redisTemplate.getExpire(buildKey(lockName, ENV))).isGreaterThan(0);
+        assertThat(redisTemplate.getExpire(buildKey(lockName, ENV, KEY_PREFIX))).isGreaterThan(0);
     }
 
     private static RedisConnectionFactory createJedisConnectionFactory() {
