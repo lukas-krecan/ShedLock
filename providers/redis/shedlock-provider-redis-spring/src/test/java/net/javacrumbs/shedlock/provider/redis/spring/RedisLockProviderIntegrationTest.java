@@ -37,18 +37,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import static net.javacrumbs.shedlock.provider.redis.spring.RedisLockProvider.buildKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-
     private static RedisServer redisServer;
-    private LockProvider lockProvider;
+    private RedisLockProvider lockProvider;
     private StringRedisTemplate redisTemplate;
 
-    final static int PORT = 6380;
-    final static String HOST = "localhost";
+    private final static int PORT = 6380;
+    private final static String HOST = "localhost";
     private final static String ENV = "test";
     private final static String KEY_PREFIX = "test-prefix";
 
@@ -85,12 +83,16 @@ public class RedisLockProviderIntegrationTest extends AbstractLockProviderIntegr
 
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(redisTemplate.hasKey(buildKey(lockName, ENV, KEY_PREFIX))).isFalse();
+        assertThat(redisTemplate.hasKey(buildKey(lockName))).isFalse();
+    }
+
+    private String buildKey(String lockName) {
+        return lockProvider.buildKey(lockName);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(redisTemplate.getExpire(buildKey(lockName, ENV, KEY_PREFIX))).isGreaterThan(0);
+        assertThat(redisTemplate.getExpire(buildKey(lockName))).isGreaterThan(0);
     }
 
     private static RedisConnectionFactory createJedisConnectionFactory() {

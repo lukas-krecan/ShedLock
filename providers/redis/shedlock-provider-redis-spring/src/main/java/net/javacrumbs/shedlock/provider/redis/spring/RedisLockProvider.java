@@ -80,7 +80,7 @@ public class RedisLockProvider implements LockProvider {
     @Override
     @NotNull
     public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
-        String key = buildKey(lockConfiguration.getName(), this.environment, this.keyPrefix);
+        String key = buildKey(lockConfiguration.getName());
         Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
         if (TRUE.equals(redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT))) {
             return Optional.of(new RedisLock(key, redisTemplate, lockConfiguration));
@@ -125,8 +125,8 @@ public class RedisLockProvider implements LockProvider {
     }
 
 
-    static String buildKey(String lockName, String env, String keyPrefix) {
-        return String.format("%s:%s:%s", keyPrefix, env, lockName);
+    String buildKey(String lockName) {
+        return String.format("%s:%s:%s", keyPrefix, environment, lockName);
     }
 
 
