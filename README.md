@@ -57,7 +57,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -144,7 +144,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -176,7 +176,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -202,7 +202,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -229,7 +229,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -253,7 +253,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -282,7 +282,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -306,7 +306,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.0.3/version>
+    <version>4.0.4/version>
 </dependency>
 ```
 
@@ -330,7 +330,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.0.3/version>
+    <version>4.0.4/version>
 </dependency>
 ```
 
@@ -354,7 +354,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.0.3/version>
+    <version>4.0.4/version>
 </dependency>
 ```
 
@@ -389,7 +389,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ``` 
 
@@ -433,23 +433,22 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 
 ## Modes of Spring integration
-ShedLock supports two modes of Spring integration.
-
+ShedLock supports two modes of Spring integration. One that uses AOP proxy about scheduled method (PROXY_METHOD)
+and one that proxies TaskScheduler (PROXY_SCHEDULER)
 
 #### Scheduled Method proxy
 Since version 4.0.0, the default mode of Spring integration is an AOP proxy around the annotated method.
 
 The main advantage of this mode, is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism. 
 The disadvantage is that the lock is applied even if you call the method directly. Be also aware that only void-returning methods are currently supported, 
-an exception is thrown if you annotate and call a method with non-void return type. 
+an exception is thrown if you annotate and schedule a method with non-void return type. 
 
 Final and non-public methods are not proxied so either you have to make your scheduled methods public and non-final or use TaskScheduler proxy.  
-
 
 ![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
 
 #### TaskScheduler proxy
-This mode wraps Spring `TaskScheduler` in an AOP proxy. The mode is switched-on like this (PROXY_SCHEDULER was the default method before 4.0.0):
+This mode wraps Spring `TaskScheduler` in an AOP proxy. It can be switched-on like this (PROXY_SCHEDULER was the default method before 4.0.0):
 
 ```java
 @EnableSchedulerLock(interceptMode = PROXY_SCHEDULER)
@@ -518,6 +517,9 @@ if you are not using Spring Redis lock provider which introduced incompatibility
 
 
 # Change log
+## 4.0.4
+* Allow configuration of key prefix in RedisLockProvider #181 (thanks @krm1312)
+
 ## 4.0.3
 * Fixed junit dependency scope #179
 
