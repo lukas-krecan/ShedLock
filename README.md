@@ -35,7 +35,6 @@ executed repeatedly.
 + [Modes of Spring integration](#modes-of-spring-integration)
   - [TaskScheduler proxy](#taskscheduler-proxy)
   - [Scheduled method proxy](#scheduled-method-proxy)
-+ [Versions](#versions)
 
 ## Components
 Shedlock consists of three parts
@@ -507,14 +506,6 @@ after each other, `lockAtLeastFor` can prevent it.
 ## Requirements and dependencies
 * Java 8
 * slf4j-api
-
-## Versions
-Version 1.x.x is compiled and tested with Spring 5 and Spring Data 2. It should be safe to use ShedLock 1.x.x with Spring 4
-if you are not using Spring Redis lock provider which introduced incompatibility. In other words
-- If you have dependency on spring-data-redis 2 - use ShedLock 1.x.x
-- If you have dependency on spring-data-redis 1 - use ShedLock 0.x.x
-- In all other cases, you can use both versions, prefereably 1.x.x
-
 
 # Change log
 ## 4.0.4
