@@ -90,29 +90,20 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final PlatformTransactionManager transactionManager;
         private final String tableName;
         private final TimeZone timeZone;
-        private final String nameColumnName;
-        private final String lockUntilColumnName;
-        private final String lockedAtColumnName;
-        private final String lockedByColumnName;
+        private final ColumnNames columnNames;
 
         Configuration(
             @NotNull JdbcTemplate jdbcTemplate,
             @Nullable PlatformTransactionManager transactionManager,
             @NotNull String tableName,
             @Nullable TimeZone timeZone,
-            @NotNull String nameColumnName,
-            @NotNull String lockUntilColumnName,
-            @NotNull String lockedAtColumnName,
-            @NotNull String lockedByColumnName
+            @NotNull ColumnNames columnNames
         ) {
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.transactionManager = transactionManager;
             this.tableName = requireNonNull(tableName, "tableName can not be null");
             this.timeZone = timeZone;
-            this.nameColumnName = requireNonNull(nameColumnName, "'name' column name can not be null");
-            this.lockUntilColumnName = requireNonNull(lockUntilColumnName, "'lockUntil' column name can not be null");
-            this.lockedAtColumnName = requireNonNull(lockedAtColumnName, "'lockedAt' column name can not be null");
-            this.lockedByColumnName = requireNonNull(lockedByColumnName, "'lockedBy' column name can not be null");
+            this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -131,20 +122,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return timeZone;
         }
 
-        public String getNameColumnName() {
-            return nameColumnName;
-        }
-
-        public String getLockUntilColumnName() {
-            return lockUntilColumnName;
-        }
-
-        public String getLockedAtColumnName() {
-            return lockedAtColumnName;
-        }
-
-        public String getLockedByColumnName() {
-            return lockedByColumnName;
+        public ColumnNames getColumnNames() {
+            return columnNames;
         }
 
         public static Configuration.Builder builder() {
@@ -156,10 +135,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
             private TimeZone timeZone;
-            private String nameColumnName = "name";
-            private String lockUntilColumnName = "lock_until";
-            private String lockedAtColumnName = "locked_at";
-            private String lockedByColumnName = "locked_by";
+            private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
 
             public Builder withJdbcTemplate(@NotNull JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -181,19 +157,46 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withColumnNames(String nameColumnName, String lockUntilColumnName, String lockedAtColumnName, String lockedByColumnName) {
-                this.nameColumnName = nameColumnName;
-                this.lockUntilColumnName = lockUntilColumnName;
-                this.lockedAtColumnName = lockedAtColumnName;
-                this.lockedByColumnName = lockedByColumnName;
+            public Builder withColumnNames(ColumnNames columnNames) {
+                this.columnNames = columnNames;
                 return this;
             }
 
             public JdbcTemplateLockProvider.Configuration build() {
-                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, nameColumnName, lockUntilColumnName, lockedAtColumnName, lockedByColumnName);
+                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames);
             }
         }
 
+    }
+
+    public static class ColumnNames {
+        private final String name;
+        private final String lockUntil;
+        private final String lockedAt;
+        private final String lockedBy;
+
+        public ColumnNames(String name, String lockUntil, String lockedAt, String lockedBy) {
+            this.name = requireNonNull(name, "'name' column name can not be null");
+            this.lockUntil = requireNonNull(lockUntil, "'lockUntil' column name can not be null");
+            this.lockedAt = requireNonNull(lockedAt, "'lockedAt' column name can not be null");
+            this.lockedBy = requireNonNull(lockedBy, "'lockedBy' column name can not be null");
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getLockUntil() {
+            return lockUntil;
+        }
+
+        public String getLockedAt() {
+            return lockedAt;
+        }
+
+        public String getLockedBy() {
+            return lockedBy;
+        }
     }
 
 }

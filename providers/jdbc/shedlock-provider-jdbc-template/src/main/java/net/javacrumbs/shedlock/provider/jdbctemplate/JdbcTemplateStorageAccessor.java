@@ -137,19 +137,19 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     private String name() {
-        return configuration.getNameColumnName();
+        return configuration.getColumnNames().getName();
     }
 
     private String lockUntil() {
-        return configuration.getLockUntilColumnName();
+        return configuration.getColumnNames().getLockUntil();
     }
 
     private String lockedAt() {
-        return configuration.getLockedAtColumnName();
+        return configuration.getColumnNames().getLockedAt();
     }
 
     private String lockedBy() {
-        return configuration.getLockedByColumnName();
+        return configuration.getColumnNames().getLockedBy();
     }
 
     private String tableName() {

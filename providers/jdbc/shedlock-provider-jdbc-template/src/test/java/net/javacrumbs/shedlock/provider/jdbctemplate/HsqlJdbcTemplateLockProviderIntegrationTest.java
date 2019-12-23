@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.ColumnNames;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
 
         JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
             .withTableName("shdlck")
-            .withColumnNames("n", "lck_untl", "lckd_at", "lckd_by")
+            .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
             .build());
 
