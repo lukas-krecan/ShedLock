@@ -90,12 +90,29 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final PlatformTransactionManager transactionManager;
         private final String tableName;
         private final TimeZone timeZone;
+        private final String nameColumnName;
+        private final String lockUntilColumnName;
+        private final String lockedAtColumnName;
+        private final String lockedByColumnName;
 
-        Configuration(@NotNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager, @NotNull String tableName, @Nullable TimeZone timeZone) {
+        Configuration(
+            @NotNull JdbcTemplate jdbcTemplate,
+            @Nullable PlatformTransactionManager transactionManager,
+            @NotNull String tableName,
+            @Nullable TimeZone timeZone,
+            @NotNull String nameColumnName,
+            @NotNull String lockUntilColumnName,
+            @NotNull String lockedAtColumnName,
+            @NotNull String lockedByColumnName
+        ) {
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.transactionManager = transactionManager;
             this.tableName = requireNonNull(tableName, "tableName can not be null");
             this.timeZone = timeZone;
+            this.nameColumnName = requireNonNull(nameColumnName, "'name' column name can not be null");
+            this.lockUntilColumnName = requireNonNull(lockUntilColumnName, "'lockUntil' column name can not be null");
+            this.lockedAtColumnName = requireNonNull(lockedAtColumnName, "'lockedAt' column name can not be null");
+            this.lockedByColumnName = requireNonNull(lockedByColumnName, "'lockedBy' column name can not be null");
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -114,6 +131,22 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return timeZone;
         }
 
+        public String getNameColumnName() {
+            return nameColumnName;
+        }
+
+        public String getLockUntilColumnName() {
+            return lockUntilColumnName;
+        }
+
+        public String getLockedAtColumnName() {
+            return lockedAtColumnName;
+        }
+
+        public String getLockedByColumnName() {
+            return lockedByColumnName;
+        }
+
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -123,6 +156,10 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
             private TimeZone timeZone;
+            private String nameColumnName = "name";
+            private String lockUntilColumnName = "lock_until";
+            private String lockedAtColumnName = "locked_at";
+            private String lockedByColumnName = "locked_by";
 
             public Builder withJdbcTemplate(@NotNull JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -144,8 +181,16 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            public Builder withColumnNames(String nameColumnName, String lockUntilColumnName, String lockedAtColumnName, String lockedByColumnName) {
+                this.nameColumnName = nameColumnName;
+                this.lockUntilColumnName = lockUntilColumnName;
+                this.lockedAtColumnName = lockedAtColumnName;
+                this.lockedByColumnName = lockedByColumnName;
+                return this;
+            }
+
             public JdbcTemplateLockProvider.Configuration build() {
-                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone);
+                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, nameColumnName, lockUntilColumnName, lockedAtColumnName, lockedByColumnName);
             }
         }
 

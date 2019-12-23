@@ -42,26 +42,24 @@ import static java.util.Objects.requireNonNull;
  * Spring JdbcTemplate based implementation usable in JTA environment
  */
 class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
-    private final String tableName;
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
-    private final TimeZone timeZone;
+    private final Configuration configuration;
 
     JdbcTemplateStorageAccessor(@NotNull Configuration configuration) {
-        this.jdbcTemplate = requireNonNull(configuration.getJdbcTemplate(), "jdbcTemplate can not be null");
-        this.tableName = requireNonNull(configuration.getTableName(), "tableName can not be null");
+        this.configuration = requireNonNull(configuration, "configuration can not be null");
+        this.jdbcTemplate = configuration.getJdbcTemplate();
         PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null ?
             configuration.getTransactionManager() :
             new DataSourceTransactionManager(jdbcTemplate.getDataSource());
 
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        this.timeZone = configuration.getTimeZone();
     }
 
     @Override
     public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)";
+        String sql = "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(?, ?, ?, ?)";
         return transactionTemplate.execute(status -> {
             try {
                 int insertedRows = jdbcTemplate.update(sql, preparedStatement -> {
@@ -82,8 +80,8 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName
-            + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
+        String sql = "UPDATE " + tableName()
+            + " SET " + lockUntil() + " = ?, " + lockedAt() + " = ?, " + lockedBy() + " = ? WHERE " + name() + " = ? AND " + lockUntil() + " <= ?";
         return transactionTemplate.execute(status -> {
             int updatedRows = jdbcTemplate.update(sql, statement -> {
                 Instant now = Instant.now();
@@ -99,8 +97,8 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean extend(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName
-            + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
+        String sql = "UPDATE " + tableName()
+            + " SET " + lockUntil() + " = ? WHERE " + name() + " = ? AND " + lockedBy() + " = ? AND " + lockUntil() + " > ? ";
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         return transactionTemplate.execute(status -> {
@@ -115,6 +113,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     private void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, Instant time) throws SQLException {
+        TimeZone timeZone = configuration.getTimeZone();
         if (timeZone == null) {
             preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time));
         } else {
@@ -124,7 +123,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public void unlock(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ?";
+        String sql = "UPDATE " + tableName() + " SET " + lockUntil() + " = ? WHERE " + name() + " = ?";
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
@@ -135,6 +134,26 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 });
             }
         });
+    }
+
+    private String name() {
+        return configuration.getNameColumnName();
+    }
+
+    private String lockUntil() {
+        return configuration.getLockUntilColumnName();
+    }
+
+    private String lockedAt() {
+        return configuration.getLockedAtColumnName();
+    }
+
+    private String lockedBy() {
+        return configuration.getLockedByColumnName();
+    }
+
+    private String tableName() {
+        return configuration.getTableName();
     }
 
 }

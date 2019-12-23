@@ -15,12 +15,22 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
+import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.Instant;
 import java.util.Calendar;
+import java.util.Optional;
 import java.util.TimeZone;
+
+import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 
 public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
 
@@ -28,11 +38,30 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
 
     @Override
     protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
+        return new JdbcTemplateLockProvider(builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
             .withTimeZone(TIME_ZONE)
             .build()
         );
+    }
+
+    @Test
+    public void shouldBeAbleToSetCustomColumnNames() throws SQLException {
+        try (
+            Connection conn = getDatasource().getConnection();
+            Statement statement = conn.createStatement()
+        ) {
+            statement.execute("CREATE TABLE shdlck(n VARCHAR(64), lck_untl TIMESTAMP(3), lckd_at TIMESTAMP(3), lckd_by  VARCHAR(255), PRIMARY KEY (n))");
+        }
+
+        JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
+            .withTableName("shdlck")
+            .withColumnNames("n", "lck_untl", "lckd_at", "lckd_by")
+            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+            .build());
+
+        Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", Instant.now().plusSeconds(10)));
+        lock.get().unlock();
     }
 
     @Override
