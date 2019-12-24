@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import net.javacrumbs.shedlock.support.Utils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -91,19 +92,21 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final String tableName;
         private final TimeZone timeZone;
         private final ColumnNames columnNames;
+        private final String lockedByValue;
 
         Configuration(
             @NotNull JdbcTemplate jdbcTemplate,
             @Nullable PlatformTransactionManager transactionManager,
             @NotNull String tableName,
             @Nullable TimeZone timeZone,
-            @NotNull ColumnNames columnNames
-        ) {
+            @NotNull ColumnNames columnNames,
+            @NotNull String lockedByValue) {
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.transactionManager = transactionManager;
             this.tableName = requireNonNull(tableName, "tableName can not be null");
             this.timeZone = timeZone;
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
+            this.lockedByValue = requireNonNull(lockedByValue, "lockedByValue can not be null");
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -126,6 +129,10 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return columnNames;
         }
 
+        public String getLockedByValue() {
+            return lockedByValue;
+        }
+
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -135,6 +142,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
             private TimeZone timeZone;
+            private String lockedByValue = Utils.getHostname();
             private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
 
             public Builder withJdbcTemplate(@NotNull JdbcTemplate jdbcTemplate) {
@@ -162,8 +170,16 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            /**
+             * Value stored in 'locked_by' column. Please use only for debugging purposes.
+             */
+            public Builder withLockedByValue(String lockedBy) {
+                this.lockedByValue = lockedBy;
+                return this;
+            }
+
             public JdbcTemplateLockProvider.Configuration build() {
-                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames);
+                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames, lockedByValue);
             }
         }
 

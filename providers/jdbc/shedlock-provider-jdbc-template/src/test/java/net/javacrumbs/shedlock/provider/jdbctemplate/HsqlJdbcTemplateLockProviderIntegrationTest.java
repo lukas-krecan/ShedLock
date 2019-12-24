@@ -59,6 +59,7 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
             .withTableName("shdlck")
             .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+            .withLockedByValue("my-value")
             .build());
 
         Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", Instant.now().plusSeconds(10)));

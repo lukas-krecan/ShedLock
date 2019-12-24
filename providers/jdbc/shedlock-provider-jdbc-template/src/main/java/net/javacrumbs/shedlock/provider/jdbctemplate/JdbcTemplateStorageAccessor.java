@@ -66,7 +66,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                     preparedStatement.setString(1, lockConfiguration.getName());
                     setTimestamp(preparedStatement, 2, lockConfiguration.getLockAtMostUntil());
                     setTimestamp(preparedStatement, 3, Instant.now());
-                    preparedStatement.setString(4, getHostname());
+                    preparedStatement.setString(4, lockedByValue());
                 });
                 return insertedRows > 0;
             } catch (DuplicateKeyException e) {
@@ -87,7 +87,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 Instant now = Instant.now();
                 setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
                 setTimestamp(statement, 2, now);
-                statement.setString(3, getHostname());
+                statement.setString(3, lockedByValue());
                 statement.setString(4, lockConfiguration.getName());
                 setTimestamp(statement, 5, now);
             });
@@ -105,7 +105,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             int updatedRows = jdbcTemplate.update(sql, statement -> {
                 setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
                 statement.setString(2, lockConfiguration.getName());
-                statement.setString(3, getHostname());
+                statement.setString(3, lockedByValue());
                 setTimestamp(statement, 4, Instant.now());
             });
             return updatedRows > 0;
@@ -150,6 +150,11 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     private String lockedBy() {
         return configuration.getColumnNames().getLockedBy();
+    }
+
+
+    private String lockedByValue() {
+        return configuration.getLockedByValue();
     }
 
     private String tableName() {

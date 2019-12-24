@@ -64,6 +64,7 @@ public final class Utils {
     private Utils() {
     }
 
+    @NotNull
     public static String getHostname() {
         return hostname;
     }
