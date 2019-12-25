@@ -56,7 +56,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -143,7 +143,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -162,6 +162,17 @@ public LockProvider lockProvider(DataSource dataSource) {
 
 Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
 
+For more fine-grained configuration use the `Configuration` object
+
+```java
+new JdbcTemplateLockProvider(builder()
+    .withTableName("shdlck")
+    .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
+    .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+    .withLockedByValue("my-value")
+    .build())
+```
+
 #### Warning
 **Do not manually delete lock row or document from DB table.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
@@ -175,7 +186,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -201,7 +212,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -228,7 +239,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -252,7 +263,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -281,7 +292,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ```
 
@@ -305,7 +316,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.0.4/version>
+    <version>4.1.0/version>
 </dependency>
 ```
 
@@ -329,7 +340,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.0.4/version>
+    <version>4.1.0/version>
 </dependency>
 ```
 
@@ -353,7 +364,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.0.4/version>
+    <version>4.1.0/version>
 </dependency>
 ```
 
@@ -388,7 +399,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.0.4</version>
+    <version>4.1.0</version>
 </dependency>
 ``` 
 
@@ -508,6 +519,9 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Change log
+# 4.1.0
+* More configuration option for JdbcTemplateProvider
+
 ## 4.0.4
 * Allow configuration of key prefix in RedisLockProvider #181 (thanks @krm1312)
 
