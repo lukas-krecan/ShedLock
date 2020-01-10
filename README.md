@@ -28,6 +28,7 @@ executed repeatedly.
   - [Couchbase](#couchbase)
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
+  - [Cassandra](#cassandra)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
@@ -383,6 +384,42 @@ public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClien
 
 #### CosmosDB
 CosmosDB support is provided by a third-party module available [here](https://github.com/jesty/shedlock-provider-cosmosdb)
+
+
+#### Cassandra
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-cassandra</artifactId>
+    <version>4.1.0/version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider;
+
+...
+
+@Bean
+public CassandraLockProvider lockProvider(CqlSession cqlSession) {
+    return new CassandraStorageAccessor(cqlSession);
+}
+```
+
+There are available additionals constructors for customizing database connection parameters:
+ - custom table name: CassandraLockProvider(CqlSession cqlSession, String table)
+ - custom connection parameters CassandraLockProvider(String contactPoint, int port, String datacenter, String keyspace, String table) {
+
+Example for creating default keyspace and table in local Cassandra instance:
+```sql
+CREATE KEYSPACE shedlock with replication={'class':'SimpleStrategy', 'replication_factor':1} and durable_writes=true;
+CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt timestamp, lockedBy text);
+```
+
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
