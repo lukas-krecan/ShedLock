@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
@@ -49,7 +50,7 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
     }
 
     private Lock findLock(String lockName) {
-        CassandraStorageAccessor cassandraStorageAccessor = new CassandraStorageAccessor(cqlSession, CassandraLockProvider.DEFAULT_TABLE);
+        CassandraStorageAccessor cassandraStorageAccessor = new CassandraStorageAccessor(cqlSession, CassandraLockProvider.DEFAULT_TABLE, ConsistencyLevel.QUORUM);
         return cassandraStorageAccessor.find(lockName).get();
     }
 }

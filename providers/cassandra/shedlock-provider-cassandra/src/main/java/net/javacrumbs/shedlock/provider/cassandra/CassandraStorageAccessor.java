@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -24,11 +25,13 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String hostname;
     private final String table;
     private final CqlSession cqlSession;
+    private final ConsistencyLevel consistencyLevel;
 
-    CassandraStorageAccessor(@NotNull CqlSession cqlSession, @NotNull String table) {
+    CassandraStorageAccessor(@NotNull CqlSession cqlSession, @NotNull String table, @NotNull ConsistencyLevel consistencyLevel) {
         this.hostname = Utils.getHostname();
         this.table = table;
         this.cqlSession = cqlSession;
+        this.consistencyLevel = consistencyLevel;
     }
 
     @Override
@@ -105,7 +108,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .ifNotExists()
                 .build();
 
-        return cqlSession.execute(insertStatement).wasApplied();
+        return executeStatement(insertStatement);
     }
 
     /**
@@ -123,7 +126,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .ifColumn(LOCK_UNTIL).isLessThan(literal(Instant.now()))
                 .build();
 
-        return cqlSession.execute(updateStatement).wasApplied();
+        return executeStatement(updateStatement);
     }
 
     /**
@@ -140,6 +143,11 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
                 .build();
 
-        return cqlSession.execute(updateStatement).wasApplied();
+        return executeStatement(updateStatement);
+    }
+
+
+    private boolean executeStatement(SimpleStatement statement) {
+        return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel)).wasApplied();
     }
 }
