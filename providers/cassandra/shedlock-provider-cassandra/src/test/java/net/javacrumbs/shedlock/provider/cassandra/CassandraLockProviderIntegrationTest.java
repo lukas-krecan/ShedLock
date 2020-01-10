@@ -1,13 +1,12 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
-import org.junit.After;
+import org.cassandraunit.CassandraCQLUnit;
+import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.junit.Before;
-
-import java.net.InetSocketAddress;
+import org.junit.Rule;
 
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,21 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @see net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider
  */
 public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
+    @Rule
+    public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet("shedlock.cql", "shedlock"));
 
     private CqlSession cqlSession;
 
     @Before
     public void before() {
-        cqlSession = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(CassandraLockProvider.DEFAULT_CONCACT_POINT, CassandraLockProvider.DEFAULT_PORT))
-                .withLocalDatacenter(CassandraLockProvider.DEFAULT_DATACENTER)
-                .withKeyspace(CassandraLockProvider.DEFAULT_KEYSPACE)
-                .build();
-    }
-
-    @After
-    public void after() {
-        cqlSession.execute(QueryBuilder.truncate(CassandraLockProvider.DEFAULT_TABLE).build());
+        cqlSession = cassandraCQLUnit.getSession();
     }
 
     @Override
