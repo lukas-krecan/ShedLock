@@ -16,7 +16,6 @@ import java.util.Optional;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
 class CassandraStorageAccessor extends AbstractStorageAccessor {
-
     private static final String LOCK_NAME = "name";
     private static final String LOCK_UNTIL = "lockUntil";
     private static final String LOCKED_AT = "lockedAt";
@@ -84,9 +83,11 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
 
         ResultSet resultSet = cqlSession.execute(selectStatement);
         Row row = resultSet.one();
-        return row != null ?
-                Optional.of(new Lock(row.getString(LOCK_NAME), row.getInstant(LOCK_UNTIL), row.getInstant(LOCKED_AT), row.getString(LOCKED_BY))) :
-                Optional.empty();
+        if (row != null) {
+            return Optional.of(new Lock(row.getInstant(LOCK_UNTIL), row.getInstant(LOCKED_AT), row.getString(LOCKED_BY)));
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -104,8 +105,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .ifNotExists()
                 .build();
 
-        ResultSet resultSet = cqlSession.execute(insertStatement);
-        return resultSet.wasApplied();
+        return cqlSession.execute(insertStatement).wasApplied();
     }
 
     /**
@@ -123,8 +123,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .ifColumn(LOCK_UNTIL).isLessThan(literal(Instant.now()))
                 .build();
 
-        ResultSet resultSet = cqlSession.execute(updateStatement);
-        return resultSet.wasApplied();
+        return cqlSession.execute(updateStatement).wasApplied();
     }
 
     /**
@@ -141,7 +140,6 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
                 .build();
 
-        ResultSet resultSet = cqlSession.execute(updateStatement);
-        return resultSet.wasApplied();
+        return cqlSession.execute(updateStatement).wasApplied();
     }
 }
