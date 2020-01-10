@@ -36,11 +36,20 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
+        if (find(lockConfiguration.getName()).isPresent()) {
+            return false;
+        }
+
         return insert(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
     }
 
     @Override
     public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
+        Optional<Lock> lock = find(lockConfiguration.getName());
+        if (!lock.isPresent() || lock.get().getLockUntil().isAfter(Instant.now())) {
+            return false;
+        }
+
         return update(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
     }
 
@@ -51,7 +60,37 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean extend(@NotNull LockConfiguration lockConfiguration) {
+        Optional<Lock> lock = find(lockConfiguration.getName());
+        if (!lock.isPresent() || lock.get().getLockUntil().isBefore(Instant.now()) || !lock.get().getLockedBy().equals(hostname)) {
+            logger.trace("extend false");
+            return false;
+        }
+
         return updateUntil(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+    }
+
+    /**
+     * Find existing row by primary key lock.name
+     *
+     * @param name lock name
+     * @return optional lock row or empty
+     */
+    Optional<Lock> find(String name) {
+        SimpleStatement selectStatement = QueryBuilder.selectFrom(table)
+            .column(LOCK_NAME)
+            .column(LOCK_UNTIL)
+            .column(LOCKED_AT)
+            .column(LOCKED_BY)
+            .whereColumn(LOCK_NAME).isEqualTo(literal(name))
+            .build();
+
+        ResultSet resultSet = cqlSession.execute(selectStatement);
+        Row row = resultSet.one();
+        if (row != null) {
+            return Optional.of(new Lock(row.getInstant(LOCK_UNTIL), row.getInstant(LOCKED_AT), row.getString(LOCKED_BY)));
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -107,34 +146,8 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         return executeStatement(updateStatement);
     }
 
+
     private boolean executeStatement(SimpleStatement statement) {
         return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel)).wasApplied();
-    }
-
-
-    /**
-     * Find existing row by primary key lock.name
-     * <p>
-     * Just for test
-     *
-     * @param name lock name
-     * @return optional lock row or empty
-     */
-    Optional<Lock> find(String name) {
-        SimpleStatement selectStatement = QueryBuilder.selectFrom(table)
-            .column(LOCK_NAME)
-            .column(LOCK_UNTIL)
-            .column(LOCKED_AT)
-            .column(LOCKED_BY)
-            .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-            .build();
-
-        ResultSet resultSet = cqlSession.execute(selectStatement);
-        Row row = resultSet.one();
-        if (row != null) {
-            return Optional.of(new Lock(row.getInstant(LOCK_UNTIL), row.getInstant(LOCKED_AT), row.getString(LOCKED_BY)));
-        } else {
-            return Optional.empty();
-        }
     }
 }
