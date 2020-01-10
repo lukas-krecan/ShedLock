@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @see net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider
  */
-public class CassandraLockProvderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
+public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private CqlSession cqlSession;
 
