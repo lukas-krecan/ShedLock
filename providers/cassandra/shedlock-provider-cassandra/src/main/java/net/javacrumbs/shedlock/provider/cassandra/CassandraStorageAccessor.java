@@ -10,13 +10,12 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.Optional;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
-public class CassandraStorageAccessor extends AbstractStorageAccessor {
+class CassandraStorageAccessor extends AbstractStorageAccessor {
 
     private static final String LOCK_NAME = "name";
     private static final String LOCK_UNTIL = "lockUntil";
@@ -27,17 +26,7 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String table;
     private final CqlSession cqlSession;
 
-    public CassandraStorageAccessor(@NotNull String contactPoint, @NotNull int port, @NotNull String datacenter, @NotNull String keyspace, @NotNull String table) {
-        this.hostname = Utils.getHostname();
-        this.table = table;
-        cqlSession = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(contactPoint, port))
-                .withLocalDatacenter(datacenter)
-                .withKeyspace(keyspace)
-                .build();
-    }
-
-    public CassandraStorageAccessor(@NotNull CqlSession cqlSession, @NotNull String table) {
+    CassandraStorageAccessor(@NotNull CqlSession cqlSession, @NotNull String table) {
         this.hostname = Utils.getHostname();
         this.table = table;
         this.cqlSession = cqlSession;
@@ -106,7 +95,7 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param name  lock name
      * @param until new until instant value
      */
-    boolean insert(String name, Instant until) {
+    private boolean insert(String name, Instant until) {
         SimpleStatement insertStatement = QueryBuilder.insertInto(table)
                 .value(LOCK_NAME, literal(name))
                 .value(LOCK_UNTIL, literal(until))
@@ -116,9 +105,6 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .build();
 
         ResultSet resultSet = cqlSession.execute(insertStatement);
-        if (resultSet == null) {
-            return false;
-        }
         return resultSet.wasApplied();
     }
 
@@ -128,7 +114,7 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param name  lock name
      * @param until new until instant value
      */
-    boolean update(String name, Instant until) {
+    private boolean update(String name, Instant until) {
         SimpleStatement updateStatement = QueryBuilder.update(table)
                 .setColumn(LOCK_UNTIL, literal(until))
                 .setColumn(LOCKED_AT, literal(Instant.now()))
@@ -138,9 +124,6 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .build();
 
         ResultSet resultSet = cqlSession.execute(updateStatement);
-        if (resultSet == null) {
-            return false;
-        }
         return resultSet.wasApplied();
     }
 
@@ -150,7 +133,7 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param name  lock name
      * @param until new until instant value
      */
-    boolean updateUntil(String name, Instant until) {
+    private boolean updateUntil(String name, Instant until) {
         SimpleStatement updateStatement = QueryBuilder.update(table)
                 .setColumn(LOCK_UNTIL, literal(until))
                 .whereColumn(LOCK_NAME).isEqualTo(literal(name))
@@ -159,9 +142,6 @@ public class CassandraStorageAccessor extends AbstractStorageAccessor {
                 .build();
 
         ResultSet resultSet = cqlSession.execute(updateStatement);
-        if (resultSet == null) {
-            return false;
-        }
         return resultSet.wasApplied();
     }
 }

@@ -406,7 +406,7 @@ import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider;
 
 @Bean
 public CassandraLockProvider lockProvider(CqlSession cqlSession) {
-    return new CassandraStorageAccessor(cqlSession);
+    return new CassandraLockProvider(cqlSession);
 }
 ```
 
