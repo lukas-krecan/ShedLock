@@ -14,7 +14,9 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Instant;
 import java.util.Optional;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
 
 class CassandraStorageAccessor extends AbstractStorageAccessor {
     private static final String LOCK_NAME = "name";
@@ -36,55 +38,61 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
-        if (find(lockConfiguration.getName()).isPresent()) {
-            return false;
-        }
-
-        return insert(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        return execute(insertInto(table)
+                .value(LOCK_NAME, literal(lockConfiguration.getName()))
+                .value(LOCK_UNTIL, literal(lockConfiguration.getLockAtMostUntil()))
+                .value(LOCKED_AT, literal(Instant.now()))
+                .value(LOCKED_BY, literal(hostname))
+                .ifNotExists()
+                .build());
     }
 
     @Override
     public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
-        Optional<Lock> lock = find(lockConfiguration.getName());
-        if (!lock.isPresent() || lock.get().getLockUntil().isAfter(Instant.now())) {
-            return false;
-        }
-
-        return update(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        return execute(update(table)
+                .setColumn(LOCK_UNTIL, literal(lockConfiguration.getLockAtMostUntil()))
+                .setColumn(LOCKED_AT, literal(Instant.now()))
+                .setColumn(LOCKED_BY, literal(hostname))
+                .whereColumn(LOCK_NAME).isEqualTo(literal(lockConfiguration.getName()))
+                .ifColumn(LOCK_UNTIL).isLessThan(literal(Instant.now()))
+                .build());
     }
 
     @Override
     public void unlock(@NotNull LockConfiguration lockConfiguration) {
-        updateUntil(lockConfiguration.getName(), lockConfiguration.getUnlockTime());
+        execute(update(table)
+            .setColumn(LOCK_UNTIL, literal(lockConfiguration.getUnlockTime()))
+            .whereColumn(LOCK_NAME).isEqualTo(literal(lockConfiguration.getName()))
+            .build());
     }
 
     @Override
     public boolean extend(@NotNull LockConfiguration lockConfiguration) {
-        Optional<Lock> lock = find(lockConfiguration.getName());
-        if (!lock.isPresent() || lock.get().getLockUntil().isBefore(Instant.now()) || !lock.get().getLockedBy().equals(hostname)) {
-            logger.trace("extend false");
-            return false;
-        }
-
-        return updateUntil(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        return execute(update(table)
+                .setColumn(LOCK_UNTIL, literal(lockConfiguration.getLockAtMostUntil()))
+                .whereColumn(LOCK_NAME).isEqualTo(literal(lockConfiguration.getName()))
+                .ifColumn(LOCK_UNTIL).isGreaterThanOrEqualTo(literal(Instant.now()))
+                .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
+                .build());
     }
 
     /**
      * Find existing row by primary key lock.name
      *
+     * Used only for tests.
+     *
      * @param name lock name
      * @return optional lock row or empty
      */
     Optional<Lock> find(String name) {
-        SimpleStatement selectStatement = QueryBuilder.selectFrom(table)
+        ResultSet resultSet = cqlSession.execute(QueryBuilder.selectFrom(table)
             .column(LOCK_NAME)
             .column(LOCK_UNTIL)
             .column(LOCKED_AT)
             .column(LOCKED_BY)
             .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-            .build();
+            .build());
 
-        ResultSet resultSet = cqlSession.execute(selectStatement);
         Row row = resultSet.one();
         if (row != null) {
             return Optional.of(new Lock(row.getInstant(LOCK_UNTIL), row.getInstant(LOCKED_AT), row.getString(LOCKED_BY)));
@@ -93,61 +101,9 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    /**
-     * Insert new lock row
-     *
-     * @param name  lock name
-     * @param until new until instant value
-     */
-    private boolean insert(String name, Instant until) {
-        SimpleStatement insertStatement = QueryBuilder.insertInto(table)
-                .value(LOCK_NAME, literal(name))
-                .value(LOCK_UNTIL, literal(until))
-                .value(LOCKED_AT, literal(Instant.now()))
-                .value(LOCKED_BY, literal(hostname))
-                .ifNotExists()
-                .build();
-
-        return executeStatement(insertStatement);
-    }
-
-    /**
-     * Update existing lock row
-     *
-     * @param name  lock name
-     * @param until new until instant value
-     */
-    private boolean update(String name, Instant until) {
-        SimpleStatement updateStatement = QueryBuilder.update(table)
-                .setColumn(LOCK_UNTIL, literal(until))
-                .setColumn(LOCKED_AT, literal(Instant.now()))
-                .setColumn(LOCKED_BY, literal(hostname))
-                .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-                .ifColumn(LOCK_UNTIL).isLessThan(literal(Instant.now()))
-                .build();
-
-        return executeStatement(updateStatement);
-    }
-
-    /**
-     * Updates lock.until field where lockConfiguration.name
-     *
-     * @param name  lock name
-     * @param until new until instant value
-     */
-    private boolean updateUntil(String name, Instant until) {
-        SimpleStatement updateStatement = QueryBuilder.update(table)
-                .setColumn(LOCK_UNTIL, literal(until))
-                .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-                .ifColumn(LOCK_UNTIL).isGreaterThanOrEqualTo(literal(Instant.now()))
-                .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
-                .build();
-
-        return executeStatement(updateStatement);
-    }
 
 
-    private boolean executeStatement(SimpleStatement statement) {
+    private boolean execute(SimpleStatement statement) {
         return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel)).wasApplied();
     }
 }
