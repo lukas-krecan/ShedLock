@@ -2,12 +2,16 @@ package net.javacrumbs.shedlock.provider.cassandra;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
-import org.cassandraunit.CassandraCQLUnit;
+import org.cassandraunit.CQLDataLoader;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.junit.Before;
-import org.junit.Rule;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.After;
+import org.junit.BeforeClass;
+
+import java.io.IOException;
 
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,14 +22,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @see net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider
  */
 public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
-    @Rule
-    public CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(new ClassPathCQLDataSet("shedlock.cql", "shedlock"));
+    private static CqlSession cqlSession;
 
-    private CqlSession cqlSession;
+    @BeforeClass
+    public static void startCassandra() throws IOException, InterruptedException {
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+        cqlSession = EmbeddedCassandraServerHelper.getSession();
+        new CQLDataLoader(cqlSession).load(new ClassPathCQLDataSet("shedlock.cql", "shedlock"));
+    }
 
-    @Before
-    public void before() {
-        cqlSession = cassandraCQLUnit.getSession();
+    @After
+    public void after() {
+        cqlSession.execute(QueryBuilder.truncate(CassandraLockProvider.DEFAULT_TABLE).build());
     }
 
     @Override
