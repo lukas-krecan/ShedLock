@@ -16,6 +16,13 @@ import java.util.Optional;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
+/**
+ * StorageAccessor for cassandra.
+ **/
+/*
+ * In theory, all the reads (find() method calls) in update methods are not necessary,
+ * but it's a performance optimization. Moreover, the fuzzTest sometimes fails without them.
+ */
 class CassandraStorageAccessor extends AbstractStorageAccessor {
     private static final String LOCK_NAME = "name";
     private static final String LOCK_UNTIL = "lockUntil";
@@ -77,12 +84,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     Optional<Lock> find(String name) {
         SimpleStatement selectStatement = QueryBuilder.selectFrom(table)
-            .column(LOCK_NAME)
             .column(LOCK_UNTIL)
             .column(LOCKED_AT)
             .column(LOCKED_BY)
             .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-            .build();
+            .build()
+            .setConsistencyLevel(consistencyLevel);
 
         ResultSet resultSet = cqlSession.execute(selectStatement);
         Row row = resultSet.one();
@@ -100,15 +107,13 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param until new until instant value
      */
     private boolean insert(String name, Instant until) {
-        SimpleStatement insertStatement = QueryBuilder.insertInto(table)
+        return execute(QueryBuilder.insertInto(table)
                 .value(LOCK_NAME, literal(name))
                 .value(LOCK_UNTIL, literal(until))
                 .value(LOCKED_AT, literal(Instant.now()))
                 .value(LOCKED_BY, literal(hostname))
                 .ifNotExists()
-                .build();
-
-        return executeStatement(insertStatement);
+                .build());
     }
 
     /**
@@ -118,15 +123,13 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param until new until instant value
      */
     private boolean update(String name, Instant until) {
-        SimpleStatement updateStatement = QueryBuilder.update(table)
+        return execute(QueryBuilder.update(table)
                 .setColumn(LOCK_UNTIL, literal(until))
                 .setColumn(LOCKED_AT, literal(Instant.now()))
                 .setColumn(LOCKED_BY, literal(hostname))
                 .whereColumn(LOCK_NAME).isEqualTo(literal(name))
                 .ifColumn(LOCK_UNTIL).isLessThan(literal(Instant.now()))
-                .build();
-
-        return executeStatement(updateStatement);
+                .build());
     }
 
     /**
@@ -136,18 +139,16 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param until new until instant value
      */
     private boolean updateUntil(String name, Instant until) {
-        SimpleStatement updateStatement = QueryBuilder.update(table)
+        return execute(QueryBuilder.update(table)
                 .setColumn(LOCK_UNTIL, literal(until))
                 .whereColumn(LOCK_NAME).isEqualTo(literal(name))
                 .ifColumn(LOCK_UNTIL).isGreaterThanOrEqualTo(literal(Instant.now()))
                 .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
-                .build();
-
-        return executeStatement(updateStatement);
+                .build());
     }
 
 
-    private boolean executeStatement(SimpleStatement statement) {
+    private boolean execute(SimpleStatement statement) {
         return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel)).wasApplied();
     }
 }
