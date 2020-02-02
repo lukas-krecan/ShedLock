@@ -23,7 +23,8 @@ import net.javacrumbs.shedlock.support.LockException;
 import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.util.Pool;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.util.Pool;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -31,6 +32,7 @@ import java.util.Optional;
 
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+import static redis.clients.jedis.params.SetParams.setParams;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
@@ -41,11 +43,6 @@ public class JedisLockProvider implements LockProvider {
 
     private static final String KEY_PREFIX = "job-lock";
     private static final String ENV_DEFAULT = "default";
-
-    // Redis Flags
-    private static final String SET_IF_NOT_EXIST = "NX";
-    private static final String SET_IF_EXIST = "XX";
-    private static final String SET_EXPIRE_TIME_IN_MS = "PX";
 
     private final JedisTemplate jedisTemplate;
     private final String environment;
@@ -87,9 +84,8 @@ public class JedisLockProvider implements LockProvider {
 
         String rez = jedisTemplate.set(key,
             buildValue(),
-            SET_IF_NOT_EXIST,
-            SET_EXPIRE_TIME_IN_MS,
-            expireTime);
+            setParams().nx().px(expireTime)
+        );
 
         if ("OK".equals(rez)) {
             return Optional.of(new RedisLock(key, jedisTemplate, lockConfiguration));
@@ -122,9 +118,8 @@ public class JedisLockProvider implements LockProvider {
             } else {
                 jedisTemplate.set(key,
                     buildValue(),
-                    SET_IF_EXIST,
-                    SET_EXPIRE_TIME_IN_MS,
-                    keepLockFor);
+                    setParams().xx().px(keepLockFor)
+                );
             }
         }
     }
@@ -142,7 +137,7 @@ public class JedisLockProvider implements LockProvider {
     }
 
     private interface JedisTemplate {
-        String set(String key, String value, String nxxx, String expx, long time);
+        String set(String key, String value, SetParams setParams);
 
         void del(String key);
     }
@@ -155,9 +150,9 @@ public class JedisLockProvider implements LockProvider {
         }
 
         @Override
-        public String set(String key, String value, String nxxx, String expx, long time) {
+        public String set(String key, String value, SetParams setParams) {
             try (Jedis jedis = jedisPool.getResource()) {
-                return jedis.set(key, value, nxxx, expx, time);
+                return jedis.set(key, value, setParams);
             }
         }
 
@@ -177,8 +172,8 @@ public class JedisLockProvider implements LockProvider {
         }
 
         @Override
-        public String set(String key, String value, String nxxx, String expx, long time) {
-            return jedisCluster.set(key, value, nxxx, expx, time);
+        public String set(String key, String value, SetParams setParams) {
+            return jedisCluster.set(key, value, setParams);
         }
 
         @Override
