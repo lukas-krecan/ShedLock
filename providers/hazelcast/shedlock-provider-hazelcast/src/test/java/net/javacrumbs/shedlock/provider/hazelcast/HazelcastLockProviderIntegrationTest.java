@@ -20,9 +20,9 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -36,18 +36,18 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
 
     private static HazelcastLockProvider lockProvider;
 
-    @BeforeClass
+    @BeforeAll
     public static void startHazelcast() throws IOException {
         hazelcastInstance = Hazelcast.newHazelcastInstance();
         lockProvider = new HazelcastLockProvider(hazelcastInstance);
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopHazelcast() throws IOException {
         hazelcastInstance.shutdown();
     }
 
-    @After
+    @AfterEach
     public void resetLockProvider() throws UnknownHostException {
         hazelcastInstance.removeDistributedObjectListener(HazelcastLockProvider.LOCK_STORE_KEY_DEFAULT);
     }

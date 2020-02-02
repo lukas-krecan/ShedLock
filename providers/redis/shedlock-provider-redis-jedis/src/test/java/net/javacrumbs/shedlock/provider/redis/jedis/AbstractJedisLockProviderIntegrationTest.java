@@ -18,13 +18,14 @@ package net.javacrumbs.shedlock.provider.redis.jedis;
 import com.playtika.test.redis.RedisProperties;
 import com.playtika.test.redis.wait.RedisClusterStatusCheck;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -34,11 +35,16 @@ import java.util.function.Consumer;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+@Testcontainers
 public abstract class AbstractJedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJedisLockProviderIntegrationTest.class);
-    @Rule
-    public final GenericContainer redis;
-    {
+
+    protected final static int PORT = 6379;
+
+    @Container
+    public static final GenericContainer redis;
+
+    static {
         RedisProperties properties = new RedisProperties();
         properties.host = "localhost";
         properties.port = PORT;
@@ -56,13 +62,11 @@ public abstract class AbstractJedisLockProviderIntegrationTest extends AbstractL
             .withCommand("redis-server", "/data/redis.conf");
     }
 
-
     protected static JedisPool jedisPool;
 
-    protected final static int PORT = 6379;
     protected final static String ENV = "test";
 
-    @Before
+    @BeforeEach
     public void initPool() {
         jedisPool = new JedisPool(redis.getContainerIpAddress(), PORT);
     }

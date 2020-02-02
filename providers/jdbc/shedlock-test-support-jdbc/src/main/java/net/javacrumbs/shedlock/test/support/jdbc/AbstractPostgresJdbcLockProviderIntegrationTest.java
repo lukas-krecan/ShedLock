@@ -15,20 +15,20 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 
 public abstract class AbstractPostgresJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final PostgresConfig dbConfig = new PostgresConfig();
 
-    @BeforeClass
+    @BeforeAll
     public static void startDb() throws IOException {
         dbConfig.startDb();
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutdownDb() {
         dbConfig.shutdownDb();
     }

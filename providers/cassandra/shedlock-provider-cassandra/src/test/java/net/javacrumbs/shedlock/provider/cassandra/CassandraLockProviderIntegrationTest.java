@@ -8,8 +8,8 @@ import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderInte
 import org.cassandraunit.CQLDataLoader;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 
@@ -24,14 +24,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     private static CqlSession cqlSession;
 
-    @BeforeClass
+    @BeforeAll
     public static void startCassandra() throws IOException, InterruptedException {
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         cqlSession = EmbeddedCassandraServerHelper.getSession();
         new CQLDataLoader(cqlSession).load(new ClassPathCQLDataSet("shedlock.cql", "shedlock"));
     }
 
-    @After
+    @AfterEach
     public void after() {
         cqlSession.execute(QueryBuilder.truncate(CassandraLockProvider.DEFAULT_TABLE).build());
     }

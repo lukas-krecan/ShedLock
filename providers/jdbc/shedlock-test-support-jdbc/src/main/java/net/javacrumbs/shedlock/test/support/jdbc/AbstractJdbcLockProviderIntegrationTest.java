@@ -18,9 +18,9 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.Calendar;
@@ -34,14 +34,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     protected JdbcTestUtils testUtils;
 
-    @Before
+    @BeforeEach
     public void initTestUtils() {
         testUtils = new JdbcTestUtils(getDbConfig());
     }
 
     protected abstract DbConfig getDbConfig();
 
-    @After
+    @AfterEach
     public void cleanup() {
         testUtils.clean();
     }

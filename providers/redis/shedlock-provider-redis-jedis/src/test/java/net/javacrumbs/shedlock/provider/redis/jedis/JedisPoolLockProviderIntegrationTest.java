@@ -16,13 +16,13 @@
 package net.javacrumbs.shedlock.provider.redis.jedis;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class JedisPoolLockProviderIntegrationTest extends AbstractJedisLockProviderIntegrationTest {
 
     private LockProvider lockProvider;
 
-    @Before
+    @BeforeEach
     public void createLockProvider() {
         lockProvider = new JedisLockProvider(jedisPool, ENV);
     }

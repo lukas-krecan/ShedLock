@@ -16,7 +16,7 @@
 package net.javacrumbs.shedlock.provider.redis.jedis;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
@@ -24,7 +24,7 @@ public class JedisClusterLockProviderIntegrationTest extends AbstractJedisLockPr
 
     private LockProvider lockProvider;
 
-    @Before
+    @BeforeEach
     public void createLockProvider() {
         JedisCluster jedisCluster = new JedisCluster(new HostAndPort(redis.getContainerIpAddress(), redis.getFirstMappedPort()));
         lockProvider = new JedisLockProvider(jedisCluster, ENV);

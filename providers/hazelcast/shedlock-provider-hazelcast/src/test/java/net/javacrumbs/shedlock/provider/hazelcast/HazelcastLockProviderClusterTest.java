@@ -21,9 +21,9 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -50,7 +50,7 @@ public class HazelcastLockProviderClusterTest {
 
     private static HazelcastLockProvider lockProvider2;
 
-    @Before
+    @BeforeEach
     public void startHazelcast() throws IOException {
         hazelcastInstance1 = Hazelcast.newHazelcastInstance();
         lockProvider1 = new HazelcastLockProvider(hazelcastInstance1);
@@ -58,7 +58,7 @@ public class HazelcastLockProviderClusterTest {
         lockProvider2 = new HazelcastLockProvider(HazelcastClient.newHazelcastClient());
     }
 
-    @After
+    @AfterEach
     public void resetLockProvider() throws UnknownHostException {
         Hazelcast.shutdownAll();
     }

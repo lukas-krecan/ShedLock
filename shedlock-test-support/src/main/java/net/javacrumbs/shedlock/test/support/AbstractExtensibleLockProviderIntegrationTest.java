@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.test.support;
 
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.assertj.core.api.ThrowableAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;

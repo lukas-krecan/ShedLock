@@ -26,10 +26,10 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.bson.Document;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Date;
@@ -53,7 +53,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
 
     private static MongoClient mongo;
 
-    @BeforeClass
+    @BeforeAll
     public static void startMongo() throws IOException {
         mongodExe = starter.prepare(new MongodConfigBuilder()
             .version(Version.Main.V3_6)
@@ -63,7 +63,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
         mongo = new MongoClient("localhost", mongod.getConfig().net().getPort());
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopMongo() {
         mongo.close();
         mongod.stop();
@@ -71,7 +71,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     }
 
 
-    @Before
+    @BeforeEach
     public void cleanDb() {
         mongo.getDatabase(DB_NAME).drop();
     }

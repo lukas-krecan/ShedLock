@@ -15,18 +15,19 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public abstract class AbstractMySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final MySqlConfig dbConfig = new MySqlConfig();
 
-    @BeforeClass
+    @BeforeAll
     public static void startMySql() {
         dbConfig.startDb();
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutDownMysql() {
         dbConfig.shutdownDb();
     }

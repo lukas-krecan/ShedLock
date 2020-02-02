@@ -23,9 +23,9 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.CreateMode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -37,14 +37,14 @@ public class ZookeeperCuratorLockProviderIntegrationTest extends AbstractLockPro
     private CuratorFramework client;
     private ZookeeperCuratorLockProvider zookeeperCuratorLockProvider;
 
-    @Before
+    @BeforeEach
     public void startZookeeper() throws Exception {
         zkTestServer = new TestingServer();
         client = newClient();
         zookeeperCuratorLockProvider = new ZookeeperCuratorLockProvider(client);
     }
 
-    @After
+    @AfterEach
     public void stopZookeeper() throws IOException {
         client.close();
         zkTestServer.stop();
