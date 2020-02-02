@@ -23,10 +23,10 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
 import pl.allegro.tech.embeddedelasticsearch.IndexSettings;
 import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
@@ -53,7 +53,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     private RestHighLevelClient highLevelClient;
     private ElasticsearchLockProvider lockProvider;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         highLevelClient = new RestHighLevelClient(
             RestClient.builder(
@@ -61,7 +61,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         lockProvider = new ElasticsearchLockProvider(highLevelClient);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         highLevelClient.close();
     }
@@ -101,7 +101,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startEmbeddedElastic() throws IOException, InterruptedException {
         embeddedElastic = EmbeddedElastic.builder()
             .withElasticVersion("6.4.0")
@@ -116,7 +116,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
             .start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopEmbeddedElastic() {
         if (embeddedElastic != null) {
             embeddedElastic.stop();

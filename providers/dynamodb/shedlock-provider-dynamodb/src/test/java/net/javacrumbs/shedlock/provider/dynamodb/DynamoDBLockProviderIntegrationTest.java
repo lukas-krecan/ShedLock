@@ -24,10 +24,10 @@ import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -53,13 +53,13 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
     private static final String TABLE_NAME = "Shedlock";
     private AmazonDynamoDB dynamodb;
 
-    @Before
+    @BeforeEach
     public void createLockProvider() {
         dynamodb = dynamodbFactory.amazonDynamoDB();
         DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, new ProvisionedThroughput(1L, 1L));
     }
 
-    @After
+    @AfterEach
     public void deleteLockTable() {
         dynamodb.deleteTable(TABLE_NAME);
     }
@@ -102,12 +102,12 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
         return getLockTable().getItem(ID, lockName);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startDynamoDB() {
         dynamodbFactory = DynamoDBEmbedded.create();
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopDynamoDB() {
         dynamodbFactory.shutdown();
     }

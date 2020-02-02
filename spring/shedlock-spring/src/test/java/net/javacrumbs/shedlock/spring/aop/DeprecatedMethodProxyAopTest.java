@@ -19,13 +19,13 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.spring.aop.DeprecatedMethodProxyAopConfig.AnotherTestBean;
 import net.javacrumbs.shedlock.spring.aop.DeprecatedMethodProxyAopConfig.TestBean;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = DeprecatedMethodProxyAopConfig.class)
 public class DeprecatedMethodProxyAopTest {
     @Autowired
@@ -53,7 +53,7 @@ public class DeprecatedMethodProxyAopTest {
 
     private final SimpleLock simpleLock = mock(SimpleLock.class);
 
-    @Before
+    @BeforeEach
     public void prepareMocks() {
         Mockito.reset(lockProvider, simpleLock);
         when(lockProvider.lock(any())).thenReturn(Optional.of(simpleLock));

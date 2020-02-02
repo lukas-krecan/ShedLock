@@ -1,6 +1,6 @@
 package net.javacrumbs.shedlock.spring.aop;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 

@@ -20,7 +20,7 @@ import net.javacrumbs.shedlock.spring.aop.SpringLockConfigurationExtractor.Annot
 import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
 import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
 import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringValueResolver;

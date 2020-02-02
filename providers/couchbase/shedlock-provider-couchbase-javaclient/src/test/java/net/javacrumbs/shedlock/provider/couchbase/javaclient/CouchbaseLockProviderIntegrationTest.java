@@ -22,10 +22,10 @@ import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.JsonDocument;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
@@ -44,7 +44,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     private static Cluster cluster;
     private static Bucket bucket;
 
-    @BeforeClass
+    @BeforeAll
     public static void startCouchbase () {
         cluster = connect();
         cluster.authenticate("Administrator", "password");
@@ -52,18 +52,18 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         bucket = cluster.openBucket(BUCKET_NAME);
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopCouchbase () {
         disconnect(cluster);
     }
 
-    @Before
+    @BeforeEach
     public void createLockProvider()  {
         bucket = getBucket(cluster);
         lockProvider = new CouchbaseLockProvider(bucket);
     }
 
-    @After
+    @AfterEach
     public void clear() {
         try {
             bucket.remove(LOCK_NAME1);

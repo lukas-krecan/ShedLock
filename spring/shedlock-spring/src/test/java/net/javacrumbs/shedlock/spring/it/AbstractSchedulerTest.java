@@ -16,10 +16,10 @@
 package net.javacrumbs.shedlock.spring.it;
 
 import net.javacrumbs.shedlock.core.LockProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
 import static org.awaitility.Awaitility.await;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public abstract class AbstractSchedulerTest {
 
     @Autowired
