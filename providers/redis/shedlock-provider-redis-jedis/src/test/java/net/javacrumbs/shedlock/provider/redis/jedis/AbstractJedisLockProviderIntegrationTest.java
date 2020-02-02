@@ -15,24 +15,46 @@
  */
 package net.javacrumbs.shedlock.provider.redis.jedis;
 
+import com.playtika.test.redis.RedisProperties;
+import com.playtika.test.redis.wait.RedisClusterStatusCheck;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.utility.MountableFile;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public abstract class AbstractJedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJedisLockProviderIntegrationTest.class);
     @Rule
-    public final GenericContainer redis = new GenericContainer<>("redis:5-alpine")
-        .withExposedPorts(PORT)
-        .withCopyFileToContainer(MountableFile.forClasspathResource("redis.conf"), "/data/redis.conf")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("nodes.conf"), "/data/nodes.conf");
+    public final GenericContainer redis;
+    {
+        RedisProperties properties = new RedisProperties();
+        properties.host = "localhost";
+        properties.port = PORT;
+        properties.requirepass = false;
+
+        Consumer<OutputFrame> consumer = frame -> LOGGER.info(frame.getUtf8String());
+        redis = new FixedHostPortGenericContainer("redis:5-alpine")
+            .withFixedExposedPort(PORT, PORT)
+            .withExposedPorts(PORT)
+            .withLogConsumer(consumer)
+            .withCopyFileToContainer(MountableFile.forClasspathResource("redis.conf"), "/data/redis.conf")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("nodes.conf"), "/data/nodes.conf")
+            .waitingFor(new RedisClusterStatusCheck(properties))
+            //.waitingFor(new RedisStatusCheck(properties))
+            .withCommand("redis-server", "/data/redis.conf");
+    }
 
 
     protected static JedisPool jedisPool;
@@ -42,7 +64,7 @@ public abstract class AbstractJedisLockProviderIntegrationTest extends AbstractL
 
     @Before
     public void initPool() {
-        jedisPool = new JedisPool(redis.getContainerIpAddress(), redis.getFirstMappedPort());
+        jedisPool = new JedisPool(redis.getContainerIpAddress(), PORT);
     }
 
     @Override
