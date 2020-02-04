@@ -36,6 +36,7 @@ executed repeatedly.
 + [Modes of Spring integration](#modes-of-spring-integration)
   - [TaskScheduler proxy](#taskscheduler-proxy)
   - [Scheduled method proxy](#scheduled-method-proxy)
++ [Release notes](#release-notes)
 
 ## Components
 Shedlock consists of three parts
@@ -551,16 +552,17 @@ after each other, `lockAtLeastFor` can prevent it.
 * Java 8
 * slf4j-api
 
-# 4.3.0
+# Release notes
+
+## 4.3.0
 * Jedis dependency upgraded to 3.2.0
 * Support for JedisCluster
 * Tests upgraded to JUnit 5
 
-# Change log
-# 4.2.0
+## 4.2.0
 * Cassandra provider (thanks @mitjag)
 
-# 4.1.0
+## 4.1.0
 * More configuration option for JdbcTemplateProvider
 
 ## 4.0.4
