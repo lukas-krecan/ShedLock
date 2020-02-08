@@ -98,6 +98,8 @@ executing node dies. This is just a fallback, under normal circumstances the loc
 **You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
 `lockAtMostFor` the resulting behavior may be unpredictable (more then one process will effectively hold the lock).
 
+If you do not specify `lockAtMostFor` in `@SchedulerLock` default value from `@EnableSchedulerLock` will be used.
+
 Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept. 
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
 
@@ -174,6 +176,9 @@ new JdbcTemplateLockProvider(builder()
     .withLockedByValue("my-value")
     .build())
 ```
+
+If you need to specify a schema, you can set it table name using the usual dot notation 
+`new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
 **Do not manually delete lock row or document from DB table.** ShedLock has an in-memory cache of existing locks
