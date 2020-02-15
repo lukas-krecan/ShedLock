@@ -23,9 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
+import java.time.Instant;
 import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -49,14 +48,18 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     @Override
     protected void assertUnlocked(String lockName) {
-        List<Map<String, Object>> unlockedRows = testUtils.getJdbcTemplate().queryForList("SELECT * FROM shedlock WHERE name = ? AND lock_until <= ?", lockName, now());
-        assertThat(unlockedRows).hasSize(1);
+        Instant lockedUntil = getLockedUntil(lockName);
+        assertThat(lockedUntil).isBefore(Instant.now());
+    }
+
+    private Instant getLockedUntil(String lockName) {
+        return testUtils.getJdbcTemplate().queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", new Object[]{lockName}, Instant.class);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        List<Map<String, Object>> lockedRows = testUtils.getJdbcTemplate().queryForList("SELECT * FROM shedlock WHERE name = ? AND lock_until > ?", lockName, now());
-        assertThat(lockedRows).hasSize(1);
+        Instant lockedUntil = getLockedUntil(lockName);
+        assertThat(lockedUntil).isAfter(Instant.now());
     }
 
     @Test
