@@ -42,6 +42,7 @@
         <module>providers/hazelcast/shedlock-provider-hazelcast</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
+        <module>providers/redis/shedlock-provider-redis-spring-1</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
     </modules>
