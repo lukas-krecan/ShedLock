@@ -49,7 +49,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @Override
     protected void assertUnlocked(String lockName) {
         Instant lockedUntil = getLockedUntil(lockName);
-        assertThat(lockedUntil).isBefore(Instant.now());
+        assertThat(lockedUntil).isBeforeOrEqualTo(Instant.now());
     }
 
     private Instant getLockedUntil(String lockName) {
