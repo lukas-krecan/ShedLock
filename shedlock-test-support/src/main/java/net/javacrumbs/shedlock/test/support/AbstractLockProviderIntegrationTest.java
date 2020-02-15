@@ -84,14 +84,14 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(20), Duration.ZERO);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        sleep(25);
+        sleep(55);
         assertUnlocked(LOCK_NAME1);
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(5), Duration.ZERO));
+        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO));
         assertThat(lock2).isNotEmpty();
         lock2.get().unlock();
     }
