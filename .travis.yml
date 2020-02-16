@@ -4,7 +4,6 @@ services:
 - docker
 
 before_install:
-- sudo apt-get -qq update
 - sudo apt-get install -y libaio1
 - docker run --detach --name cb-test -p 8091-8094:8091-8094 -p 11210:11210 nhive/couchbase-test
 language: java
