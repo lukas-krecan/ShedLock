@@ -73,9 +73,9 @@ public class RedisLockProvider implements LockProvider {
                 return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
             } else {
                 byte[] value = redisConnection.get(keyBytes);
-                if(value == null || getExpirationFromValue(value).getExpirationTimeInMilliseconds() <= 0) {
+                if(isUnlocked(value)) {
                     byte[] maybeOldValue = redisConnection.getSet(keyBytes, buildValue(lockConfiguration.getLockAtMostUntil()));
-                    if(maybeOldValue == null || getExpirationFromValue(maybeOldValue).getExpirationTimeInMilliseconds() <= 0) {
+                    if(isUnlocked(maybeOldValue)) {
                         return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
                     }
                 }
@@ -84,6 +84,10 @@ public class RedisLockProvider implements LockProvider {
         } finally {
             close(redisConnection);
         }
+    }
+
+    private boolean isUnlocked(byte[] value) {
+        return value == null || getExpirationFromValue(value).getExpirationTimeInMilliseconds() <= 0;
     }
 
     private static Expiration getExpiration(Instant until) {
