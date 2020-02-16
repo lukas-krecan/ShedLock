@@ -41,6 +41,7 @@
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
         <module>providers/hazelcast/shedlock-provider-hazelcast</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
+        <module>providers/redis/shedlock-provider-redis-redisson</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/redis/shedlock-provider-redis-spring-1</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
