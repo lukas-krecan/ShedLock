@@ -288,9 +288,11 @@ public LockProvider lockProvider(RedisConnectionFactory connectionFactory) {
 }
 ```
  
-If you have dependency on spring-data-redis 2 use ShedLock 1.x.x, if you have dependency on spring-data-redis 1 use ShedLock 0.x.x.
-Please note that there is a bug #105 when ShedLock is used with spring-data-redis 1 so it's recommended to use either spring-data-redis 2
-with newest ShedLock or Jedis provider.
+Redis lock provider uses classical lock mechanism as described [here](https://redis.io/commands/setnx#design-pattern-locking-with-codesetnxcode) 
+which may not be reliable in case of Redis master failure.
+
+If you are still using Spring Data Redis 1, import special lock provider `shedlock-provider-redis-spring-1` which works around 
+issue #105 or upgrade to Spring Data Redis 2 or higher.
 
 
 #### Redis (using Jedis)
@@ -299,7 +301,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 </dependency>
 ```
 
@@ -323,7 +325,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.3.0/version>
+    <version>4.3.1/version>
 </dependency>
 ```
 
@@ -347,7 +349,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.3.0/version>
+    <version>4.3.1/version>
 </dependency>
 ```
 
@@ -371,7 +373,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.3.0/version>
+    <version>4.3.1/version>
 </dependency>
 ```
 
@@ -399,7 +401,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.3.0/version>
+    <version>4.3.1/version>
 </dependency>
 ```
 
@@ -438,7 +440,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 </dependency>
 ``` 
 
@@ -558,6 +560,8 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+# 4.3.1
+* Introduced shedlock-provider-redis-spring-1 to make it work around Spring Data Redis 1 issue #105 (thanks @rygh4775)
 
 ## 4.3.0
 * Jedis dependency upgraded to 3.2.0
