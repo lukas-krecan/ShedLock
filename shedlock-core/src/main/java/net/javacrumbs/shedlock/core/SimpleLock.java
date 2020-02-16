@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.core;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -40,7 +41,24 @@ public interface SimpleLock {
      * @throws UnsupportedOperationException if the lock extension is not supported by LockProvider.
      */
     @NotNull
+    @Deprecated
     default Optional<SimpleLock> extend(@NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Extends the lock. If the lock can be extended a new lock is returned. After calling extend, no other operation
+     * can be called on current lock.
+     * <p>
+     * This method is NOT supported by all lock providers.
+     *
+     * @return a new lock or empty optional if the lock can not be extended
+     * @throws IllegalStateException         if the lock has already been unlocked or extended
+     * @throws UnsupportedOperationException if the lock extension is not supported by LockProvider.
+     */
+    @NotNull
+    default Optional<SimpleLock> extend(@NotNull Duration lockAtMostFor, @NotNull Duration lockAtLeastFor) {
+        Instant now = Instant.now();
+        return extend(now.plus(lockAtMostFor), now.plus(lockAtLeastFor));
     }
 }

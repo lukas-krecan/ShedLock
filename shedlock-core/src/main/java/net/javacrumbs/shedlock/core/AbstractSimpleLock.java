@@ -17,7 +17,9 @@ package net.javacrumbs.shedlock.core;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 public abstract class AbstractSimpleLock implements SimpleLock {
@@ -39,9 +41,16 @@ public abstract class AbstractSimpleLock implements SimpleLock {
 
     @Override
     @NotNull
+    @Deprecated
     public final Optional<SimpleLock> extend(@NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+        Instant now = Instant.now();
+        return extend(Duration.between(now, lockAtMostUntil), Duration.between(now, lockAtLeastUntil));
+    }
+
+    @Override
+    public @NotNull Optional<SimpleLock> extend(@NotNull Duration lockAtMostFor, @NotNull Duration lockAtLeastFor) {
         checkValidity();
-        Optional<SimpleLock> result = doExtend(new LockConfiguration(lockConfiguration.getName(), lockAtMostUntil, lockAtLeastUntil));
+        Optional<SimpleLock> result = doExtend(new LockConfiguration(lockConfiguration.getName(), lockAtMostFor, lockAtLeastFor));
         valid = false;
         return result;
     }

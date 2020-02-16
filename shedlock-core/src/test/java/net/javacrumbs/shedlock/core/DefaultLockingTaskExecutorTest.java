@@ -3,7 +3,7 @@ package net.javacrumbs.shedlock.core;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 class DefaultLockingTaskExecutorTest {
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final DefaultLockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
-    private final LockConfiguration lockConfig = new LockConfiguration("test", ClockProvider.now().plusSeconds(100));
+    private final LockConfiguration lockConfig = new LockConfiguration("test", Duration.ofSeconds(100), Duration.ZERO);
 
     @Test
     void lockShouldBeReentrant() {

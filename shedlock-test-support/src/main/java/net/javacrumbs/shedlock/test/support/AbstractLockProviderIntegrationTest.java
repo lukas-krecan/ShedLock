@@ -22,7 +22,6 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -146,8 +145,6 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
-        Instant now = ClockProvider.now();
-        return new LockConfiguration(name, now.plus(lockAtMostFor), now.plus(lockAtLeastFor));
-    }
-
+        return new LockConfiguration(name, lockAtMostFor, lockAtLeastFor);
+   }
 }

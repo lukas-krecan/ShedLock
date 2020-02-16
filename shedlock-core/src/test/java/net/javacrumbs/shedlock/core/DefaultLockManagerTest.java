@@ -19,7 +19,7 @@ package net.javacrumbs.shedlock.core;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.mockito.Mockito.inOrder;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 class DefaultLockManagerTest {
 
-    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", ClockProvider.now().plusSeconds(10));
+    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Duration.ofSeconds(10), Duration.ZERO);
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final Runnable task = mock(Runnable.class);
