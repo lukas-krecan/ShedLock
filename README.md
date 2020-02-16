@@ -181,7 +181,7 @@ If you need to specify a schema, you can set it in table name using the usual do
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
-**Do not manually delete lock row or document from DB table.** ShedLock has an in-memory cache of existing locks
+**Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
 that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
  
