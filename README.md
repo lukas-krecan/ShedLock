@@ -193,7 +193,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 </dependency>
 ```
 
@@ -219,7 +219,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 </dependency>
 ```
 
@@ -246,7 +246,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 </dependency>
 ```
 
@@ -270,7 +270,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 </dependency>
 ```
 
