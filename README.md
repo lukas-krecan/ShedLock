@@ -90,7 +90,7 @@ public void scheduledTask() {
 ```
         
 The `@SchedulerLock` annotation has several purposes. First of all, only annotated methods are locked, the library ignores
-all other scheduled tasks. You also have to specify the name for the lock. Only one tasks with the same name can be executed
+all other scheduled tasks. You also have to specify the name for the lock. Only one task with the same name can be executed
 at the same time. 
 
 You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
