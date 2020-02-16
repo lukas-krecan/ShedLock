@@ -177,7 +177,7 @@ new JdbcTemplateLockProvider(builder()
     .build())
 ```
 
-If you need to specify a schema, you can set it table name using the usual dot notation 
+If you need to specify a schema, you can set it in table name using the usual dot notation 
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
