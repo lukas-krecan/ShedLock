@@ -59,7 +59,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
 
     @Override
     @NotNull
-    public TaskResult executeWithLock(@NotNull TaskWithResult task, @NotNull LockConfiguration lockConfig) throws Throwable {
+    public <T> TaskResult<T> executeWithLock(@NotNull TaskWithResult<T> task, @NotNull LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         String lockName = lockConfig.getName();
 

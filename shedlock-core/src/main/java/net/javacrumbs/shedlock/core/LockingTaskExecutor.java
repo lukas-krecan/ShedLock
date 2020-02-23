@@ -30,7 +30,7 @@ public interface LockingTaskExecutor {
      * Executes task.
      */
     @NotNull
-    default TaskResult executeWithLock(@NotNull TaskWithResult task, @NotNull LockConfiguration lockConfig) throws Throwable {
+    default <T> TaskResult<T> executeWithLock(@NotNull TaskWithResult<T> task, @NotNull LockConfiguration lockConfig) throws Throwable {
         throw new UnsupportedOperationException();
     }
 
@@ -40,15 +40,15 @@ public interface LockingTaskExecutor {
     }
 
     @FunctionalInterface
-    interface TaskWithResult {
-        Object call() throws Throwable;
+    interface TaskWithResult<T> {
+        T call() throws Throwable;
     }
 
-    final class TaskResult {
+    final class TaskResult<T> {
         private final boolean executed;
-        private final Object result;
+        private final T result;
 
-        private TaskResult(boolean executed, @Nullable Object result) {
+        private TaskResult(boolean executed, @Nullable T result) {
             this.executed = executed;
             this.result = result;
         }
@@ -58,16 +58,16 @@ public interface LockingTaskExecutor {
         }
 
         @Nullable
-        public Object getResult() {
+        public T getResult() {
             return result;
         }
 
-        static TaskResult result(@Nullable Object result) {
-            return new TaskResult(true, result);
+        static <T> TaskResult<T> result(@Nullable T result) {
+            return new TaskResult<>(true, result);
         }
 
-        static TaskResult notExecuted() {
-            return new TaskResult(false, null);
+        static <T> TaskResult<T> notExecuted() {
+            return new TaskResult<>(false, null);
         }
     }
 }

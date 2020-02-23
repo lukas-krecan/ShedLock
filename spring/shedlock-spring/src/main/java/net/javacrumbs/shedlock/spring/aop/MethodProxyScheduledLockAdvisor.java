@@ -73,7 +73,7 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
             }
 
             LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(invocation.getThis(), invocation.getMethod()).get();
-            TaskResult result = lockingTaskExecutor.executeWithLock(invocation::proceed, lockConfiguration);
+            TaskResult<Object> result = lockingTaskExecutor.executeWithLock(invocation::proceed, lockConfiguration);
 
             if (Optional.class.equals(returnType)) {
                 return toOptional(result);
@@ -81,8 +81,8 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
                 return result.getResult();
             }
         }
-        
-        private static Object toOptional(TaskResult result) {
+
+        private static Object toOptional(TaskResult<Object> result) {
             if (result.wasExecuted()) {
                 return result.getResult();
             } else {
