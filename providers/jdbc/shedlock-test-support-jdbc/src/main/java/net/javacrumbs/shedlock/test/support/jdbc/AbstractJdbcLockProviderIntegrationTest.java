@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +50,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @Override
     protected void assertUnlocked(String lockName) {
         Instant lockedUntil = getLockedUntil(lockName);
-        assertThat(lockedUntil).isBeforeOrEqualTo(Instant.now());
+        assertThat(lockedUntil).isBeforeOrEqualTo(Instant.now().truncatedTo(ChronoUnit.MILLIS));
     }
 
     private Instant getLockedUntil(String lockName) {
