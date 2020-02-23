@@ -27,6 +27,8 @@ import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
 
+import java.util.Optional;
+
 import static org.springframework.aop.support.annotation.AnnotationMatchingPointcut.forMethodAnnotation;
 
 class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
@@ -72,7 +74,20 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
 
             LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(invocation.getThis(), invocation.getMethod()).get();
             TaskResult result = lockingTaskExecutor.executeWithLock(invocation::proceed, lockConfiguration);
-            return result.getResult();
+
+            if (Optional.class.equals(returnType)) {
+                return toOptional(result);
+            } else {
+                return result.getResult();
+            }
+        }
+        
+        private static Object toOptional(TaskResult result) {
+            if (result.wasExecuted()) {
+                return result.getResult();
+            } else {
+                return Optional.empty();
+            }
         }
     }
 }

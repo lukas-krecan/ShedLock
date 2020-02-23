@@ -25,6 +25,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
@@ -97,6 +98,13 @@ public class MethodProxyAopConfig {
             called.set(true);
             assertLocked();
             return "result";
+        }
+
+        @SchedulerLock(name = "returnsOptionalValue")
+        public Optional<String> returnsOptionalValue() {
+            called.set(true);
+            assertLocked();
+            return Optional.of("result");
         }
 
         @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1s")

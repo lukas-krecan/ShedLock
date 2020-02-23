@@ -109,6 +109,17 @@ public class MethodProxyAopTest {
     }
 
     @Test
+    public void shouldReturnResultFromOptionalReturnType() {
+        assertThat(testBean.returnsOptionalValue()).contains("result");
+    }
+
+    @Test
+    public void shouldReturnEmptyOptionalIfLocked() {
+        when(lockProvider.lock(any())).thenReturn(Optional.empty());
+        assertThat(testBean.returnsOptionalValue()).isEmpty();
+    }
+
+    @Test
     public void shouldReadSpringProperty() {
         testBean.spel();
         verify(lockProvider).lock(hasParams("spel", 30_000, 1_000));
