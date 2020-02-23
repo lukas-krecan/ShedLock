@@ -18,7 +18,7 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.support.LockException;
 
 class LockingNotSupportedException extends LockException {
-    LockingNotSupportedException() {
-        super("Can not lock method returning value (do not know what to return if it's locked)");
+    LockingNotSupportedException(String message) {
+        super(message);
     }
 }

@@ -51,17 +51,26 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
 
     @Override
     public void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable {
+        executeWithLock(() -> {
+            task.call();
+            return null;
+        }, lockConfig);
+    }
+
+    @Override
+    @NotNull
+    public TaskResult executeWithLock(@NotNull TaskWithResult task, @NotNull LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         String lockName = lockConfig.getName();
 
         if (alreadyLockedBy(lockName)) {
             logger.debug("Already locked '{}'", lockName);
-            task.call();
+            return TaskResult.result(task.call());
         } else if (lock.isPresent()) {
             try {
                 LockAssert.startLock(lockName);
                 logger.debug("Locked '{}', lock will be held at most until {}", lockName, lockConfig.getLockAtMostUntil());
-                task.call();
+                return TaskResult.result(task.call());
             } finally {
                 LockAssert.endLock();
                 lock.get().unlock();
@@ -77,6 +86,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
             }
         } else {
             logger.debug("Not executing '{}'. It's locked.", lockName);
+            return TaskResult.notExecuted();
         }
     }
 }

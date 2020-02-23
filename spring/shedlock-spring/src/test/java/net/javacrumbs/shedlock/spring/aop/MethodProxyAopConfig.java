@@ -92,6 +92,13 @@ public class MethodProxyAopConfig {
             return 0;
         }
 
+        @SchedulerLock(name = "returnsObjectValue")
+        public String returnsObjectValue() {
+            called.set(true);
+            assertLocked();
+            return "result";
+        }
+
         @SchedulerLock(name = "${property.value}", lockAtLeastFor = "1s")
         public void spel() {
             called.set(true);

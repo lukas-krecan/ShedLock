@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.core;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface LockingTaskExecutor {
     /**
@@ -25,8 +26,48 @@ public interface LockingTaskExecutor {
 
     void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable;
 
+    /**
+     * Executes task.
+     */
+    @NotNull
+    default TaskResult executeWithLock(@NotNull TaskWithResult task, @NotNull LockConfiguration lockConfig) throws Throwable {
+        throw new UnsupportedOperationException();
+    }
+
     @FunctionalInterface
     interface Task {
         void call() throws Throwable;
+    }
+
+    @FunctionalInterface
+    interface TaskWithResult {
+        Object call() throws Throwable;
+    }
+
+    final class TaskResult {
+        private final boolean executed;
+        private final Object result;
+
+        private TaskResult(boolean executed, @Nullable Object result) {
+            this.executed = executed;
+            this.result = result;
+        }
+
+        public boolean wasExecuted() {
+            return executed;
+        }
+
+        @Nullable
+        public Object getResult() {
+            return result;
+        }
+
+        static TaskResult result(@Nullable Object result) {
+            return new TaskResult(true, result);
+        }
+
+        static TaskResult notExecuted() {
+            return new TaskResult(false, null);
+        }
     }
 }
