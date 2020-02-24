@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.core;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -26,5 +27,15 @@ class DefaultLockingTaskExecutorTest {
         executor.executeWithLock((Runnable) () -> executor.executeWithLock((Runnable) () -> called.set(true), lockConfig), lockConfig);
 
         assertThat(called.get()).isTrue();
+    }
+
+    @Test
+    void shouldExecuteWithResult() throws Throwable {
+        when(lockProvider.lock(lockConfig))
+            .thenReturn(Optional.of(mock(SimpleLock.class)));
+
+        TaskResult<String> result = executor.executeWithLock(() -> "result", lockConfig);
+        assertThat(result.wasExecuted()).isTrue();
+        assertThat(result.getResult()).isEqualTo("result");
     }
 }

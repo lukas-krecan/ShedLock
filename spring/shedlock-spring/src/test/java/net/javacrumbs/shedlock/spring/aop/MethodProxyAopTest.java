@@ -91,10 +91,32 @@ public class MethodProxyAopTest {
         assertThat(testBean.wasMethodCalled()).isTrue();
     }
 
+
     @Test
-    public void shouldFailOnReturnType() {
+    public void shouldFailOnPrimitiveReturnType() {
         assertThatThrownBy(() -> testBean.returnsValue()).isInstanceOf(LockingNotSupportedException.class);
-        verifyZeroInteractions(lockProvider);
+    }
+
+    @Test
+    public void shouldReturnResultFromObjectReturnType() {
+        assertThat(testBean.returnsObjectValue()).isEqualTo("result");
+    }
+
+    @Test
+    public void shouldReturnNullFromObjectReturnTypeIfLocked() {
+        when(lockProvider.lock(any())).thenReturn(Optional.empty());
+        assertThat(testBean.returnsObjectValue()).isNull();
+    }
+
+    @Test
+    public void shouldReturnResultFromOptionalReturnType() {
+        assertThat(testBean.returnsOptionalValue()).contains("result");
+    }
+
+    @Test
+    public void shouldReturnEmptyOptionalIfLocked() {
+        when(lockProvider.lock(any())).thenReturn(Optional.empty());
+        assertThat(testBean.returnsOptionalValue()).isEmpty();
     }
 
     @Test

@@ -17,13 +17,17 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
+
+import java.util.Optional;
 
 import static org.springframework.aop.support.annotation.AnnotationMatchingPointcut.forMethodAnnotation;
 
@@ -40,11 +44,13 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     /**
      * Get the Pointcut that drives this advisor.
      */
+    @NotNull
     @Override
     public Pointcut getPointcut() {
         return pointcut;
     }
 
+    @NotNull
     @Override
     public Advice getAdvice() {
         return advice;
@@ -62,13 +68,26 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
         @Override
         public Object invoke(MethodInvocation invocation) throws Throwable {
             Class<?> returnType = invocation.getMethod().getReturnType();
-            if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
-                throw new LockingNotSupportedException();
+            if (returnType.isPrimitive() && !void.class.equals(returnType)) {
+                throw new LockingNotSupportedException("Can not lock method returning primitive value");
             }
 
             LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(invocation.getThis(), invocation.getMethod()).get();
-            lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) invocation::proceed, lockConfiguration);
-            return null;
+            TaskResult<Object> result = lockingTaskExecutor.executeWithLock(invocation::proceed, lockConfiguration);
+
+            if (Optional.class.equals(returnType)) {
+                return toOptional(result);
+            } else {
+                return result.getResult();
+            }
+        }
+
+        private static Object toOptional(TaskResult<Object> result) {
+            if (result.wasExecuted()) {
+                return result.getResult();
+            } else {
+                return Optional.empty();
+            }
         }
     }
 }

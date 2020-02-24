@@ -3,3 +3,4 @@ target/
 *.iml
 .gradle/
 build/
+micronaut/micronaut-test/dependency-reduced-pom.xml
