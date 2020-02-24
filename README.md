@@ -193,7 +193,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
@@ -219,7 +219,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
@@ -246,7 +246,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
@@ -270,7 +270,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
@@ -301,7 +301,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
@@ -325,7 +325,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.3.1/version>
+    <version>4.4.0/version>
 </dependency>
 ```
 
@@ -349,7 +349,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.3.1/version>
+    <version>4.4.0/version>
 </dependency>
 ```
 
@@ -373,7 +373,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.3.1/version>
+    <version>4.4.0/version>
 </dependency>
 ```
 
@@ -401,7 +401,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.3.1/version>
+    <version>4.4.0/version>
 </dependency>
 ```
 
@@ -440,7 +440,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.3.1</version>
+    <version>4.4.0</version>
 </dependency>
 ``` 
 
@@ -490,9 +490,9 @@ and one that proxies TaskScheduler (PROXY_SCHEDULER)
 #### Scheduled Method proxy
 Since version 4.0.0, the default mode of Spring integration is an AOP proxy around the annotated method.
 
-The main advantage of this mode, is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism. 
-The disadvantage is that the lock is applied even if you call the method directly. Be also aware that only void-returning methods are currently supported, 
-an exception is thrown if you annotate and schedule a method with non-void return type. 
+The main advantage of this mode is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism. 
+The disadvantage is that the lock is applied even if you call the method directly. If the method returns a value and the lock is held 
+by another process, null or an empty Optional will be returned (primitive return types are not supported).
 
 Final and non-public methods are not proxied so either you have to make your scheduled methods public and non-final or use TaskScheduler proxy.  
 
@@ -560,6 +560,9 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+# 4.4.0
+* Support for non-void returning methods when PROXY_METHOD interception is used
+
 # 4.3.1
 * Introduced shedlock-provider-redis-spring-1 to make it work around Spring Data Redis 1 issue #105 (thanks @rygh4775)
 
