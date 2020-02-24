@@ -58,7 +58,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.3.0</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
@@ -147,7 +147,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.3.0</version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
