@@ -81,9 +81,12 @@ public class MongoLockProvider implements LockProvider {
     /**
      * Uses Mongo to coordinate locks
      *
+     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoCollection)}
+     *
      * @param mongo        Mongo to be used
      * @param databaseName database to be used
      */
+    @Deprecated
     public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName) {
         this(mongo, databaseName, "shedLock");
     }
@@ -91,10 +94,13 @@ public class MongoLockProvider implements LockProvider {
     /**
      * Uses Mongo to coordinate locks
      *
+     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoCollection)}
+     *
      * @param mongo          Mongo to be used
      * @param databaseName   database to be used
      * @param collectionName collection to store the locks
      */
+    @Deprecated
     public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
         this(mongo.getDatabase(databaseName).getCollection(collectionName));
     }

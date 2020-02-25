@@ -206,8 +206,7 @@ import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 
 @Bean
 public LockProvider lockProvider(MongoClient mongo) {
-    return new MongoLockProvider(mongo, "databaseName");
-}
+    return new MongoLockProvider(mongo.getDatabase(databaseName).getCollection("shedLock"))}
 ```
 
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.4.0
