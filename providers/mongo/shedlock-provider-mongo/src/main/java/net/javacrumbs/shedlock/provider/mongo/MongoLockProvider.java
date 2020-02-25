@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.provider.mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -74,6 +75,7 @@ public class MongoLockProvider implements LockProvider {
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
+    static final String DEFAULT_SHEDLOCK_COLLECTION_NAME = "shedLock";
 
     private final String hostname;
     private final MongoCollection<Document> collection;
@@ -81,14 +83,14 @@ public class MongoLockProvider implements LockProvider {
     /**
      * Uses Mongo to coordinate locks
      *
-     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoCollection)}
+     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoDatabase)}
      *
      * @param mongo        Mongo to be used
      * @param databaseName database to be used
      */
     @Deprecated
     public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName) {
-        this(mongo, databaseName, "shedLock");
+        this(mongo, databaseName, DEFAULT_SHEDLOCK_COLLECTION_NAME);
     }
 
     /**
@@ -103,6 +105,13 @@ public class MongoLockProvider implements LockProvider {
     @Deprecated
     public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
         this(mongo.getDatabase(databaseName).getCollection(collectionName));
+    }
+
+    /**
+     * Uses Mongo to coordinate locks
+     */
+    public MongoLockProvider(@NotNull MongoDatabase mongoDatabase) {
+        this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
     /**

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
+import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
 import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.ID;
 import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_BY;
@@ -46,7 +47,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
     private static final MongodStarter starter = MongodStarter.getDefaultInstance();
 
-    private static final String COLLECTION_NAME = "Shedlock";
     private static final String DB_NAME = "db";
 
     private static MongodExecutable mongodExe;
@@ -79,7 +79,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
 
     @Override
     protected LockProvider getLockProvider() {
-        return new MongoLockProvider(mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME));
+        return new MongoLockProvider(mongo.getDatabase(DB_NAME));
     }
 
     @Override
@@ -103,7 +103,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     }
 
     private MongoCollection<Document> getLockCollection() {
-        return mongo.getDatabase(DB_NAME).getCollection(COLLECTION_NAME);
+        return mongo.getDatabase(DB_NAME).getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME);
     }
 
     private Document getLockDocument(String lockName) {
