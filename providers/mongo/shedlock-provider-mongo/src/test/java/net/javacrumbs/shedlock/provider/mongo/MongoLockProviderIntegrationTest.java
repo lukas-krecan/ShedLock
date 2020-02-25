@@ -15,8 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.mongo;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import de.flapdoodle.embed.mongo.MongodExecutable;
@@ -60,7 +59,8 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
             .version(Version.Main.V3_6)
             .build());
         mongod = mongodExe.start();
-        mongo = MongoClients.create("mongodb://localhost:"+mongod.getConfig().net().getPort());;
+
+        mongo = new MongoClient("localhost", mongod.getConfig().net().getPort());
     }
 
     @AfterAll
