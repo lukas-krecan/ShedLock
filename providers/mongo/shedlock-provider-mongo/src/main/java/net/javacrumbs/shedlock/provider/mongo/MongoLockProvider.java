@@ -74,6 +74,7 @@ public class MongoLockProvider implements LockProvider {
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
+    private static final String DEFAULT_COLLECTION_NAME = "shedLock";
 
     private final String hostname;
     private final MongoCollection<Document> collection;
@@ -96,6 +97,27 @@ public class MongoLockProvider implements LockProvider {
      * @param collectionName collection to store the locks
      */
     public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
+        this(mongo.getDatabase(databaseName).getCollection(collectionName));
+    }
+
+    /**
+     * Uses Mongo to coordinate locks
+     *
+     * @param mongo        Mongo to be used
+     * @param databaseName database to be used
+     */
+    public MongoLockProvider(@NotNull com.mongodb.client.MongoClient mongo, @NotNull String databaseName) {
+        this(mongo, databaseName, DEFAULT_COLLECTION_NAME);
+    }
+
+    /**
+     * Uses Mongo to coordinate locks
+     *
+     * @param mongo          Mongo to be used
+     * @param databaseName   database to be used
+     * @param collectionName collection to store the locks
+     */
+    public MongoLockProvider(@NotNull com.mongodb.client.MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
         this(mongo.getDatabase(databaseName).getCollection(collectionName));
     }
 
