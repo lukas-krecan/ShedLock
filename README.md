@@ -206,7 +206,7 @@ import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 
 @Bean
 public LockProvider lockProvider(MongoClient mongo) {
-    return new MongoLockProvider(mongo.getDatabase(databaseName))
+    return new MongoLockProvider(mongo.getDatabase(databaseName).getCollection("shedLock"))
 }
 ```
 
