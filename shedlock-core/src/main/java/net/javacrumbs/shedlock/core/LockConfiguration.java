@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Instant;
 import java.util.Objects;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+
 /**
  * Lock configuration.
  */
@@ -37,7 +39,7 @@ public class LockConfiguration {
     private final Instant lockAtLeastUntil;
 
     public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil) {
-        this(name, lockAtMostUntil, Instant.now());
+        this(name, lockAtMostUntil, now());
     }
 
     public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
@@ -47,7 +49,7 @@ public class LockConfiguration {
         if (lockAtLeastUntil.isAfter(lockAtMostUntil)) {
             throw new IllegalArgumentException("lockAtMostUntil is before lockAtLeastUntil for lock '" + name + "'.");
         }
-        if (lockAtMostUntil.isBefore(Instant.now())) {
+        if (lockAtMostUntil.isBefore(now())) {
             throw new IllegalArgumentException("lockAtMostUntil is in the past for lock '" + name + "'.");
         }
         if (name.isEmpty()) {
@@ -72,7 +74,7 @@ public class LockConfiguration {
      * Returns either now or lockAtLeastUntil whichever is later.
      */
     public Instant getUnlockTime() {
-        Instant now = Instant.now();
+        Instant now = now();
         return lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
     }
 

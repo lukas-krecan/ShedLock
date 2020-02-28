@@ -27,8 +27,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
-import static java.time.Instant.now;
 import static java.time.Instant.parse;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider.LOCK_UNTIL;

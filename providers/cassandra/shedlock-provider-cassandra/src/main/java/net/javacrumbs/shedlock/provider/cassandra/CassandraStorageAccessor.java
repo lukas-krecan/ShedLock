@@ -6,6 +6,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
@@ -53,7 +54,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
-        if (!lock.isPresent() || lock.get().getLockUntil().isAfter(Instant.now())) {
+        if (!lock.isPresent() || lock.get().getLockUntil().isAfter(ClockProvider.now())) {
             return false;
         }
 
@@ -68,7 +69,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean extend(@NotNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
-        if (!lock.isPresent() || lock.get().getLockUntil().isBefore(Instant.now()) || !lock.get().getLockedBy().equals(hostname)) {
+        if (!lock.isPresent() || lock.get().getLockUntil().isBefore(ClockProvider.now()) || !lock.get().getLockedBy().equals(hostname)) {
             logger.trace("extend false");
             return false;
         }
@@ -110,7 +111,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         return execute(QueryBuilder.insertInto(table)
                 .value(LOCK_NAME, literal(name))
                 .value(LOCK_UNTIL, literal(until))
-                .value(LOCKED_AT, literal(Instant.now()))
+                .value(LOCKED_AT, literal(ClockProvider.now()))
                 .value(LOCKED_BY, literal(hostname))
                 .ifNotExists()
                 .build());
@@ -125,10 +126,10 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private boolean update(String name, Instant until) {
         return execute(QueryBuilder.update(table)
                 .setColumn(LOCK_UNTIL, literal(until))
-                .setColumn(LOCKED_AT, literal(Instant.now()))
+                .setColumn(LOCKED_AT, literal(ClockProvider.now()))
                 .setColumn(LOCKED_BY, literal(hostname))
                 .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-                .ifColumn(LOCK_UNTIL).isLessThan(literal(Instant.now()))
+                .ifColumn(LOCK_UNTIL).isLessThan(literal(ClockProvider.now()))
                 .build());
     }
 
@@ -142,7 +143,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         return execute(QueryBuilder.update(table)
                 .setColumn(LOCK_UNTIL, literal(until))
                 .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-                .ifColumn(LOCK_UNTIL).isGreaterThanOrEqualTo(literal(Instant.now()))
+                .ifColumn(LOCK_UNTIL).isGreaterThanOrEqualTo(literal(ClockProvider.now()))
                 .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
                 .build());
     }

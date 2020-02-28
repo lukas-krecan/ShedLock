@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
@@ -65,7 +66,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 int insertedRows = jdbcTemplate.update(sql, preparedStatement -> {
                     preparedStatement.setString(1, lockConfiguration.getName());
                     setTimestamp(preparedStatement, 2, lockConfiguration.getLockAtMostUntil());
-                    setTimestamp(preparedStatement, 3, Instant.now());
+                    setTimestamp(preparedStatement, 3, ClockProvider.now());
                     preparedStatement.setString(4, lockedByValue());
                 });
                 return insertedRows > 0;
@@ -84,7 +85,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             + " SET " + lockUntil() + " = ?, " + lockedAt() + " = ?, " + lockedBy() + " = ? WHERE " + name() + " = ? AND " + lockUntil() + " <= ?";
         return transactionTemplate.execute(status -> {
             int updatedRows = jdbcTemplate.update(sql, statement -> {
-                Instant now = Instant.now();
+                Instant now = ClockProvider.now();
                 setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
                 setTimestamp(statement, 2, now);
                 statement.setString(3, lockedByValue());
@@ -106,7 +107,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
                 statement.setString(2, lockConfiguration.getName());
                 statement.setString(3, lockedByValue());
-                setTimestamp(statement, 4, Instant.now());
+                setTimestamp(statement, 4, ClockProvider.now());
             });
             return updatedRows > 0;
         });

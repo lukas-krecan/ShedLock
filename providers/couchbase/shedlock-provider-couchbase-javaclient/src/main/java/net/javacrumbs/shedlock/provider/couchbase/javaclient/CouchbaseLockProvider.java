@@ -20,6 +20,7 @@ import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.error.CASMismatchException;
 import com.couchbase.client.java.error.DocumentAlreadyExistsException;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -91,7 +92,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
                 JsonObject content = JsonObject.empty();
                 content.put(LOCK_NAME, lockConfiguration.getName());
                 content.put(LOCK_UNTIL, toIsoString(lockConfiguration.getLockAtMostUntil()));
-                content.put(LOCKED_AT, toIsoString(Instant.now()));
+                content.put(LOCKED_AT, toIsoString(ClockProvider.now()));
                 content.put(LOCKED_BY, getHostname());
                 JsonDocument document = JsonDocument.create(lockConfiguration.getName(), content);
 
@@ -113,7 +114,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
                 Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
-                Instant now = Instant.now();
+                Instant now = ClockProvider.now();
                 if (lockUntil.isAfter(now)) {
                     return false;
                 }
@@ -136,7 +137,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
                 Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
-                Instant now = Instant.now();
+                Instant now = ClockProvider.now();
                 if (lockUntil.isBefore(now) || !document.content().get(LOCKED_BY).equals(getHostname())) {
                     return false;
                 }

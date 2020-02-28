@@ -19,6 +19,7 @@ package net.javacrumbs.shedlock.provider.hazelcast;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.AfterEach;
@@ -122,7 +123,7 @@ public class HazelcastLockProviderClusterTest {
     }
 
     protected static LockConfiguration lockConfig(final String name, final Duration lockAtMostFor, final Duration lockAtLeastFor) {
-        Instant now = Instant.now();
+        Instant now = ClockProvider.now();
         return new LockConfiguration(name, now.plus(lockAtMostFor), now.plus(lockAtLeastFor));
     }
 }

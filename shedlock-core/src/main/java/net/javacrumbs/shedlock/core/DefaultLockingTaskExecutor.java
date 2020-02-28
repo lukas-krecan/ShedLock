@@ -76,7 +76,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
                 lock.get().unlock();
                 if (logger.isDebugEnabled()) {
                     Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();
-                    Instant now = Instant.now();
+                    Instant now = ClockProvider.now();
                     if (lockAtLeastUntil.isAfter(now)) {
                         logger.debug("Task finished, lock '{}' will be released at {}", lockName, lockAtLeastUntil);
                     } else {

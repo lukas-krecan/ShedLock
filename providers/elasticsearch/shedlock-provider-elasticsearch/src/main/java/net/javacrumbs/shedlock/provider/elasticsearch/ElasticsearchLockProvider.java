@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 
 /**
@@ -148,10 +149,6 @@ public class ElasticsearchLockProvider implements LockProvider {
                 throw new LockException("Unexpected exception occurred", e);
             }
         }
-    }
-
-    private Instant now() {
-        return Instant.now();
     }
 
     private Map<String, Object> lockObject(String name, Instant lockUntil, Instant lockedAt) {

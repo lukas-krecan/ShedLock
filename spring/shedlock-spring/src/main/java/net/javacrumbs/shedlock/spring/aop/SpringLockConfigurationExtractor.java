@@ -35,9 +35,9 @@ import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
-import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
 class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final TemporalAmount defaultLockAtMostFor;

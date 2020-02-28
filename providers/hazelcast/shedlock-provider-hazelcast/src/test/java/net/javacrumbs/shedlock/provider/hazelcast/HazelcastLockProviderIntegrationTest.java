@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,7 +62,6 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
     }
 
     private boolean isUnlocked(final String lockName) {
-        final Instant now = Instant.now();
         final HazelcastLock lock = lockProvider.getLock(lockName);
         return lock == null;
     }

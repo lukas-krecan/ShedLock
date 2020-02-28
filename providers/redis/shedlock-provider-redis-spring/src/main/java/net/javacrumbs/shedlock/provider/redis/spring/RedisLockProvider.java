@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.redis.spring;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -94,7 +95,7 @@ public class RedisLockProvider implements LockProvider {
     }
 
     private static long getMsUntil(Instant until) {
-        return Duration.between(Instant.now(), until).toMillis();
+        return Duration.between(ClockProvider.now(), until).toMillis();
     }
 
     private static final class RedisLock extends AbstractSimpleLock {
@@ -140,7 +141,7 @@ public class RedisLockProvider implements LockProvider {
         }
 
         private byte[] buildValue() {
-            return serialize(String.format("ADDED:%s@%s", toIsoString(Instant.now()), getHostname()));
+            return serialize(String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname()));
         }
 
         private byte[] serialize(String string) {

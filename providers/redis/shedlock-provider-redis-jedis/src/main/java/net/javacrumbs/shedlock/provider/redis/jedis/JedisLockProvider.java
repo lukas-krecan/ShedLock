@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.redis.jedis;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -125,7 +126,7 @@ public class JedisLockProvider implements LockProvider {
     }
 
     private static long getMsUntil(Instant instant) {
-        return Duration.between(Instant.now(), instant).toMillis();
+        return Duration.between(ClockProvider.now(), instant).toMillis();
     }
 
     static String buildKey(String lockName, String env) {
@@ -133,7 +134,7 @@ public class JedisLockProvider implements LockProvider {
     }
 
     private static String buildValue() {
-        return String.format("ADDED:%s@%s", toIsoString(Instant.now()), getHostname());
+        return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
     }
 
     private interface JedisTemplate {
