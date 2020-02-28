@@ -373,7 +373,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.4.0/version>
+    <version>4.4.0</version>
 </dependency>
 ```
 
