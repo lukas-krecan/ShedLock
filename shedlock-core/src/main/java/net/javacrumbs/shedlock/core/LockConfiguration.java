@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import java.time.Clock;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
@@ -36,18 +37,29 @@ public class LockConfiguration {
      */
     private final Instant lockAtLeastUntil;
 
+    private final Clock clock;
+
     public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil) {
-        this(name, lockAtMostUntil, Instant.now());
+        this(name, lockAtMostUntil, Instant.now(), Clock.systemUTC());
+    }
+
+    public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Clock clock) {
+        this(name, lockAtMostUntil, Instant.now(clock), clock);
     }
 
     public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+        this(name, lockAtMostUntil, lockAtLeastUntil, Clock.systemUTC());
+    }
+
+    public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil, @NotNull Clock clock) {
         this.name = Objects.requireNonNull(name);
         this.lockAtMostUntil = Objects.requireNonNull(lockAtMostUntil);
         this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);
+        this.clock = Objects.requireNonNull(clock);
         if (lockAtLeastUntil.isAfter(lockAtMostUntil)) {
             throw new IllegalArgumentException("lockAtMostUntil is before lockAtLeastUntil for lock '" + name + "'.");
         }
-        if (lockAtMostUntil.isBefore(Instant.now())) {
+        if (lockAtMostUntil.isBefore(Instant.now(clock))) {
             throw new IllegalArgumentException("lockAtMostUntil is in the past for lock '" + name + "'.");
         }
         if (name.isEmpty()) {
@@ -72,7 +84,7 @@ public class LockConfiguration {
      * Returns either now or lockAtLeastUntil whichever is later.
      */
     public Instant getUnlockTime() {
-        Instant now = Instant.now();
+        Instant now = Instant.now(clock);
         return lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
     }
 
