@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.provider.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -104,7 +105,7 @@ public class HazelcastLockProvider implements LockProvider {
     @NotNull
     public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         log.trace("lock - Attempt : {}", lockConfiguration);
-        final Instant now = Instant.now();
+        final Instant now = ClockProvider.now();
         final String lockName = lockConfiguration.getName();
         final IMap<String, HazelcastLock> store = getStore();
         try {
@@ -123,7 +124,7 @@ public class HazelcastLockProvider implements LockProvider {
     }
 
     private long keyLockTime(LockConfiguration lockConfiguration) {
-        Duration between = Duration.between(Instant.now(), lockConfiguration.getLockAtMostUntil());
+        Duration between = Duration.between(ClockProvider.now(), lockConfiguration.getLockAtMostUntil());
         return between.toMillis();
     }
 
@@ -189,7 +190,7 @@ public class HazelcastLockProvider implements LockProvider {
     /* package */ void unlock(LockConfiguration lockConfiguration) {
         String lockName = lockConfiguration.getName();
         log.trace("unlock - attempt : {}", lockName);
-        final Instant now = Instant.now();
+        final Instant now = ClockProvider.now();
         final IMap<String, HazelcastLock> store = getStore();
         try {
             store.lock(lockName, lockLeaseTimeMs, TimeUnit.MILLISECONDS);

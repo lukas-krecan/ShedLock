@@ -15,10 +15,10 @@
  */
 package net.javacrumbs.shedlock.support;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class StorageBasedLockProviderTest {
-    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", Instant.now().plus(5, ChronoUnit.MINUTES));
+    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration("name", ClockProvider.now().plus(5, ChronoUnit.MINUTES));
     private static final LockException LOCK_EXCEPTION = new LockException("Test");
 
     private final StorageAccessor storageAccessor = mock(StorageAccessor.class);

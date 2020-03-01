@@ -29,10 +29,10 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -68,7 +68,7 @@ public abstract class AbstractSchedulerProxyTest {
     @Test
     public void shouldCallLockProviderOnSchedulerCall() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("annotatedMethod");
-        taskScheduler.schedule(task, Instant.now()).get();
+        taskScheduler.schedule(task, now()).get();
         verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
         verify(simpleLock).unlock();
     }
@@ -76,7 +76,7 @@ public abstract class AbstractSchedulerProxyTest {
     @Test
     public void shouldCallLockProviderOnSchedulerCallDeprecatedAnnotation() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("oldMethod");
-        taskScheduler.schedule(task, Instant.now()).get();
+        taskScheduler.schedule(task, now()).get();
         verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
         verify(simpleLock).unlock();
     }
@@ -84,7 +84,7 @@ public abstract class AbstractSchedulerProxyTest {
     @Test
     public void shouldUserPropertyName() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("spelMethod");
-        taskScheduler.schedule(task, Instant.now()).get();
+        taskScheduler.schedule(task, now()).get();
         verify(lockProvider).lock(hasParams("spel", 1000, 500));
         verify(simpleLock).unlock();
     }
@@ -111,7 +111,7 @@ public abstract class AbstractSchedulerProxyTest {
 
 
     private void schedule(Runnable task) throws InterruptedException, ExecutionException {
-        taskScheduler.schedule(task, Instant.now()).get();
+        taskScheduler.schedule(task, now()).get();
     }
 
     private ScheduledMethodRunnable task(String methodName) throws NoSuchMethodException {
@@ -120,7 +120,7 @@ public abstract class AbstractSchedulerProxyTest {
 
     @Test
     public void shouldNotLockProviderOnPureRunnable() throws ExecutionException, InterruptedException {
-        taskScheduler.schedule(() -> { }, Instant.now()).get();
+        taskScheduler.schedule(() -> { }, now()).get();
         verifyZeroInteractions(lockProvider);
     }
 

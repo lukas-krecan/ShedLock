@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 
-import static java.time.Instant.now;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

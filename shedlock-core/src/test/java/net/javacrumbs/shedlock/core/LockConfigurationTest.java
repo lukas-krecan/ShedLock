@@ -26,7 +26,7 @@ class LockConfigurationTest {
 
     @Test
     void lockAtLeastUnitilShouldBeBeforeOrEqualsToLockAtMostUntil() {
-        Instant time = Instant.now().plusSeconds(5);
+        Instant time = ClockProvider.now().plusSeconds(5);
         new LockConfiguration("name", time, time);
         new LockConfiguration("name", time.plusMillis(1), time);
 
@@ -35,14 +35,14 @@ class LockConfigurationTest {
 
     @Test
     void lockAtMostUntilHasToBeInTheFuture() {
-        Instant now = Instant.now();
+        Instant now = ClockProvider.now();
         assertThatThrownBy(() -> new LockConfiguration("name", now.minusSeconds(1))).isInstanceOf(IllegalArgumentException.class);
     }
 
 
     @Test
     void nameShouldNotBeEmpty() {
-        assertThatThrownBy(() -> new LockConfiguration("", Instant.now().plusSeconds(5))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new LockConfiguration("", ClockProvider.now().plusSeconds(5))).isInstanceOf(IllegalArgumentException.class);
     }
 
 }

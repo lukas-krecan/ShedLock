@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.redis.spring1;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -95,7 +96,7 @@ public class RedisLockProvider implements LockProvider {
     }
 
     private static long getMsUntil(Instant until) {
-        return Duration.between(Instant.now(), until).toMillis();
+        return Duration.between(ClockProvider.now(), until).toMillis();
     }
 
     private static void close(RedisConnection redisConnection) {
@@ -146,7 +147,7 @@ public class RedisLockProvider implements LockProvider {
     }
 
     private static byte[] buildValue(Instant lockAtMostUntil) {
-        return String.format("ADDED:%s@%s EXP:%s", Instant.now().toString(), getHostname(), lockAtMostUntil.toString()).getBytes();
+        return String.format("ADDED:%s@%s EXP:%s", ClockProvider.now().toString(), getHostname(), lockAtMostUntil.toString()).getBytes();
     }
 
     static Expiration getExpirationFromValue(byte[] value) {

@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.micronaut.internal;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.mockito.ArgumentMatcher;
 import org.slf4j.Logger;
@@ -41,14 +42,14 @@ public class TestUtils {
 
             @Override
             public String toString() {
-                Instant now = Instant.now();
+                Instant now = ClockProvider.now();
                 return "hasParams(\"" + name + "\", " + now.plusMillis(lockAtMostFor) + ", " + now.plusMillis(lockAtLeastFor) + ")";
             }
         });
     }
 
     private static boolean isNearTo(long expected, Instant time) {
-        Instant now = Instant.now();
+        Instant now = ClockProvider.now();
         Instant from = now.plusMillis(expected - GAP);
         Instant to = now.plusMillis(expected);
         boolean isNear = time.isAfter(from) && !time.isAfter(to);

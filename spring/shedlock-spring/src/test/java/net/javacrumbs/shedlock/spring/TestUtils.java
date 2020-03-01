@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.mockito.ArgumentMatchers.argThat;
 
 public class TestUtils {
@@ -41,14 +42,14 @@ public class TestUtils {
 
             @Override
             public String toString() {
-                Instant now = Instant.now();
+                Instant now = now();
                 return "hasParams(\"" + name + "\", " + now.plusMillis(lockAtMostFor) + ", " + now.plusMillis(lockAtLeastFor) + ")";
             }
         });
     }
 
     private static boolean isNearTo(long expected, Instant time) {
-        Instant now = Instant.now();
+        Instant now = now();
         Instant from = now.plusMillis(expected - GAP);
         Instant to = now.plusMillis(expected);
         boolean isNear = time.isAfter(from) && !time.isAfter(to);

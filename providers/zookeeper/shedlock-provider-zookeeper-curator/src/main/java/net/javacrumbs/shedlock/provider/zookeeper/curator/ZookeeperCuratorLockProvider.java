@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.zookeeper.curator;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -115,7 +116,7 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         }
         try {
             Instant lockedUntil = parse(data);
-            return lockedUntil.isAfter(Instant.now());
+            return lockedUntil.isAfter(ClockProvider.now());
         } catch (DateTimeParseException e) {
             // most likely created by previous version of the library
             logger.debug("Can not parse date", e);

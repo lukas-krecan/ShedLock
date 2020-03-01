@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.ColumnNames;
@@ -26,7 +27,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Instant;
 import java.util.Calendar;
 import java.util.Optional;
 import java.util.TimeZone;
@@ -62,7 +62,7 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
             .withLockedByValue("my-value")
             .build());
 
-        Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", Instant.now().plusSeconds(10)));
+        Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", ClockProvider.now().plusSeconds(10)));
         lock.get().unlock();
     }
 

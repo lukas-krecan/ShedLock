@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
@@ -50,7 +51,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @Override
     protected void assertUnlocked(String lockName) {
         Instant lockedUntil = getLockedUntil(lockName);
-        assertThat(lockedUntil).isBeforeOrEqualTo(Instant.now().truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
+        assertThat(lockedUntil).isBeforeOrEqualTo(ClockProvider.now().truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
     }
 
     private Instant getLockedUntil(String lockName) {
@@ -60,7 +61,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @Override
     protected void assertLocked(String lockName) {
         Instant lockedUntil = getLockedUntil(lockName);
-        assertThat(lockedUntil).isAfter(Instant.now());
+        assertThat(lockedUntil).isAfter(ClockProvider.now());
     }
 
     @Test

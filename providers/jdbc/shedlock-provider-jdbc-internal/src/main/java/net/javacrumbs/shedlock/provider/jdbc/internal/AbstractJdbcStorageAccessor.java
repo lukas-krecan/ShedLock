@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.internal;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 import static java.util.Objects.requireNonNull;
 
@@ -51,7 +51,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             connection.setAutoCommit(true); // just to be sure, should be set by default
             statement.setString(1, lockConfiguration.getName());
             statement.setTimestamp(2, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-            statement.setTimestamp(3, Timestamp.from(Instant.now()));
+            statement.setTimestamp(3, Timestamp.from(ClockProvider.now()));
             statement.setString(4, getHostname());
             int insertedRows = statement.executeUpdate();
             if (insertedRows > 0) {
@@ -73,7 +73,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             connection.setAutoCommit(true); // just to be sure, should be set by default
-            Timestamp now = Timestamp.from(Instant.now());
+            Timestamp now = Timestamp.from(ClockProvider.now());
             statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setTimestamp(2, now);
             statement.setString(3, getHostname());
@@ -101,7 +101,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setString(2, lockConfiguration.getName());
             statement.setString(3, getHostname());
-            statement.setTimestamp(4, Timestamp.from(Instant.now()));
+            statement.setTimestamp(4, Timestamp.from(ClockProvider.now()));
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
             handleUnlockException(sql, e);

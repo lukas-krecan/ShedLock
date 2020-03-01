@@ -22,6 +22,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -124,7 +125,7 @@ public class DynamoDBLockProvider implements LockProvider {
     }
 
     private Instant now() {
-        return Instant.now();
+        return ClockProvider.now();
     }
 
     private final class DynamoDBLock extends AbstractSimpleLock {
