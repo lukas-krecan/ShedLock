@@ -76,22 +76,7 @@ public class RedisLockProvider implements LockProvider {
     public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment, @NotNull String keyPrefix) {
         this(new StringRedisTemplate(redisConn), environment, keyPrefix);
     }
-
-    public RedisLockProvider(@NotNull StringRedisTemplate redisTemplate) {
-        this(redisTemplate, ENV_DEFAULT);
-    }
-
-    /**
-     * Creates RedisLockProvider
-     *
-     * @param redisTemplate   StringRedisTemplate
-     * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances running on the same Redis
-     */
-    public RedisLockProvider(@NotNull StringRedisTemplate redisTemplate, @NotNull String environment) {
-        this(redisTemplate, environment, KEY_PREFIX_DEFAULT);
-    }
-
+    
     /**
      * Create RedisLockProvider
      *
@@ -168,5 +153,33 @@ public class RedisLockProvider implements LockProvider {
 
             return connection.set(serializedKey, serializedValue, expiration, option);
         }, false);
+    }
+
+    public static class Builder {
+        private final StringRedisTemplate redisTemplate;
+        private String environment = ENV_DEFAULT;
+        private String keyPrefix = KEY_PREFIX_DEFAULT;
+
+        public Builder(@NotNull RedisConnectionFactory redisConnectionFactory) {
+            this.redisTemplate = new StringRedisTemplate(redisConnectionFactory);
+        }
+
+        public Builder(@NotNull StringRedisTemplate redisTemplate) {
+            this.redisTemplate = redisTemplate;
+        }
+
+        public Builder environment(@NotNull String environment) {
+            this.environment = environment;
+            return this;
+        }
+
+        public Builder keyPrefix(@NotNull String keyPrefix) {
+            this.keyPrefix = keyPrefix;
+            return this;
+        }
+
+        public RedisLockProvider build() {
+            return new RedisLockProvider(redisTemplate, environment, keyPrefix);
+        }
     }
 }
