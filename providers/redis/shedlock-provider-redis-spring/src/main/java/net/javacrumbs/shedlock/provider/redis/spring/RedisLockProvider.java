@@ -76,7 +76,7 @@ public class RedisLockProvider implements LockProvider {
     public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment, @NotNull String keyPrefix) {
         this(new StringRedisTemplate(redisConn), environment, keyPrefix);
     }
-    
+
     /**
      * Create RedisLockProvider
      *
@@ -147,10 +147,6 @@ public class RedisLockProvider implements LockProvider {
         return template.execute(connection -> {
             byte[] serializedKey = ((RedisSerializer<String>) template.getKeySerializer()).serialize(key);
             byte[] serializedValue = ((RedisSerializer<String>) template.getValueSerializer()).serialize(String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname()));
-
-            assert serializedKey != null;
-            assert serializedValue != null;
-
             return connection.set(serializedKey, serializedValue, expiration, option);
         }, false);
     }
