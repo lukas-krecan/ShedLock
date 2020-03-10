@@ -51,7 +51,11 @@ public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractL
 
 
     public AbstractRedisLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
-        lockProvider = new RedisLockProvider(connectionFactory, ENV, KEY_PREFIX);
+        lockProvider = new RedisLockProvider.Builder(connectionFactory)
+            .environment(ENV)
+            .keyPrefix(KEY_PREFIX)
+            .build();
+
         redisTemplate = new StringRedisTemplate(connectionFactory);
     }
 

@@ -26,6 +26,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -45,7 +46,7 @@ public class RedisLockProvider implements LockProvider {
     private static final String KEY_PREFIX_DEFAULT = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
-    private final ShedlockRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     private final String environment;
     private final String keyPrefix;
 
@@ -73,7 +74,19 @@ public class RedisLockProvider implements LockProvider {
      * @param keyPrefix   prefix of the key in Redis.
      */
     public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment, @NotNull String keyPrefix) {
-        this.redisTemplate = new ShedlockRedisTemplate(redisConn);
+        this(new StringRedisTemplate(redisConn), environment, keyPrefix);
+    }
+    
+    /**
+     * Create RedisLockProvider
+     *
+     * @param redisTemplate StringRedisTemplate
+     * @param environment   environment is part of the key and thus makes sure there is not key conflict between
+     *                      multiple ShedLock instances running on the same Redis
+     * @param keyPrefix     prefix of the key in Redis.
+     */
+    public RedisLockProvider(@NotNull StringRedisTemplate redisTemplate, @NotNull String environment, @NotNull String keyPrefix) {
+        this.redisTemplate = redisTemplate;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
     }
@@ -83,7 +96,7 @@ public class RedisLockProvider implements LockProvider {
     public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName());
         Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
-        if (TRUE.equals(redisTemplate.tryToSetExpiration(key, expiration, SET_IF_ABSENT))) {
+        if (TRUE.equals(tryToSetExpiration(redisTemplate, key, expiration, SET_IF_ABSENT))) {
             return Optional.of(new RedisLock(key, redisTemplate, lockConfiguration));
         } else {
             return Optional.empty();
@@ -101,9 +114,9 @@ public class RedisLockProvider implements LockProvider {
     private static final class RedisLock extends AbstractSimpleLock {
 
         private final String key;
-        private final ShedlockRedisTemplate redisTemplate;
+        private final StringRedisTemplate redisTemplate;
 
-        private RedisLock(String key, ShedlockRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
+        private RedisLock(String key, StringRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
             this.redisTemplate = redisTemplate;
@@ -120,7 +133,7 @@ public class RedisLockProvider implements LockProvider {
                     throw new LockException("Can not remove node", e);
                 }
             } else {
-                redisTemplate.tryToSetExpiration(key, keepLockFor, SetOption.SET_IF_PRESENT);
+                tryToSetExpiration(this.redisTemplate, key, keepLockFor, SetOption.SET_IF_PRESENT);
             }
         }
     }
@@ -130,22 +143,43 @@ public class RedisLockProvider implements LockProvider {
         return String.format("%s:%s:%s", keyPrefix, environment, lockName);
     }
 
+    private static Boolean tryToSetExpiration(StringRedisTemplate template, String key, Expiration expiration, SetOption option) {
+        return template.execute(connection -> {
+            byte[] serializedKey = ((RedisSerializer<String>) template.getKeySerializer()).serialize(key);
+            byte[] serializedValue = ((RedisSerializer<String>) template.getValueSerializer()).serialize(String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname()));
 
-    private static class ShedlockRedisTemplate extends StringRedisTemplate {
-        private ShedlockRedisTemplate(RedisConnectionFactory connectionFactory) {
-            super(connectionFactory);
+            assert serializedKey != null;
+            assert serializedValue != null;
+
+            return connection.set(serializedKey, serializedValue, expiration, option);
+        }, false);
+    }
+
+    public static class Builder {
+        private final StringRedisTemplate redisTemplate;
+        private String environment = ENV_DEFAULT;
+        private String keyPrefix = KEY_PREFIX_DEFAULT;
+
+        public Builder(@NotNull RedisConnectionFactory redisConnectionFactory) {
+            this.redisTemplate = new StringRedisTemplate(redisConnectionFactory);
         }
 
-        private Boolean tryToSetExpiration(String key, Expiration expiration, SetOption option) {
-            return execute(connection -> connection.set(serialize(key), buildValue(), expiration, option), false);
+        public Builder(@NotNull StringRedisTemplate redisTemplate) {
+            this.redisTemplate = redisTemplate;
         }
 
-        private byte[] buildValue() {
-            return serialize(String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname()));
+        public Builder environment(@NotNull String environment) {
+            this.environment = environment;
+            return this;
         }
 
-        private byte[] serialize(String string) {
-            return getStringSerializer().serialize(string);
+        public Builder keyPrefix(@NotNull String keyPrefix) {
+            this.keyPrefix = keyPrefix;
+            return this;
+        }
+
+        public RedisLockProvider build() {
+            return new RedisLockProvider(redisTemplate, environment, keyPrefix);
         }
     }
 }
