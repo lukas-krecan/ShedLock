@@ -2,10 +2,10 @@ ShedLock
 ========
 [![Apache License 2](https://img.shields.io/badge/license-ASF2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt) [![Build Status](https://travis-ci.org/lukas-krecan/ShedLock.png?branch=master)](https://travis-ci.org/lukas-krecan/ShedLock) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.javacrumbs.shedlock/shedlock-parent)
 
-ShedLock makes sure that your scheduled tasks are executed at most once at the same time. 
-If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread). 
+ShedLock makes sure that your scheduled tasks are executed at most once at the same time.
+If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread).
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
- 
+
 ShedLock uses external store like Mongo, JDBC database, Redis, Hazelcast, ZooKeeper or others for coordination.
 
 Feedback and pull-requests welcome!
@@ -42,7 +42,7 @@ executed repeatedly.
 Shedlock consists of three parts
 * Core - The locking mechanism
 * Integration - integration with your application, using Spring AOP, Micronaut AOP or manual code
-* Lock provider - provides the lock using an external process like SQL database, Mongo, Redis and others  
+* Lock provider - provides the lock using an external process like SQL database, Mongo, Redis and others
 
 ## Usage
 To use ShedLock, you do the following
@@ -58,7 +58,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -74,7 +74,7 @@ class MySpringConfiguration {
 ```
 
 ### Annotate your scheduled tasks
- 
+
  ```java
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
@@ -88,10 +88,10 @@ public void scheduledTask() {
     // do something
 }
 ```
-        
+
 The `@SchedulerLock` annotation has several purposes. First of all, only annotated methods are locked, the library ignores
 all other scheduled tasks. You also have to specify the name for the lock. Only one task with the same name can be executed
-at the same time. 
+at the same time.
 
 You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
 executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
@@ -100,11 +100,11 @@ executing node dies. This is just a fallback, under normal circumstances the loc
 
 If you do not specify `lockAtMostFor` in `@SchedulerLock` default value from `@EnableSchedulerLock` will be used.
 
-Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept. 
+Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept.
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
 
-#### Example 
-Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run. 
+#### Example
+Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
 Moreover, you want to execute it at most once per 15 minutes. In such case, you can configure it like this
 
  ```java
@@ -119,25 +119,25 @@ public void scheduledTask() {
 
 ```
 By setting `lockAtMostFor` we make sure that the lock is released even if the node dies and by setting `lockAtLeastFor`
-we make sure it's not executed more than once in fifteen minutes. 
-Please note that **`lockAtMostFor` is just a safety net for a case that the node executing the task dies, so set it to 
+we make sure it's not executed more than once in fifteen minutes.
+Please note that **`lockAtMostFor` is just a safety net for a case that the node executing the task dies, so set it to
 a time that is significantly larger than maximum estimated execution time.**  If the task takes longer than `lockAtMostFor`,
 it may be executed again and the results will be unpredictable (more processes will hold the lock).
 
 ### Configure LockProvider
-There are several implementations of LockProvider.  
+There are several implementations of LockProvider.
 
 #### JdbcTemplate
 First, create lock table (**please note that `name` has to be primary key**)
 
 ```sql
 CREATE TABLE shedlock(
-    name VARCHAR(64), 
-    lock_until TIMESTAMP(3) NULL, 
-    locked_at TIMESTAMP(3) NULL, 
-    locked_by  VARCHAR(255), 
+    name VARCHAR(64),
+    lock_until TIMESTAMP(3) NULL,
+    locked_at TIMESTAMP(3) NULL,
+    locked_by  VARCHAR(255),
     PRIMARY KEY (name)
-) 
+)
 ```
 script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227) and for Oracle [here](https://github.com/lukas-krecan/ShedLock/issues/81#issue-355599950)
 
@@ -147,7 +147,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -164,7 +164,7 @@ public LockProvider lockProvider(DataSource dataSource) {
 }
 ```
 
-Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases. 
+Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases.
 
 For more fine-grained configuration use the `Configuration` object
 
@@ -177,14 +177,14 @@ new JdbcTemplateLockProvider(builder()
     .build())
 ```
 
-If you need to specify a schema, you can set it in table name using the usual dot notation 
+If you need to specify a schema, you can set it in table name using the usual dot notation
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
 **Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing locks
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
 that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
- 
+
 
 #### Mongo
 Import the project
@@ -193,7 +193,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -219,12 +219,12 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
 Configure:
- 
+
  ```java
 import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 
@@ -241,12 +241,12 @@ public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.Dyna
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
 #### ZooKeeper (using Curator)
-Import 
+Import
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -262,15 +262,15 @@ public LockProvider lockProvider(org.apache.curator.framework.CuratorFramework c
     return new ZookeeperCuratorLockProvider(client);
 }
 ```
-By default, nodes for locks will be created under `/shedlock` node. 
+By default, nodes for locks will be created under `/shedlock` node.
 
 #### Redis (using Spring RedisConnectionFactory)
-Import 
+Import
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -287,21 +287,21 @@ public LockProvider lockProvider(RedisConnectionFactory connectionFactory) {
     return new RedisLockProvider(connectionFactory, ENV);
 }
 ```
- 
-Redis lock provider uses classical lock mechanism as described [here](https://redis.io/commands/setnx#design-pattern-locking-with-codesetnxcode) 
+
+Redis lock provider uses classical lock mechanism as described [here](https://redis.io/commands/setnx#design-pattern-locking-with-codesetnxcode)
 which may not be reliable in case of Redis master failure.
 
-If you are still using Spring Data Redis 1, import special lock provider `shedlock-provider-redis-spring-1` which works around 
+If you are still using Spring Data Redis 1, import special lock provider `shedlock-provider-redis-spring-1` which works around
 issue #105 or upgrade to Spring Data Redis 2 or higher.
 
 
 #### Redis (using Jedis)
-Import 
+Import
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -325,7 +325,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.5.0/version>
+    <version>4.5.1/version>
 </dependency>
 ```
 
@@ -349,7 +349,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.5.0/version>
+    <version>4.5.1/version>
 </dependency>
 ```
 
@@ -373,7 +373,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
 ```
 
@@ -401,7 +401,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.5.0/version>
+    <version>4.5.1/version>
 </dependency>
 ```
 
@@ -430,7 +430,7 @@ All the annotations where you need to specify a duration support the following f
 
 * duration+unit - `1s`, `5ms`, `5m`, `1d` (Since 4.0.0)
 * duration in ms - `100` (only Spring integration)
-* ISO-8601 - `PT15M` (see [Duration.parse()](https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-) documentation)   
+* ISO-8601 - `PT15M` (see [Duration.parse()](https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-) documentation)
 
 ## Micronaut integration
 Since version 4.0.0, it's possible to use Micronaut framework for integration
@@ -440,9 +440,9 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.5.0</version>
+    <version>4.5.1</version>
 </dependency>
-``` 
+```
 
 Configure default lockAtMostFor value (application.yml):
 ```yaml
@@ -457,7 +457,7 @@ Configure lock provider:
 public LockProvider lockProvider() {
     ... select and configure your lock provider
 }
-``` 
+```
 
 Configure the scheduled task:
 ```java
@@ -490,32 +490,32 @@ and one that proxies TaskScheduler (PROXY_SCHEDULER)
 #### Scheduled Method proxy
 Since version 4.0.0, the default mode of Spring integration is an AOP proxy around the annotated method.
 
-The main advantage of this mode is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism. 
-The disadvantage is that the lock is applied even if you call the method directly. If the method returns a value and the lock is held 
+The main advantage of this mode is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism.
+The disadvantage is that the lock is applied even if you call the method directly. If the method returns a value and the lock is held
 by another process, null or an empty Optional will be returned (primitive return types are not supported).
 
-Final and non-public methods are not proxied so either you have to make your scheduled methods public and non-final or use TaskScheduler proxy.  
+Final and non-public methods are not proxied so either you have to make your scheduled methods public and non-final or use TaskScheduler proxy.
 
-![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)  
+![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)
 
 #### TaskScheduler proxy
 This mode wraps Spring `TaskScheduler` in an AOP proxy. It can be switched-on like this (PROXY_SCHEDULER was the default method before 4.0.0):
 
 ```java
 @EnableSchedulerLock(interceptMode = PROXY_SCHEDULER)
-``` 
- 
-If you do not specify your task scheduler, a default one is created for you. If you have special needs, just create a bean implementing `TaskScheduler` 
+```
+
+If you do not specify your task scheduler, a default one is created for you. If you have special needs, just create a bean implementing `TaskScheduler`
 interface and it will get wrapped into the AOP proxy automatically.
 
-```java   
+```java
 @Bean
 public TaskScheduler taskScheduler() {
     return new MySpecialTaskScheduler();
 }
 ```
 
-Alternatively, you can define a bean of type `ScheduledExecutorService` and it will automatically get used by the tasks 
+Alternatively, you can define a bean of type `ScheduledExecutorService` and it will automatically get used by the tasks
 scheduling mechanism.
 
 ![TaskScheduler proxy sequence diagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/scheduler_proxy.png)
@@ -538,28 +538,31 @@ public void scheduledTask() {
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
-annotation, everyting should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you 
-have to open the method by yourself. 
+annotation, everyting should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
+have to open the method by yourself.
 
 ## Troubleshooting
 Help, ShedLock does not do what it's supposed to do!
 
-1. Check the storage. If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured. 
+1. Check the storage. If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured.
 If there is more than one record with the same name, you are missing a primary key.
 2. Use ShedLock debug log. ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`.
-It should help you to see what's going on. 
+It should help you to see what's going on.
 3. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
 after each other, `lockAtLeastFor` can prevent it.
-4. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check https://github.com/lukas-krecan/ShedLock/issues/115 or 
-[this StackOverflow quesiton](https://stackoverflow.com/questions/56017382/how-to-fix-websockets-and-shedlock-compatibility-in-spring-boot-application/56036601#56036601) 
- 
-   
+4. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check https://github.com/lukas-krecan/ShedLock/issues/115 or
+[this StackOverflow quesiton](https://stackoverflow.com/questions/56017382/how-to-fix-websockets-and-shedlock-compatibility-in-spring-boot-application/56036601#56036601)
+
+
 
 ## Requirements and dependencies
 * Java 8
 * slf4j-api
 
 # Release notes
+# 4.5.1
+* Inject redis template
+
 # 4.5.0
 * ClockProvider introduced
 * MongoLockProvider(MongoDatabase) introduced
@@ -593,13 +596,13 @@ after each other, `lockAtLeastFor` can prevent it.
 * DefaultLockingTaskExecutor made reentrant #175
 ## 4.0.0
 Version 4.0.0 is a major release changing quite a lot stuff
-* `net.javacrumbs.shedlock.core.SchedulerLock` has been replaced by `net.javacrumbs.shedlock.spring.annotation.SchedulerLock`. The original annotation has been in wrong module and 
+* `net.javacrumbs.shedlock.core.SchedulerLock` has been replaced by `net.javacrumbs.shedlock.spring.annotation.SchedulerLock`. The original annotation has been in wrong module and
 was too complex. Please use the new annotation, the old one still works, but in few years it will be removed.
 * Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there was lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
 use `PROXY_SCHEDULER` mode if you specifay it manually.
 * Support for more readable [duration strings](#duration-specification)
-* Support for lock assertion `LockAssert.assertLocked()`  
-* [Support for Micronaut](#micronaut-integration) added 
+* Support for lock assertion `LockAssert.assertLocked()`
+* [Support for Micronaut](#micronaut-integration) added
 
 ## 3.0.1
 * Fixed bean definition configuration #171
@@ -660,14 +663,14 @@ use `PROXY_SCHEDULER` mode if you specifay it manually.
 * ablility to clean lock cache
 
 ## 0.18.1
-* shedlock-provider-redis-spring made compatible with spring-data-redis 1.x.x  
+* shedlock-provider-redis-spring made compatible with spring-data-redis 1.x.x
 
 ## 0.18.0
 * Added shedlock-provider-redis-spring (thanks to @siposr)
 * shedlock-provider-jedis moved to shedlock-provider-redis-jedis
 
 ## 0.17.0
-* Support for SPEL in lock name annotation 
+* Support for SPEL in lock name annotation
 
 ## 0.16.1
 * Automatically closing TaskExecutor on Spring shutdown
@@ -677,7 +680,7 @@ use `PROXY_SCHEDULER` mode if you specifay it manually.
 * Added Automatic-Module-Names
 
 ## 0.15.1
-* Hazelcast works with remote cluster 
+* Hazelcast works with remote cluster
 
 ## 0.15.0
 * Fixed ScheduledLockConfigurationBuilder interfaces #32
@@ -687,7 +690,7 @@ use `PROXY_SCHEDULER` mode if you specifay it manually.
 * Support for Hazelcast (thanks to @peyo)
 
 ## 0.13.0
-* Jedis constructor made more generic (thanks to @mgrzeszczak) 
+* Jedis constructor made more generic (thanks to @mgrzeszczak)
 
 ## 0.12.0
 * Support for property placeholders in annotation lockAtMostForString/lockAtLeastForString
@@ -701,10 +704,10 @@ use `PROXY_SCHEDULER` mode if you specifay it manually.
 
 
 ## 0.10.0
-* jdbc-template-provider does not participate in task transaction 
+* jdbc-template-provider does not participate in task transaction
 
 ## 0.9.0
-* Support for @SchedulerLock annotations on proxied classes  
+* Support for @SchedulerLock annotations on proxied classes
 
 ## 0.8.0
 * LockableTaskScheduler made AutoClosable so it's closed upon Spring shutdown
