@@ -80,7 +80,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     @Override
     public void assertUnlocked(String lockName) {
         JsonDocument lockDocument = bucket.get(lockName);
-        assertThat(parse((String) lockDocument.content().get(LOCK_UNTIL))).isBefore(now());
+        assertThat(parse((String) lockDocument.content().get(LOCK_UNTIL))).isBeforeOrEqualTo(now());
         assertThat(parse((String) lockDocument.content().get(LOCKED_AT))).isBefore(now());
         assertThat(lockDocument.content().get(LOCKED_BY)).asString().isNotEmpty();
     }
