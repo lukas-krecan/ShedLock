@@ -60,9 +60,9 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(?, ?, ?, ?)";
-        return transactionTemplate.execute(status -> {
-            try {
+        try {
+            String sql = "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(?, ?, ?, ?)";
+            return transactionTemplate.execute(status -> {
                 int insertedRows = jdbcTemplate.update(sql, preparedStatement -> {
                     preparedStatement.setString(1, lockConfiguration.getName());
                     setTimestamp(preparedStatement, 2, lockConfiguration.getLockAtMostUntil());
@@ -70,13 +70,13 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                     preparedStatement.setString(4, lockedByValue());
                 });
                 return insertedRows > 0;
-            } catch (DuplicateKeyException e) {
-                return false;
-            } catch (DataIntegrityViolationException e) {
-                logger.warn("Unexpected exception", e);
-                return false;
-            }
-        });
+            });
+        } catch (DuplicateKeyException e) {
+            return false;
+        } catch (DataIntegrityViolationException e) {
+            logger.warn("Unexpected exception", e);
+            return false;
+        }
     }
 
     @Override
