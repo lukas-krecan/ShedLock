@@ -58,7 +58,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -147,7 +147,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -193,7 +193,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -219,7 +219,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -246,7 +246,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -270,7 +270,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -301,7 +301,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -325,7 +325,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.5.1/version>
+    <version>4.5.2/version>
 </dependency>
 ```
 
@@ -349,7 +349,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.5.1/version>
+    <version>4.5.2/version>
 </dependency>
 ```
 
@@ -373,7 +373,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -401,7 +401,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.5.1/version>
+    <version>4.5.2/version>
 </dependency>
 ```
 
@@ -440,7 +440,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
@@ -560,17 +560,20 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
-# 4.5.1
+## 4.5.2
+* Made compatible with PostgreSQL JDBC Driver 42.2.11
+
+## 4.5.1
 * Inject redis template
 
-# 4.5.0
+## 4.5.0
 * ClockProvider introduced
 * MongoLockProvider(MongoDatabase) introduced
 
-# 4.4.0
+## 4.4.0
 * Support for non-void returning methods when PROXY_METHOD interception is used
 
-# 4.3.1
+## 4.3.1
 * Introduced shedlock-provider-redis-spring-1 to make it work around Spring Data Redis 1 issue #105 (thanks @rygh4775)
 
 ## 4.3.0
