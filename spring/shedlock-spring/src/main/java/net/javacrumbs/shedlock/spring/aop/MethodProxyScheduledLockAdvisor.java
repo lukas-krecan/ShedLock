@@ -18,7 +18,7 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
-import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -26,19 +26,28 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
+import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import static org.springframework.aop.support.annotation.AnnotationMatchingPointcut.forMethodAnnotation;
-
 class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
-    private final Pointcut pointcut = new ComposablePointcut(forMethodAnnotation(SchedulerLock.class))
-        .union(forMethodAnnotation(net.javacrumbs.shedlock.spring.annotation.SchedulerLock.class));
+    private final Pointcut pointcut = new ComposablePointcut(methodPointcutFor(net.javacrumbs.shedlock.core.SchedulerLock.class))
+        .union(methodPointcutFor(SchedulerLock.class));
 
     private final Advice advice;
 
     MethodProxyScheduledLockAdvisor(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
         this.advice = new LockingInterceptor(lockConfigurationExtractor, lockingTaskExecutor);
+    }
+
+    @NotNull
+    private static AnnotationMatchingPointcut methodPointcutFor(Class<? extends Annotation> methodAnnotationType) {
+        return new AnnotationMatchingPointcut(
+            null,
+            methodAnnotationType,
+            true
+        );
     }
 
     /**

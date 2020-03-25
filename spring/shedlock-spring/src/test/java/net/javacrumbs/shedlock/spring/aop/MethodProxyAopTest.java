@@ -76,6 +76,14 @@ public class MethodProxyAopTest {
     }
 
     @Test
+    public void shouldUseCustomAnnotation() {
+        testBean.custom();
+        verify(lockProvider).lock(hasParams("custom", 60_000, 1_000));
+        verify(simpleLock).unlock();
+        assertThat(testBean.wasMethodCalled()).isTrue();
+    }
+
+    @Test
     public void shouldRethrowRuntimeException() {
         assertThatThrownBy(() -> testBean.throwsRuntimeException()).isInstanceOf(RuntimeException.class);
         verify(lockProvider).lock(hasParams("runtimeException", 100, 100));
