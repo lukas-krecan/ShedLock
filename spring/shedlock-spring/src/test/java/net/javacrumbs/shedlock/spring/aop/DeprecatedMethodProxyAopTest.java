@@ -74,6 +74,13 @@ public class DeprecatedMethodProxyAopTest {
     }
 
     @Test
+    public void shouldUseCustomAnnotation() {
+        testBean.custom();
+        verify(lockProvider).lock(hasParams("custom", 30_000, 100));
+        verify(simpleLock).unlock();
+    }
+
+    @Test
     public void shouldRethrowRuntimeException() {
         assertThatThrownBy(() -> testBean.throwsRuntimeException()).isInstanceOf(RuntimeException.class);
         verify(lockProvider).lock(hasParams("runtimeException", 100, 100));

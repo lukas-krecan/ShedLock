@@ -22,9 +22,15 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import static org.mockito.Mockito.mock;
 
@@ -32,6 +38,7 @@ import static org.mockito.Mockito.mock;
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "${default.lock_at_most_for}", defaultLockAtLeastFor = "${default.lock_at_least_for}")
 @PropertySource("test.properties")
+@SuppressWarnings("deprecation")
 public class DeprecatedMethodProxyAopConfig {
 
     @Bean
@@ -58,6 +65,10 @@ public class DeprecatedMethodProxyAopConfig {
         public void normal() {
         }
 
+        @MyDeprecatedScheduled(name = "custom")
+        public void custom() {
+        }
+
         @SchedulerLock(name = "runtimeException", lockAtMostFor = 100)
         public Void throwsRuntimeException() {
             throw new RuntimeException();
@@ -77,6 +88,15 @@ public class DeprecatedMethodProxyAopConfig {
         public void spel() {
 
         }
+    }
+
+    @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @SchedulerLock
+    public @interface MyDeprecatedScheduled {
+        @AliasFor(annotation = SchedulerLock.class, attribute = "name")
+        String name();
     }
 
     interface AnotherTestBean {
