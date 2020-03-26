@@ -10,6 +10,7 @@ language: java
 jdk:
 - oraclejdk8
 - openjdk11
+- openjdk14
 
 script:
   - mvn test javadoc:javadoc
