@@ -174,6 +174,7 @@ new JdbcTemplateLockProvider(builder()
     .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
     .withLockedByValue("my-value")
+    .withTimeZone(TimeZone.getTimeZone("CEST"))
     .build())
 ```
 
