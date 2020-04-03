@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.hazelcast;
+package net.javacrumbs.shedlock.provider.hazelcast4;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 
@@ -85,11 +85,11 @@ class HazelcastLock implements Serializable {
     @Override
     public String toString() {
         return "HazelcastLock{" +
-            "name='" + name + '\'' +
-            ", lockAtMostUntil=" + lockAtMostUntil +
-            ", lockAtLeastUntil=" + lockAtLeastUntil +
-            ", timeToLive=" + timeToLive +
-            '}';
+                "name='" + name + '\'' +
+                ", lockAtMostUntil=" + lockAtMostUntil +
+                ", lockAtLeastUntil=" + lockAtLeastUntil +
+                ", timeToLive=" + timeToLive +
+                '}';
     }
 
 }

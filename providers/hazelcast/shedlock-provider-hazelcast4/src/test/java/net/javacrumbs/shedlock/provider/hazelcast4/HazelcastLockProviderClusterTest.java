@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.hazelcast;
+package net.javacrumbs.shedlock.provider.hazelcast4;
 
 
 import com.hazelcast.client.HazelcastClient;
