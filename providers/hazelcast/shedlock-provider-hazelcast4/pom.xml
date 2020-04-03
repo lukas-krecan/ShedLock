@@ -8,12 +8,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-hazelcast</artifactId>
+    <artifactId>shedlock-provider-hazelcast4</artifactId>
     <version>4.6.1-SNAPSHOT</version>
-
-    <properties>
-        <hazelcast.version>3.12.6</hazelcast.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -25,13 +21,13 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
+            <version>4.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast-client</artifactId>
-            <version>${hazelcast.version}</version>
+            <version>3.12.6</version>
             <scope>test</scope>
         </dependency>
 
@@ -52,7 +48,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.hazelcast
+                                net.javacrumbs.shedlock.provider.hazelcast4
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

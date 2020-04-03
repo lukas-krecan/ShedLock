@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.hazelcast;
+package net.javacrumbs.shedlock.provider.hazelcast4;
 
 
 import com.hazelcast.core.Hazelcast;
@@ -46,7 +46,7 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
 
     @AfterEach
     public void resetLockProvider() {
-        hazelcastInstance.removeDistributedObjectListener(HazelcastLockProvider.LOCK_STORE_KEY_DEFAULT);
+        // hazelcastInstance.removeDistributedObjectListener(HazelcastLockProvider.LOCK_STORE_KEY_DEFAULT);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
         return lockProvider;
     }
 
-    @Override
+   @Override
     protected void assertUnlocked(final String lockName) { assertThat(isUnlocked(lockName)).isTrue(); }
 
     private boolean isUnlocked(final String lockName) {
