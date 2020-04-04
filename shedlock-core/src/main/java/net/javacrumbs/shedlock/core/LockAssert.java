@@ -47,4 +47,22 @@ public class LockAssert {
             throw new IllegalStateException("The task is not locked.");
         }
     }
+
+    static class TestHelper {
+        /**
+         * If pass is set to true, all LockAssert.assertLocked calls in current thread will pass.
+         * To be used in unit tests only
+         *
+         * <code>
+         * LockAssert.TestHelper.makeAllAssertsPass(true)
+         * </code>
+         */
+        public static void makeAllAssertsPass(boolean pass) {
+            if (pass) {
+                LockAssert.startLock("net.javacrumbs.shedlock.core.test-lock");
+            } else {
+                LockAssert.endLock();
+            }
+        }
+    }
 }
