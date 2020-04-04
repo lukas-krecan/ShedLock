@@ -325,7 +325,10 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
+    <!-- Hazelcast < 4 -->
     <artifactId>shedlock-provider-hazelcast</artifactId>
+    <!-- Hazelcast 4 -->
+    <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
     <version>4.7.0/version>
 </dependency>
 ```
