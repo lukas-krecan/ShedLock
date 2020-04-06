@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.7.1</version>
+        <version>4.7.2-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2-SNAPSHOT</version>
 
     <properties>
         <hazelcast.version>3.12.6</hazelcast.version>
