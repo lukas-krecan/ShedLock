@@ -48,7 +48,7 @@ public class LockAssert {
         }
     }
 
-    static class TestHelper {
+    public static class TestHelper {
         /**
          * If pass is set to true, all LockAssert.assertLocked calls in current thread will pass.
          * To be used in unit tests only
