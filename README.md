@@ -58,7 +58,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -147,7 +147,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -194,7 +194,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -220,7 +220,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -247,7 +247,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -271,7 +271,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -302,7 +302,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -329,7 +329,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.7.0/version>
+    <version>4.7.1/version>
 </dependency>
 ```
 
@@ -355,7 +355,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.7.0/version>
+    <version>4.7.1/version>
 </dependency>
 ```
 
@@ -379,7 +379,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -407,7 +407,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.7.0/version>
+    <version>4.7.1/version>
 </dependency>
 ```
 
@@ -446,7 +446,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -568,6 +568,9 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.7.1
+* Make LockAssert.TestHelper public
+
 ## 4.7.0
 * New module for Hazelcasts 4
 * Ability to switch-off LockAssert in unit tests
