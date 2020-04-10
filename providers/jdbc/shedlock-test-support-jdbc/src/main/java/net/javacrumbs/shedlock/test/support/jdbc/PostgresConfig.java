@@ -18,6 +18,9 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.output.OutputFrame;
+
+import java.util.function.Consumer;
 
 class PostgresConfig implements DbConfig {
 
@@ -30,7 +33,12 @@ class PostgresConfig implements DbConfig {
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
-            .withLogConsumer(frame -> logger.debug(frame.toString()));
+            .withLogConsumer(new Consumer<OutputFrame>() {
+                @Override
+                public void accept(OutputFrame outputFrame) {
+                    logger.debug(outputFrame.getUtf8String());
+                }
+            });
         postgres.start();
     }
 
