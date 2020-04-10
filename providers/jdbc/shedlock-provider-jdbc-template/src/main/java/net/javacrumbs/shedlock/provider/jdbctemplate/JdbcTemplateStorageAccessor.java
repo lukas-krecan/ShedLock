@@ -22,7 +22,7 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -30,11 +30,12 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import static java.util.Objects.requireNonNull;
@@ -43,16 +44,18 @@ import static java.util.Objects.requireNonNull;
  * Spring JdbcTemplate based implementation usable in JTA environment
  */
 class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
     private final Configuration configuration;
+    private final SqlStatementsSource sqlStatementsSource;
 
     JdbcTemplateStorageAccessor(@NotNull Configuration configuration) {
         this.configuration = requireNonNull(configuration, "configuration can not be null");
-        this.jdbcTemplate = configuration.getJdbcTemplate();
+        this.jdbcTemplate = new NamedParameterJdbcTemplate(configuration.getJdbcTemplate());
+        this.sqlStatementsSource = SqlStatementsSource.create(configuration);
         PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null ?
             configuration.getTransactionManager() :
-            new DataSourceTransactionManager(jdbcTemplate.getDataSource());
+            new DataSourceTransactionManager(configuration.getJdbcTemplate().getDataSource());
 
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -61,14 +64,10 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
         try {
-            String sql = "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(?, ?, ?, ?)";
+            String sql = sqlStatementsSource.getInsertStatement();
             return transactionTemplate.execute(status -> {
-                int insertedRows = jdbcTemplate.update(sql, preparedStatement -> {
-                    preparedStatement.setString(1, lockConfiguration.getName());
-                    setTimestamp(preparedStatement, 2, lockConfiguration.getLockAtMostUntil());
-                    setTimestamp(preparedStatement, 3, ClockProvider.now());
-                    preparedStatement.setString(4, lockedByValue());
-                });
+                Map<String, Object> params = params(lockConfiguration);
+                int insertedRows = jdbcTemplate.update(sql, params);
                 return insertedRows > 0;
             });
         } catch (DuplicateKeyException e) {
@@ -81,85 +80,61 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName()
-            + " SET " + lockUntil() + " = ?, " + lockedAt() + " = ?, " + lockedBy() + " = ? WHERE " + name() + " = ? AND " + lockUntil() + " <= ?";
+        String sql = sqlStatementsSource.getUpdateStatement();
         return transactionTemplate.execute(status -> {
-            int updatedRows = jdbcTemplate.update(sql, statement -> {
-                Instant now = ClockProvider.now();
-                setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
-                setTimestamp(statement, 2, now);
-                statement.setString(3, lockedByValue());
-                statement.setString(4, lockConfiguration.getName());
-                setTimestamp(statement, 5, now);
-            });
+            int updatedRows = jdbcTemplate.update(sql, params(lockConfiguration));
             return updatedRows > 0;
         });
     }
 
     @Override
     public boolean extend(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName()
-            + " SET " + lockUntil() + " = ? WHERE " + name() + " = ? AND " + lockedBy() + " = ? AND " + lockUntil() + " > ? ";
+        String sql = sqlStatementsSource.getExtendStatement();
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         return transactionTemplate.execute(status -> {
-            int updatedRows = jdbcTemplate.update(sql, statement -> {
-                setTimestamp(statement, 1, lockConfiguration.getLockAtMostUntil());
-                statement.setString(2, lockConfiguration.getName());
-                statement.setString(3, lockedByValue());
-                setTimestamp(statement, 4, ClockProvider.now());
-            });
+            int updatedRows = jdbcTemplate.update(sql, params(lockConfiguration));
             return updatedRows > 0;
         });
     }
 
-    private void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, Instant time) throws SQLException {
-        TimeZone timeZone = configuration.getTimeZone();
-        if (timeZone == null) {
-            preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time));
-        } else {
-            preparedStatement.setTimestamp(parameterIndex, Timestamp.from(time), Calendar.getInstance(timeZone));
-        }
-    }
-
     @Override
     public void unlock(@NotNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName() + " SET " + lockUntil() + " = ? WHERE " + name() + " = ?";
+        String sql = sqlStatementsSource.getUnlockStatement();
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-
-                jdbcTemplate.update(sql, statement -> {
-                    setTimestamp(statement, 1, lockConfiguration.getUnlockTime());
-                    statement.setString(2, lockConfiguration.getName());
-                });
+                jdbcTemplate.update(sql, params(lockConfiguration));
             }
         });
     }
 
-    private String name() {
-        return configuration.getColumnNames().getName();
+    @NotNull
+    private Map<String, Object> params(@NotNull LockConfiguration lockConfiguration) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", lockConfiguration.getName());
+        params.put("lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()));
+        params.put("now", timestamp(ClockProvider.now()));
+        params.put("lockedBy", lockedByValue());
+        params.put("unlockTime", timestamp(lockConfiguration.getUnlockTime()));
+        return params;
     }
 
-    private String lockUntil() {
-        return configuration.getColumnNames().getLockUntil();
+    @NotNull
+    private Object timestamp(Instant time) {
+        TimeZone timeZone = configuration.getTimeZone();
+        if (timeZone == null) {
+            return Timestamp.from(time);
+        } else {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(Date.from(time));
+            calendar.setTimeZone(timeZone);
+            return calendar;
+        }
     }
-
-    private String lockedAt() {
-        return configuration.getColumnNames().getLockedAt();
-    }
-
-    private String lockedBy() {
-        return configuration.getColumnNames().getLockedBy();
-    }
-
 
     private String lockedByValue() {
         return configuration.getLockedByValue();
-    }
-
-    private String tableName() {
-        return configuration.getTableName();
     }
 
 }
