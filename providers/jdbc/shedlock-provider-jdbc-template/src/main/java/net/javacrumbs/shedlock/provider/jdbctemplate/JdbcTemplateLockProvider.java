@@ -86,7 +86,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         super(new JdbcTemplateStorageAccessor(configuration));
     }
 
-    public static class Configuration {
+    public static final class Configuration {
         private final JdbcTemplate jdbcTemplate;
         private final PlatformTransactionManager transactionManager;
         private final String tableName;
@@ -137,7 +137,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return new Configuration.Builder();
         }
 
-        public static class Builder {
+        public static final class Builder {
             private JdbcTemplate jdbcTemplate;
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
@@ -185,7 +185,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     }
 
-    public static class ColumnNames {
+    public static final class ColumnNames {
         private final String name;
         private final String lockUntil;
         private final String lockedAt;
