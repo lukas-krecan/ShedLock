@@ -46,6 +46,7 @@
         <module>providers/redis/shedlock-provider-redis-spring-1</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-template-postgres</module>
     </modules>
 
     <properties>

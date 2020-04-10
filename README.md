@@ -58,7 +58,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -147,7 +147,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -186,6 +186,34 @@ If you need to specify a schema, you can set it in table name using the usual do
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
 that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
 
+#### JdbcTemplate dedicated for Postgres
+There is dedicated Postgres JDBC template implementation, that uses native Postgres functionalities to reduce the number of errors in the database.
+<b>PostgreSQL 9.5 version (or newer) is needed to correct functioning of this lock</b>
+
+Dependency:
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jdbc-template-postgres</artifactId>
+    <version>4.7.2</version>
+</dependency>
+```
+
+Configuration:
+
+```java
+import net.javacrumbs.shedlock.provider.jdbctemplatepostgres.JdbcTemplatePostgresLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(DataSource dataSource) {
+    return new JdbcTemplatePostgresLockProvider(dataSource);
+}
+```
+
+The rest of the configuration is the same as in generic JDBC lock provider.
 
 #### Mongo
 Import the project
@@ -194,7 +222,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -220,7 +248,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -247,7 +275,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -271,7 +299,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -302,7 +330,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -329,7 +357,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.7.1/version>
+    <version>4.7.2/version>
 </dependency>
 ```
 
@@ -355,7 +383,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.7.1/version>
+    <version>4.7.2/version>
 </dependency>
 ```
 
@@ -379,7 +407,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -407,7 +435,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.7.1/version>
+    <version>4.7.2/version>
 </dependency>
 ```
 
@@ -446,7 +474,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.7.1</version>
+    <version>4.7.2</version>
 </dependency>
 ```
 
@@ -566,6 +594,10 @@ after each other, `lockAtLeastFor` can prevent it.
 ## Requirements and dependencies
 * Java 8
 * slf4j-api
+
+# Release notes
+## 4.7.2
+* Add dedicated postgres lock provider
 
 # Release notes
 ## 4.7.1
