@@ -137,6 +137,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return new Configuration.Builder();
         }
 
+
         public static final class Builder {
             private JdbcTemplate jdbcTemplate;
             private PlatformTransactionManager transactionManager;
