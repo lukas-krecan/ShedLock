@@ -51,19 +51,19 @@ class SqlStatementsSource {
         return configuration.getColumnNames().getName();
     }
 
-    private String lockUntil() {
+    String lockUntil() {
         return configuration.getColumnNames().getLockUntil();
     }
 
-    private String lockedAt() {
+    String lockedAt() {
         return configuration.getColumnNames().getLockedAt();
     }
 
-    private String lockedBy() {
+    String lockedBy() {
         return configuration.getColumnNames().getLockedBy();
     }
 
-    private String tableName() {
+    String tableName() {
         return configuration.getTableName();
     }
 }
@@ -75,6 +75,8 @@ class PostgresSqlStatementsSource extends SqlStatementsSource {
 
     @Override
     String getInsertStatement() {
-        return super.getInsertStatement() + " ON CONFLICT (" + name() + ") DO NOTHING";
+        return super.getInsertStatement() + " ON CONFLICT (" + name() + ") DO UPDATE " +
+            "SET " + lockUntil() + " = :lockUntil, " + lockedAt() + " = :now, " + lockedBy() + " = :lockedBy " +
+            "WHERE " + tableName() + "." + lockUntil() + " <= :now";
     }
 }
