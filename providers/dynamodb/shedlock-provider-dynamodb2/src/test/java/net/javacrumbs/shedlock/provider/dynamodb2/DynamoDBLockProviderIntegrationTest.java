@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.dynamodb;
+package net.javacrumbs.shedlock.provider.dynamodb2;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -33,10 +33,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 
-import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

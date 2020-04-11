@@ -15,19 +15,19 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
-import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
+import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.dynamodb.DynaliteContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,26 +47,30 @@ import static org.assertj.core.api.Assertions.assertThat;
  * from project root and ensure that <code>sqlite4java.library.path</code>
  * is set to <code>./target/dependencies</code>.
  */
+@Testcontainers
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-    private static AmazonDynamoDBLocal dynamodbFactory;
+    @Container
+    public static DynaliteContainer dynamoDB = new DynaliteContainer();
 
     private static final String TABLE_NAME = "Shedlock";
-    private AmazonDynamoDB dynamodb;
+    private static Table lockTable;
 
-    @BeforeEach
-    public void createLockProvider() {
-        dynamodb = dynamodbFactory.amazonDynamoDB();
-        DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, new ProvisionedThroughput(1L, 1L));
+    @BeforeAll
+    static void createLockProvider() throws InterruptedException {
+        lockTable = DynamoDBUtils.createLockTable(dynamoDB.getClient(), TABLE_NAME, new ProvisionedThroughput(1L, 1L));
+        lockTable.waitForActive();
     }
 
     @AfterEach
-    public void deleteLockTable() {
-        dynamodb.deleteTable(TABLE_NAME);
+    public void truncateLockTable() {
+        for (Item item : lockTable.scan(new ScanSpec())) {
+            lockTable.deleteItem(new PrimaryKey(ID, item.getString(ID)));
+        }
     }
 
     @Override
     protected LockProvider getLockProvider() {
-        Table table = new DynamoDB(dynamodb).getTable(TABLE_NAME);
+        Table table = new DynamoDB(dynamoDB.getClient()).getTable(TABLE_NAME);
         return new DynamoDBLockProvider(table);
     }
 
@@ -95,20 +99,10 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
     }
 
     private Table getLockTable() {
-        return new DynamoDB(dynamodb).getTable(TABLE_NAME);
+        return new DynamoDB(dynamoDB.getClient()).getTable(TABLE_NAME);
     }
 
     private Item getLockItem(String lockName) {
         return getLockTable().getItem(ID, lockName);
-    }
-
-    @BeforeAll
-    public static void startDynamoDB() {
-        dynamodbFactory = DynamoDBEmbedded.create();
-    }
-
-    @AfterAll
-    public static void stopDynamoDB() {
-        dynamodbFactory.shutdown();
     }
 }

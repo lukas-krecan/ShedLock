@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.dynamodb;
+package net.javacrumbs.shedlock.provider.dynamodb2;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ResourceInUseException;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
-import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.ID;
 
 public class DynamoDBUtils {
 

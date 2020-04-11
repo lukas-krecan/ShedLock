@@ -79,9 +79,6 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <test-containers.version>1.13.0</test-containers.version>
-    </properties>
 
     <build>
         <plugins>
