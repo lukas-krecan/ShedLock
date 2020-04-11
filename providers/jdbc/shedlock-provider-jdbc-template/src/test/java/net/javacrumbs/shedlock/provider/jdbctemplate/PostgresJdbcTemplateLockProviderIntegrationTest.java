@@ -15,14 +15,17 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractPostgresJdbcLockProviderIntegrationTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.TimeZone;
 
@@ -35,11 +38,20 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractPos
         return new JdbcTemplateLockProvider(getDatasource());
     }
 
+    @AfterEach
+    void resetClock() {
+        ClockProvider.setClock(Clock.systemDefaultZone());
+    }
+
     @Test
     void shouldHonorTimezone() {
+        TimeZone timezone = TimeZone.getTimeZone("America/Los_Angeles");
+
+        Instant lockUntil = Instant.parse("2020-04-10T17:30:00Z");
+        ClockProvider.setClock(Clock.fixed(lockUntil.minusSeconds(10), timezone.toZoneId()));
+
         TimeZone originalTimezone = TimeZone.getDefault();
 
-        TimeZone timezone = TimeZone.getTimeZone("America/Los_Angeles");
 
         DataSource datasource = getDatasource();
 
@@ -56,7 +68,6 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractPos
                 .build());
 
 
-            Instant lockUntil = Instant.parse("2030-04-10T17:30:00Z");
             provider.lock(new LockConfiguration("timezone_test", lockUntil));
             new JdbcTemplate(datasource).query("SELECT * FROM shedlock_tz where name='timezone_test'", rs -> {
                 Timestamp timestamp = rs.getTimestamp("lock_until");
