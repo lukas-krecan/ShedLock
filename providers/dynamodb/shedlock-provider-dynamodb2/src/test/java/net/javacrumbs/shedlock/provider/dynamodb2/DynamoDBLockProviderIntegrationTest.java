@@ -17,19 +17,23 @@ package net.javacrumbs.shedlock.provider.dynamodb2;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.dynamodb.DynaliteContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
+import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -41,44 +45,54 @@ import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LO
 import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * <b>Note</b>: If tests fail when build in your IDE first unpack native
- * dependencies by running
- * <pre>
- * mvn verify -pl providers/dynamodb/shedlock-provider-dynamodb --also-make
- * </pre>
- * from project root and ensure that <code>sqlite4java.library.path</code>
- * is set to <code>./target/dependencies</code>.
- */
+@Testcontainers
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-
-    // using legacy LocalDynamoDb along with AWS SDK2 DynamoDbClient as described here:
-    // https://github.com/aws/aws-sdk-java-v2/issues/982
-    private static LocalDynamoDb dynamodbFactory;
+    @Container
+    public static DynaliteContainer dynamoDbContainer = new DynaliteContainer();
 
     private static final String TABLE_NAME = "Shedlock";
-    private DynamoDbClient dynamodb;
+    private static DynamoDbClient dynamodb;
 
-    @BeforeEach
-    public void createLockProvider() {
-        dynamodb = dynamodbFactory.createClient();
-        String lockTable = DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, ProvisionedThroughput.builder()
-            .readCapacityUnits(1L)
-            .writeCapacityUnits(1L)
-            .build());
-
-        while (getTableStatus(lockTable) != TableStatus.ACTIVE);
+    @BeforeAll
+    static void createLockProvider() {
+        dynamodb = createClient();
+        String lockTable = DynamoDBUtils.createLockTable(
+            dynamodb,
+            TABLE_NAME,
+            ProvisionedThroughput.builder()
+                .readCapacityUnits(1L)
+                .writeCapacityUnits(1L)
+                .build()
+        );
+        while (getTableStatus(lockTable) != TableStatus.ACTIVE) ;
     }
 
-    private TableStatus getTableStatus(String lockTable) {
+    private static TableStatus getTableStatus(String lockTable) {
         return dynamodb.describeTable(DescribeTableRequest.builder().tableName(lockTable).build()).table().tableStatus();
     }
 
+    /**
+     * Create a standard AWS v2 SDK client pointing to the local DynamoDb instance
+     *
+     * @return A DynamoDbClient pointing to the local DynamoDb instance
+     */
+    static DynamoDbClient createClient() {
+        String endpoint = "http://" + dynamoDbContainer.getContainerIpAddress() + ":" + dynamoDbContainer.getFirstMappedPort();
+        return DynamoDbClient.builder()
+            .endpointOverride(URI.create(endpoint))
+            // The region is meaningless for local DynamoDb but required for client builder validation
+            .region(Region.US_EAST_1)
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create("dummy-key", "dummy-secret"))
+            )
+            .build();
+    }
+
     @AfterEach
-    public void deleteLockTable() {
-        dynamodb.deleteTable(DeleteTableRequest.builder()
-            .tableName(TABLE_NAME)
-            .build());
+    public void truncateLockTable() {
+//        for (Item item : lockTable.scan(new ScanSpec())) {
+//            lockTable.deleteItem(new PrimaryKey(ID, item.getString(ID)));
+//        }
     }
 
     @Override
@@ -119,16 +133,5 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
             .build();
         GetItemResponse response = dynamodb.getItem(request);
         return response.item();
-    }
-
-    @BeforeAll
-    public static void startDynamoDB() {
-        dynamodbFactory = new LocalDynamoDb();
-        dynamodbFactory.start();
-    }
-
-    @AfterAll
-    public static void stopDynamoDB() {
-        dynamodbFactory.stop();
     }
 }
