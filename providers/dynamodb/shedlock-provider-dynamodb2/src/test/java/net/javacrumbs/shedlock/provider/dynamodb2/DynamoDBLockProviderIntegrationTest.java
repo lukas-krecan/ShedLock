@@ -24,9 +24,11 @@ import org.junit.jupiter.api.BeforeEach;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
+import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -60,10 +62,16 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
     @BeforeEach
     public void createLockProvider() {
         dynamodb = dynamodbFactory.createClient();
-        DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, ProvisionedThroughput.builder()
+        String lockTable = DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, ProvisionedThroughput.builder()
             .readCapacityUnits(1L)
             .writeCapacityUnits(1L)
             .build());
+
+        while (getTableStatus(lockTable) != TableStatus.ACTIVE);
+    }
+
+    private TableStatus getTableStatus(String lockTable) {
+        return dynamodb.describeTable(DescribeTableRequest.builder().tableName(lockTable).build()).table().tableStatus();
     }
 
     @AfterEach
@@ -104,6 +112,7 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
 
     private Map<String, AttributeValue> getLockItem(String lockName) {
         GetItemRequest request = GetItemRequest.builder()
+            .tableName(TABLE_NAME)
             .key(Collections.singletonMap(ID, AttributeValue.builder()
                 .s(lockName)
                 .build()))
