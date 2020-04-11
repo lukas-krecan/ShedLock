@@ -19,13 +19,14 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.time.Instant;
 
-public class JdbcTestUtils {
+public final class JdbcTestUtils {
 
     private final HikariDataSource datasource;
     private final JdbcTemplate jdbcTemplate;
 
-    JdbcTestUtils(DbConfig dbConfig) {
+    public JdbcTestUtils(DbConfig dbConfig) {
         datasource = new HikariDataSource();
         datasource.setJdbcUrl(dbConfig.getJdbcUrl());
         datasource.setUsername(dbConfig.getUsername());
@@ -35,7 +36,12 @@ public class JdbcTestUtils {
         jdbcTemplate.execute("CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3), locked_at TIMESTAMP(3), locked_by  VARCHAR(255), PRIMARY KEY (name))");
     }
 
-    void clean() {
+
+    public Instant getLockedUntil(String lockName) {
+        return jdbcTemplate.queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", new Object[]{lockName}, Instant.class);
+    }
+
+    public void clean() {
         jdbcTemplate.execute("DROP TABLE shedlock");
         datasource.close();
     }

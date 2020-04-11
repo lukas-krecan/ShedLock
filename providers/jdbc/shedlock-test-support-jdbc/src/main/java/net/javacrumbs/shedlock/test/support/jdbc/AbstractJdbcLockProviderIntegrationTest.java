@@ -55,7 +55,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     }
 
     private Instant getLockedUntil(String lockName) {
-        return testUtils.getJdbcTemplate().queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", new Object[]{lockName}, Instant.class);
+        return testUtils.getLockedUntil(lockName);
     }
 
     @Override

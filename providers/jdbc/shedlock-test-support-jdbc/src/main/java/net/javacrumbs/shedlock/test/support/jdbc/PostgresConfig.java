@@ -22,14 +22,14 @@ import org.testcontainers.containers.output.OutputFrame;
 
 import java.util.function.Consumer;
 
-class PostgresConfig implements DbConfig {
+public final class PostgresConfig implements DbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private PostgreSQLContainer postgres;
+    private MyPostgreSQLContainer postgres;
     private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
 
     public void startDb() {
-        postgres = (PostgreSQLContainer) new PostgreSQLContainer()
+        postgres = new MyPostgreSQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
@@ -59,5 +59,8 @@ class PostgresConfig implements DbConfig {
     @Override
     public String getPassword() {
         return postgres.getPassword();
+    }
+
+    private static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {
     }
 }
