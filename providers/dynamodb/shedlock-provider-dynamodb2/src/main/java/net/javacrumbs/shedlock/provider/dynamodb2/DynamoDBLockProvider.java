@@ -112,7 +112,7 @@ public class DynamoDBLockProvider implements LockProvider {
         attributeUpdates.put(":lockedBy", attr(hostname));
 
         UpdateItemRequest request = UpdateItemRequest.builder()
-                .tableName("jobs")
+                .tableName(tableName)
                 .key(key)
                 .updateExpression(OBTAIN_LOCK_QUERY)
                 .conditionExpression(OBTAIN_LOCK_CONDITION)
