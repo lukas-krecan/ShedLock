@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,21 +27,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Calendar;
 import java.util.Optional;
-import java.util.TimeZone;
 
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 
 public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
 
-    private static final TimeZone TIME_ZONE = TimeZone.getDefault();
-
     @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .withTimeZone(TIME_ZONE)
             .build()
         );
     }
@@ -64,10 +59,5 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
 
         Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", ClockProvider.now().plusSeconds(10)));
         lock.get().unlock();
-    }
-
-    @Override
-    protected Calendar now() {
-        return Calendar.getInstance(TIME_ZONE);
     }
 }

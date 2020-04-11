@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,47 +15,52 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import ru.yandex.qatools.embed.postgresql.PostgresExecutable;
-import ru.yandex.qatools.embed.postgresql.PostgresProcess;
-import ru.yandex.qatools.embed.postgresql.PostgresStarter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.output.OutputFrame;
 
-import java.io.IOException;
+import java.util.function.Consumer;
 
-class PostgresConfig implements DbConfig {
+public final class PostgresConfig implements DbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private final PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getDefaultInstance();
-    private PostgresProcess process;
-    private ru.yandex.qatools.embed.postgresql.config.PostgresConfig config;
+    private MyPostgreSQLContainer postgres;
+    private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
 
-    public void startDb() throws IOException {
-        config = ru.yandex.qatools.embed.postgresql.config.PostgresConfig.defaultWithDbName(TEST_SCHEMA_NAME, "SA", "pass");
-        PostgresExecutable exec = runtime.prepare(config);
-        process = exec.start();
-
+    public void startDb() {
+        postgres = new MyPostgreSQLContainer()
+            .withDatabaseName(TEST_SCHEMA_NAME)
+            .withUsername("SA")
+            .withPassword("pass")
+            .withLogConsumer(new Consumer<OutputFrame>() {
+                @Override
+                public void accept(OutputFrame outputFrame) {
+                    logger.debug(outputFrame.getUtf8String());
+                }
+            });
+        postgres.start();
     }
 
     public void shutdownDb() {
-        process.stop();
+        postgres.stop();
     }
 
     public String getJdbcUrl() {
-        return String.format("jdbc:postgresql://%s:%s/%s?currentSchema=public&user=%s&password=%s",
-            config.net().host(),
-            config.net().port(),
-            config.storage().dbName(),
-            config.credentials().username(),
-            config.credentials().password()
-        );
+        return postgres.getJdbcUrl();
+
     }
 
     @Override
     public String getUsername() {
-        return config.credentials().username();
+        return postgres.getUsername();
     }
 
     @Override
     public String getPassword() {
-        return config.credentials().password();
+        return postgres.getPassword();
+    }
+
+    private static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         super(new JdbcTemplateStorageAccessor(configuration));
     }
 
-    public static class Configuration {
+    public static final class Configuration {
         private final JdbcTemplate jdbcTemplate;
         private final PlatformTransactionManager transactionManager;
         private final String tableName;
@@ -137,7 +137,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return new Configuration.Builder();
         }
 
-        public static class Builder {
+
+        public static final class Builder {
             private JdbcTemplate jdbcTemplate;
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
@@ -185,7 +186,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     }
 
-    public static class ColumnNames {
+    public static final class ColumnNames {
         private final String name;
         private final String lockUntil;
         private final String lockedAt;
