@@ -27,21 +27,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Calendar;
 import java.util.Optional;
-import java.util.TimeZone;
 
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 
 public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
 
-    private static final TimeZone TIME_ZONE = TimeZone.getTimeZone("CEST");
-
     @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .withTimeZone(TIME_ZONE)
             .build()
         );
     }
@@ -64,10 +59,5 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
 
         Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", ClockProvider.now().plusSeconds(10)));
         lock.get().unlock();
-    }
-
-    @Override
-    protected Calendar now() {
-        return Calendar.getInstance(TIME_ZONE);
     }
 }
