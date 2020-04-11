@@ -33,7 +33,7 @@ public final class JdbcTestUtils {
         datasource.setPassword(dbConfig.getPassword());
 
         jdbcTemplate = new JdbcTemplate(datasource);
-        jdbcTemplate.execute("CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3), locked_at TIMESTAMP(3), locked_by  VARCHAR(255), PRIMARY KEY (name))");
+        jdbcTemplate.execute(dbConfig.getCreateTableStatement());
     }
 
 
