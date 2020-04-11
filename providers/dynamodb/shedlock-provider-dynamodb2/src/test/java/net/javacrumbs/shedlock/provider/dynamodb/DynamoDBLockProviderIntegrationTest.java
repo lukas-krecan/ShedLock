@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,23 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
-import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
-import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Map;
 
 import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.ID;
 import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCKED_AT;
@@ -42,40 +43,47 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <b>Note</b>: If tests fail when build in your IDE first unpack native
  * dependencies by running
  * <pre>
- * mvn verify -pl providers/dynamodb/shedlock-provider-dynamodb-legacy --also-make
+ * mvn verify -pl providers/dynamodb/shedlock-provider-dynamodb --also-make
  * </pre>
  * from project root and ensure that <code>sqlite4java.library.path</code>
  * is set to <code>./target/dependencies</code>.
  */
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-    private static AmazonDynamoDBLocal dynamodbFactory;
+
+    // using legacy LocalDynamoDb along with AWS SDK2 DynamoDbClient as described here:
+    // https://github.com/aws/aws-sdk-java-v2/issues/982
+    private static LocalDynamoDb dynamodbFactory;
 
     private static final String TABLE_NAME = "Shedlock";
-    private AmazonDynamoDB dynamodb;
+    private DynamoDbClient dynamodb;
 
     @BeforeEach
     public void createLockProvider() {
-        dynamodb = dynamodbFactory.amazonDynamoDB();
-        DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, new ProvisionedThroughput(1L, 1L));
+        dynamodb = dynamodbFactory.createClient();
+        DynamoDBUtils.createLockTable(dynamodb, TABLE_NAME, ProvisionedThroughput.builder()
+            .readCapacityUnits(1L)
+            .writeCapacityUnits(1L)
+            .build());
     }
 
     @AfterEach
     public void deleteLockTable() {
-        dynamodb.deleteTable(TABLE_NAME);
+        dynamodb.deleteTable(DeleteTableRequest.builder()
+            .tableName(TABLE_NAME)
+            .build());
     }
 
     @Override
     protected LockProvider getLockProvider() {
-        Table table = new DynamoDB(dynamodb).getTable(TABLE_NAME);
-        return new DynamoDBLockProvider(table);
+        return new DynamoDBLockProvider(dynamodb, TABLE_NAME);
     }
 
     @Override
     protected void assertUnlocked(String lockName) {
-        Item lockItem = getLockItem(lockName);
-        assertThat(fromIsoString(lockItem.getString(LOCK_UNTIL))).isBeforeOrEqualTo(now());
-        assertThat(fromIsoString(lockItem.getString(LOCKED_AT))).isBeforeOrEqualTo(now());
-        assertThat(lockItem.getString(LOCKED_BY)).isNotEmpty();
+        Map<String, AttributeValue> lockItem = getLockItem(lockName);
+        assertThat(fromIsoString(lockItem.get(LOCK_UNTIL).s())).isBeforeOrEqualTo(now());
+        assertThat(fromIsoString(lockItem.get(LOCKED_AT).s())).isBeforeOrEqualTo(now());
+        assertThat(lockItem.get(LOCKED_BY).s()).isNotEmpty();
     }
 
     private OffsetDateTime now() {
@@ -84,31 +92,34 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
 
     @Override
     protected void assertLocked(String lockName) {
-        Item lockItem = getLockItem(lockName);
-        assertThat(fromIsoString(lockItem.getString(LOCK_UNTIL))).isAfter(now());
-        assertThat(fromIsoString(lockItem.getString(LOCKED_AT))).isBeforeOrEqualTo(now());
-        assertThat(lockItem.getString(LOCKED_BY)).isNotEmpty();
+        Map<String, AttributeValue> lockItem = getLockItem(lockName);
+        assertThat(fromIsoString(lockItem.get(LOCK_UNTIL).s())).isAfter(now());
+        assertThat(fromIsoString(lockItem.get(LOCKED_AT).s())).isBeforeOrEqualTo(now());
+        assertThat(lockItem.get(LOCKED_BY).s()).isNotEmpty();
     }
 
     private OffsetDateTime fromIsoString(String isoString) {
         return OffsetDateTime.parse(isoString, DateTimeFormatter.ISO_DATE_TIME);
     }
 
-    private Table getLockTable() {
-        return new DynamoDB(dynamodb).getTable(TABLE_NAME);
-    }
-
-    private Item getLockItem(String lockName) {
-        return getLockTable().getItem(ID, lockName);
+    private Map<String, AttributeValue> getLockItem(String lockName) {
+        GetItemRequest request = GetItemRequest.builder()
+            .key(Collections.singletonMap(ID, AttributeValue.builder()
+                .s(lockName)
+                .build()))
+            .build();
+        GetItemResponse response = dynamodb.getItem(request);
+        return response.item();
     }
 
     @BeforeAll
     public static void startDynamoDB() {
-        dynamodbFactory = DynamoDBEmbedded.create();
+        dynamodbFactory = new LocalDynamoDb();
+        dynamodbFactory.start();
     }
 
     @AfterAll
     public static void stopDynamoDB() {
-        dynamodbFactory.shutdown();
+        dynamodbFactory.stop();
     }
 }
