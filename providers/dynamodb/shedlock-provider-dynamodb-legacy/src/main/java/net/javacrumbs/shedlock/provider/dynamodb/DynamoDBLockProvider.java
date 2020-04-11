@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2020 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,12 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb;
 
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
+import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -22,24 +28,15 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
 import org.jetbrains.annotations.NotNull;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
-import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemResponse;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
  * Distributed lock using DynamoDB.
- * Depends on <code>software.amazon.awssdk:dynamodb</code>.
+ * Depends on <code>aws-java-sdk-dynamodb</code>.
  * <p>
  * It uses a table with the following structure:
  * <pre>
@@ -84,19 +81,16 @@ public class DynamoDBLockProvider implements LockProvider {
             "set " + LOCK_UNTIL + " = :lockUntil";
 
     private final String hostname;
-    private final DynamoDbClient ddbClient;
-    private final String tableName;
+    private final Table table;
 
     /**
      * Uses DynamoDB to coordinate locks
      *
-     * @param ddbClient v2 of DynamoDB client
-     * @param tableName the lock table name
+     * @param table existing DynamoDB table to be used
      */
-    public DynamoDBLockProvider(@NotNull DynamoDbClient ddbClient, String tableName) {
-        this.ddbClient = ddbClient;
+    public DynamoDBLockProvider(@NotNull Table table) {
+        this.table = table;
         this.hostname = Utils.getHostname();
-        this.tableName = tableName;
     }
 
     @Override
@@ -105,37 +99,24 @@ public class DynamoDBLockProvider implements LockProvider {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
-        Map<String, AttributeValue> key = Collections.singletonMap(ID, AttributeValue.builder()
-                .s(lockConfiguration.getName())
-                .build());
-
-        Map<String, AttributeValue> attributeUpdates = new HashMap<>(3);
-        attributeUpdates.put(":lockUntil", AttributeValue.builder()
-                        .s(lockUntilIso)
-                        .build());
-        attributeUpdates.put(":lockedAt", AttributeValue.builder()
-                        .s(nowIso)
-                        .build());
-        attributeUpdates.put(":lockedBy", AttributeValue.builder()
-                        .s(hostname)
-                        .build());
-
-        UpdateItemRequest request = UpdateItemRequest.builder()
-                .tableName("jobs")
-                .key(key)
-                .updateExpression(OBTAIN_LOCK_QUERY)
-                .conditionExpression(OBTAIN_LOCK_CONDITION)
-                .expressionAttributeValues(attributeUpdates)
-                .returnValues(ReturnValue.UPDATED_NEW)
-                .build();
+        UpdateItemSpec request = new UpdateItemSpec()
+                .withPrimaryKey(ID, lockConfiguration.getName())
+                .withUpdateExpression(OBTAIN_LOCK_QUERY)
+                .withConditionExpression(OBTAIN_LOCK_CONDITION)
+                .withValueMap(new ValueMap()
+                        .withString(":lockUntil", lockUntilIso)
+                        .withString(":lockedAt", nowIso)
+                        .withString(":lockedBy", hostname)
+                )
+                .withReturnValues(ReturnValue.UPDATED_NEW);
 
         try {
             // There are three possible situations:
             // 1. The lock document does not exist yet - it is inserted - we have the lock
             // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
             // 3. The lock document exists and lockUtil > now - ConditionalCheckFailedException is thrown
-            UpdateItemResponse response = ddbClient.updateItem(request);
-            assert lockUntilIso.equals(response.getValueForField(LOCK_UNTIL, String.class));
+            UpdateItemOutcome updated = table.updateItem(request);
+            assert lockUntilIso.equals(updated.getItem().getString(LOCK_UNTIL));
             return Optional.of(new DynamoDBLock(lockConfiguration));
         } catch (ConditionalCheckFailedException e) {
             // Condition failed. This means there was a lock with lockUntil > now.
@@ -156,26 +137,15 @@ public class DynamoDBLockProvider implements LockProvider {
         public void doUnlock() {
             // Set lockUntil to now or lockAtLeastUntil whichever is later
             String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
-
-            Map<String, AttributeValue> key = Collections.singletonMap(ID, AttributeValue.builder()
-                    .s(lockConfiguration.getName())
-                    .build());
-
-            Map<String, AttributeValue> attributeUpdates = Collections.singletonMap(":lockUntil", AttributeValue.builder()
-                            .s(unlockTimeIso)
-                            .build());
-
-
-            UpdateItemRequest request = UpdateItemRequest.builder()
-                    .tableName(tableName)
-                    .key(key)
-                    .updateExpression(RELEASE_LOCK_QUERY)
-                    .expressionAttributeValues(attributeUpdates)
-                    .returnValues(ReturnValue.UPDATED_NEW)
-                    .build();
-
-            UpdateItemResponse response = ddbClient.updateItem(request);
-            assert unlockTimeIso.equals(response.getValueForField(LOCK_UNTIL, String.class));
+            UpdateItemSpec request = new UpdateItemSpec()
+                    .withPrimaryKey(ID, lockConfiguration.getName())
+                    .withUpdateExpression(RELEASE_LOCK_QUERY)
+                    .withValueMap(new ValueMap()
+                            .withString(":lockUntil", unlockTimeIso)
+                    )
+                    .withReturnValues(ReturnValue.UPDATED_NEW);
+            UpdateItemOutcome updated = table.updateItem(request);
+            assert unlockTimeIso.equals(updated.getItem().getString(LOCK_UNTIL));
         }
     }
 }
