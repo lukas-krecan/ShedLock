@@ -35,7 +35,7 @@ import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProv
 
 public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
 
-    private static final TimeZone TIME_ZONE = TimeZone.getTimeZone("CEST");
+    private static final TimeZone TIME_ZONE = TimeZone.getDefault();
 
     @Override
     protected StorageBasedLockProvider getLockProvider() {
