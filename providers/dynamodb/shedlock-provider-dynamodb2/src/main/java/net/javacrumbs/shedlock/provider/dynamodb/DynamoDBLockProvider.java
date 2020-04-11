@@ -27,7 +27,6 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemResponse;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -105,20 +104,12 @@ public class DynamoDBLockProvider implements LockProvider {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
-        Map<String, AttributeValue> key = Collections.singletonMap(ID, AttributeValue.builder()
-                .s(lockConfiguration.getName())
-                .build());
+        Map<String, AttributeValue> key = Collections.singletonMap(ID, attr(lockConfiguration.getName()));
 
         Map<String, AttributeValue> attributeUpdates = new HashMap<>(3);
-        attributeUpdates.put(":lockUntil", AttributeValue.builder()
-                        .s(lockUntilIso)
-                        .build());
-        attributeUpdates.put(":lockedAt", AttributeValue.builder()
-                        .s(nowIso)
-                        .build());
-        attributeUpdates.put(":lockedBy", AttributeValue.builder()
-                        .s(hostname)
-                        .build());
+        attributeUpdates.put(":lockUntil", attr(lockUntilIso));
+        attributeUpdates.put(":lockedAt", attr(nowIso));
+        attributeUpdates.put(":lockedBy", attr(hostname));
 
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName("jobs")
@@ -134,13 +125,18 @@ public class DynamoDBLockProvider implements LockProvider {
             // 1. The lock document does not exist yet - it is inserted - we have the lock
             // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
             // 3. The lock document exists and lockUtil > now - ConditionalCheckFailedException is thrown
-            UpdateItemResponse response = ddbClient.updateItem(request);
-            assert lockUntilIso.equals(response.getValueForField(LOCK_UNTIL, String.class));
+            ddbClient.updateItem(request);
             return Optional.of(new DynamoDBLock(lockConfiguration));
         } catch (ConditionalCheckFailedException e) {
             // Condition failed. This means there was a lock with lockUntil > now.
             return Optional.empty();
         }
+    }
+
+    private AttributeValue attr(String lockUntilIso) {
+        return AttributeValue.builder()
+            .s(lockUntilIso)
+            .build();
     }
 
     private Instant now() {
@@ -157,13 +153,9 @@ public class DynamoDBLockProvider implements LockProvider {
             // Set lockUntil to now or lockAtLeastUntil whichever is later
             String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
 
-            Map<String, AttributeValue> key = Collections.singletonMap(ID, AttributeValue.builder()
-                    .s(lockConfiguration.getName())
-                    .build());
+            Map<String, AttributeValue> key = Collections.singletonMap(ID, attr(lockConfiguration.getName()));
 
-            Map<String, AttributeValue> attributeUpdates = Collections.singletonMap(":lockUntil", AttributeValue.builder()
-                            .s(unlockTimeIso)
-                            .build());
+            Map<String, AttributeValue> attributeUpdates = Collections.singletonMap(":lockUntil", attr(unlockTimeIso));
 
 
             UpdateItemRequest request = UpdateItemRequest.builder()
@@ -174,8 +166,7 @@ public class DynamoDBLockProvider implements LockProvider {
                     .returnValues(ReturnValue.UPDATED_NEW)
                     .build();
 
-            UpdateItemResponse response = ddbClient.updateItem(request);
-            assert unlockTimeIso.equals(response.getValueForField(LOCK_UNTIL, String.class));
+            ddbClient.updateItem(request);
         }
     }
 }
