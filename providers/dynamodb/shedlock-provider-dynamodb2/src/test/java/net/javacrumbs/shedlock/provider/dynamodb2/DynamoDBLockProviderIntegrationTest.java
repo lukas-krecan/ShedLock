@@ -36,8 +36,7 @@ import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -118,8 +117,8 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
         assertThat(lockItem.get(LOCKED_BY).s()).isNotEmpty();
     }
 
-    private OffsetDateTime now() {
-        return OffsetDateTime.now();
+    private Instant now() {
+        return Instant.now();
     }
 
     @Override
@@ -130,8 +129,8 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
         assertThat(lockItem.get(LOCKED_BY).s()).isNotEmpty();
     }
 
-    private OffsetDateTime fromIsoString(String isoString) {
-        return OffsetDateTime.parse(isoString, DateTimeFormatter.ISO_DATE_TIME);
+    private Instant fromIsoString(String isoString) {
+        return Instant.parse(isoString);
     }
 
     private Map<String, AttributeValue> getLockItem(String lockName) {

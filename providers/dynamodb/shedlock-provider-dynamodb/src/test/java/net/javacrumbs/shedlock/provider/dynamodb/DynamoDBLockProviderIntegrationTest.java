@@ -29,8 +29,7 @@ import org.testcontainers.dynamodb.DynaliteContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 
 import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.ID;
 import static net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider.LOCKED_AT;
@@ -82,8 +81,8 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
         assertThat(lockItem.getString(LOCKED_BY)).isNotEmpty();
     }
 
-    private OffsetDateTime now() {
-        return OffsetDateTime.now();
+    private Instant now() {
+        return Instant.now();
     }
 
     @Override
@@ -94,8 +93,8 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
         assertThat(lockItem.getString(LOCKED_BY)).isNotEmpty();
     }
 
-    private OffsetDateTime fromIsoString(String isoString) {
-        return OffsetDateTime.parse(isoString, DateTimeFormatter.ISO_DATE_TIME);
+    private Instant fromIsoString(String isoString) {
+        return Instant.parse(isoString);
     }
 
     private Table getLockTable() {
