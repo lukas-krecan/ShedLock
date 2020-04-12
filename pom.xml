@@ -45,6 +45,7 @@
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/redis/shedlock-provider-redis-spring-1</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
+        <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
     </modules>
 
@@ -53,7 +54,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot22.version>2.2.1.RELEASE</spring-boot22.version>
-        <junit.version>5.5.2</junit.version>
+        <junit.version>5.6.2</junit.version>
+        <test-containers.version>1.13.0</test-containers.version>
     </properties>
 
     <dependencies>
