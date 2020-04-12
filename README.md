@@ -21,7 +21,7 @@ executed repeatedly.
   - [JdbcTemplate](#jdbctemplate)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
-  - [DynamoDB 2](#dynamodb2)
+  - [DynamoDB 2](#dynamodb-2)
   - [ZooKeeper (using Curator)](#zookeeper-using-curator)
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
