@@ -29,11 +29,12 @@ import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Collections.singletonMap;
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
@@ -83,19 +84,19 @@ public class DynamoDBLockProvider implements LockProvider {
             "set " + LOCK_UNTIL + " = :lockUntil";
 
     private final String hostname;
-    private final DynamoDbClient ddbClient;
+    private final DynamoDbClient dynamoDbClient;
     private final String tableName;
 
     /**
      * Uses DynamoDB to coordinate locks
      *
-     * @param ddbClient v2 of DynamoDB client
+     * @param dynamoDbClient v2 of DynamoDB client
      * @param tableName the lock table name
      */
-    public DynamoDBLockProvider(@NotNull DynamoDbClient ddbClient, String tableName) {
-        this.ddbClient = ddbClient;
+    public DynamoDBLockProvider(@NotNull DynamoDbClient dynamoDbClient, @NotNull String tableName) {
+        this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
+        this.tableName = requireNonNull(tableName, "tableName can not be null");
         this.hostname = Utils.getHostname();
-        this.tableName = tableName;
     }
 
     @Override
@@ -104,7 +105,7 @@ public class DynamoDBLockProvider implements LockProvider {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
-        Map<String, AttributeValue> key = Collections.singletonMap(ID, attr(lockConfiguration.getName()));
+        Map<String, AttributeValue> key = singletonMap(ID, attr(lockConfiguration.getName()));
 
         Map<String, AttributeValue> attributeUpdates = new HashMap<>(3);
         attributeUpdates.put(":lockUntil", attr(lockUntilIso));
@@ -125,15 +126,15 @@ public class DynamoDBLockProvider implements LockProvider {
             // 1. The lock document does not exist yet - it is inserted - we have the lock
             // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
             // 3. The lock document exists and lockUtil > now - ConditionalCheckFailedException is thrown
-            ddbClient.updateItem(request);
-            return Optional.of(new DynamoDBLock(lockConfiguration));
+            dynamoDbClient.updateItem(request);
+            return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, lockConfiguration));
         } catch (ConditionalCheckFailedException e) {
             // Condition failed. This means there was a lock with lockUntil > now.
             return Optional.empty();
         }
     }
 
-    private AttributeValue attr(String lockUntilIso) {
+    private static AttributeValue attr(String lockUntilIso) {
         return AttributeValue.builder()
             .s(lockUntilIso)
             .build();
@@ -143,9 +144,18 @@ public class DynamoDBLockProvider implements LockProvider {
         return ClockProvider.now();
     }
 
-    private final class DynamoDBLock extends AbstractSimpleLock {
-        private DynamoDBLock(LockConfiguration lockConfiguration) {
+    private static final class DynamoDBLock extends AbstractSimpleLock {
+        private final DynamoDbClient dynamoDbClient;
+        private final String tableName;
+
+        private DynamoDBLock(
+            DynamoDbClient dynamoDbClient,
+            String tableName,
+            LockConfiguration lockConfiguration
+        ) {
             super(lockConfiguration);
+            this.dynamoDbClient = dynamoDbClient;
+            this.tableName = tableName;
         }
 
         @Override
@@ -153,10 +163,9 @@ public class DynamoDBLockProvider implements LockProvider {
             // Set lockUntil to now or lockAtLeastUntil whichever is later
             String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
 
-            Map<String, AttributeValue> key = Collections.singletonMap(ID, attr(lockConfiguration.getName()));
+            Map<String, AttributeValue> key = singletonMap(ID, attr(lockConfiguration.getName()));
 
-            Map<String, AttributeValue> attributeUpdates = Collections.singletonMap(":lockUntil", attr(unlockTimeIso));
-
+            Map<String, AttributeValue> attributeUpdates = singletonMap(":lockUntil", attr(unlockTimeIso));
 
             UpdateItemRequest request = UpdateItemRequest.builder()
                     .tableName(tableName)
@@ -166,7 +175,7 @@ public class DynamoDBLockProvider implements LockProvider {
                     .returnValues(ReturnValue.UPDATED_NEW)
                     .build();
 
-            ddbClient.updateItem(request);
+            dynamoDbClient.updateItem(request);
         }
     }
 }
