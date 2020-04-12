@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.8.0</version>
+    <version>4.8.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
         <module>micronaut/shedlock-micronaut</module>
