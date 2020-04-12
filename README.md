@@ -21,7 +21,7 @@ executed repeatedly.
   - [JdbcTemplate](#jdbctemplate)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
-  - [DynamoDB Legacy](#dynamodb-legacy)
+  - [DynamoDB 2](#dynamodb2)
   - [ZooKeeper (using Curator)](#zookeeper-using-curator)
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
@@ -59,7 +59,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -148,7 +148,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -195,7 +195,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -215,36 +215,6 @@ public LockProvider lockProvider(MongoClient mongo) {
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.4.0
 
 #### DynamoDB
-This depends on AWS SDK v2.
-
-Import the project
-
- ```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>5.0.0</version>
-</dependency>
-```
-
-Configure:
-
- ```java
-import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
-
-...
-
-@Bean
-public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.DynamoDbClient dynamoDB) {
-    return new DynamoDBLockProvider(dynamoDB, "existingTableName");
-}
-```
-
-> Please note that the lock table must be created externally.
-> `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
-> A table definition is available from `DynamoDBLockProvider`'s Javadoc.
-
-#### DynamoDB Legacy
 This depends on AWS SDK v1.
 
 Import the project
@@ -252,8 +222,8 @@ Import the project
  ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-dynamodb-legacy</artifactId>
-    <version>5.0.0</version>
+    <artifactId>shedlock-provider-dynamodb</artifactId>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -266,7 +236,37 @@ import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 
 @Bean
 public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB) {
-    return new DynamoDBLockProvider(dynamoDB.getTable("existingTableName"));
+    return new DynamoDBLockProvider(dynamoDB.getTable("Shedlock"));
+}
+```
+
+> Please note that the lock table must be created externally.
+> `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
+> A table definition is available from `DynamoDBLockProvider`'s Javadoc.
+
+#### DynamoDB 2
+This depends on AWS SDK v2.
+
+Import the project
+
+ ```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-dynamodb2</artifactId>
+    <version>4.8.0</version>
+</dependency>
+```
+
+Configure:
+
+ ```java
+import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.DynamoDbClient dynamoDB) {
+    return new DynamoDBLockProvider(dynamoDB, "Shedlock");
 }
 ```
 
@@ -280,7 +280,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -304,7 +304,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -335,7 +335,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -362,7 +362,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.7.1/version>
+    <version>4.8.0/version>
 </dependency>
 ```
 
@@ -388,7 +388,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.7.1/version>
+    <version>4.8.0/version>
 </dependency>
 ```
 
@@ -412,7 +412,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -440,7 +440,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.7.1/version>
+    <version>4.8.0/version>
 </dependency>
 ```
 
@@ -479,7 +479,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>5.0.0</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 
@@ -601,11 +601,11 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
-## 5.0.0
-* Migraged original DynamoDB provider based on v1 of AWS SDK to shedlock-provider-dynamodb-legacy
-* Refactored shedlock-provider-dynamodb to use v2 of AWS SDK
+## 4.8.0
+* DynamoDB 2 module introduced (thanks Mark Egan)
+* JDBC template code refactored to not log error on failed insert in Postgres
+    * INSERT .. ON CONFLICT UPDATE is used for Postgres
 
-# Release notes
 ## 4.7.1
 * Make LockAssert.TestHelper public
 
