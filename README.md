@@ -13,7 +13,7 @@ Feedback and pull-requests welcome!
 #### ShedLock is not a distributed scheduler
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
-executed repeatedly.
+executed repeatedly. Moreover, the locks are time-based and ShedLock assumes that clocks on the nodes are synchronized.
 
 + [Components](#components)
 + [Usage](#usage)
@@ -581,6 +581,12 @@ I unit tests you can switch-off the assert by calling `LockAssert.TestHelper.mak
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
 annotation, everyting should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
 have to open the method by yourself.
+
+## Caveats
+Locks in ShedLock have expiration time which leads to following possible issues.
+1. If the task runs longer than `lockAtMostFor`, the task can be executed more than once
+2. If the clock difference between two nodes is more than `lockAtLeastFor` or minimal execution time the task can be
+executed more than once.
 
 ## Troubleshooting
 Help, ShedLock does not do what it's supposed to do!
