@@ -12,9 +12,6 @@
     <artifactId>shedlock-micronaut</artifactId>
     <version>4.8.1-SNAPSHOT</version>
 
-    <properties>
-        <micronaut.version>1.3.4</micronaut.version>
-    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
