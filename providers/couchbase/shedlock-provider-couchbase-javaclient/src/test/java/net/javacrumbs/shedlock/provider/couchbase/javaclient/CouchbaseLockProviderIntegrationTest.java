@@ -17,8 +17,9 @@ package net.javacrumbs.shedlock.provider.couchbase.javaclient;
 
 
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.cluster.BucketSettings;
+import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.document.JsonDocument;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.couchbase.CouchbaseContainer;
 
 import static java.time.Instant.parse;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
@@ -38,28 +40,36 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     private static final String BUCKET_NAME = "test";
     private static final String HOST = "127.0.0.1";
-
+    public static final String BUCKET_PASSWORD = "bucketPass";
 
     private CouchbaseLockProvider lockProvider;
-    private static Cluster cluster;
+    private static CouchbaseCluster cluster;
     private static Bucket bucket;
+    private static CouchbaseContainer container;
 
     @BeforeAll
     public static void startCouchbase () {
-        cluster = connect();
-        cluster.authenticate("Administrator", "password");
+        BucketSettings bucketSettings = DefaultBucketSettings
+            .builder()
+            .name(BUCKET_NAME)
+            .password(BUCKET_PASSWORD)
+            .build();
+        container = new CouchbaseContainer().withNewBucket(bucketSettings);
+        container.start();
 
-        bucket = cluster.openBucket(BUCKET_NAME);
+        cluster = container.getCouchbaseCluster();
+        bucket = cluster.openBucket(BUCKET_NAME, BUCKET_PASSWORD);
     }
 
     @AfterAll
     public static void stopCouchbase () {
-        disconnect(cluster);
+        cluster.disconnect();
+        container.stop();
     }
 
     @BeforeEach
     public void createLockProvider()  {
-        bucket = getBucket(cluster);
+        bucket = getBucket();
         lockProvider = new CouchbaseLockProvider(bucket);
     }
 
@@ -93,15 +103,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         assertThat(lockDocument.content().get(LOCKED_BY)).asString().isNotEmpty();
     }
 
-    private static Cluster connect(){
-        return CouchbaseCluster.create(HOST);
-    }
-
-    private static void disconnect(Cluster cluster){
-        cluster.disconnect();
-    }
-
-    private Bucket getBucket(Cluster cluster) {
+    private Bucket getBucket() {
         return bucket;
     }
 
