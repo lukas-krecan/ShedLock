@@ -27,12 +27,17 @@ class SqlStatementsSource {
 
     static SqlStatementsSource create(Configuration configuration) {
         String databaseProductName = getDatabaseProductName(configuration);
-        if ("PostgreSQL".equals(databaseProductName)) {
-            logger.debug("Using PostgresSqlStatementsSource");
-            return new PostgresSqlStatementsSource(configuration);
-        } else {
-            logger.debug("Using SqlStatementsSource");
-            return new SqlStatementsSource(configuration);
+
+        switch (databaseProductName) {
+            case "PostgreSQL":
+                logger.debug("Using PostgresSqlStatementsSource");
+                return new PostgresSqlStatementsSource(configuration);
+            case "MySQL":
+                logger.debug("Using PostgresSqlStatementsSource");
+                return new MySqlStatementsSource(configuration);
+            default:
+                logger.debug("Using SqlStatementsSource");
+                return new SqlStatementsSource(configuration);
         }
     }
 
@@ -100,50 +105,5 @@ class SqlStatementsSource {
 
     String tableName() {
         return configuration.getTableName();
-    }
-}
-
-class PostgresSqlStatementsSource extends SqlStatementsSource {
-    private final String lockAtMostFor = "current_timestamp + cast(:lockAtMostForInterval as interval)";
-
-    PostgresSqlStatementsSource(Configuration configuration) {
-        super(configuration);
-    }
-
-    @Override
-    String getInsertStatement() {
-        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", current_timestamp, :lockedBy)" +
-            " ON CONFLICT (" + name() + ") DO UPDATE" + updateClause();
-    }
-
-    @NotNull
-    private String updateClause() {
-        return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = current_timestamp, " + lockedBy() + " = :lockedBy WHERE " + tableName() + "." + lockUntil() + " <= current_timestamp";
-    }
-
-    @Override
-    public String getUpdateStatement() {
-        return "UPDATE " + tableName() + updateClause();
-    }
-
-    @Override
-    public String getUnlockStatement() {
-        String lockAtLeastFor = lockedAt() + " + cast(:lockAtLeastForInterval as interval)";
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > current_timestamp THEN " + lockAtLeastFor + " ELSE current_timestamp END WHERE " + name() + " = :name";
-    }
-
-    @Override
-    public String getExtendStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = current_timestamp + cast(:lockAtMostForInterval as interval) WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > current_timestamp";
-    }
-
-    @Override
-    @NotNull Map<String, Object> params(@NotNull LockConfiguration lockConfiguration) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", lockConfiguration.getName());
-        params.put("lockedBy", configuration.getLockedByValue());
-        params.put("lockAtMostForInterval", lockConfiguration.getLockAtMostFor().toMillis() + " milliseconds");
-        params.put("lockAtLeastForInterval", lockConfiguration.getLockAtLeastFor().toMillis() + " milliseconds");
-        return params;
     }
 }

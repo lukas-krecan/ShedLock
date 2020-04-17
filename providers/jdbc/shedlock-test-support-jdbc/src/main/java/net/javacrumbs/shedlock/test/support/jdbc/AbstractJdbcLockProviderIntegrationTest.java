@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -66,8 +65,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
-        Calendar now = now();
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, now, now, "me");
+        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, now(), now(), ?)", LOCK_NAME1, "me");
         shouldCreateLock();
     }
 
@@ -81,10 +79,6 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
         LockConfiguration configuration = lockConfig("lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
         Optional<SimpleLock> lock = getLockProvider().lock(configuration);
         assertThat(lock).isEmpty();
-    }
-
-    protected Calendar now() {
-        return Calendar.getInstance();
     }
 
     protected DataSource getDatasource() {
