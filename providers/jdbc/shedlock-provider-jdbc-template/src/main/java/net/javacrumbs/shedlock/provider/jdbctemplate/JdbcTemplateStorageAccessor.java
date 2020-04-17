@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
@@ -30,13 +29,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 import static java.util.Objects.requireNonNull;
 
@@ -111,30 +104,6 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @NotNull
     private Map<String, Object> params(@NotNull LockConfiguration lockConfiguration) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", lockConfiguration.getName());
-        params.put("lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()));
-        params.put("now", timestamp(ClockProvider.now()));
-        params.put("lockedBy", lockedByValue());
-        params.put("unlockTime", timestamp(lockConfiguration.getUnlockTime()));
-        return params;
+        return sqlStatementsSource.params(lockConfiguration);
     }
-
-    @NotNull
-    private Object timestamp(Instant time) {
-        TimeZone timeZone = configuration.getTimeZone();
-        if (timeZone == null) {
-            return Timestamp.from(time);
-        } else {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(Date.from(time));
-            calendar.setTimeZone(timeZone);
-            return calendar;
-        }
-    }
-
-    private String lockedByValue() {
-        return configuration.getLockedByValue();
-    }
-
 }

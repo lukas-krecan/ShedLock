@@ -15,21 +15,9 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractPostgresJdbcLockProviderIntegrationTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.TimeZone;
-
-import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractPostgresJdbcLockProviderIntegrationTest {
@@ -38,44 +26,13 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractPos
         return new JdbcTemplateLockProvider(getDatasource());
     }
 
-    @AfterEach
-    void resetClock() {
-        ClockProvider.setClock(Clock.systemDefaultZone());
+    @Override
+    protected void assertUnlocked(String lockName) {
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= current_timestamp", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
-    @Test
-    void shouldHonorTimezone() {
-        TimeZone timezone = TimeZone.getTimeZone("America/Los_Angeles");
-
-        Instant lockUntil = Instant.parse("2020-04-10T17:30:00Z");
-        ClockProvider.setClock(Clock.fixed(lockUntil.minusSeconds(10), timezone.toZoneId()));
-
-        TimeZone originalTimezone = TimeZone.getDefault();
-
-
-        DataSource datasource = getDatasource();
-
-        TimeZone.setDefault(timezone);
-
-        try {
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
-            jdbcTemplate.execute("CREATE TABLE shedlock_tz(name VARCHAR(64), lock_until TIMESTAMP WITH TIME ZONE, locked_at TIMESTAMP WITH TIME ZONE, locked_by  VARCHAR(255), PRIMARY KEY (name))");
-
-            JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
-                .withJdbcTemplate(new JdbcTemplate(datasource))
-                .withTableName("shedlock_tz")
-                .withTimeZone(timezone)
-                .build());
-
-
-            provider.lock(new LockConfiguration("timezone_test", lockUntil));
-            new JdbcTemplate(datasource).query("SELECT * FROM shedlock_tz where name='timezone_test'", rs -> {
-                Timestamp timestamp = rs.getTimestamp("lock_until");
-                assertThat(timestamp.getTimezoneOffset()).isEqualTo(7 * 60);
-                assertThat(timestamp.toInstant()).isEqualTo(lockUntil);
-            });
-        } finally {
-            TimeZone.setDefault(originalTimezone);
-        }
+    @Override
+    protected void assertLocked(String lockName) {
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > current_timestamp", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 }
