@@ -1,12 +1,23 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+
 class SqlStatementsSource {
-    private final Configuration configuration;
+    protected final Configuration configuration;
 
     private static final Logger logger = LoggerFactory.getLogger(SqlStatementsSource.class);
 
@@ -16,17 +27,46 @@ class SqlStatementsSource {
 
     static SqlStatementsSource create(Configuration configuration) {
         String databaseProductName = getDatabaseProductName(configuration);
-        if ("PostgreSQL".equals(databaseProductName)) {
-            logger.debug("Using PostgresSqlStatementsSource");
-            return new PostgresSqlStatementsSource(configuration);
-        } else {
-            logger.debug("Using SqlStatementsSource");
-            return new SqlStatementsSource(configuration);
+
+        switch (databaseProductName) {
+            case "PostgreSQL":
+                logger.debug("Using PostgresSqlStatementsSource");
+                return new PostgresSqlStatementsSource(configuration);
+            case "MySQL":
+                logger.debug("Using PostgresSqlStatementsSource");
+                return new MySqlStatementsSource(configuration);
+            default:
+                logger.debug("Using SqlStatementsSource");
+                return new SqlStatementsSource(configuration);
         }
     }
 
     private static String getDatabaseProductName(Configuration configuration) {
         return configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
+    }
+
+    @NotNull
+    Map<String, Object> params(@NotNull LockConfiguration lockConfiguration) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", lockConfiguration.getName());
+        params.put("lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()));
+        params.put("now", timestamp(ClockProvider.now()));
+        params.put("lockedBy", configuration.getLockedByValue());
+        params.put("unlockTime", timestamp(lockConfiguration.getUnlockTime()));
+        return params;
+    }
+
+    @NotNull
+    private Object timestamp(Instant time) {
+        TimeZone timeZone = configuration.getTimeZone();
+        if (timeZone == null) {
+            return Timestamp.from(time);
+        } else {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(Date.from(time));
+            calendar.setTimeZone(timeZone);
+            return calendar;
+        }
     }
 
 
@@ -65,18 +105,5 @@ class SqlStatementsSource {
 
     String tableName() {
         return configuration.getTableName();
-    }
-}
-
-class PostgresSqlStatementsSource extends SqlStatementsSource {
-    PostgresSqlStatementsSource(Configuration configuration) {
-        super(configuration);
-    }
-
-    @Override
-    String getInsertStatement() {
-        return super.getInsertStatement() + " ON CONFLICT (" + name() + ") DO UPDATE " +
-            "SET " + lockUntil() + " = :lockUntil, " + lockedAt() + " = :now, " + lockedBy() + " = :lockedBy " +
-            "WHERE " + tableName() + "." + lockUntil() + " <= :now";
     }
 }

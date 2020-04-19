@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.core;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -26,31 +27,50 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
  * Lock configuration.
  */
 public class LockConfiguration {
+    private final Instant createdAt;
+
     private final String name;
 
     /**
-     * The lock is held until this instant, after that it's automatically released (the process holding it has most likely
+     * The lock is held until this duration passes, after that it's automatically released (the process holding it has most likely
      * died without releasing the lock) Can be ignored by providers which can detect dead processes (like Zookeeper)
      */
-    private final Instant lockAtMostUntil;
-    /**
-     * The lock will be held until this time even if the task holding the lock finishes earlier.
-     */
-    private final Instant lockAtLeastUntil;
+    private final Duration lockAtMostFor;
 
+    /**
+     * The lock will be held at least this duratio even if the task holding the lock finishes earlier.
+     */
+    private final Duration lockAtLeastFor;
+
+    public LockConfiguration(@NotNull String name, @NotNull Duration lockAtMostFor, @NotNull Duration lockAtLeastFor) {
+        this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
+    }
+
+    @Deprecated
     public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil) {
         this(name, lockAtMostUntil, now());
     }
 
+    @Deprecated
     public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+        this(ClockProvider.now(), name, lockAtMostUntil, lockAtLeastUntil);
+    }
+
+    @Deprecated
+    private LockConfiguration(@NotNull Instant createdAt, @NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+        this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil));
+    }
+
+    private LockConfiguration(@NotNull Instant createdAt, @NotNull String name, @NotNull Duration lockAtMostFor, @NotNull Duration lockAtLeastFor) {
+        this.createdAt = Objects.requireNonNull(createdAt);
         this.name = Objects.requireNonNull(name);
-        this.lockAtMostUntil = Objects.requireNonNull(lockAtMostUntil);
-        this.lockAtLeastUntil = Objects.requireNonNull(lockAtLeastUntil);
-        if (lockAtLeastUntil.isAfter(lockAtMostUntil)) {
-            throw new IllegalArgumentException("lockAtMostUntil is before lockAtLeastUntil for lock '" + name + "'.");
+        this.lockAtMostFor = Objects.requireNonNull(lockAtMostFor);
+        this.lockAtLeastFor = Objects.requireNonNull(lockAtLeastFor);
+        if (lockAtLeastFor.compareTo(lockAtMostFor) > 0) {
+            throw new IllegalArgumentException("lockAtLeastFor is longer than lockAtMostFor for lock '" + name + "'.");
         }
-        if (lockAtMostUntil.isBefore(now())) {
-            throw new IllegalArgumentException("lockAtMostUntil is in the past for lock '" + name + "'.");
+        if (lockAtMostFor.isNegative()) {
+            throw new IllegalArgumentException("lockAtMostFor is negative '" + name + "'.");
         }
         if (name.isEmpty()) {
             throw new IllegalArgumentException("lock name can not be empty");
@@ -63,11 +83,11 @@ public class LockConfiguration {
     }
 
     public Instant getLockAtMostUntil() {
-        return lockAtMostUntil;
+        return createdAt.plus(lockAtMostFor);
     }
 
     public Instant getLockAtLeastUntil() {
-        return lockAtLeastUntil;
+        return createdAt.plus(lockAtLeastFor);
     }
 
     /**
@@ -75,15 +95,24 @@ public class LockConfiguration {
      */
     public Instant getUnlockTime() {
         Instant now = now();
+        Instant lockAtLeastUntil = getLockAtLeastUntil();
         return lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
+    }
+
+    public Duration getLockAtLeastFor() {
+        return lockAtLeastFor;
+    }
+
+    public Duration getLockAtMostFor() {
+        return lockAtMostFor;
     }
 
     @Override
     public String toString() {
         return "LockConfiguration{" +
             "name='" + name + '\'' +
-            ", lockAtMostUntil=" + lockAtMostUntil +
-            ", lockAtLeastUntil=" + lockAtLeastUntil +
+            ", lockAtMostFor=" + lockAtMostFor +
+            ", lockAtLeastFor=" + lockAtLeastFor +
             '}';
     }
 }
