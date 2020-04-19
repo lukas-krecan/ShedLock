@@ -21,6 +21,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -29,7 +30,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.and;
@@ -128,9 +129,9 @@ public class MongoLockProvider implements LockProvider {
     @Override
     @NotNull
     public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
-        Date now = now();
+        Instant now = now();
         Bson update = combine(
-            set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
+            set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()),
             set(LOCKED_AT, now),
             set(LOCKED_BY, hostname)
         );
@@ -157,8 +158,8 @@ public class MongoLockProvider implements LockProvider {
     }
 
     private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
-        Date now = now();
-        Bson update = set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil()));
+        Instant now = now();
+        Bson update = set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil());
 
         Document updatedDocument = getCollection().findOneAndUpdate(
             and(
@@ -179,7 +180,7 @@ public class MongoLockProvider implements LockProvider {
         // Set lockUtil to now or lockAtLeastUntil whichever is later
         getCollection().findOneAndUpdate(
             eq(ID, lockConfiguration.getName()),
-            combine(set(LOCK_UNTIL, Date.from(lockConfiguration.getUnlockTime())))
+            combine(set(LOCK_UNTIL, lockConfiguration.getUnlockTime()))
         );
     }
 
@@ -187,8 +188,8 @@ public class MongoLockProvider implements LockProvider {
         return collection;
     }
 
-    private Date now() {
-        return new Date();
+    private Instant now() {
+        return ClockProvider.now();
     }
 
     private static final class MongoLock extends AbstractSimpleLock {
