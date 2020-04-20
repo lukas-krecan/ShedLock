@@ -30,6 +30,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
+  - [Geode] (#geode)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
@@ -463,6 +464,29 @@ CREATE KEYSPACE shedlock with replication={'class':'SimpleStrategy', 'replicatio
 CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt timestamp, lockedBy text);
 ```
 
+#### Geode
+Locks are supported in Geode Client - Server Mode and are fault tolerant to Server Failures
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-geode</artifactId>
+    <version>4.8.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import static net.javacrumbs.shedlock.provider.geode.GeodeLockProvider;
+
+...
+
+@Bean
+public GeodeLockProvider lockProvider(ClientCache clientCache) {
+    return new GeodeLockProvider(clientCache);
+}
+```
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
