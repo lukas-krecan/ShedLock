@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.provider.geode;
 
-
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedLockService;
@@ -24,6 +23,11 @@ import org.apache.geode.distributed.LeaseExpiredException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Function which executes on a Server Pool to lock a shared Resource
+ * using the Distributed Lock Service of Geode which is fault tolerant
+ * across the Geode Cluster
+ */
 class DistributedLockFunction implements Function {
 
     private static final Logger log = LoggerFactory.getLogger(DistributedLockFunction.class);
@@ -34,9 +38,9 @@ class DistributedLockFunction implements Function {
 
     public static synchronized DistributedLockService getInstance(DistributedSystem distributedSystem){
         if(dls == null){
-            dls = DistributedLockService.getServiceNamed("distributedLockService");
+            dls = DistributedLockService.getServiceNamed(Constants.DISTRIBUTED_LOCK_SERVICE_NAME);
             if(dls == null){
-                dls = DistributedLockService.create("distributedLockService",distributedSystem);
+                dls = DistributedLockService.create(Constants.DISTRIBUTED_LOCK_SERVICE_NAME,distributedSystem);
             }
         }
         return dls;
@@ -67,7 +71,7 @@ class DistributedLockFunction implements Function {
                 functionContext.getResultSender().lastResult(true);
             }
         } catch(Exception e){
-            log.error("Unable to execute function {}" ,e);
+            log.error("Unable to execute Distributed Lock Function {} " ,e);
             functionContext.getResultSender().sendException(e);
         }
     }
@@ -89,7 +93,7 @@ class DistributedLockFunction implements Function {
 
     @Override
     public String getId() {
-        return DistributedLockFunction.class.getName();
+        return DistributedLockFunction.class.getSimpleName();
     }
 
 }

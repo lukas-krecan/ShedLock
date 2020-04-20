@@ -63,6 +63,10 @@ public class GeodeLockProviderClusterTest implements Serializable {
     public static ClientVM client2;
     public static ClientVM clientVM3;
 
+    /**
+     * Expensive operation of Setting up VM's for simulting multi-client-server environment
+     * @throws Exception
+     */
     @Before
     public void setUp() throws Exception {
         if (server1 == null) {
@@ -74,6 +78,7 @@ public class GeodeLockProviderClusterTest implements Serializable {
         if (client2 == null) {
             client2 = GeodeTestUtils.startClient(clusterStartupRule, 3);
         }
+        // Ensures that the locks expire in Cluster
         Thread.sleep(Duration.of(LOCK_TIME_SEC, SECONDS).toMillis());
     }
 

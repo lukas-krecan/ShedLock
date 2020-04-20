@@ -34,6 +34,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * GeodeLockProvider.
+ * <p>
+ * Implementation of {@link LockProvider} using Apache Geode for store and share locks informations and mechanisms between a cluster members
+ * <p>
+ * Below, the mechanims :
+ * - The Lock, an instance of {@link GeodeLock}, is obtained / created when :
+ * -- the lock is not not already locked by other process (lock - referenced by its name - is not present in the Distributed Locking Service)
+ * - Unlock action :
+ * -- removes lock object when {@link GeodeLock#lockAtLeastUntil} min lease time is expired
+ * -- removes lock object instantly if {@link GeodeLock#lockAtLeastUntil} is not defined
+ */
 public class GeodeLockProvider implements LockProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GeodeLockProvider.class);
@@ -42,6 +54,10 @@ public class GeodeLockProvider implements LockProvider {
 
     private DistributedLockFunction distributedLockFunction = new DistributedLockFunction();
 
+    /**
+     * GeodeLockProvider Constructor
+     * @param clientCache
+     */
     public GeodeLockProvider(ClientCache clientCache){
         this.clientCache = clientCache;
         if(FunctionService.isRegistered(distributedLockFunction.getId())){
@@ -50,6 +66,12 @@ public class GeodeLockProvider implements LockProvider {
         log.info(" Function registered {} on Cluster",distributedLockFunction.getId());
     }
 
+    /**
+     * Attempts to obtained a {@link SimpleLock} by executing a Geode Function on the cluster,
+     * the function only executes once and is fault tolerant to failures.
+     * @param lockConfiguration
+     * @return
+     */
     @Override
     public @NotNull Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
         log.trace("lock - Attempt : {}", lockConfiguration);
@@ -70,8 +92,7 @@ public class GeodeLockProvider implements LockProvider {
         if(o instanceof Boolean){
             return (boolean) arrayList.get(0);
         } else if(o instanceof Exception){
-            System.err.println(" error from Exception " + o);
-            log.error("Received error from Server {}",o);
+            log.error("lock - Distributed Lock Function Exception {}",o);
         }
         return false;
     }
@@ -82,6 +103,11 @@ public class GeodeLockProvider implements LockProvider {
         return between.toMillis();
     }
 
+    /**
+     * Unlocks a {@link GeodeLock} if lease least time is expired ,
+     * else wait for the lease time to expire.
+     * @param lockConfiguration
+     */
     public void unlock(LockConfiguration lockConfiguration) {
         String lockName = lockConfiguration.getName();
         log.trace("unlock - attempt : {}", lockName);
