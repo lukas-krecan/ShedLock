@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * GeodeLockProvider.
@@ -62,8 +63,8 @@ public class GeodeLockProvider implements LockProvider {
         this.clientCache = clientCache;
         if(FunctionService.isRegistered(distributedLockFunction.getId())){
             FunctionService.registerFunction(distributedLockFunction);
+            log.info(" Function registered {} on Cluster",distributedLockFunction.getId());
         }
-        log.info(" Function registered {} on Cluster",distributedLockFunction.getId());
     }
 
     /**
@@ -113,15 +114,19 @@ public class GeodeLockProvider implements LockProvider {
         log.trace("unlock - attempt : {}", lockName);
         final Instant now = ClockProvider.now();
         final Instant lockAtLeastInstant = lockConfiguration.getLockAtLeastUntil();
-        if (lockAtLeastInstant.isBefore(now)) {
+        long millisLeft = Duration.between(now, lockAtLeastInstant).toMillis();
+        if (millisLeft <=0) {
             boolean isUnlocked = executeFunction(lockConfiguration,Constants.UNLOCK);
             log.debug("unlock - done : {}", isUnlocked);
         } else {
-            try {
-                Thread.sleep(Duration.between(now,lockAtLeastInstant).toMillis());
-            } catch (InterruptedException e) { }
-            boolean isUnlocked = executeFunction(lockConfiguration,Constants.UNLOCK);
-            log.debug("unlock - done : {}", isUnlocked);
+            log.info("unlock - will be done after ms: {}", Duration.between(now,lockAtLeastInstant).toMillis());
+            CompletableFuture.runAsync(()->{
+                try {
+                    Thread.sleep(Duration.between(now,lockAtLeastInstant).toMillis());
+                } catch (InterruptedException e) { }
+                boolean isUnlocked = executeFunction(lockConfiguration,Constants.UNLOCK);
+                log.debug("unlock - done : {}", isUnlocked);
+            });
         }
     }
 

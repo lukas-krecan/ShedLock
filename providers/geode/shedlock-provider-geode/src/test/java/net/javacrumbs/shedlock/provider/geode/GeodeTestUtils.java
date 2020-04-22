@@ -43,7 +43,7 @@ public class GeodeTestUtils {
     public static MemberVM startServer(ClusterStartupRule clusterStartupRule,final int vmIndex) {
         return clusterStartupRule.startServerVM(
             vmIndex,serverStarterRule -> {
-                serverStarterRule.withPort(40404).withConnectionToLocator(getLocatorPort())
+                serverStarterRule.withPort(40404 + vmIndex).withConnectionToLocator(getLocatorPort())
                     .withProperty(SERIALIZABLE_OBJECT_FILTER,
                         new DistributedLockFunction().getClass().getName());
                 return serverStarterRule;

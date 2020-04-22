@@ -24,10 +24,7 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 
 import java.io.Serializable;
@@ -43,10 +40,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GeodeLockProviderClusterTest implements Serializable {
 
     @ClassRule
-    public static final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(4).withLogFile();
+    public static final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(7).withLogFile();
 
     @ClassRule
-    public static final DistributedRule distributedRule = new DistributedRule(4);
+    public static final DistributedRule distributedRule = new DistributedRule(7);
 
     private static int LOCK_TIME_SEC = 5;
 
@@ -189,6 +186,31 @@ public class GeodeLockProviderClusterTest implements Serializable {
             final Optional<SimpleLock> lock2Ter = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
             assertThat(lock2Ter).isNotEmpty();
         });
+    }
+
+    @Test
+    public void testLockPerformance() throws Exception {
+        MemberVM memberVM2 = GeodeTestUtils.startServer(clusterStartupRule, 5);
+        MemberVM memberVM3 = GeodeTestUtils.startServer(clusterStartupRule, 6);
+
+        long start = System.currentTimeMillis();
+        for(int i = 0; i< 1000;i++){
+            client1.invoke(() -> {
+                lockProvider1 = new GeodeLockProvider(ClusterStartupRule.getClientCache());
+                final Optional<SimpleLock> lock1 = lockProvider1.lock(GeodeTestUtils.lockConfig(LOCK_NAME_1, Duration.of(10, SECONDS), Duration.of(0, SECONDS)));
+                assertThat(lock1).isNotEmpty();
+                lock1.get().unlock();
+            });
+            client2.invoke(() -> {
+                lockProvider2 = new GeodeLockProvider(ClusterStartupRule.getClientCache());
+                final Optional<SimpleLock> lock2 = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
+                assertThat(lock2).isNotEmpty();
+                lock2.get().unlock();
+            });
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("Iteration took = " + (end-start) + " ms");
+        Assert.assertTrue((end-start) < 10000);
     }
 
     public static LockConfiguration simpleLockConfig(final String name) {
