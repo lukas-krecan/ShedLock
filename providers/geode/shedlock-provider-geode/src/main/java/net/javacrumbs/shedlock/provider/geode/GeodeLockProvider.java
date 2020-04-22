@@ -44,8 +44,8 @@ import java.util.concurrent.CompletableFuture;
  * - The Lock, an instance of {@link GeodeLock}, is obtained / created when :
  * -- the lock is not not already locked by other process (lock - referenced by its name - is not present in the Distributed Locking Service)
  * - Unlock action :
- * -- removes lock object when {@link GeodeLock#lockAtLeastUntil} min lease time is expired
- * -- removes lock object instantly if {@link GeodeLock#lockAtLeastUntil} is not defined
+ * -- removes lock object when {@link LockConfiguration#lockAtLeastFor} min lease time is expired
+ * -- removes lock object instantly if {@link LockConfiguration#lockAtLeastFor} is not defined
  */
 public class GeodeLockProvider implements LockProvider {
 
@@ -57,7 +57,7 @@ public class GeodeLockProvider implements LockProvider {
 
     /**
      * GeodeLockProvider Constructor
-     * @param clientCache
+     * @param clientCache ${@link ClientCache}
      */
     public GeodeLockProvider(ClientCache clientCache){
         this.clientCache = clientCache;
@@ -70,7 +70,7 @@ public class GeodeLockProvider implements LockProvider {
     /**
      * Attempts to obtained a {@link SimpleLock} by executing a Geode Function on the cluster,
      * the function only executes once and is fault tolerant to failures.
-     * @param lockConfiguration
+     * @param lockConfiguration: {@link LockConfiguration}
      * @return
      */
     @Override
@@ -107,7 +107,7 @@ public class GeodeLockProvider implements LockProvider {
     /**
      * Unlocks a {@link GeodeLock} if lease least time is expired ,
      * else wait for the lease time to expire.
-     * @param lockConfiguration
+     * @param lockConfiguration : {@link LockConfiguration}
      */
     public void unlock(LockConfiguration lockConfiguration) {
         String lockName = lockConfiguration.getName();
