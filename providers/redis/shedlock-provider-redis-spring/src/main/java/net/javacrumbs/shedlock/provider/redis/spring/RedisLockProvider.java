@@ -21,7 +21,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -50,7 +50,7 @@ public class RedisLockProvider implements LockProvider {
     private final String environment;
     private final String keyPrefix;
 
-    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn) {
+    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
@@ -61,7 +61,7 @@ public class RedisLockProvider implements LockProvider {
      * @param environment environment is part of the key and thus makes sure there is not key conflict between
      *                    multiple ShedLock instances running on the same Redis
      */
-    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment) {
+    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn, @NonNull String environment) {
         this(redisConn, environment, KEY_PREFIX_DEFAULT);
     }
 
@@ -73,7 +73,7 @@ public class RedisLockProvider implements LockProvider {
      *                    multiple ShedLock instances running on the same Redis
      * @param keyPrefix   prefix of the key in Redis.
      */
-    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment, @NotNull String keyPrefix) {
+    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
         this(new StringRedisTemplate(redisConn), environment, keyPrefix);
     }
 
@@ -85,15 +85,15 @@ public class RedisLockProvider implements LockProvider {
      *                      multiple ShedLock instances running on the same Redis
      * @param keyPrefix     prefix of the key in Redis.
      */
-    public RedisLockProvider(@NotNull StringRedisTemplate redisTemplate, @NotNull String environment, @NotNull String keyPrefix) {
+    public RedisLockProvider(@NonNull StringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
         this.redisTemplate = redisTemplate;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName());
         Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
         if (TRUE.equals(tryToSetExpiration(redisTemplate, key, expiration, SET_IF_ABSENT))) {
@@ -156,20 +156,20 @@ public class RedisLockProvider implements LockProvider {
         private String environment = ENV_DEFAULT;
         private String keyPrefix = KEY_PREFIX_DEFAULT;
 
-        public Builder(@NotNull RedisConnectionFactory redisConnectionFactory) {
+        public Builder(@NonNull RedisConnectionFactory redisConnectionFactory) {
             this.redisTemplate = new StringRedisTemplate(redisConnectionFactory);
         }
 
-        public Builder(@NotNull StringRedisTemplate redisTemplate) {
+        public Builder(@NonNull StringRedisTemplate redisTemplate) {
             this.redisTemplate = redisTemplate;
         }
 
-        public Builder environment(@NotNull String environment) {
+        public Builder environment(@NonNull String environment) {
             this.environment = environment;
             return this;
         }
 
-        public Builder keyPrefix(@NotNull String keyPrefix) {
+        public Builder keyPrefix(@NonNull String keyPrefix) {
             this.keyPrefix = keyPrefix;
             return this;
         }

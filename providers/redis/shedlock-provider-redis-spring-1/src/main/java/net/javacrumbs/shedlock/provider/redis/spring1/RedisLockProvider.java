@@ -20,7 +20,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
@@ -47,24 +47,24 @@ public class RedisLockProvider implements LockProvider {
     private final String environment;
     private final String keyPrefix;
 
-    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn) {
+    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
-    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment) {
+    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn, @NonNull String environment) {
         this(redisConn, environment, KEY_PREFIX_DEFAULT);
     }
 
-    public RedisLockProvider(@NotNull RedisConnectionFactory redisConn, @NotNull String environment, @NotNull String keyPrefix) {
+    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
         this.redisConnectionFactory = redisConn;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
     }
 
     // See https://redis.io/commands/setnx#handling-deadlocks
-    @NotNull
+    @NonNull
     @Override
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName());
         RedisConnection redisConnection = null;
         try {

@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,8 +28,8 @@ public class ReentrantLockProvider implements LockProvider {
     private final ReentrantLock lock = new ReentrantLock();
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         if (lock.tryLock()) {
             return Optional.of(lock::unlock);
         } else {

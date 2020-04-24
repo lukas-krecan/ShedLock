@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.util.Optional;
 
@@ -23,6 +23,6 @@ import java.util.Optional;
  * Extracts lock parameters from the task.
  */
 public interface LockConfigurationExtractor {
-    @NotNull
-    Optional<LockConfiguration> getLockConfiguration(@NotNull Runnable task);
+    @NonNull
+    Optional<LockConfiguration> getLockConfiguration(@NonNull Runnable task);
 }

@@ -3,7 +3,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -76,7 +76,7 @@ class PostgresJdbcTemplateStorageAccessorTest {
     }
 
 
-    @NotNull
+    @NonNull
     private JdbcTemplateStorageAccessor getAccessor() {
         return new JdbcTemplateStorageAccessor(JdbcTemplateLockProvider
             .Configuration.builder()

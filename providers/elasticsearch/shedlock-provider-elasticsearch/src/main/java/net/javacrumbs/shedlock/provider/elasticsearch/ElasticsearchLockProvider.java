@@ -30,7 +30,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -103,24 +103,24 @@ public class ElasticsearchLockProvider implements LockProvider {
     private final String index;
     private final String type;
 
-    private ElasticsearchLockProvider(@NotNull RestHighLevelClient highLevelClient, @NotNull String index, @NotNull String type) {
+    private ElasticsearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index, @NonNull String type) {
         this.highLevelClient = highLevelClient;
         this.hostname = getHostname();
         this.index = index;
         this.type = type;
     }
 
-    public ElasticsearchLockProvider(@NotNull RestHighLevelClient highLevelClient, @NotNull String documentType) {
+    public ElasticsearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String documentType) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
     }
 
-    public ElasticsearchLockProvider(@NotNull RestHighLevelClient highLevelClient) {
+    public ElasticsearchLockProvider(@NonNull RestHighLevelClient highLevelClient) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         try {
             Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
                 lockConfiguration.getLockAtMostUntil(),

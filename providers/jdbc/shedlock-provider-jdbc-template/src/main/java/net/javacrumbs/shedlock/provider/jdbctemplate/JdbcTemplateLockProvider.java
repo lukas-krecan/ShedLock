@@ -17,8 +17,8 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.Utils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -53,27 +53,27 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     private static final String DEFAULT_TABLE_NAME = "shedlock";
 
-    public JdbcTemplateLockProvider(@NotNull JdbcTemplate jdbcTemplate) {
+    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate) {
         this(jdbcTemplate, (PlatformTransactionManager) null);
     }
 
-    public JdbcTemplateLockProvider(@NotNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager) {
+    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager) {
         this(jdbcTemplate, transactionManager, DEFAULT_TABLE_NAME);
     }
 
-    public JdbcTemplateLockProvider(@NotNull JdbcTemplate jdbcTemplate, @NotNull String tableName) {
+    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate, @NonNull String tableName) {
         this(jdbcTemplate, null, tableName);
     }
 
-    public JdbcTemplateLockProvider(@NotNull DataSource dataSource) {
+    public JdbcTemplateLockProvider(@NonNull DataSource dataSource) {
         this(new JdbcTemplate(dataSource));
     }
 
-    public JdbcTemplateLockProvider(@NotNull DataSource dataSource, @NotNull String tableName) {
+    public JdbcTemplateLockProvider(@NonNull DataSource dataSource, @NonNull String tableName) {
         this(new JdbcTemplate(dataSource), tableName);
     }
 
-    public JdbcTemplateLockProvider(@NotNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager, @NotNull String tableName) {
+    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager, @NonNull String tableName) {
         this(Configuration.builder()
             .withJdbcTemplate(jdbcTemplate)
             .withTransactionManager(transactionManager)
@@ -82,7 +82,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         );
     }
 
-    public JdbcTemplateLockProvider(@NotNull Configuration configuration) {
+    public JdbcTemplateLockProvider(@NonNull Configuration configuration) {
         super(new JdbcTemplateStorageAccessor(configuration));
     }
 
@@ -95,12 +95,12 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final String lockedByValue;
 
         Configuration(
-            @NotNull JdbcTemplate jdbcTemplate,
+            @NonNull JdbcTemplate jdbcTemplate,
             @Nullable PlatformTransactionManager transactionManager,
-            @NotNull String tableName,
+            @NonNull String tableName,
             @Nullable TimeZone timeZone,
-            @NotNull ColumnNames columnNames,
-            @NotNull String lockedByValue) {
+            @NonNull ColumnNames columnNames,
+            @NonNull String lockedByValue) {
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.transactionManager = transactionManager;
             this.tableName = requireNonNull(tableName, "tableName can not be null");
@@ -146,7 +146,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private String lockedByValue = Utils.getHostname();
             private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
 
-            public Builder withJdbcTemplate(@NotNull JdbcTemplate jdbcTemplate) {
+            public Builder withJdbcTemplate(@NonNull JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
                 return this;
             }
@@ -156,7 +156,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withTableName(@NotNull String tableName) {
+            public Builder withTableName(@NonNull String tableName) {
                 this.tableName = tableName;
                 return this;
             }

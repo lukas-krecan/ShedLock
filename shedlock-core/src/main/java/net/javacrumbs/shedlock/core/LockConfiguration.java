@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -42,26 +42,26 @@ public class LockConfiguration {
      */
     private final Duration lockAtLeastFor;
 
-    public LockConfiguration(@NotNull String name, @NotNull Duration lockAtMostFor, @NotNull Duration lockAtLeastFor) {
+    public LockConfiguration(@NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
     }
 
     @Deprecated
-    public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil) {
+    public LockConfiguration(@NonNull String name, @NonNull Instant lockAtMostUntil) {
         this(name, lockAtMostUntil, now());
     }
 
     @Deprecated
-    public LockConfiguration(@NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+    public LockConfiguration(@NonNull String name, @NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
         this(ClockProvider.now(), name, lockAtMostUntil, lockAtLeastUntil);
     }
 
     @Deprecated
-    private LockConfiguration(@NotNull Instant createdAt, @NotNull String name, @NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+    private LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
         this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil));
     }
 
-    private LockConfiguration(@NotNull Instant createdAt, @NotNull String name, @NotNull Duration lockAtMostFor, @NotNull Duration lockAtLeastFor) {
+    private LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         this.createdAt = Objects.requireNonNull(createdAt);
         this.name = Objects.requireNonNull(name);
         this.lockAtMostFor = Objects.requireNonNull(lockAtMostFor);

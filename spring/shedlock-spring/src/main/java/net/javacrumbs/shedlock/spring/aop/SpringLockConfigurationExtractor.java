@@ -18,8 +18,8 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -44,10 +44,10 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     public SpringLockConfigurationExtractor(
-        @NotNull Duration defaultLockAtMostFor,
-        @NotNull Duration defaultLockAtLeastFor,
+        @NonNull Duration defaultLockAtMostFor,
+        @NonNull Duration defaultLockAtLeastFor,
         @Nullable StringValueResolver embeddedValueResolver,
-        @NotNull Converter<String, Duration> durationConverter
+        @NonNull Converter<String, Duration> durationConverter
     ) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
@@ -57,8 +57,8 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
 
 
     @Override
-    @NotNull
-    public Optional<LockConfiguration> getLockConfiguration(@NotNull Runnable task) {
+    @NonNull
+    public Optional<LockConfiguration> getLockConfiguration(@NonNull Runnable task) {
         if (task instanceof ScheduledMethodRunnable) {
             ScheduledMethodRunnable scheduledMethodRunnable = (ScheduledMethodRunnable) task;
             return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod());

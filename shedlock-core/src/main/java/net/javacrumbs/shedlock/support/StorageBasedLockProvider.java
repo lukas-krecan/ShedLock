@@ -19,7 +19,7 @@ import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.util.Optional;
 
@@ -44,11 +44,11 @@ import java.util.Optional;
  * </ol>
  */
 public class StorageBasedLockProvider implements LockProvider {
-    @NotNull
+    @NonNull
     private final StorageAccessor storageAccessor;
     private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
 
-    protected StorageBasedLockProvider(@NotNull StorageAccessor storageAccessor) {
+    protected StorageBasedLockProvider(@NonNull StorageAccessor storageAccessor) {
         this.storageAccessor = storageAccessor;
     }
 
@@ -60,8 +60,8 @@ public class StorageBasedLockProvider implements LockProvider {
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         boolean lockObtained = doLock(lockConfiguration);
         if (lockObtained) {
             return Optional.of(new StorageLock(lockConfiguration, storageAccessor));

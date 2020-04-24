@@ -24,7 +24,7 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
 
@@ -86,7 +86,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
+        public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
             try {
 
                 JsonObject content = JsonObject.empty();
@@ -110,7 +110,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
+        public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
                 Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
@@ -133,7 +133,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean extend(@NotNull LockConfiguration lockConfiguration) {
+        public boolean extend(@NonNull LockConfiguration lockConfiguration) {
             try {
                 JsonDocument document = bucket.get(lockConfiguration.getName());
                 Instant lockUntil = parse(document.content().get(LOCK_UNTIL));
@@ -153,7 +153,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public void unlock(@NotNull LockConfiguration lockConfiguration) {
+        public void unlock(@NonNull LockConfiguration lockConfiguration) {
             JsonDocument document = bucket.get(lockConfiguration.getName());
             document.content().put(LOCK_UNTIL, toIsoString(lockConfiguration.getUnlockTime()));
             bucket.replace(document);

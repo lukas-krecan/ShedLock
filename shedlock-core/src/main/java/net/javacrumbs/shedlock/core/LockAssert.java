@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Asserts lock presence. The Spring ecosystem is so complicated, so one can not be sure that the lock is applied. This class
@@ -31,7 +31,7 @@ public class LockAssert {
         currentLockName.set(name);
     }
 
-    static boolean alreadyLockedBy(@NotNull String name) {
+    static boolean alreadyLockedBy(@NonNull String name) {
         return name.equals(currentLockName.get());
     }
 

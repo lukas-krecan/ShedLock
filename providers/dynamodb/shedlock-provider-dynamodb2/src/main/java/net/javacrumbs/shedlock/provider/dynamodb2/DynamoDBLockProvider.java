@@ -21,7 +21,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -93,15 +93,15 @@ public class DynamoDBLockProvider implements LockProvider {
      * @param dynamoDbClient v2 of DynamoDB client
      * @param tableName the lock table name
      */
-    public DynamoDBLockProvider(@NotNull DynamoDbClient dynamoDbClient, @NotNull String tableName) {
+    public DynamoDBLockProvider(@NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName) {
         this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
         this.hostname = Utils.getHostname();
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 

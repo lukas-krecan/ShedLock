@@ -1,7 +1,7 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ class MySqlStatementsSource extends SqlStatementsSource {
     }
 
     @Override
-    @NotNull Map<String, Object> params(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
         Map<String, Object> params = new HashMap<>();
         params.put("name", lockConfiguration.getName());
         params.put("lockedBy", configuration.getLockedByValue());
