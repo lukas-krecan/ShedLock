@@ -44,7 +44,8 @@ public abstract class AbstractOracleJdbcLockProviderIntegrationTest extends Abst
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
         Timestamp now = Timestamp.from(ClockProvider.now());
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, now, now, "me");
+        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, systimestamp, systimestamp, ?)", LOCK_NAME1, "me");
         shouldCreateLock();
     }
+
 }

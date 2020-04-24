@@ -35,6 +35,9 @@ class SqlStatementsSource {
             case "Microsoft SQL Server":
                 logger.debug("Using MsSqlServerTimeStatementsSource");
                 return new MsSqlServerTimeStatementsSource(configuration);
+            case "Oracle":
+                logger.debug("Using OracleServerTimeStatementsSource");
+                return new OracleServerTimeStatementsSource(configuration);
             case "MySQL":
                 logger.debug("Using MySqlServerTimeStatementsSource");
                 return new MySqlServerTimeStatementsSource(configuration);
