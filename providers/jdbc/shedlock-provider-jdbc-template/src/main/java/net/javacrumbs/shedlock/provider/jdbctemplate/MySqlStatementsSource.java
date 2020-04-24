@@ -20,7 +20,7 @@ class MySqlStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getUpdateStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = now(), " + lockedBy() + " = :lockedBy WHERE " + tableName() + "." + lockUntil() + " <= now()";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = now(), " + lockedBy() + " = :lockedBy WHERE " + lockUntil() + " <= now()";
     }
 
     @Override
