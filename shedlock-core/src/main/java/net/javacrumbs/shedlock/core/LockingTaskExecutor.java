@@ -15,22 +15,22 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 public interface LockingTaskExecutor {
     /**
      * Executes task if it's not already running.
      */
-    void executeWithLock(@NotNull Runnable task, @NotNull LockConfiguration lockConfig);
+    void executeWithLock(@NonNull Runnable task, @NonNull LockConfiguration lockConfig);
 
-    void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable;
+    void executeWithLock(@NonNull Task task, @NonNull LockConfiguration lockConfig) throws Throwable;
 
     /**
      * Executes task.
      */
-    @NotNull
-    default <T> TaskResult<T> executeWithLock(@NotNull TaskWithResult<T> task, @NotNull LockConfiguration lockConfig) throws Throwable {
+    @NonNull
+    default <T> TaskResult<T> executeWithLock(@NonNull TaskWithResult<T> task, @NonNull LockConfiguration lockConfig) throws Throwable {
         throw new UnsupportedOperationException();
     }
 

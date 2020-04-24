@@ -21,7 +21,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.SetParams;
@@ -48,7 +48,7 @@ public class JedisLockProvider implements LockProvider {
     private final JedisTemplate jedisTemplate;
     private final String environment;
 
-    public JedisLockProvider(@NotNull Pool<Jedis> jedisPool) {
+    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
     }
 
@@ -59,7 +59,7 @@ public class JedisLockProvider implements LockProvider {
      * @param environment environment is part of the key and thus makes sure there is not key conflict between
      *                    multiple ShedLock instances running on the same Redis
      */
-    public JedisLockProvider(@NotNull Pool<Jedis> jedisPool, @NotNull String environment) {
+    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment) {
         this.jedisTemplate = new JedisPoolTemplate(jedisPool);
         this.environment = environment;
     }
@@ -71,14 +71,14 @@ public class JedisLockProvider implements LockProvider {
      * @param environment  environment is part of the key and thus makes sure there is not key conflict between
      *                     multiple ShedLock instances running on the same Redis
      */
-    public JedisLockProvider(@NotNull JedisCluster jedisCluster, @NotNull String environment) {
+    public JedisLockProvider(@NonNull JedisCluster jedisCluster, @NonNull String environment) {
         this.jedisTemplate = new JedisClusterTemplate(jedisCluster);
         this.environment = environment;
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), this.environment);

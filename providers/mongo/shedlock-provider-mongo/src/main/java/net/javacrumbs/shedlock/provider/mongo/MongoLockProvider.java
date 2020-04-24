@@ -28,7 +28,7 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -90,7 +90,7 @@ public class MongoLockProvider implements LockProvider {
      * @param databaseName database to be used
      */
     @Deprecated
-    public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName) {
+    public MongoLockProvider(@NonNull MongoClient mongo, @NonNull String databaseName) {
         this(mongo, databaseName, DEFAULT_SHEDLOCK_COLLECTION_NAME);
     }
 
@@ -104,14 +104,14 @@ public class MongoLockProvider implements LockProvider {
      * @param collectionName collection to store the locks
      */
     @Deprecated
-    public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
+    public MongoLockProvider(@NonNull MongoClient mongo, @NonNull String databaseName, @NonNull String collectionName) {
         this(mongo.getDatabase(databaseName).getCollection(collectionName));
     }
 
     /**
      * Uses Mongo to coordinate locks
      */
-    public MongoLockProvider(@NotNull MongoDatabase mongoDatabase) {
+    public MongoLockProvider(@NonNull MongoDatabase mongoDatabase) {
         this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
@@ -120,15 +120,15 @@ public class MongoLockProvider implements LockProvider {
      *
      * @param collection Mongo collection to be used
      */
-    public MongoLockProvider(@NotNull MongoCollection<Document> collection) {
+    public MongoLockProvider(@NonNull MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         Instant now = now();
         Bson update = combine(
             set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()),

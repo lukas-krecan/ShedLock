@@ -26,7 +26,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -88,14 +88,14 @@ public class DynamoDBLockProvider implements LockProvider {
      *
      * @param table existing DynamoDB table to be used
      */
-    public DynamoDBLockProvider(@NotNull Table table) {
+    public DynamoDBLockProvider(@NonNull Table table) {
         this.table = requireNonNull(table, "table can not be null");
         this.hostname = Utils.getHostname();
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 

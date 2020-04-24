@@ -3,7 +3,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -48,8 +48,8 @@ class SqlStatementsSource {
         return configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
     }
 
-    @NotNull
-    Map<String, Object> params(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
         Map<String, Object> params = new HashMap<>();
         params.put("name", lockConfiguration.getName());
         params.put("lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()));
@@ -59,7 +59,7 @@ class SqlStatementsSource {
         return params;
     }
 
-    @NotNull
+    @NonNull
     private Object timestamp(Instant time) {
         TimeZone timeZone = configuration.getTimeZone();
         if (timeZone == null) {

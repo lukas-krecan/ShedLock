@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +30,15 @@ import static net.javacrumbs.shedlock.core.LockAssert.alreadyLockedBy;
  */
 public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultLockingTaskExecutor.class);
-    @NotNull
+    @NonNull
     private final LockProvider lockProvider;
 
-    public DefaultLockingTaskExecutor(@NotNull LockProvider lockProvider) {
+    public DefaultLockingTaskExecutor(@NonNull LockProvider lockProvider) {
         this.lockProvider = requireNonNull(lockProvider);
     }
 
     @Override
-    public void executeWithLock(@NotNull Runnable task, @NotNull LockConfiguration lockConfig) {
+    public void executeWithLock(@NonNull Runnable task, @NonNull LockConfiguration lockConfig) {
         try {
             executeWithLock((Task) task::run, lockConfig);
         } catch (RuntimeException | Error e) {
@@ -50,7 +50,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     }
 
     @Override
-    public void executeWithLock(@NotNull Task task, @NotNull LockConfiguration lockConfig) throws Throwable {
+    public void executeWithLock(@NonNull Task task, @NonNull LockConfiguration lockConfig) throws Throwable {
         executeWithLock(() -> {
             task.call();
             return null;
@@ -58,8 +58,8 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     }
 
     @Override
-    @NotNull
-    public <T> TaskResult<T> executeWithLock(@NotNull TaskWithResult<T> task, @NotNull LockConfiguration lockConfig) throws Throwable {
+    @NonNull
+    public <T> TaskResult<T> executeWithLock(@NonNull TaskWithResult<T> task, @NonNull LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         String lockName = lockConfig.getName();
 

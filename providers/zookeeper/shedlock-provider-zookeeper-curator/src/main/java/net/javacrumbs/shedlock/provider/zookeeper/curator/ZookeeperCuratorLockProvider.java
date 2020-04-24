@@ -26,7 +26,7 @@ import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,18 +48,18 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperCuratorLockProvider.class);
 
-    public ZookeeperCuratorLockProvider(@NotNull CuratorFramework client) {
+    public ZookeeperCuratorLockProvider(@NonNull CuratorFramework client) {
         this(client, DEFAULT_PATH);
     }
 
-    public ZookeeperCuratorLockProvider(@NotNull CuratorFramework client, @NotNull String path) {
+    public ZookeeperCuratorLockProvider(@NonNull CuratorFramework client, @NonNull String path) {
         this.client = requireNonNull(client);
         this.path = PathUtils.validatePath(path);
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String nodePath = getNodePath(lockConfiguration.getName());
 
         try {

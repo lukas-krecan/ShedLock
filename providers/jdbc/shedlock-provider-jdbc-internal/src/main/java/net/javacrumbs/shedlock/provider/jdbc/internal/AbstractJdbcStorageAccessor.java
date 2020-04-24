@@ -18,7 +18,7 @@ package net.javacrumbs.shedlock.provider.jdbc.internal;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -41,7 +41,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     }
 
     @Override
-    public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
         String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)";
         try (
@@ -66,7 +66,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     protected abstract void handleInsertionException(String sql, SQLException e);
 
     @Override
-    public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
         try (
             Connection connection = dataSource.getConnection();
@@ -88,7 +88,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     }
 
     @Override
-    public boolean extend(@NotNull LockConfiguration lockConfiguration) {
+    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
@@ -112,7 +112,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     protected abstract void handleUpdateException(String sql, SQLException e);
 
     @Override
-    public void unlock(@NotNull LockConfiguration lockConfiguration) {
+    public void unlock(@NonNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ?";
         try (
             Connection connection = dataSource.getConnection();

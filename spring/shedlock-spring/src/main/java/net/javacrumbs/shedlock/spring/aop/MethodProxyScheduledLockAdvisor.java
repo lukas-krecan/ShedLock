@@ -22,7 +22,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
@@ -41,7 +41,7 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
         this.advice = new LockingInterceptor(lockConfigurationExtractor, lockingTaskExecutor);
     }
 
-    @NotNull
+    @NonNull
     private static AnnotationMatchingPointcut methodPointcutFor(Class<? extends Annotation> methodAnnotationType) {
         return new AnnotationMatchingPointcut(
             null,
@@ -53,13 +53,13 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     /**
      * Get the Pointcut that drives this advisor.
      */
-    @NotNull
+    @NonNull
     @Override
     public Pointcut getPointcut() {
         return pointcut;
     }
 
-    @NotNull
+    @NonNull
     @Override
     public Advice getAdvice() {
         return advice;

@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.support;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -64,17 +64,17 @@ public final class Utils {
     private Utils() {
     }
 
-    @NotNull
+    @NonNull
     public static String getHostname() {
         return hostname;
     }
 
-    public static String toIsoString(@NotNull Instant instant) {
+    public static String toIsoString(@NonNull Instant instant) {
         OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
         return formatter.format(utc);
     }
 
-    @NotNull
+    @NonNull
     private static String initHostname() {
         try {
             return InetAddress.getLocalHost().getHostName();
