@@ -22,6 +22,7 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -66,7 +67,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             });
         } catch (DuplicateKeyException e) {
             return false;
-        } catch (DataIntegrityViolationException | BadSqlGrammarException e) {
+        } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
             logger.warn("Unexpected exception", e);
             return false;
         }
