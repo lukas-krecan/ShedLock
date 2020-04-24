@@ -52,9 +52,10 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldNotReturnSecondLock() {
-        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1));
+        LockProvider lockProvider = getLockProvider();
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock).isNotEmpty();
-        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).isEmpty();
+        assertThat(lockProvider.lock(lockConfig(LOCK_NAME1))).isEmpty();
         lock.get().unlock();
     }
 
@@ -72,11 +73,12 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockTwiceInARow() {
-        Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1));
+        LockProvider lockProvider = getLockProvider();
+        Optional<SimpleLock> lock1 = lockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1));
+        Optional<SimpleLock> lock2 = lockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock2).isNotEmpty();
         lock2.get().unlock();
     }

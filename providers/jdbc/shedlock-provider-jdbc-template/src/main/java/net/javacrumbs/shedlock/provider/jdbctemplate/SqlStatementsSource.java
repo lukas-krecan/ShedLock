@@ -35,6 +35,9 @@ class SqlStatementsSource {
             case "Microsoft SQL Server":
                 logger.debug("Using MsSqlServerStatementsSource");
                 return new MsSqlServerStatementsSource(configuration);
+            case "Oracle":
+                logger.debug("Using OracleStatementsSource");
+                return new OracleStatementsSource(configuration);
             case "MySQL":
                 logger.debug("Using MySqlStatementsSource");
                 return new MySqlStatementsSource(configuration);

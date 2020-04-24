@@ -57,4 +57,9 @@ public final class OracleServerConfig implements DbConfig {
     public String getPassword() {
         return oracle.getPassword();
     }
+
+    @Override
+    public String getCreateTableStatement() {
+        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3), locked_at TIMESTAMP(3), locked_by VARCHAR(255), PRIMARY KEY (name))";
+    }
 }
