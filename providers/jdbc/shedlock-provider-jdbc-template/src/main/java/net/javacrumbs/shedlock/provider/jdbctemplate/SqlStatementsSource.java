@@ -32,6 +32,9 @@ class SqlStatementsSource {
             case "PostgreSQL":
                 logger.debug("Using PostgresSqlStatementsSource");
                 return new PostgresSqlStatementsSource(configuration);
+            case "Microsoft SQL Server":
+                logger.debug("Using MsSqlServerStatementsSource");
+                return new MsSqlServerStatementsSource(configuration);
             case "MySQL":
                 logger.debug("Using MySqlStatementsSource");
                 return new MySqlStatementsSource(configuration);

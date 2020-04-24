@@ -26,4 +26,14 @@ public class MsSqlServerJdbcTemplateLockProviderIntegrationTest extends Abstract
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(getDatasource());
     }
+
+    @Override
+    protected void assertUnlocked(String lockName) {
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= current_timestamp", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+    }
+
+    @Override
+    protected void assertLocked(String lockName) {
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > current_timestamp", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+    }
 }
