@@ -33,7 +33,10 @@ class SqlStatementsSource {
                 logger.debug("Using PostgresSqlStatementsSource");
                 return new PostgresSqlStatementsSource(configuration);
             case "MySQL":
-                logger.debug("Using PostgresSqlStatementsSource");
+                logger.debug("Using MySqlStatementsSource");
+                return new MySqlStatementsSource(configuration);
+            case "MariaDB":
+                logger.debug("Using MySqlStatementsSource (for MariaDB)");
                 return new MySqlStatementsSource(configuration);
             default:
                 logger.debug("Using SqlStatementsSource");
