@@ -17,16 +17,20 @@ package net.javacrumbs.shedlock.provider.couchbase.javaclient;
 
 
 import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.cluster.BucketSettings;
 import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.env.CouchbaseEnvironment;
+import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.couchbase.BucketDefinition;
 import org.testcontainers.couchbase.CouchbaseContainer;
 
 import static java.time.Instant.parse;
@@ -39,8 +43,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String BUCKET_NAME = "test";
-    private static final String HOST = "127.0.0.1";
-    public static final String BUCKET_PASSWORD = "bucketPass";
 
     private CouchbaseLockProvider lockProvider;
     private static CouchbaseCluster cluster;
@@ -49,16 +51,23 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @BeforeAll
     public static void startCouchbase () {
-        BucketSettings bucketSettings = DefaultBucketSettings
-            .builder()
-            .name(BUCKET_NAME)
-            .password(BUCKET_PASSWORD)
-            .build();
-        container = new CouchbaseContainer().withNewBucket(bucketSettings);
+        container = new CouchbaseContainer().withBucket(new BucketDefinition(BUCKET_NAME));
         container.start();
 
-        cluster = container.getCouchbaseCluster();
-        bucket = cluster.openBucket(BUCKET_NAME, BUCKET_PASSWORD);
+        CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
+            .builder()
+            .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
+            .bootstrapHttpDirectPort(container.getBootstrapHttpDirectPort())
+            .build();
+
+        cluster = CouchbaseCluster.create(
+            environment,
+            container.getContainerIpAddress()
+        );
+
+        cluster.authenticate(container.getUsername(), container.getPassword());
+
+        bucket = cluster.openBucket(BUCKET_NAME);
     }
 
     @AfterAll
