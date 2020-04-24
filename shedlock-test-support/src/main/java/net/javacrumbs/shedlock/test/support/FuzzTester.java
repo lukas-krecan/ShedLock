@@ -47,7 +47,7 @@ public class FuzzTester {
     private final LockProvider lockProvider;
 
     private int counter;
-    private final LockConfiguration config = new LockConfiguration("lock", Duration.of(5, ChronoUnit.MINUTES), Duration.ZERO);
+    private final LockConfiguration config = new LockConfiguration("lock", Duration.of(5, ChronoUnit.MINUTES), Duration.of(5, ChronoUnit.MILLIS));
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
