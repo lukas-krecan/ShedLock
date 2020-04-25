@@ -28,7 +28,7 @@ class SqlStatementsSource {
     static SqlStatementsSource create(Configuration configuration) {
         String databaseProductName = getDatabaseProductName(configuration);
 
-        if (configuration.getUseServerTime()) {
+        if (configuration.getUseDbTime()) {
             switch (databaseProductName) {
                 case "PostgreSQL":
                     logger.debug("Using PostgresSqlServerTimeStatementsSource");
@@ -46,7 +46,7 @@ class SqlStatementsSource {
                     logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
                     return new MySqlServerTimeStatementsSource(configuration);
                 default:
-                    throw new UnsupportedOperationException("Server time is not supported for " + databaseProductName);
+                    throw new UnsupportedOperationException("DB time is not supported for " + databaseProductName);
             }
         } else {
             if ("PostgreSQL".equals(databaseProductName)) {

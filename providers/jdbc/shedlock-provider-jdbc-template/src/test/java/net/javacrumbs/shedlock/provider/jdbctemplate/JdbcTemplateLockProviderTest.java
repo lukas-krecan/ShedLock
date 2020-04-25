@@ -16,7 +16,7 @@ class JdbcTemplateLockProviderTest {
             () -> JdbcTemplateLockProvider.Configuration.builder()
                 .withTimeZone(TimeZone.getTimeZone("Europe/Prague"))
                 .withJdbcTemplate(mock(JdbcTemplate.class))
-                .usingServerTime()
+                .usingDbTime()
                 .build()
         ).isInstanceOf(IllegalArgumentException.class);
     }

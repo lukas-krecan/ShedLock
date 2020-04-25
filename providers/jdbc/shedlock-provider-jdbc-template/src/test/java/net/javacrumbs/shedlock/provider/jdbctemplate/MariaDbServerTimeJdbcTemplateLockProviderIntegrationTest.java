@@ -27,7 +27,7 @@ public class MariaDbServerTimeJdbcTemplateLockProviderIntegrationTest extends Ab
         return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration
             .builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .usingServerTime()
+            .usingDbTime()
             .build()
         );
     }

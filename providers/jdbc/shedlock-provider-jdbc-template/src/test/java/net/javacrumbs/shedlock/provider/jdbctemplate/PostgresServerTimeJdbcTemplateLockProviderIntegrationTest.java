@@ -27,7 +27,7 @@ public class PostgresServerTimeJdbcTemplateLockProviderIntegrationTest extends A
         return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration
             .builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .usingServerTime()
+            .usingDbTime()
             .build()
         );
     }

@@ -93,7 +93,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final TimeZone timeZone;
         private final ColumnNames columnNames;
         private final String lockedByValue;
-        private final boolean useServerTime;
+        private final boolean useDbTime;
 
         Configuration(
             @NonNull JdbcTemplate jdbcTemplate,
@@ -102,7 +102,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             @Nullable TimeZone timeZone,
             @NonNull ColumnNames columnNames,
             @NonNull String lockedByValue,
-            boolean useServerTime
+            boolean useDbTime
         ) {
 
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
@@ -111,10 +111,10 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             this.timeZone = timeZone;
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
             this.lockedByValue = requireNonNull(lockedByValue, "lockedByValue can not be null");
-            if (useServerTime && timeZone != null) {
-                throw new IllegalArgumentException("Can not set both serverTime and timeZone");
+            if (useDbTime && timeZone != null) {
+                throw new IllegalArgumentException("Can not set both useDbTime and timeZone");
             }
-            this.useServerTime = useServerTime;
+            this.useDbTime = useDbTime;
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -141,8 +141,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return lockedByValue;
         }
 
-        public boolean getUseServerTime() {
-            return useServerTime;
+        public boolean getUseDbTime() {
+            return useDbTime;
         }
 
         public static Configuration.Builder builder() {
@@ -157,7 +157,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private TimeZone timeZone;
             private String lockedByValue = Utils.getHostname();
             private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
-            private boolean useServerTime = false;
+            private boolean useDbTime = false;
 
             public Builder withJdbcTemplate(@NonNull JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -192,13 +192,13 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder usingServerTime() {
-                this.useServerTime = true;
+            public Builder usingDbTime() {
+                this.useDbTime = true;
                 return this;
             }
 
             public JdbcTemplateLockProvider.Configuration build() {
-                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames, lockedByValue, useServerTime);
+                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames, lockedByValue, useDbTime);
             }
         }
 

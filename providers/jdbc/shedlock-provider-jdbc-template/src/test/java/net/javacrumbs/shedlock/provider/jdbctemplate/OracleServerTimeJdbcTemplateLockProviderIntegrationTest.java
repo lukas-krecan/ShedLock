@@ -27,7 +27,7 @@ public class OracleServerTimeJdbcTemplateLockProviderIntegrationTest extends Abs
         return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration
             .builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .usingServerTime()
+            .usingDbTime()
             .build()
         );
     }
