@@ -6,10 +6,10 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-class PostgresSqlStatementsSource extends SqlStatementsSource {
+class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     private final String lockAtMostFor = "current_timestamp + cast(:lockAtMostForInterval as interval)";
 
-    PostgresSqlStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
+    PostgresSqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
     }
 

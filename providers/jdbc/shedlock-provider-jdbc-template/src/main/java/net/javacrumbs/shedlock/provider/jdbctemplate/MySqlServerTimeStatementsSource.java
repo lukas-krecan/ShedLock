@@ -6,10 +6,10 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-class MySqlStatementsSource extends SqlStatementsSource {
+class MySqlServerTimeStatementsSource extends SqlStatementsSource {
     private final String lockAtMostFor = "TIMESTAMPADD(MICROSECOND, :lockAtMostForMicros, now())";
 
-    MySqlStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
+    MySqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
     }
 

@@ -41,11 +41,10 @@ import static java.util.Objects.requireNonNull;
 class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
-    private final Configuration configuration;
     private final SqlStatementsSource sqlStatementsSource;
 
     JdbcTemplateStorageAccessor(@NonNull Configuration configuration) {
-        this.configuration = requireNonNull(configuration, "configuration can not be null");
+        requireNonNull(configuration, "configuration can not be null");
         this.jdbcTemplate = new NamedParameterJdbcTemplate(configuration.getJdbcTemplate());
         this.sqlStatementsSource = SqlStatementsSource.create(configuration);
         PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null ?

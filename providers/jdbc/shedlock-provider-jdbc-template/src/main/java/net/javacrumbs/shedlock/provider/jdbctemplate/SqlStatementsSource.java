@@ -30,17 +30,17 @@ class SqlStatementsSource {
 
         switch (databaseProductName) {
             case "PostgreSQL":
-                logger.debug("Using PostgresSqlStatementsSource");
-                return new PostgresSqlStatementsSource(configuration);
+                logger.debug("Using PostgresSqlServerTimeStatementsSource");
+                return new PostgresSqlServerTimeStatementsSource(configuration);
             case "Microsoft SQL Server":
-                logger.debug("Using MsSqlServerStatementsSource");
-                return new MsSqlServerStatementsSource(configuration);
+                logger.debug("Using MsSqlServerTimeStatementsSource");
+                return new MsSqlServerTimeStatementsSource(configuration);
             case "MySQL":
-                logger.debug("Using MySqlStatementsSource");
-                return new MySqlStatementsSource(configuration);
+                logger.debug("Using MySqlServerTimeStatementsSource");
+                return new MySqlServerTimeStatementsSource(configuration);
             case "MariaDB":
-                logger.debug("Using MySqlStatementsSource (for MariaDB)");
-                return new MySqlStatementsSource(configuration);
+                logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
+                return new MySqlServerTimeStatementsSource(configuration);
             default:
                 logger.debug("Using SqlStatementsSource");
                 return new SqlStatementsSource(configuration);

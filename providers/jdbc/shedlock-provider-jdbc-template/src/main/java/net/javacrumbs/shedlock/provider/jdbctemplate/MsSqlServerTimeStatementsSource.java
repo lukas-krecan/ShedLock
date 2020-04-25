@@ -6,10 +6,10 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-class MsSqlServerStatementsSource extends SqlStatementsSource {
+class MsSqlServerTimeStatementsSource extends SqlStatementsSource {
     private final String lockAtMostFor = "DATEADD(millisecond, :lockAtMostForMillis, current_timestamp)";
 
-    MsSqlServerStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
+    MsSqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
     }
 
