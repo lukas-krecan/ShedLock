@@ -22,16 +22,16 @@
     <version>4.8.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
-        <module>micronaut/shedlock-micronaut</module>
-        <module>micronaut/micronaut-test</module>
+        <!--<module>micronaut/shedlock-micronaut</module>
+        <module>micronaut/micronaut-test</module>-->
         <module>spring/shedlock-spring</module>
-        <module>spring/shedlock-springboot-test</module>
+        <!--<module>spring/shedlock-springboot-test</module>
         <module>spring/shedlock-springboot22-test</module>
         <module>spring/shedlock-springboot22-sleuth-test</module>
         <module>spring/shedlock-springboot22-kotlin-test</module>
         <module>spring/shedlock-testng-test</module>
-        <module>shedlock-test-support</module>
-        <module>providers/jdbc/shedlock-test-support-jdbc</module>
+        <module>shedlock-test-support</module>-->
+        <!--<module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
@@ -46,7 +46,7 @@
         <module>providers/redis/shedlock-provider-redis-spring-1</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
-        <module>providers/cassandra/shedlock-provider-cassandra</module>
+        <module>providers/cassandra/shedlock-provider-cassandra</module>-->
 		<module>providers/geode/shedlock-provider-geode</module>
     </modules>
 
