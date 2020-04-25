@@ -24,7 +24,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.DefaultResultCollector;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +69,7 @@ public class GeodeLockProvider implements LockProvider {
      * @return {@link Optional of {@link SimpleLock}}
      */
     @Override
-    public @NotNull Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         log.trace("lock - Attempt : {}", lockConfiguration);
         boolean isLocked = executeFunction(lockConfiguration,Constants.LOCK);
         if(isLocked){
@@ -79,7 +78,7 @@ public class GeodeLockProvider implements LockProvider {
         return Optional.empty();
     }
 
-    private boolean executeFunction(@NotNull LockConfiguration lockConfiguration,String operation) {
+    private boolean executeFunction(LockConfiguration lockConfiguration,String operation) {
         Execution execution = FunctionService.onServer(this.clientCache.getDefaultPool())
             .setArguments(new Object[]{ lockConfiguration.getName(),operation,keyLockTime(lockConfiguration) })
             .withCollector(new DefaultResultCollector());
