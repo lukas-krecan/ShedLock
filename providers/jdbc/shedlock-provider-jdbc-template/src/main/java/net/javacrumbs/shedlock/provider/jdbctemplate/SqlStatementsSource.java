@@ -28,25 +28,35 @@ class SqlStatementsSource {
     static SqlStatementsSource create(Configuration configuration) {
         String databaseProductName = getDatabaseProductName(configuration);
 
-        switch (databaseProductName) {
-            case "PostgreSQL":
+        if (configuration.getUseServerTime()) {
+            switch (databaseProductName) {
+                case "PostgreSQL":
+                    logger.debug("Using PostgresSqlServerTimeStatementsSource");
+                    return new PostgresSqlServerTimeStatementsSource(configuration);
+                case "Microsoft SQL Server":
+                    logger.debug("Using MsSqlServerTimeStatementsSource");
+                    return new MsSqlServerTimeStatementsSource(configuration);
+                case "Oracle":
+                    logger.debug("Using OracleServerTimeStatementsSource");
+                    return new OracleServerTimeStatementsSource(configuration);
+                case "MySQL":
+                    logger.debug("Using MySqlServerTimeStatementsSource");
+                    return new MySqlServerTimeStatementsSource(configuration);
+                case "MariaDB":
+                    logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
+                    return new MySqlServerTimeStatementsSource(configuration);
+                default:
+                    logger.debug("Using SqlStatementsSource");
+                    return new SqlStatementsSource(configuration);
+            }
+        } else {
+            if ("PostgreSQL".equals(databaseProductName)) {
                 logger.debug("Using PostgresSqlServerTimeStatementsSource");
-                return new PostgresSqlServerTimeStatementsSource(configuration);
-            case "Microsoft SQL Server":
-                logger.debug("Using MsSqlServerTimeStatementsSource");
-                return new MsSqlServerTimeStatementsSource(configuration);
-            case "Oracle":
-                logger.debug("Using OracleServerTimeStatementsSource");
-                return new OracleServerTimeStatementsSource(configuration);
-            case "MySQL":
-                logger.debug("Using MySqlServerTimeStatementsSource");
-                return new MySqlServerTimeStatementsSource(configuration);
-            case "MariaDB":
-                logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
-                return new MySqlServerTimeStatementsSource(configuration);
-            default:
+                return new PostgresSqlStatementsSource(configuration);
+            } else {
                 logger.debug("Using SqlStatementsSource");
                 return new SqlStatementsSource(configuration);
+            }
         }
     }
 
