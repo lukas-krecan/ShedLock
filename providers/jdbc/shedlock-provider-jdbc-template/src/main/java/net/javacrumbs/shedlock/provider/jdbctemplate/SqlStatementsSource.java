@@ -46,8 +46,7 @@ class SqlStatementsSource {
                     logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
                     return new MySqlServerTimeStatementsSource(configuration);
                 default:
-                    logger.debug("Using SqlStatementsSource");
-                    return new SqlStatementsSource(configuration);
+                    throw new UnsupportedOperationException("Server time is not supported for " + databaseProductName);
             }
         } else {
             if ("PostgreSQL".equals(databaseProductName)) {

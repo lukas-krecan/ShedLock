@@ -111,6 +111,9 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             this.timeZone = timeZone;
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
             this.lockedByValue = requireNonNull(lockedByValue, "lockedByValue can not be null");
+            if (useServerTime && timeZone != null) {
+                throw new IllegalArgumentException("Can not set both serverTime and timeZone");
+            }
             this.useServerTime = useServerTime;
         }
 
