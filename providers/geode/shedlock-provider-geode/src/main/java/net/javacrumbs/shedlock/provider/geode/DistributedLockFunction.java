@@ -20,6 +20,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.LeaseExpiredException;
+import org.apache.geode.distributed.internal.locks.DLockService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,19 +29,19 @@ import org.slf4j.LoggerFactory;
  * using the Distributed Lock Service of Geode which is fault tolerant
  * across the Geode Cluster
  */
-class DistributedLockFunction implements Function {
+public class DistributedLockFunction implements Function {
 
     private static final Logger log = LoggerFactory.getLogger(DistributedLockFunction.class);
 
     private static final long serialVersionUID = 3995151973953236487L;
 
-    private static DistributedLockService dls;
+    private static DLockService dls;
 
-    public static synchronized DistributedLockService getInstance(DistributedSystem distributedSystem){
+    public static synchronized DLockService getInstance(DistributedSystem distributedSystem){
         if(dls == null){
-            dls = DistributedLockService.getServiceNamed(Constants.DISTRIBUTED_LOCK_SERVICE_NAME);
+            dls = (DLockService) DLockService.getServiceNamed(Constants.DISTRIBUTED_LOCK_SERVICE_NAME);
             if(dls == null){
-                dls = DistributedLockService.create(Constants.DISTRIBUTED_LOCK_SERVICE_NAME,distributedSystem);
+                dls = (DLockService) DLockService.create(Constants.DISTRIBUTED_LOCK_SERVICE_NAME,distributedSystem);
             }
         }
         return dls;
@@ -49,25 +50,26 @@ class DistributedLockFunction implements Function {
     @Override
     public void execute(FunctionContext functionContext) {
         try{
-            DistributedLockService instance = getInstance(functionContext.getCache().getDistributedSystem());
+            DLockService instance = getInstance(functionContext.getCache().getDistributedSystem());
             Object [] arr = (Object[]) functionContext.getArguments();
             String lockName = String.valueOf(arr[0]);
             String operation = String.valueOf(arr[1]);
             long lease = (long) arr[2];
             if(Constants.LOCK.equalsIgnoreCase(operation)){
-                boolean lock = instance.lock(lockName, 0, lease);
-                log.info("{} Lock acquired by {}",lockName,functionContext.getMemberName());
+                boolean lock = instance.lock(lockName,0,lease,false,true,false);
                 if(lock){
                     functionContext.getResultSender().lastResult(true);
                 } else {
                     functionContext.getResultSender().lastResult(false);
                 }
             } else if(Constants.UNLOCK.equalsIgnoreCase(operation)){
+
                 try{
                     instance.unlock(lockName);
                 }catch(LeaseExpiredException e){
-                    log.debug("unlock - it is already unlocked");
+                    log.debug("{} unlock - it is already unlocked",lockName);
                 }
+                log.info("{} unlocked successfully",lockName);
                 functionContext.getResultSender().lastResult(true);
             }
         } catch(Exception e){
@@ -93,7 +95,7 @@ class DistributedLockFunction implements Function {
 
     @Override
     public String getId() {
-        return DistributedLockFunction.class.getSimpleName();
+        return DistributedLockFunction.class.getName();
     }
 
 }

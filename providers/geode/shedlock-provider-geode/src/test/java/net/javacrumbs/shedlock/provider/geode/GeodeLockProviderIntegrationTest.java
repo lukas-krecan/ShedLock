@@ -16,41 +16,42 @@
 
 package net.javacrumbs.shedlock.provider.geode;
 
-import junitparams.JUnitParamsRunner;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.junit.ClassRule;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.test.dunit.DUnitEnv;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.runner.RunWith;
 
 import java.util.Optional;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(JUnitParamsRunner.class)
 public class GeodeLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     private static GeodeLockProvider lockProvider;
 
-    @ClassRule
-    public static final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(1).withLogFile();
-
-    @ClassRule
-    public static final DistributedRule distributedRule = new DistributedRule(1);
-
     @BeforeAll
-    public static void startServer() {
-        MemberVM server = GeodeTestUtils.startServer(clusterStartupRule, 1);
+    public static void startServer() throws InterruptedException {
+        DUnitLauncher.launchIfNeeded(1);
+        Host.getHost(0).getVM(0).invokeAsync(() -> {
+            ServerStarterRule serverStarterRule = GeodeTestUtils.getServerStartupRule(new ServerStarterRule(),0);
+            serverStarterRule.startServer();
+        });
         ClientCache clientCache = new ClientCacheFactory()
-            .addPoolLocator("localhost",GeodeTestUtils.getLocatorPort()).create();
+            .addPoolServer("localhost",40404)
+            .create();
+        Thread.sleep(5000);
         lockProvider = new GeodeLockProvider(clientCache);
+
     }
 
     @Override
@@ -62,14 +63,21 @@ public class GeodeLockProviderIntegrationTest extends AbstractLockProviderIntegr
     protected void assertUnlocked(final String lockName) {
        LockConfiguration lockConfiguration = GeodeTestUtils.simpleLockConfig(lockName, 1);
        Optional<SimpleLock> lock = lockProvider.lock(lockConfiguration);
-       assertThat(lock).isEmpty();
+       if(lock.isPresent()){
+           lock.get().unlock();
+           //Means it was already unlocked
+           Assert.assertTrue("Lock was unlocked",true);
+       } else {
+           Assert.fail("Lock wasnt unlocked");
+       }
+
    }
 
     @Override
     protected void assertLocked(final String lockName) {
         LockConfiguration lockConfiguration = GeodeTestUtils.simpleLockConfig(lockName, 1);
         Optional<SimpleLock> lock = lockProvider.lock(lockConfiguration);
-        assertThat(lock).isNotEmpty();
+        assertThat(lock).isEmpty();
     }
 }
 

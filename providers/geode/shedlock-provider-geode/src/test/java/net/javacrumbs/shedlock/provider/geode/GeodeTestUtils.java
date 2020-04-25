@@ -18,9 +18,11 @@ package net.javacrumbs.shedlock.provider.geode;
 
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -43,11 +45,16 @@ public class GeodeTestUtils {
     public static MemberVM startServer(ClusterStartupRule clusterStartupRule,final int vmIndex) {
         return clusterStartupRule.startServerVM(
             vmIndex,serverStarterRule -> {
-                serverStarterRule.withPort(40404 + vmIndex).withConnectionToLocator(getLocatorPort())
-                    .withProperty(SERIALIZABLE_OBJECT_FILTER,
-                        new DistributedLockFunction().getClass().getName());
-                return serverStarterRule;
+                return getServerStartupRule(serverStarterRule,vmIndex);
             });
+    }
+
+    public static ServerStarterRule getServerStartupRule(ServerStarterRule serverStarterRule,int vmIndex){
+        serverStarterRule.withPort(40404 + vmIndex).withConnectionToLocator(getLocatorPort())
+            .withProperty(SERIALIZABLE_OBJECT_FILTER,
+                new DistributedLockFunction().getId());
+        FunctionService.registerFunction(new DistributedLockFunction());
+        return serverStarterRule;
     }
 
     public static LockConfiguration simpleLockConfig(final String name,int lockTimeSec) {

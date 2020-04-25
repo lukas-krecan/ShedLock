@@ -465,7 +465,9 @@ CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt
 ```
 
 #### Geode
-Locks are supported in Geode Client - Server Mode and are fault tolerant to Server Failures
+Locks are supported in Geode Client - Server Mode and are fault tolerant to Server Failures.
+The DistributedLockFunction needs to be deployed to Server either by deploying the below jar
+via gfsh or by extending the DistributedLockFunction class ( do not override the Function Id ). 
 
 ```xml
 <dependency>
@@ -481,6 +483,9 @@ Configure:
 import static net.javacrumbs.shedlock.provider.geode.GeodeLockProvider;
 
 ...
+
+gfsh:
+deploy --jar=<<path>>/shedlock-provide-geode.jar 
 
 @Bean
 public GeodeLockProvider lockProvider(ClientCache clientCache) {

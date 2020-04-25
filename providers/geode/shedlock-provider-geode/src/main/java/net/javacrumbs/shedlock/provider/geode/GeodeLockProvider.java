@@ -61,17 +61,13 @@ public class GeodeLockProvider implements LockProvider {
      */
     public GeodeLockProvider(ClientCache clientCache){
         this.clientCache = clientCache;
-        if(FunctionService.isRegistered(distributedLockFunction.getId())){
-            FunctionService.registerFunction(distributedLockFunction);
-            log.info(" Function registered {} on Cluster",distributedLockFunction.getId());
-        }
     }
 
     /**
      * Attempts to obtained a {@link SimpleLock} by executing a Geode Function on the cluster,
      * the function only executes once and is fault tolerant to failures.
      * @param lockConfiguration: {@link LockConfiguration}
-     * @return
+     * @return {@link Optional of {@link SimpleLock}}
      */
     @Override
     public @NotNull Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
@@ -87,7 +83,7 @@ public class GeodeLockProvider implements LockProvider {
         Execution execution = FunctionService.onServer(this.clientCache.getDefaultPool())
             .setArguments(new Object[]{ lockConfiguration.getName(),operation,keyLockTime(lockConfiguration) })
             .withCollector(new DefaultResultCollector());
-        ResultCollector rc = execution.execute(distributedLockFunction);
+        ResultCollector rc = execution.execute(distributedLockFunction.getId());
         List arrayList = (ArrayList)rc.getResult();
         Object o = arrayList.get(0);
         if(o instanceof Boolean){
@@ -111,13 +107,13 @@ public class GeodeLockProvider implements LockProvider {
      */
     public void unlock(LockConfiguration lockConfiguration) {
         String lockName = lockConfiguration.getName();
-        log.trace("unlock - attempt : {}", lockName);
+        log.info("unlock - attempt : {}", lockName);
         final Instant now = ClockProvider.now();
         final Instant lockAtLeastInstant = lockConfiguration.getLockAtLeastUntil();
         long millisLeft = Duration.between(now, lockAtLeastInstant).toMillis();
         if (millisLeft <=0) {
             boolean isUnlocked = executeFunction(lockConfiguration,Constants.UNLOCK);
-            log.debug("unlock - done : {}", isUnlocked);
+            log.info("unlock - done : {}", isUnlocked);
         } else {
             log.info("unlock - will be done after ms: {}", Duration.between(now,lockAtLeastInstant).toMillis());
             CompletableFuture.runAsync(()->{

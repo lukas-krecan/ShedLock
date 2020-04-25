@@ -15,8 +15,6 @@
  */
 package net.javacrumbs.shedlock.provider.geode;
 
-import junitparams.JUnitParamsRunner;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -26,17 +24,17 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.junit.*;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(JUnit4.class)
 public class GeodeLockProviderClusterTest implements Serializable {
 
     @ClassRule
@@ -131,9 +129,6 @@ public class GeodeLockProviderClusterTest implements Serializable {
             assertThat(lock12).isEmpty();
             final Optional<SimpleLock> lock22 = lockProvider2.lock(simpleLockConfig(LOCK_NAME_2));
             assertThat(lock22).isNotEmpty();
-            //Same Client can lock the same Resource again and again as long as it has the lock
-            final Optional<SimpleLock> lock21 = lockProvider2.lock(simpleLockConfig(LOCK_NAME_2));
-            assertThat(lock21).isNotEmpty();
             lock22.get().unlock();
             Thread.sleep(10000);
             final Optional<SimpleLock> lock12Bis = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
