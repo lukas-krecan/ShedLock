@@ -16,24 +16,11 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractMsSqlServerJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractOracleJdbcLockProviderIntegrationTest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class OracleJdbcTemplateLockProviderIntegrationTest extends AbstractOracleJdbcLockProviderIntegrationTest {
     @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(getDatasource());
-    }
-
-    @Override
-    protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= current_timestamp(3)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
-    }
-
-    @Override
-    protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > current_timestamp(3)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 }
