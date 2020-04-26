@@ -33,11 +33,11 @@ public class MsSqlServerServerTimeJdbcTemplateLockProviderIntegrationTest extend
     }
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= current_timestamp", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= SYSUTCDATETIME()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > current_timestamp", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > SYSUTCDATETIME()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 }
