@@ -59,7 +59,7 @@ public final class MsSqlServerConfig implements DbConfig {
 
     @Override
     public String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until datetime, locked_at datetime, locked_by VARCHAR(255), PRIMARY KEY (name))";
+        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until datetime2, locked_at datetime2, locked_by VARCHAR(255), PRIMARY KEY (name))";
     }
 
     private static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {
