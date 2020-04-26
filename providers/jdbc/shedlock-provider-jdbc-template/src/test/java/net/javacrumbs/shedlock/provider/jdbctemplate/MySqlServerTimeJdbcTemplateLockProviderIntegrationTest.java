@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractMySqlJdbcLockProviderIntegrationTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,11 +35,17 @@ public class MySqlServerTimeJdbcTemplateLockProviderIntegrationTest extends Abst
 
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= now()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= UTC_TIMESTAMP", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > now()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > UTC_TIMESTAMP", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldCreateLockIfRecordAlreadyExists() {
+        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, UTC_TIMESTAMP, UTC_TIMESTAMP, ?)", LOCK_NAME1, "me");
+        shouldCreateLock();
     }
 }
