@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
-    private final String lockAtMostFor = "current_timestamp + cast(:lockAtMostForInterval as interval)";
+    private final String lockAtMostFor = "timezone('utc', CURRENT_TIMESTAMP) + cast(:lockAtMostForInterval as interval)";
 
     PostgresSqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
@@ -15,13 +15,13 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     String getInsertStatement() {
-        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", current_timestamp, :lockedBy)" +
+        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", timezone('utc', CURRENT_TIMESTAMP), :lockedBy)" +
             " ON CONFLICT (" + name() + ") DO UPDATE" + updateClause();
     }
 
     @NonNull
     private String updateClause() {
-        return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = current_timestamp, " + lockedBy() + " = :lockedBy WHERE " + tableName() + "." + lockUntil() + " <= current_timestamp";
+        return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = timezone('utc', CURRENT_TIMESTAMP), " + lockedBy() + " = :lockedBy WHERE " + tableName() + "." + lockUntil() + " <= timezone('utc', CURRENT_TIMESTAMP)";
     }
 
     @Override
@@ -32,12 +32,12 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     @Override
     public String getUnlockStatement() {
         String lockAtLeastFor = lockedAt() + " + cast(:lockAtLeastForInterval as interval)";
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > current_timestamp THEN " + lockAtLeastFor + " ELSE current_timestamp END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > timezone('utc', CURRENT_TIMESTAMP) THEN " + lockAtLeastFor + " ELSE timezone('utc', CURRENT_TIMESTAMP) END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
     }
 
     @Override
     public String getExtendStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor +" WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > current_timestamp";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor +" WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > timezone('utc', CURRENT_TIMESTAMP)";
     }
 
     @Override
