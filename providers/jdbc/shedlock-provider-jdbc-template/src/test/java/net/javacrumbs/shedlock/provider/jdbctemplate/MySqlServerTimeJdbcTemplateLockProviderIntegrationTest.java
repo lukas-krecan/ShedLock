@@ -35,17 +35,17 @@ public class MySqlServerTimeJdbcTemplateLockProviderIntegrationTest extends Abst
 
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= UTC_TIMESTAMP", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= UTC_TIMESTAMP(3)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > UTC_TIMESTAMP", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > UTC_TIMESTAMP(3)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, UTC_TIMESTAMP, UTC_TIMESTAMP, ?)", LOCK_NAME1, "me");
+        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3), ?)", LOCK_NAME1, "me");
         shouldCreateLock();
     }
 }
