@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class OracleServerTimeStatementsSource extends SqlStatementsSource {
-    private final String lockAtMostFor = "systimestamp(3) + :lockAtMostFor";
+    private final String lockAtMostFor = "SYS_EXTRACT_UTC(SYSTIMESTAMP) + :lockAtMostFor";
 
     private static final long millisecondsInDay = 24 * 60 * 60 * 1000;
 
@@ -18,23 +18,23 @@ class OracleServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     String getInsertStatement() {
-        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", systimestamp(3), :lockedBy)";
+        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", SYS_EXTRACT_UTC(SYSTIMESTAMP), :lockedBy)";
     }
 
     @Override
     public String getUpdateStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = systimestamp(3), " + lockedBy() + " = :lockedBy WHERE " + lockUntil() + " <= CAST(systimestamp AS TIMESTAMP(3))";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = SYS_EXTRACT_UTC(SYSTIMESTAMP), " + lockedBy() + " = :lockedBy WHERE " + lockUntil() + " <= SYS_EXTRACT_UTC(SYSTIMESTAMP)";
     }
 
     @Override
     public String getUnlockStatement() {
         String lockAtLeastFor = lockedAt() + " + :lockAtLeastFor";
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > CAST(systimestamp AS TIMESTAMP(3)) THEN " + lockAtLeastFor + " ELSE systimestamp(3) END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > SYS_EXTRACT_UTC(SYSTIMESTAMP) THEN " + lockAtLeastFor + " ELSE SYS_EXTRACT_UTC(SYSTIMESTAMP) END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
     }
 
     @Override
     public String getExtendStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + " WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > CAST(systimestamp AS TIMESTAMP(3))";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + " WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > SYS_EXTRACT_UTC(SYSTIMESTAMP)";
     }
 
     @Override

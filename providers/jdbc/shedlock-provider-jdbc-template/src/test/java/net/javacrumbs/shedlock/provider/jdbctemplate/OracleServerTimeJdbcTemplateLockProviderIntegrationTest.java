@@ -34,11 +34,11 @@ public class OracleServerTimeJdbcTemplateLockProviderIntegrationTest extends Abs
     }
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= CAST(systimestamp AS TIMESTAMP(3))", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= SYS_EXTRACT_UTC(SYSTIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > CAST(systimestamp AS TIMESTAMP(3))", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > SYS_EXTRACT_UTC(SYSTIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 }
