@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -46,20 +47,23 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
         testUtils.clean();
     }
 
+    public JdbcTestUtils getTestUtils() {
+        return testUtils;
+    }
 
     @Override
     protected void assertUnlocked(String lockName) {
-        Instant lockedUntil = getLockedUntil(lockName);
+        Instant lockedUntil = getLockedUntil(lockName).toInstant();
         assertThat(lockedUntil).isBeforeOrEqualTo(ClockProvider.now().truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
     }
 
-    private Instant getLockedUntil(String lockName) {
+    private Timestamp getLockedUntil(String lockName) {
         return testUtils.getLockedUntil(lockName);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        Instant lockedUntil = getLockedUntil(lockName);
+        Instant lockedUntil = getLockedUntil(lockName).toInstant();
         assertThat(lockedUntil).isAfter(ClockProvider.now());
     }
 

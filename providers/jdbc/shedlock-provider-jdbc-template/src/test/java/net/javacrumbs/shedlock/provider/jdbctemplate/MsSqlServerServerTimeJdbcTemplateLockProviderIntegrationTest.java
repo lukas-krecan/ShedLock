@@ -21,9 +21,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MsSqlServerServerTimeJdbcTemplateLockProviderIntegrationTest extends AbstractMsSqlServerJdbcLockProviderIntegrationTest {
+public class MsSqlServerServerTimeJdbcTemplateLockProviderIntegrationTest extends AbstractMsSqlServerJdbcLockProviderIntegrationTest implements ServerTimeTest {
     @Override
-    protected StorageBasedLockProvider getLockProvider() {
+    public StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration
             .builder()
             .withJdbcTemplate(new JdbcTemplate(getDatasource()))

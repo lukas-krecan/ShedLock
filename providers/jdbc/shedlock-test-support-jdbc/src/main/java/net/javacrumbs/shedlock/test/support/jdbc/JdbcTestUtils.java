@@ -20,7 +20,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 public final class JdbcTestUtils {
 
@@ -38,8 +37,8 @@ public final class JdbcTestUtils {
     }
 
 
-    public Instant getLockedUntil(String lockName) {
-        return jdbcTemplate.queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", new Object[]{lockName}, Timestamp.class).toInstant();
+    public Timestamp getLockedUntil(String lockName) {
+        return jdbcTemplate.queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", new Object[]{lockName}, Timestamp.class);
     }
 
     public void clean() {

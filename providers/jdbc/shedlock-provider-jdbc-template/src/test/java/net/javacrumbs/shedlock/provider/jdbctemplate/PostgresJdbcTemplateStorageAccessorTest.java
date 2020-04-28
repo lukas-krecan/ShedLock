@@ -42,7 +42,7 @@ class PostgresJdbcTemplateStorageAccessorTest {
 
 
         accessor.insertRecord(new LockConfiguration("other", Duration.ofSeconds(5), Duration.ZERO));
-        Instant otherLockValidity = testUtils.getLockedUntil("other");
+        Instant otherLockValidity = testUtils.getLockedUntil("other").toInstant();
 
         assertThat(
             accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofMillis(10), Duration.ZERO))
@@ -66,7 +66,7 @@ class PostgresJdbcTemplateStorageAccessorTest {
             accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofSeconds(10), Duration.ZERO))
         ).isEqualTo(true);
 
-        Instant originalLockValidity = testUtils.getLockedUntil(MY_LOCK);
+        Instant originalLockValidity = testUtils.getLockedUntil(MY_LOCK).toInstant();
 
         assertThat(
             accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofSeconds(10), Duration.ZERO))

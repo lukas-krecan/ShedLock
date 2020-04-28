@@ -124,7 +124,7 @@ public abstract class AbstractLockProviderIntegrationTest {
         // Even though we have unlocked the lock, it will be held for some time
         assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).describedAs("Can not acquire lock, grace period did not pass yet").isEmpty();
 
-        // Let's wait wor the lock to be automatically released
+        // Let's wait for the lock to be automatically released
         sleep(LOCK_AT_LEAST_FOR.toMillis());
 
         // Should be able to acquire now

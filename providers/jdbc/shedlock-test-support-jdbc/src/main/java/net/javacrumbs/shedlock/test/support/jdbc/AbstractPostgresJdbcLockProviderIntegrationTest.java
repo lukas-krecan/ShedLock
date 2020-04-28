@@ -24,7 +24,7 @@ public abstract class AbstractPostgresJdbcLockProviderIntegrationTest extends Ab
     private static final PostgresConfig dbConfig = new PostgresConfig();
 
     @BeforeAll
-    public static void startDb() throws IOException {
+    public static void startDb() {
         dbConfig.startDb();
     }
 
