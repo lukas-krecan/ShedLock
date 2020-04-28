@@ -54,7 +54,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         lock.get().unlock();
         assertUnlocked(LOCK_NAME1);
 
-        assertInvalidLock(() -> lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now()));
+        assertInvalidLock(() -> lock.get().extend(Duration.ofSeconds(10), Duration.ZERO));
     }
 
     @Test
