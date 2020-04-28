@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -42,7 +43,7 @@ class PostgresJdbcTemplateStorageAccessorTest {
 
 
         accessor.insertRecord(new LockConfiguration("other", Duration.ofSeconds(5), Duration.ZERO));
-        Instant otherLockValidity = testUtils.getLockedUntil("other").toInstant();
+        Timestamp otherLockValidity = testUtils.getLockedUntil("other");
 
         assertThat(
             accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofMillis(10), Duration.ZERO))
@@ -66,7 +67,7 @@ class PostgresJdbcTemplateStorageAccessorTest {
             accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofSeconds(10), Duration.ZERO))
         ).isEqualTo(true);
 
-        Instant originalLockValidity = testUtils.getLockedUntil(MY_LOCK).toInstant();
+        Timestamp originalLockValidity = testUtils.getLockedUntil(MY_LOCK);
 
         assertThat(
             accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofSeconds(10), Duration.ZERO))
