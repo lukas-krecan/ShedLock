@@ -1,0 +1,2 @@
+start locator --hostname-for-clients=localhost
+start server --name=server1 --server-port=40404 --hostname-for-clients=localhost

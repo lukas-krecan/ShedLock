@@ -24,6 +24,8 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+
 /**
  * Function which executes on a Server Pool to lock a shared Resource
  * using the Distributed Lock Service of Geode which is fault tolerant

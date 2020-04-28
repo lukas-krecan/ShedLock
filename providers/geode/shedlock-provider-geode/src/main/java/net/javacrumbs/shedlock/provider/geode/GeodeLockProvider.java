@@ -82,7 +82,7 @@ public class GeodeLockProvider implements LockProvider {
         Execution execution = FunctionService.onServer(this.clientCache.getDefaultPool())
             .setArguments(new Object[]{ lockConfiguration.getName(),operation,keyLockTime(lockConfiguration) })
             .withCollector(new DefaultResultCollector());
-        ResultCollector rc = execution.execute(distributedLockFunction.getId());
+        ResultCollector rc = execution.execute(distributedLockFunction);
         List arrayList = (ArrayList)rc.getResult();
         Object o = arrayList.get(0);
         if(o instanceof Boolean){
