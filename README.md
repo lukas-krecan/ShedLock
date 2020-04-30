@@ -59,7 +59,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -132,15 +132,18 @@ There are several implementations of LockProvider.
 First, create lock table (**please note that `name` has to be primary key**)
 
 ```sql
-CREATE TABLE shedlock(
-    name VARCHAR(64),
-    lock_until TIMESTAMP(3) NULL,
-    locked_at TIMESTAMP(3) NULL,
-    locked_by  VARCHAR(255),
-    PRIMARY KEY (name)
-)
+# MySQL, MariaDB and Oracle
+CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3),
+    locked_at TIMESTAMP(3), locked_by VARCHAR(255), PRIMARY KEY (name));
+
+# Postgres
+CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP,
+    locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name));
+
+# MS SQL
+CREATE TABLE shedlock(name VARCHAR(64), lock_until datetime2,
+    locked_at datetime2, locked_by VARCHAR(255), PRIMARY KEY (name));
 ```
-script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227) and for Oracle [here](https://github.com/lukas-krecan/ShedLock/issues/81#issue-355599950)
 
 Add dependency
 
@@ -148,7 +151,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -158,16 +161,20 @@ Configure:
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 
 ...
-
 @Bean
 public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcTemplateLockProvider(dataSource);
+            return new JdbcTemplateLockProvider(
+                JdbcTemplateLockProvider.Configuration.builder()
+                .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+                .usingDbTime()
+                .build()
+            );
 }
 ```
+By specifying `usingDbTime()` (introduced in 4.9.0) the lock provider will use UTC time based on the DB server time.
+If you do not specify this option, current time on the client will be used (the time may differ between clients).
 
-Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases.
-
-For more fine-grained configuration use the `Configuration` object
+For more fine-grained configuration use other options of the `Configuration` object
 
 ```java
 new JdbcTemplateLockProvider(builder()
@@ -175,11 +182,11 @@ new JdbcTemplateLockProvider(builder()
     .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
     .withLockedByValue("my-value")
-    .withTimeZone(TimeZone.getTimeZone("CEST"))
+    .withTimeZone(TimeZone.getTimeZone("UTC"))
     .build())
 ```
 
-If you need to specify a schema, you can set it in table name using the usual dot notation
+If you need to specify a schema, you can set it in the table name using the usual dot notation
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
@@ -195,7 +202,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -223,7 +230,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -253,7 +260,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -280,7 +287,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -304,7 +311,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -335,7 +342,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -362,7 +369,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.8.0/version>
+    <version>4.9.0/version>
 </dependency>
 ```
 
@@ -388,7 +395,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.8.0/version>
+    <version>4.9.0/version>
 </dependency>
 ```
 
@@ -412,7 +419,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -440,7 +447,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.8.0/version>
+    <version>4.9.0/version>
 </dependency>
 ```
 
@@ -479,7 +486,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.8.0</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -607,6 +614,13 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.9.0
+* Support for server time in JdbcTemplateLockProvider
+* Using custom non-null annotations
+* Trimming time precision to milliseconds
+* Micronaut upgraded to 1.3.4
+* Add automatic DB tests for Oracle, MariaDB and MS SQL.
+
 ## 4.8.0
 * DynamoDB 2 module introduced (thanks Mark Egan)
 * JDBC template code refactored to not log error on failed insert in Postgres
