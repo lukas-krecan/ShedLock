@@ -29,12 +29,7 @@ public final class MsSqlServerConfig implements DbConfig {
 
     public void startDb() {
         mssql = new MyMSSQLServerContainer()
-            .withLogConsumer(new Consumer<OutputFrame>() {
-                @Override
-                public void accept(OutputFrame outputFrame) {
-                    logger.debug(outputFrame.getUtf8String());
-                }
-            });
+            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         mssql.start();
     }
 
@@ -59,7 +54,7 @@ public final class MsSqlServerConfig implements DbConfig {
 
     @Override
     public String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until datetime2, locked_at datetime2, locked_by VARCHAR(255), PRIMARY KEY (name))";
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL, locked_at datetime2 NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
     }
 
     private static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {

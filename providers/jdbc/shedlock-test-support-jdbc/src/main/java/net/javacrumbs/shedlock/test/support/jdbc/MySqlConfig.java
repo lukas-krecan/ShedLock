@@ -33,12 +33,7 @@ class MySqlConfig implements DbConfig {
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
-            .withLogConsumer(new Consumer<OutputFrame>() {
-                @Override
-                public void accept(OutputFrame outputFrame) {
-                    logger.debug(outputFrame.getUtf8String());
-                }
-            });
+            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         mysql.start();
     }
 
@@ -62,7 +57,7 @@ class MySqlConfig implements DbConfig {
 
     @Override
     public String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3), locked_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255), PRIMARY KEY (name))";
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL, locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
     }
 
     private static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {

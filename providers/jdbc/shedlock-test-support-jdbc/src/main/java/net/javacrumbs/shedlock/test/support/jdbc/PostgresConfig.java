@@ -33,12 +33,7 @@ public final class PostgresConfig implements DbConfig {
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
-            .withLogConsumer(new Consumer<OutputFrame>() {
-                @Override
-                public void accept(OutputFrame outputFrame) {
-                    logger.debug(outputFrame.getUtf8String());
-                }
-            });
+            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         postgres.start();
     }
 

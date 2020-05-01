@@ -33,12 +33,7 @@ class MariaDbConfig implements DbConfig {
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
-            .withLogConsumer(new Consumer<OutputFrame>() {
-                @Override
-                public void accept(OutputFrame outputFrame) {
-                    logger.debug(outputFrame.getUtf8String());
-                }
-            });
+            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         mariaDb.start();
     }
 
@@ -62,7 +57,7 @@ class MariaDbConfig implements DbConfig {
 
     @Override
     public String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, locked_by VARCHAR(255), PRIMARY KEY (name))";
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
     }
 
     private static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {

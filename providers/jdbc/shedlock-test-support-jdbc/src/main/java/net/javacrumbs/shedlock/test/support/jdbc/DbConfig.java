@@ -29,6 +29,6 @@ public interface DbConfig {
     String getPassword();
 
     default String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP, locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name))";
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP  NOT NULL, locked_at TIMESTAMP  NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
     }
 }
