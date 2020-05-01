@@ -52,6 +52,10 @@ class SqlStatementsSource {
                     logger.debug("Using H2ServerTimeStatementsSource");
                     return new H2ServerTimeStatementsSource(configuration);
                 default:
+                    if (databaseProductName.startsWith("DB2")) {
+                        logger.debug("Using Db2ServerTimeStatementsSource");
+                        return new Db2ServerTimeStatementsSource(configuration);
+                    }
                     throw new UnsupportedOperationException("DB time is not supported for '" + databaseProductName + "'");
             }
         } else {
