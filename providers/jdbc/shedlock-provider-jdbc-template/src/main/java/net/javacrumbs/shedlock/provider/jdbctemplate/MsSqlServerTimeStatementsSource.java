@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class MsSqlServerTimeStatementsSource extends SqlStatementsSource {
-    private final String lockAtMostFor = "DATEADD(millisecond, :lockAtMostForMillis, SYSUTCDATETIME())";
+    private final String now = "SYSUTCDATETIME()";
+    private final String lockAtMostFor = "DATEADD(millisecond, :lockAtMostForMillis, " + now + ")";
 
     MsSqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
@@ -15,23 +16,23 @@ class MsSqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     String getInsertStatement() {
-        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", SYSUTCDATETIME(), :lockedBy)";
+        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", " + now + ", :lockedBy)";
     }
 
     @Override
     public String getUpdateStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = SYSUTCDATETIME(), " + lockedBy() + " = :lockedBy WHERE " +  lockUntil() + " <= SYSUTCDATETIME()";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy WHERE " +  lockUntil() + " <= " + now;
     }
 
     @Override
     public String getUnlockStatement() {
         String lockAtLeastFor = "DATEADD(millisecond, :lockAtLeastForMillis, " + lockedAt() + ")";
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > SYSUTCDATETIME() THEN " + lockAtLeastFor + " ELSE SYSUTCDATETIME() END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > " + now + " THEN " + lockAtLeastFor + " ELSE " + now + " END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
     }
 
     @Override
     public String getExtendStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + " WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > SYSUTCDATETIME()";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + " WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > " + now;
     }
 
     @Override
