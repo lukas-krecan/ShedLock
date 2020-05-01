@@ -133,20 +133,20 @@ First, create lock table (**please note that `name` has to be primary key**)
 
 ```sql
 # MySQL, MariaDB
-CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3),
-    locked_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255), PRIMARY KEY (name));
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
+    locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
 
 # Postgres
-CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP,
-    locked_at TIMESTAMP, locked_by  VARCHAR(255), PRIMARY KEY (name));
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL,
+    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
 
 # Oracle
-CREATE TABLE shedlock(name VARCHAR(64), lock_until TIMESTAMP(3),
-    locked_at TIMESTAMP(3), locked_by VARCHAR(255), PRIMARY KEY (name));
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
+    locked_at TIMESTAMP(3) NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
 
 # MS SQL
-CREATE TABLE shedlock(name VARCHAR(64), lock_until datetime2,
-    locked_at datetime2, locked_by VARCHAR(255), PRIMARY KEY (name));
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL,
+    locked_at datetime2 NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
 ```
 
 Add dependency
