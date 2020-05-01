@@ -45,8 +45,14 @@ class SqlStatementsSource {
                 case "MariaDB":
                     logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
                     return new MySqlServerTimeStatementsSource(configuration);
+                case "HSQL Database Engine":
+                    logger.debug("Using HsqlServerTimeStatementsSource");
+                    return new HsqlServerTimeStatementsSource(configuration);
+                case "H2":
+                    logger.debug("Using H2ServerTimeStatementsSource");
+                    return new H2ServerTimeStatementsSource(configuration);
                 default:
-                    throw new UnsupportedOperationException("DB time is not supported for " + databaseProductName);
+                    throw new UnsupportedOperationException("DB time is not supported for '" + databaseProductName + "'");
             }
         } else {
             if ("PostgreSQL".equals(databaseProductName)) {
