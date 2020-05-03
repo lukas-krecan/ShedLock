@@ -174,7 +174,7 @@ public LockProvider lockProvider(DataSource dataSource) {
             return new JdbcTemplateLockProvider(
                 JdbcTemplateLockProvider.Configuration.builder()
                 .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-                .usingDbTime()
+                .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
                 .build()
             );
 }
