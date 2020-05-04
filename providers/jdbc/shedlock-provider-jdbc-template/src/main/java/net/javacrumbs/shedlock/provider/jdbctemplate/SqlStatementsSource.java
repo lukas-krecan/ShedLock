@@ -70,7 +70,12 @@ class SqlStatementsSource {
     }
 
     private static String getDatabaseProductName(Configuration configuration) {
-        return configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
+        try {
+            return configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
+        } catch (Exception e) {
+            logger.debug("Can not determine database product name " + e.getMessage());
+            return "Unknown";
+        }
     }
 
     @NonNull
