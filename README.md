@@ -478,6 +478,7 @@ CREATE KEYSPACE shedlock with replication={'class':'SimpleStrategy', 'replicatio
 CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt timestamp, lockedBy text);
 ```
 
+Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot 2.3.
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
