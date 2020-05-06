@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-class H2Config implements DbConfig {
+public class H2Config implements DbConfig {
     public void startDb() {
     }
 
