@@ -23,28 +23,25 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.jdbc.H2Config;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class MultitenancyLockProviderIntegrationTest {
+public class MultiTenancyLockProviderIntegrationTest {
     public static final String LOCK_NAME = "lock_name";
     public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO);
-    private final JdbcTestUtils h2TestUtils = new JdbcTestUtils(new H2Config());;
-    private final JdbcTestUtils hsqlTestUtils = new JdbcTestUtils(new HsqlConfig());
-
-
+    private static final JdbcTestUtils h2TestUtils = new JdbcTestUtils(new H2Config());;
+    private static final JdbcTestUtils hsqlTestUtils = new JdbcTestUtils(new HsqlConfig());
 
     @Test
     void shouldUseDifferDatabaseForEachTennant() {
@@ -63,11 +60,17 @@ public class MultitenancyLockProviderIntegrationTest {
         lock2.get().unlock();
     }
 
+    @AfterAll
+    static void cleanUp() {
+        h2TestUtils.clean();
+        hsqlTestUtils.clean();
+    }
+
     private LockProvider getLockProvider() {
         return new SampleLockProvider(h2TestUtils.getJdbcTemplate(), hsqlTestUtils.getJdbcTemplate());
     }
 
-    private static abstract class MultitenancyLockProvider implements LockProvider {
+    private static abstract class MultiTenancyLockProvider implements LockProvider {
         private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
 
         @Override
@@ -81,7 +84,7 @@ public class MultitenancyLockProviderIntegrationTest {
         protected abstract String getTenantName(LockConfiguration lockConfiguration);
     }
 
-    private static class SampleLockProvider extends MultitenancyLockProvider {
+    private static class SampleLockProvider extends MultiTenancyLockProvider {
         private static final String TENANT_1 = "tenant-1";
         private static final String TENANT_2 = "tenant-2";
         private final JdbcTemplate jdbcTemplate1;

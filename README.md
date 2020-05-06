@@ -478,7 +478,26 @@ CREATE KEYSPACE shedlock with replication={'class':'SimpleStrategy', 'replicatio
 CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt timestamp, lockedBy text);
 ```
 
-Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot 2.3.
+Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
+
+### Multi-tenancy
+If you have multi-tenancy use-case you can use a lock provider similar to this one
+(see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultitenancyLockProviderIntegrationTest.java#L84))
+```java
+private static abstract class MultiTenancyLockProvider implements LockProvider {
+    private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
+
+    @Override
+    public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+        String tenantName = getTenantName(lockConfiguration);
+        return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
+    }
+
+    protected abstract LockProvider createLockProvider(String tenantName) ;
+
+    protected abstract String getTenantName(LockConfiguration lockConfiguration);
+}
+```
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
