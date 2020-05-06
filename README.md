@@ -30,6 +30,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
+  - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
@@ -482,7 +483,7 @@ Please, note that CassandraLockProvider uses Cassandra driver v4, which is part 
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
-(see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultitenancyLockProviderIntegrationTest.java#L84))
+(see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultiTenancyLockProviderIntegrationTest.java#L87))
 ```java
 private static abstract class MultiTenancyLockProvider implements LockProvider {
     private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
