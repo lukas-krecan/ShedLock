@@ -68,8 +68,8 @@ public class FuzzTester {
         );
         waitForIt(executor.invokeAll(tasks));
 
-        assertThat(job1.getCounter()).isEqualTo((THREADS / 2 - 1) * ITERATIONS + SHORT_ITERATION);
         assertThat(job2.getCounter()).isEqualTo(THREADS / 2 * ITERATIONS);
+        assertThat(job1.getCounter()).isEqualTo((THREADS / 2 - 1) * ITERATIONS + SHORT_ITERATION);
     }
 
     private void waitForIt(List<Future<Void>> futures) throws InterruptedException, ExecutionException {
@@ -80,7 +80,7 @@ public class FuzzTester {
 
     protected Void task(int iterations, Job job) {
         try {
-            for (int i = 0; i < iterations; ) {
+            for (int i = 0; i < iterations;) {
                 Optional<SimpleLock> lock = lockProvider.lock(job.getLockConfiguration());
                 if (lock.isPresent()) {
                     int n = job.getCounter();
@@ -88,8 +88,8 @@ public class FuzzTester {
                     sleep();
                     if (shouldLog()) logger.debug("action=setCounter value={} i={}", n + 1, i);
                     job.setCounter(n + 1);
-                    i++;
                     lock.get().unlock();
+                    i++;
                 }
             }
             logger.debug("action=finished");
