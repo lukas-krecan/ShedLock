@@ -22,7 +22,7 @@ import org.testcontainers.containers.output.OutputFrame;
 
 import java.util.function.Consumer;
 
-class MySqlConfig implements DbConfig {
+public final class MySqlConfig implements DbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
     private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);

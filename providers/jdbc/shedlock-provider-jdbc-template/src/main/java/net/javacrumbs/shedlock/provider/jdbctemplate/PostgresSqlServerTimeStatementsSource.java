@@ -22,7 +22,7 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @NonNull
     private String updateClause() {
-        return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy WHERE " + tableName() + "." + lockUntil() + " <= " + now;
+        return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy WHERE " + tableName() + "." + name() + " = :name AND " + tableName() + "." + lockUntil() + " <= " + now;
     }
 
     @Override
