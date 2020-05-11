@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
@@ -30,7 +31,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
-    protected static final String LOCK_NAME1 = "name";
+    protected static final String LOCK_NAME1 = UUID.randomUUID().toString();
     public static final Duration LOCK_AT_LEAST_FOR = Duration.of(2, SECONDS);
 
     protected abstract LockProvider getLockProvider();
