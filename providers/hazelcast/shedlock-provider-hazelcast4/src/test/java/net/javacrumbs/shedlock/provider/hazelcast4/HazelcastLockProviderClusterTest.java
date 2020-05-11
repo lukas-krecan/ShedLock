@@ -33,9 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class HazelcastLockProviderClusterTest {
 
-    private static final String LOCK_NAME_1 = "lock1";
+    private static final String LOCK_NAME_1 = "clusterLock1";
 
-    private static final String LOCK_NAME_2 = "lock2";
+    private static final String LOCK_NAME_2 = "clusterLock2";
 
     private static HazelcastLockProvider lockProvider1;
 
