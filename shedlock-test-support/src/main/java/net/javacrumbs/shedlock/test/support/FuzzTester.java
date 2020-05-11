@@ -63,7 +63,7 @@ public class FuzzTester {
             this.task(iterations[i], i % 2 == 0 ? job1 : job2)).collect(toList()
         );
         waitForIt(executor.invokeAll(tasks));
-        
+
         assertThat(job2.getCounter()).isEqualTo(THREADS / 2 * ITERATIONS);
         assertThat(job1.getCounter()).isEqualTo((THREADS / 2 - 1) * ITERATIONS + SHORT_ITERATION);
     }
