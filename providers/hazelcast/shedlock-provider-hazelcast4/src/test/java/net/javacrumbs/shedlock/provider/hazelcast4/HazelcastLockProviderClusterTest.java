@@ -18,7 +18,6 @@ package net.javacrumbs.shedlock.provider.hazelcast4;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.AfterEach;
@@ -44,8 +43,7 @@ public class HazelcastLockProviderClusterTest {
 
     @BeforeEach
     public void startHazelcast() {
-        HazelcastInstance hazelcastInstance1 = Hazelcast.newHazelcastInstance();
-        lockProvider1 = new HazelcastLockProvider(hazelcastInstance1);
+        lockProvider1 = new HazelcastLockProvider(Hazelcast.newHazelcastInstance());
         lockProvider2 = new HazelcastLockProvider(HazelcastClient.newHazelcastClient());
     }
 
