@@ -175,12 +175,13 @@ public LockProvider lockProvider(DataSource dataSource) {
             return new JdbcTemplateLockProvider(
                 JdbcTemplateLockProvider.Configuration.builder()
                 .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+                .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
                 .build()
             );
 }
 ```
-
-Do not use `usingDbTime()`, it's currently broken!
+By specifying `usingDbTime()` (introduced in 4.9.3) the lock provider will use UTC time based on the DB server time.
+If you do not specify this option, current time on the client will be used (the time may differ between clients).
 
 For more fine-grained configuration use other options of the `Configuration` object
 
