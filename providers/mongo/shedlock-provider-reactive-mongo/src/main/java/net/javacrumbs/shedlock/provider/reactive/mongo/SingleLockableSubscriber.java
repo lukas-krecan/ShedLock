@@ -28,8 +28,8 @@ public class SingleLockableSubscriber<T> implements Subscriber<T> {
     private T value;
     private Throwable error;
     private boolean complete = false;
-    private final Long timeoutMillis = 10000L;
-    private final Long lockTime = 100L;
+    private final Long TIMEOUT_MILLIS = 10000L;
+    private final Long LOCK_TIME = 100L;
 
     @Override
     public void onSubscribe(Subscription subscription) {
@@ -65,10 +65,10 @@ public class SingleLockableSubscriber<T> implements Subscriber<T> {
 
     public void waitUntilCompleteOrError() {
         long waitTime = 0;
-        while (waitTime <= timeoutMillis && !this.isComplete() && this.getError() == null) {
+        while (waitTime <= TIMEOUT_MILLIS && !this.isComplete() && this.getError() == null) {
             try {
-                Thread.sleep(lockTime);
-                waitTime += lockTime;
+                Thread.sleep(LOCK_TIME);
+                waitTime += LOCK_TIME;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
