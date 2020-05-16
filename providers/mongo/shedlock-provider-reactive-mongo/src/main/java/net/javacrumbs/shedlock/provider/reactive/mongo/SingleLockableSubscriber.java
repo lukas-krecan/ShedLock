@@ -28,8 +28,8 @@ public class SingleLockableSubscriber<T> implements Subscriber<T> {
     private T value;
     private Throwable error;
     private boolean complete = false;
-    private Long timeoutMillis = 10000L;
-    private Long lockTime = 100L;
+    private final Long timeoutMillis = 10000L;
+    private final Long lockTime = 100L;
 
     @Override
     public void onSubscribe(Subscription subscription) {
