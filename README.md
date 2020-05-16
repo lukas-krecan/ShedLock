@@ -230,6 +230,34 @@ public LockProvider lockProvider(MongoClient mongo) {
 
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.7.0
 
+
+#### Reactive Mongo
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-reactive-mongo</artifactId>
+    <version>4.9.4</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.reactive.mongo.ReactiveMongoLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(MongoClient mongo) {
+    return new ReactiveMongoLockProvider(mongo.getDatabase(databaseName))
+}
+```
+
+Please note that MongoDB integration requires Mongo >= 4.x and mongodb-driver-reactivestreams 1.x
+
+
 #### DynamoDB
 This depends on AWS SDK v1.
 
