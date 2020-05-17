@@ -61,7 +61,7 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
         return error;
     }
 
-    void waitUntilCompleteOrError() {
+    void await() {
         try {
             latch.await(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

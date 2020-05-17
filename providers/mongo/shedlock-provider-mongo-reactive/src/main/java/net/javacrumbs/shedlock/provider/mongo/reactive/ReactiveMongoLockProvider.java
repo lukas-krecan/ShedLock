@@ -33,6 +33,7 @@ import org.reactivestreams.Publisher;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
@@ -141,20 +142,12 @@ public class ReactiveMongoLockProvider implements LockProvider {
             // 1. The lock document does not exist yet - it is inserted - we have the lock
             // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
             // 3. The lock document exists and lockUtil > now - Duplicate key exception is thrown
-            ReactiveMongoLockProviderLockableSubscriber reactiveMongoLockProviderSubscriber = new ReactiveMongoLockProviderLockableSubscriber();
-            getCollection().findOneAndUpdate(
+            execute(() -> getCollection().findOneAndUpdate(
                 and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
                 update,
                 new FindOneAndUpdateOptions().upsert(true)
-            ).subscribe(reactiveMongoLockProviderSubscriber);
-            reactiveMongoLockProviderSubscriber.waitUntilCompleteOrError();
-
-            if (reactiveMongoLockProviderSubscriber.getError() != null) {
-                throw (MongoServerException) reactiveMongoLockProviderSubscriber.getError();
-            } else {
-                return Optional.of(new ReactiveMongoLock(lockConfiguration, this));
-            }
-
+            ));
+            return Optional.of(new ReactiveMongoLock(lockConfiguration, this));
         } catch (MongoServerException e) {
             if (e.getCode() == 11000) { // duplicate key
                 //Upsert attempts to insert when there were no filter matches.
@@ -170,20 +163,14 @@ public class ReactiveMongoLockProvider implements LockProvider {
         Instant now = now();
         Bson update = set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil());
 
-        Publisher<Document> updatedDocumentPublisher = getCollection().findOneAndUpdate(
+        Document updatedDocument = execute(() -> getCollection().findOneAndUpdate(
             and(
                 eq(ID, lockConfiguration.getName()),
                 gt(LOCK_UNTIL, now),
                 eq(LOCKED_BY, hostname)
             ),
             update
-        );
-
-        ReactiveMongoLockProviderLockableSubscriber reactiveMongoLockProviderSubscriber = new ReactiveMongoLockProviderLockableSubscriber();
-        updatedDocumentPublisher.subscribe(reactiveMongoLockProviderSubscriber);
-        reactiveMongoLockProviderSubscriber.waitUntilCompleteOrError();
-
-        Document updatedDocument = reactiveMongoLockProviderSubscriber.getValue();
+        ));
 
         if (updatedDocument != null) {
             return Optional.of(new ReactiveMongoLock(lockConfiguration, this));
@@ -194,12 +181,22 @@ public class ReactiveMongoLockProvider implements LockProvider {
 
     private void unlock(LockConfiguration lockConfiguration) {
         // Set lockUtil to now or lockAtLeastUntil whichever is later
-        ReactiveMongoLockProviderLockableSubscriber reactiveMongoLockProviderSubscriber = new ReactiveMongoLockProviderLockableSubscriber();
-        getCollection().findOneAndUpdate(
+        execute(() -> getCollection().findOneAndUpdate(
             eq(ID, lockConfiguration.getName()),
             combine(set(LOCK_UNTIL, lockConfiguration.getUnlockTime()))
-        ).subscribe(reactiveMongoLockProviderSubscriber);
-        reactiveMongoLockProviderSubscriber.waitUntilCompleteOrError();
+        ));
+    }
+
+    static <T> T execute(Supplier<Publisher<T>> command) {
+        SingleLockableSubscriber<T> subscriber = new SingleLockableSubscriber<>();
+        command.get().subscribe(subscriber);
+        subscriber.await();
+        if (subscriber.getError() != null) {
+            // FIXME:
+            throw (RuntimeException) subscriber.getError();
+        } else {
+            return subscriber.getValue();
+        }
     }
 
     private MongoCollection<Document> getCollection() {

@@ -19,7 +19,6 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
-import com.mongodb.reactivestreams.client.Success;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -42,6 +41,7 @@ import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockP
 import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.execute;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -75,10 +75,7 @@ public class ReactiveReactiveMongoLockProviderIntegrationTest extends AbstractEx
 
     @BeforeEach
     public void cleanDb() {
-        SuccessLockableSubscriber successSubscriber = new SuccessLockableSubscriber();
-        mongo.getDatabase(DB_NAME).drop()
-            .subscribe(successSubscriber);
-        successSubscriber.waitUntilCompleteOrError();
+        execute(() -> mongo.getDatabase(DB_NAME).drop());
     }
 
     @Override
@@ -111,10 +108,7 @@ public class ReactiveReactiveMongoLockProviderIntegrationTest extends AbstractEx
     }
 
     private Document getLockDocument(String lockName) {
-        ReactiveMongoLockProviderLockableSubscriber reactiveMongoLockProviderSubscriber = new ReactiveMongoLockProviderLockableSubscriber();
-        getLockCollection().find(eq(ID, lockName)).first().subscribe(reactiveMongoLockProviderSubscriber);
-        reactiveMongoLockProviderSubscriber.waitUntilCompleteOrError();
-        return reactiveMongoLockProviderSubscriber.getValue();
+        return execute(() -> getLockCollection().find(eq(ID, lockName)).first());
     }
 
     @Test
@@ -123,20 +117,11 @@ public class ReactiveReactiveMongoLockProviderIntegrationTest extends AbstractEx
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertLocked(LOCK_NAME1);
 
-        DeleteResultLockableSubscriber deleteResultSubscriber = new DeleteResultLockableSubscriber();
-        getLockCollection().deleteOne(eq(ID, LOCK_NAME1)).subscribe(deleteResultSubscriber);
-        deleteResultSubscriber.waitUntilCompleteOrError();
+        DeleteResult result = execute(() -> getLockCollection().deleteOne(eq(ID, LOCK_NAME1)));
 
-        DeleteResult result = deleteResultSubscriber.getValue();
         assumeThat(result.getDeletedCount()).isEqualTo(1);
 
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertLocked(LOCK_NAME1);
-    }
-
-    static class DeleteResultLockableSubscriber extends SingleLockableSubscriber<DeleteResult> {
-    }
-
-    static class SuccessLockableSubscriber extends SingleLockableSubscriber<Success> {
     }
 }
