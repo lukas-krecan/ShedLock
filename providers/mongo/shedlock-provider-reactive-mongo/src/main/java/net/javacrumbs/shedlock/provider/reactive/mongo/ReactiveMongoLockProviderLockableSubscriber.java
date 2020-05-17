@@ -20,6 +20,6 @@ import org.bson.Document;
 /**
  * Implementation of {@link SingleLockableSubscriber} that returns a Document
  */
-public class ReactiveMongoLockProviderLockableSubscriber extends SingleLockableSubscriber<Document> {
+class ReactiveMongoLockProviderLockableSubscriber extends SingleLockableSubscriber<Document> {
 
 }

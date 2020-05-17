@@ -23,13 +23,13 @@ import org.reactivestreams.Subscription;
  *
  * @param <T>
  */
-public class SingleLockableSubscriber<T> implements Subscriber<T> {
+class SingleLockableSubscriber<T> implements Subscriber<T> {
 
     private T value;
     private Throwable error;
     private boolean complete = false;
-    private final Long TIMEOUT_MILLIS = 10000L;
-    private final Long LOCK_TIME = 100L;
+    private static final Long TIMEOUT_MILLIS = 10000L;
+    private static final Long LOCK_TIME = 100L;
 
     @Override
     public void onSubscribe(Subscription subscription) {
@@ -55,15 +55,15 @@ public class SingleLockableSubscriber<T> implements Subscriber<T> {
         return value;
     }
 
-    public Throwable getError() {
+    Throwable getError() {
         return error;
     }
 
-    public boolean isComplete() {
+    boolean isComplete() {
         return complete;
     }
 
-    public void waitUntilCompleteOrError() {
+    void waitUntilCompleteOrError() {
         long waitTime = 0;
         while (waitTime <= TIMEOUT_MILLIS && !this.isComplete() && this.getError() == null) {
             try {
