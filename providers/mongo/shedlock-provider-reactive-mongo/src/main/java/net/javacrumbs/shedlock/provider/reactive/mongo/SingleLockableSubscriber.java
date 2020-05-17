@@ -18,6 +18,9 @@ package net.javacrumbs.shedlock.provider.reactive.mongo;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Subscriber that expects a single result and allows locking until complete or error
  *
@@ -27,9 +30,7 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
 
     private T value;
     private Throwable error;
-    private boolean complete = false;
-    private static final Long TIMEOUT_MILLIS = 10000L;
-    private static final Long LOCK_TIME = 100L;
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     @Override
     public void onSubscribe(Subscription subscription) {
@@ -44,11 +45,12 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
     @Override
     public void onError(Throwable throwable) {
         this.error = throwable;
+        onComplete();
     }
 
     @Override
     public void onComplete() {
-        complete = true;
+        latch.countDown();
     }
 
     T getValue() {
@@ -59,19 +61,11 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
         return error;
     }
 
-    boolean isComplete() {
-        return complete;
-    }
-
     void waitUntilCompleteOrError() {
-        long waitTime = 0;
-        while (waitTime <= TIMEOUT_MILLIS && !this.isComplete() && this.getError() == null) {
-            try {
-                Thread.sleep(LOCK_TIME);
-                waitTime += LOCK_TIME;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            latch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 }
