@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.reactive.mongo;
+package net.javacrumbs.shedlock.provider.mongo.reactive;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.reactivestreams.client.MongoClient;
@@ -37,11 +37,11 @@ import java.io.IOException;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
-import static net.javacrumbs.shedlock.provider.reactive.mongo.ReactiveMongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
-import static net.javacrumbs.shedlock.provider.reactive.mongo.ReactiveMongoLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.reactive.mongo.ReactiveMongoLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.reactive.mongo.ReactiveMongoLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.reactive.mongo.ReactiveMongoLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
+import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 

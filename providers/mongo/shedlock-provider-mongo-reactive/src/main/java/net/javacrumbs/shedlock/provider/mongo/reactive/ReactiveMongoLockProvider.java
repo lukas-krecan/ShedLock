@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.reactive.mongo;
+package net.javacrumbs.shedlock.provider.mongo.reactive;
 
 import com.mongodb.MongoServerException;
 import com.mongodb.client.model.FindOneAndUpdateOptions;

@@ -8,7 +8,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-reactive-mongo</artifactId>
+    <artifactId>shedlock-provider-mongo-reactive</artifactId>
     <version>4.9.4-SNAPSHOT</version>
 
     <dependencies>
@@ -54,7 +54,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.reactive.mongo
+                                net.javacrumbs.shedlock.provider.mongo.reactive
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
