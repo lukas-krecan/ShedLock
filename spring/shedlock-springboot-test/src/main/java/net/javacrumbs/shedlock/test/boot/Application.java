@@ -33,9 +33,4 @@ public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class);
     }
-
-    @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcTemplateLockProvider(dataSource, "myapp.shedlock");
-    }
 }

@@ -21,12 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class HelloController {
-    private final JdbcTemplate jdbcTemplate;
-
-    public HelloController(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
 
     @RequestMapping("/")
     public String index() {
