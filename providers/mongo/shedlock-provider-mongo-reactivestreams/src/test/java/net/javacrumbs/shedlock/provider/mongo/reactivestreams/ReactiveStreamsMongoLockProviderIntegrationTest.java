@@ -75,7 +75,7 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
 
     @BeforeEach
     public void cleanDb() {
-        execute(() -> mongo.getDatabase(DB_NAME).drop());
+        execute(mongo.getDatabase(DB_NAME).drop());
     }
 
     @Override
@@ -108,7 +108,7 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
     }
 
     private Document getLockDocument(String lockName) {
-        return execute(() -> getLockCollection().find(eq(ID, lockName)).first());
+        return execute(getLockCollection().find(eq(ID, lockName)).first());
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertLocked(LOCK_NAME1);
 
-        DeleteResult result = execute(() -> getLockCollection().deleteOne(eq(ID, LOCK_NAME1)));
+        DeleteResult result = execute(getLockCollection().deleteOne(eq(ID, LOCK_NAME1)));
 
         assumeThat(result.getDeletedCount()).isEqualTo(1);
 

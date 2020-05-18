@@ -115,7 +115,7 @@ public class ReactiveStreamsMongoLockProvider implements LockProvider {
             // 1. The lock document does not exist yet - it is inserted - we have the lock
             // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
             // 3. The lock document exists and lockUtil > now - Duplicate key exception is thrown
-            execute(() -> getCollection().findOneAndUpdate(
+            execute(getCollection().findOneAndUpdate(
                 and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
                 update,
                 new FindOneAndUpdateOptions().upsert(true)
@@ -136,7 +136,7 @@ public class ReactiveStreamsMongoLockProvider implements LockProvider {
         Instant now = now();
         Bson update = set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil());
 
-        Document updatedDocument = execute(() -> getCollection().findOneAndUpdate(
+        Document updatedDocument = execute(getCollection().findOneAndUpdate(
             and(
                 eq(ID, lockConfiguration.getName()),
                 gt(LOCK_UNTIL, now),
@@ -154,15 +154,15 @@ public class ReactiveStreamsMongoLockProvider implements LockProvider {
 
     private void unlock(LockConfiguration lockConfiguration) {
         // Set lockUtil to now or lockAtLeastUntil whichever is later
-        execute(() -> getCollection().findOneAndUpdate(
+        execute(getCollection().findOneAndUpdate(
             eq(ID, lockConfiguration.getName()),
             combine(set(LOCK_UNTIL, lockConfiguration.getUnlockTime()))
         ));
     }
 
-    static <T> T execute(Supplier<Publisher<T>> command) {
+    static <T> T execute(Publisher<T> command) {
         SingleLockableSubscriber<T> subscriber = new SingleLockableSubscriber<>();
-        command.get().subscribe(subscriber);
+        command.subscribe(subscriber);
         subscriber.await();
         Throwable error = subscriber.getError();
         if (error != null) {
