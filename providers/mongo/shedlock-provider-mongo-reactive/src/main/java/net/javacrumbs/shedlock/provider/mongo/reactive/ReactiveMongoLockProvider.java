@@ -82,7 +82,7 @@ public class ReactiveMongoLockProvider implements LockProvider {
 
     private final String hostname;
     private final MongoCollection<Document> collection;
-    
+
     /**
      * Uses Mongo to coordinate locks
      */
