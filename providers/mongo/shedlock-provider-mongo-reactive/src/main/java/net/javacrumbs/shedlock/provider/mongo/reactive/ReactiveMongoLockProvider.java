@@ -17,7 +17,6 @@ package net.javacrumbs.shedlock.provider.mongo.reactive;
 
 import com.mongodb.MongoServerException;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
@@ -83,34 +82,7 @@ public class ReactiveMongoLockProvider implements LockProvider {
 
     private final String hostname;
     private final MongoCollection<Document> collection;
-
-    /**
-     * Uses Mongo to coordinate locks
-     *
-     * @deprecated Use {@link ReactiveMongoLockProvider#ReactiveMongoLockProvider(MongoDatabase)}
-     *
-     * @param mongo        Mongo to be used
-     * @param databaseName database to be used
-     */
-    @Deprecated
-    public ReactiveMongoLockProvider(@NonNull MongoClient mongo, @NonNull String databaseName) {
-        this(mongo, databaseName, DEFAULT_SHEDLOCK_COLLECTION_NAME);
-    }
-
-    /**
-     * Uses Mongo to coordinate locks
-     *
-     * @deprecated Use {@link ReactiveMongoLockProvider#ReactiveMongoLockProvider(MongoCollection)}
-     *
-     * @param mongo          Mongo to be used
-     * @param databaseName   database to be used
-     * @param collectionName collection to store the locks
-     */
-    @Deprecated
-    public ReactiveMongoLockProvider(@NonNull MongoClient mongo, @NonNull String databaseName, @NonNull String collectionName) {
-        this(mongo.getDatabase(databaseName).getCollection(collectionName));
-    }
-
+    
     /**
      * Uses Mongo to coordinate locks
      */
