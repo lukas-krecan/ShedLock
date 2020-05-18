@@ -25,6 +25,7 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.bson.Document;
@@ -191,9 +192,13 @@ public class ReactiveMongoLockProvider implements LockProvider {
         SingleLockableSubscriber<T> subscriber = new SingleLockableSubscriber<>();
         command.get().subscribe(subscriber);
         subscriber.await();
-        if (subscriber.getError() != null) {
-            // FIXME:
-            throw (RuntimeException) subscriber.getError();
+        Throwable error = subscriber.getError();
+        if (error != null) {
+            if (error instanceof RuntimeException) {
+                throw (RuntimeException) error;
+            } else {
+                throw new LockException("Error when executing Mongo statement", error);
+            }
         } else {
             return subscriber.getValue();
         }
