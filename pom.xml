@@ -33,7 +33,7 @@
         <module>shedlock-test-support</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
-        <module>providers/mongo/shedlock-provider-mongo-reactive</module>
+        <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>

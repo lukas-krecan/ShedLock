@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.mongo.reactive;
+package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 
 import com.mongodb.MongoServerException;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -73,7 +73,7 @@ import static com.mongodb.client.model.Updates.set;
  * </li>
  * </ol>
  */
-public class ReactiveMongoLockProvider implements LockProvider {
+public class ReactiveStreamsMongoLockProvider implements LockProvider {
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
@@ -86,7 +86,7 @@ public class ReactiveMongoLockProvider implements LockProvider {
     /**
      * Uses Mongo to coordinate locks
      */
-    public ReactiveMongoLockProvider(@NonNull MongoDatabase mongoDatabase) {
+    public ReactiveStreamsMongoLockProvider(@NonNull MongoDatabase mongoDatabase) {
         this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
@@ -95,7 +95,7 @@ public class ReactiveMongoLockProvider implements LockProvider {
      *
      * @param collection Mongo collection to be used
      */
-    public ReactiveMongoLockProvider(@NonNull MongoCollection<Document> collection) {
+    public ReactiveStreamsMongoLockProvider(@NonNull MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
@@ -185,9 +185,9 @@ public class ReactiveMongoLockProvider implements LockProvider {
     }
 
     private static final class ReactiveMongoLock extends AbstractSimpleLock {
-        private final ReactiveMongoLockProvider mongoLockProvider;
+        private final ReactiveStreamsMongoLockProvider mongoLockProvider;
 
-        private ReactiveMongoLock(LockConfiguration lockConfiguration, ReactiveMongoLockProvider mongoLockProvider) {
+        private ReactiveMongoLock(LockConfiguration lockConfiguration, ReactiveStreamsMongoLockProvider mongoLockProvider) {
             super(lockConfiguration);
             this.mongoLockProvider = mongoLockProvider;
         }

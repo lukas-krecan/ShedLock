@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.mongo.reactive;
+package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;

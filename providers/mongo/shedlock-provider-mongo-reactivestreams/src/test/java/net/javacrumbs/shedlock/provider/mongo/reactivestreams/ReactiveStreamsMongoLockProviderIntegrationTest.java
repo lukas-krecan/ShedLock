@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.mongo.reactive;
+package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.reactivestreams.client.MongoClient;
@@ -36,16 +36,16 @@ import java.io.IOException;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
-import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
-import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.mongo.reactive.ReactiveMongoLockProvider.execute;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.execute;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-public class ReactiveReactiveMongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
+public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
     private static final MongodStarter starter = MongodStarter.getDefaultInstance();
 
     private static final String DB_NAME = "db";
@@ -80,7 +80,7 @@ public class ReactiveReactiveMongoLockProviderIntegrationTest extends AbstractEx
 
     @Override
     protected LockProvider getLockProvider() {
-        return new ReactiveMongoLockProvider(mongo.getDatabase(DB_NAME));
+        return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(DB_NAME));
     }
 
     @Override
