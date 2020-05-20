@@ -102,7 +102,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         String sql = sqlStatementsSource.getUnlockStatement();
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
                 jdbcTemplate.update(sql, params(lockConfiguration));
             }
         });

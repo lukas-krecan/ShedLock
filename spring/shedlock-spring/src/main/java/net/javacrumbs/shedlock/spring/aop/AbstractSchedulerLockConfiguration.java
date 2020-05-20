@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -53,7 +54,7 @@ class AbstractSchedulerLockConfiguration implements ImportAware, EmbeddedValueRe
     }
 
     @Override
-    public void setEmbeddedValueResolver(StringValueResolver resolver) {
+    public void setEmbeddedValueResolver(@NonNull StringValueResolver resolver) {
         this.resolver = resolver;
     }
 
