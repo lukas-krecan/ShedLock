@@ -69,7 +69,7 @@ Now we need to integrate the library with Spring. In order to enable schedule lo
 ```java
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "30s")
+@EnableSchedulerLock(defaultLockAtMostFor = "10m)
 class MySpringConfiguration {
     ...
 }
@@ -639,7 +639,7 @@ public void scheduledTask() {
 }
 ```
 
-I unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread.
+In unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread.
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
