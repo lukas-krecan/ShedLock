@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.provider.mongo;
 
-import com.mongodb.MongoClient;
 import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -81,32 +80,6 @@ public class MongoLockProvider implements LockProvider {
     private final String hostname;
     private final MongoCollection<Document> collection;
 
-    /**
-     * Uses Mongo to coordinate locks
-     *
-     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoDatabase)}
-     *
-     * @param mongo        Mongo to be used
-     * @param databaseName database to be used
-     */
-    @Deprecated
-    public MongoLockProvider(@NonNull MongoClient mongo, @NonNull String databaseName) {
-        this(mongo, databaseName, DEFAULT_SHEDLOCK_COLLECTION_NAME);
-    }
-
-    /**
-     * Uses Mongo to coordinate locks
-     *
-     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoCollection)}
-     *
-     * @param mongo          Mongo to be used
-     * @param databaseName   database to be used
-     * @param collectionName collection to store the locks
-     */
-    @Deprecated
-    public MongoLockProvider(@NonNull MongoClient mongo, @NonNull String databaseName, @NonNull String collectionName) {
-        this(mongo.getDatabase(databaseName).getCollection(collectionName));
-    }
 
     /**
      * Uses Mongo to coordinate locks
