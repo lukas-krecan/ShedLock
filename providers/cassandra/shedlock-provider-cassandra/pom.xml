@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.10.2-SNAPSHOT</version>
+        <version>4.11.0</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.10.2-SNAPSHOT</version>
+    <version>4.11.0</version>
 
     <properties>
         <java-driver.version>4.3.1</java-driver.version>
