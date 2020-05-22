@@ -25,9 +25,9 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -79,7 +79,6 @@ public class MongoLockProvider implements LockProvider {
 
     private final String hostname;
     private final MongoCollection<Document> collection;
-
 
     /**
      * Uses Mongo to coordinate locks
