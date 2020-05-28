@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
@@ -27,7 +27,7 @@ public class LockableRunnable implements Runnable {
 
     private final LockManager lockManager;
 
-    public LockableRunnable(@NotNull Runnable task, @NotNull LockManager lockManager) {
+    public LockableRunnable(@NonNull Runnable task, @NonNull LockManager lockManager) {
         this.task = requireNonNull(task);
         this.lockManager = requireNonNull(lockManager);
     }

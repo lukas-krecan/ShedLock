@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@ package net.javacrumbs.shedlock.provider.hazelcast;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,18 +34,18 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
     private static HazelcastLockProvider lockProvider;
 
     @BeforeAll
-    public static void startHazelcast() throws IOException {
+    public static void startHazelcast() {
         hazelcastInstance = Hazelcast.newHazelcastInstance();
         lockProvider = new HazelcastLockProvider(hazelcastInstance);
     }
 
     @AfterAll
-    public static void stopHazelcast() throws IOException {
+    public static void stopHazelcast() {
         hazelcastInstance.shutdown();
     }
 
     @AfterEach
-    public void resetLockProvider() throws UnknownHostException {
+    public void resetLockProvider() {
         hazelcastInstance.removeDistributedObjectListener(HazelcastLockProvider.LOCK_STORE_KEY_DEFAULT);
     }
 
@@ -57,19 +55,15 @@ public class HazelcastLockProviderIntegrationTest extends AbstractLockProviderIn
     }
 
     @Override
-    protected void assertUnlocked(final String lockName) {
-        assertThat(isUnlocked(lockName));
-    }
+    protected void assertUnlocked(final String lockName) { assertThat(isUnlocked(lockName)).isTrue(); }
 
     private boolean isUnlocked(final String lockName) {
         final HazelcastLock lock = lockProvider.getLock(lockName);
-        return lock == null;
+        return lock == null || lock.isExpired(ClockProvider.now());
     }
 
     @Override
     protected void assertLocked(final String lockName) {
-        assertThat(!isUnlocked(lockName));
+        assertThat(isUnlocked(lockName)).isFalse();
     }
-
-
 }

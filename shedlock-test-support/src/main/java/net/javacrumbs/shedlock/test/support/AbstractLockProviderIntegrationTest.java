@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 package net.javacrumbs.shedlock.test.support;
 
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
@@ -32,7 +31,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractLockProviderIntegrationTest {
-    protected static final String LOCK_NAME1 = "name";
+    protected static final String LOCK_NAME1 = UUID.randomUUID().toString();
     public static final Duration LOCK_AT_LEAST_FOR = Duration.of(2, SECONDS);
 
     protected abstract LockProvider getLockProvider();
@@ -54,9 +53,10 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldNotReturnSecondLock() {
-        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1));
+        LockProvider lockProvider = getLockProvider();
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock).isNotEmpty();
-        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).isEmpty();
+        assertThat(lockProvider.lock(lockConfig(LOCK_NAME1))).isEmpty();
         lock.get().unlock();
     }
 
@@ -74,11 +74,12 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockTwiceInARow() {
-        Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1));
+        LockProvider lockProvider = getLockProvider();
+        Optional<SimpleLock> lock1 = lockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock1).isNotEmpty();
         lock1.get().unlock();
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1));
+        Optional<SimpleLock> lock2 = lockProvider.lock(lockConfig(LOCK_NAME1));
         assertThat(lock2).isNotEmpty();
         lock2.get().unlock();
     }
@@ -124,7 +125,7 @@ public abstract class AbstractLockProviderIntegrationTest {
         // Even though we have unlocked the lock, it will be held for some time
         assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).describedAs("Can not acquire lock, grace period did not pass yet").isEmpty();
 
-        // Let's wait wor the lock to be automatically released
+        // Let's wait for the lock to be automatically released
         sleep(LOCK_AT_LEAST_FOR.toMillis());
 
         // Should be able to acquire now
@@ -146,8 +147,6 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
-        Instant now = ClockProvider.now();
-        return new LockConfiguration(name, now.plus(lockAtMostFor), now.plus(lockAtLeastFor));
-    }
-
+        return new LockConfiguration(name, lockAtMostFor, lockAtLeastFor);
+   }
 }

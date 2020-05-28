@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ class HazelcastLock implements Serializable {
 
     private final Instant lockAtLeastUntil;
 
-
     /**
      * Moment when the lock is expired, so unlockable.
      * The first value of this is {@link #lockAtMostUntil}.
@@ -45,6 +44,10 @@ class HazelcastLock implements Serializable {
         this.lockAtMostUntil = lockAtMostUntil;
         this.lockAtLeastUntil = lockAtLeastUntil;
         this.timeToLive = timeToLive;
+    }
+
+    boolean isExpired(Instant now) {
+        return !now.isBefore(getTimeToLive());
     }
 
     /**
@@ -71,10 +74,6 @@ class HazelcastLock implements Serializable {
         return name;
     }
 
-    public Instant getLockAtMostUntil() {
-        return lockAtMostUntil;
-    }
-
     Instant getLockAtLeastUntil() {
         return lockAtLeastUntil;
     }
@@ -86,11 +85,11 @@ class HazelcastLock implements Serializable {
     @Override
     public String toString() {
         return "HazelcastLock{" +
-                "name='" + name + '\'' +
-                ", lockAtMostUntil=" + lockAtMostUntil +
-                ", lockAtLeastUntil=" + lockAtLeastUntil +
-                ", timeToLive=" + timeToLive +
-                '}';
+            "name='" + name + '\'' +
+            ", lockAtMostUntil=" + lockAtMostUntil +
+            ", lockAtLeastUntil=" + lockAtLeastUntil +
+            ", timeToLive=" + timeToLive +
+            '}';
     }
 
 }

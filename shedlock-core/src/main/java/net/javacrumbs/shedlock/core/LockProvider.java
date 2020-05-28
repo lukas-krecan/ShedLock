@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.util.Optional;
 
@@ -28,6 +28,6 @@ public interface LockProvider {
      * @return If empty optional has been returned, lock could not be acquired. The lock
      * has to be released by the callee.
      */
-    @NotNull
-    Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration);
+    @NonNull
+    Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration);
 }

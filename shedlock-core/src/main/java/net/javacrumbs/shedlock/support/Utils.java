@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.support;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -64,17 +64,17 @@ public final class Utils {
     private Utils() {
     }
 
-    @NotNull
+    @NonNull
     public static String getHostname() {
         return hostname;
     }
 
-    public static String toIsoString(@NotNull Instant instant) {
+    public static String toIsoString(@NonNull Instant instant) {
         OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
         return formatter.format(utc);
     }
 
-    @NotNull
+    @NonNull
     private static String initHostname() {
         try {
             return InetAddress.getLocalHost().getHostName();

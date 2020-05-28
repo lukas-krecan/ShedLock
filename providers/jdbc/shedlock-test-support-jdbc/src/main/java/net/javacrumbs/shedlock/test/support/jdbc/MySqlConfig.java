@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,49 +15,51 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import com.wix.mysql.EmbeddedMysql;
-import com.wix.mysql.config.MysqldConfig;
-import com.wix.mysql.config.SchemaConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.output.OutputFrame;
 
-import static com.wix.mysql.EmbeddedMysql.anEmbeddedMysql;
-import static com.wix.mysql.config.MysqldConfig.aMysqldConfig;
-import static com.wix.mysql.config.SchemaConfig.aSchemaConfig;
-import static com.wix.mysql.distribution.Version.v5_6_latest;
+import java.util.function.Consumer;
 
-class MySqlConfig implements DbConfig {
+public final class MySqlConfig implements DbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private static final String USERNAME = "SA";
-    private static final String PASSWORD = "";
-    private static final SchemaConfig schemaConfig = aSchemaConfig(TEST_SCHEMA_NAME).build();
-    private EmbeddedMysql mysqld;
+    private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
+    private MyMySQLContainer mysql;
 
     public void startDb() {
-        MysqldConfig config = aMysqldConfig(v5_6_latest)
-            .withUser(USERNAME, PASSWORD)
-            .build();
-
-        mysqld = anEmbeddedMysql(config)
-            .addSchema(schemaConfig)
-            .start();
+        mysql = new MyMySQLContainer()
+            .withDatabaseName(TEST_SCHEMA_NAME)
+            .withUsername("SA")
+            .withPassword("pass")
+            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
+        mysql.start();
     }
 
     public void shutdownDb() {
-        mysqld.dropSchema(schemaConfig);
-        mysqld.stop();
+        mysql.stop();
     }
 
     public String getJdbcUrl() {
-        return "jdbc:mysql://localhost:3310/" + TEST_SCHEMA_NAME;
+        return mysql.getJdbcUrl();
     }
 
     @Override
     public String getUsername() {
-        return USERNAME;
+        return mysql.getUsername();
     }
 
     @Override
     public String getPassword() {
-        return PASSWORD;
+        return mysql.getPassword();
+    }
+
+    @Override
+    public String getCreateTableStatement() {
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL, locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
+
+    private static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {
     }
 }

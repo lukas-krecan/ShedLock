@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,21 @@
  */
 package net.javacrumbs.shedlock.provider.mongo;
 
-import com.mongodb.MongoClient;
 import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.and;
@@ -82,35 +82,8 @@ public class MongoLockProvider implements LockProvider {
 
     /**
      * Uses Mongo to coordinate locks
-     *
-     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoDatabase)}
-     *
-     * @param mongo        Mongo to be used
-     * @param databaseName database to be used
      */
-    @Deprecated
-    public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName) {
-        this(mongo, databaseName, DEFAULT_SHEDLOCK_COLLECTION_NAME);
-    }
-
-    /**
-     * Uses Mongo to coordinate locks
-     *
-     * @deprecated Use {@link MongoLockProvider#MongoLockProvider(MongoCollection)}
-     *
-     * @param mongo          Mongo to be used
-     * @param databaseName   database to be used
-     * @param collectionName collection to store the locks
-     */
-    @Deprecated
-    public MongoLockProvider(@NotNull MongoClient mongo, @NotNull String databaseName, @NotNull String collectionName) {
-        this(mongo.getDatabase(databaseName).getCollection(collectionName));
-    }
-
-    /**
-     * Uses Mongo to coordinate locks
-     */
-    public MongoLockProvider(@NotNull MongoDatabase mongoDatabase) {
+    public MongoLockProvider(@NonNull MongoDatabase mongoDatabase) {
         this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
@@ -119,18 +92,18 @@ public class MongoLockProvider implements LockProvider {
      *
      * @param collection Mongo collection to be used
      */
-    public MongoLockProvider(@NotNull MongoCollection<Document> collection) {
+    public MongoLockProvider(@NonNull MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
-        Date now = now();
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+        Instant now = now();
         Bson update = combine(
-            set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil())),
+            set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()),
             set(LOCKED_AT, now),
             set(LOCKED_BY, hostname)
         );
@@ -157,8 +130,8 @@ public class MongoLockProvider implements LockProvider {
     }
 
     private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
-        Date now = now();
-        Bson update = set(LOCK_UNTIL, Date.from(lockConfiguration.getLockAtMostUntil()));
+        Instant now = now();
+        Bson update = set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil());
 
         Document updatedDocument = getCollection().findOneAndUpdate(
             and(
@@ -179,7 +152,7 @@ public class MongoLockProvider implements LockProvider {
         // Set lockUtil to now or lockAtLeastUntil whichever is later
         getCollection().findOneAndUpdate(
             eq(ID, lockConfiguration.getName()),
-            combine(set(LOCK_UNTIL, Date.from(lockConfiguration.getUnlockTime())))
+            combine(set(LOCK_UNTIL, lockConfiguration.getUnlockTime()))
         );
     }
 
@@ -187,8 +160,8 @@ public class MongoLockProvider implements LockProvider {
         return collection;
     }
 
-    private Date now() {
-        return new Date();
+    private Instant now() {
+        return ClockProvider.now();
     }
 
     private static final class MongoLock extends AbstractSimpleLock {

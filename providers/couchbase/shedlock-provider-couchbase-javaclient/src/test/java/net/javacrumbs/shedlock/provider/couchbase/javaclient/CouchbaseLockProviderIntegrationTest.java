@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,19 @@ package net.javacrumbs.shedlock.provider.couchbase.javaclient;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.cluster.BucketSettings;
+import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.env.CouchbaseEnvironment;
+import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.couchbase.BucketDefinition;
+import org.testcontainers.couchbase.CouchbaseContainer;
 
 import static java.time.Instant.parse;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
@@ -37,29 +43,42 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String BUCKET_NAME = "test";
-    private static final String HOST = "127.0.0.1";
-
 
     private CouchbaseLockProvider lockProvider;
-    private static Cluster cluster;
+    private static CouchbaseCluster cluster;
     private static Bucket bucket;
+    private static CouchbaseContainer container;
 
     @BeforeAll
     public static void startCouchbase () {
-        cluster = connect();
-        cluster.authenticate("Administrator", "password");
+        container = new CouchbaseContainer().withBucket(new BucketDefinition(BUCKET_NAME));
+        container.start();
+
+        CouchbaseEnvironment environment = DefaultCouchbaseEnvironment
+            .builder()
+            .bootstrapCarrierDirectPort(container.getBootstrapCarrierDirectPort())
+            .bootstrapHttpDirectPort(container.getBootstrapHttpDirectPort())
+            .build();
+
+        cluster = CouchbaseCluster.create(
+            environment,
+            container.getContainerIpAddress()
+        );
+
+        cluster.authenticate(container.getUsername(), container.getPassword());
 
         bucket = cluster.openBucket(BUCKET_NAME);
     }
 
     @AfterAll
     public static void stopCouchbase () {
-        disconnect(cluster);
+        cluster.disconnect();
+        container.stop();
     }
 
     @BeforeEach
     public void createLockProvider()  {
-        bucket = getBucket(cluster);
+        bucket = getBucket();
         lockProvider = new CouchbaseLockProvider(bucket);
     }
 
@@ -93,15 +112,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         assertThat(lockDocument.content().get(LOCKED_BY)).asString().isNotEmpty();
     }
 
-    private static Cluster connect(){
-        return CouchbaseCluster.create(HOST);
-    }
-
-    private static void disconnect(Cluster cluster){
-        cluster.disconnect();
-    }
-
-    private Bucket getBucket(Cluster cluster) {
+    private Bucket getBucket() {
         return bucket;
     }
 

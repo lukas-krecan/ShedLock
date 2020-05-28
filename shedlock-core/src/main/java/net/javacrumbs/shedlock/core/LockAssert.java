@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Asserts lock presence. The Spring ecosystem is so complicated, so one can not be sure that the lock is applied. This class
@@ -31,7 +31,7 @@ public class LockAssert {
         currentLockName.set(name);
     }
 
-    static boolean alreadyLockedBy(@NotNull String name) {
+    static boolean alreadyLockedBy(@NonNull String name) {
         return name.equals(currentLockName.get());
     }
 
@@ -45,6 +45,24 @@ public class LockAssert {
     public static void assertLocked() {
         if (currentLockName.get() == null) {
             throw new IllegalStateException("The task is not locked.");
+        }
+    }
+
+    public static class TestHelper {
+        /**
+         * If pass is set to true, all LockAssert.assertLocked calls in current thread will pass.
+         * To be used in unit tests only
+         *
+         * <code>
+         * LockAssert.TestHelper.makeAllAssertsPass(true)
+         * </code>
+         */
+        public static void makeAllAssertsPass(boolean pass) {
+            if (pass) {
+                LockAssert.startLock("net.javacrumbs.shedlock.core.test-lock");
+            } else {
+                LockAssert.endLock();
+            }
         }
     }
 }

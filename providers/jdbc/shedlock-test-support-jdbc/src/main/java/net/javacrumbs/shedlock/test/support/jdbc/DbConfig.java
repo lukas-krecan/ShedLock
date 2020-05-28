@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,4 +27,8 @@ public interface DbConfig {
     String getUsername();
 
     String getPassword();
+
+    default String getCreateTableStatement() {
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP  NOT NULL, locked_at TIMESTAMP  NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
 }

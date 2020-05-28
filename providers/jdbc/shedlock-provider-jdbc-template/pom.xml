@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.6.1-SNAPSHOT</version>
+        <version>4.11.2-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.6.1-SNAPSHOT</version>
+    <version>4.11.2-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -22,12 +22,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <version>${spring.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-provider-jdbc-internal</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

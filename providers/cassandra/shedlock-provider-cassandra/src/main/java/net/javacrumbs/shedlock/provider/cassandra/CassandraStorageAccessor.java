@@ -10,7 +10,7 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -35,7 +35,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final CqlSession cqlSession;
     private final ConsistencyLevel consistencyLevel;
 
-    CassandraStorageAccessor(@NotNull CqlSession cqlSession, @NotNull String table, @NotNull ConsistencyLevel consistencyLevel) {
+    CassandraStorageAccessor(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel) {
         this.hostname = Utils.getHostname();
         this.table = table;
         this.cqlSession = cqlSession;
@@ -43,7 +43,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean insertRecord(@NotNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         if (find(lockConfiguration.getName()).isPresent()) {
             return false;
         }
@@ -52,7 +52,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean updateRecord(@NotNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
         if (!lock.isPresent() || lock.get().getLockUntil().isAfter(ClockProvider.now())) {
             return false;
@@ -62,12 +62,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public void unlock(@NotNull LockConfiguration lockConfiguration) {
+    public void unlock(@NonNull LockConfiguration lockConfiguration) {
         updateUntil(lockConfiguration.getName(), lockConfiguration.getUnlockTime());
     }
 
     @Override
-    public boolean extend(@NotNull LockConfiguration lockConfiguration) {
+    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
         if (!lock.isPresent() || lock.get().getLockUntil().isBefore(ClockProvider.now()) || !lock.get().getLockedBy().equals(hostname)) {
             logger.trace("extend false");

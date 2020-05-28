@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -31,26 +31,23 @@ import org.springframework.util.StringValueResolver;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.TemporalAmount;
 import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
 class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
-    private final TemporalAmount defaultLockAtMostFor;
-    private final TemporalAmount defaultLockAtLeastFor;
+    private final Duration defaultLockAtMostFor;
+    private final Duration defaultLockAtLeastFor;
     private final StringValueResolver embeddedValueResolver;
     private final Converter<String, Duration> durationConverter;
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     public SpringLockConfigurationExtractor(
-        @NotNull TemporalAmount defaultLockAtMostFor,
-        @NotNull TemporalAmount defaultLockAtLeastFor,
+        @NonNull Duration defaultLockAtMostFor,
+        @NonNull Duration defaultLockAtLeastFor,
         @Nullable StringValueResolver embeddedValueResolver,
-        @NotNull Converter<String, Duration> durationConverter
+        @NonNull Converter<String, Duration> durationConverter
     ) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
@@ -60,8 +57,8 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
 
 
     @Override
-    @NotNull
-    public Optional<LockConfiguration> getLockConfiguration(@NotNull Runnable task) {
+    @NonNull
+    public Optional<LockConfiguration> getLockConfiguration(@NonNull Runnable task) {
         if (task instanceof ScheduledMethodRunnable) {
             ScheduledMethodRunnable scheduledMethodRunnable = (ScheduledMethodRunnable) task;
             return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod());
@@ -81,11 +78,10 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     }
 
     private LockConfiguration getLockConfiguration(AnnotationData annotation) {
-        Instant now = now();
         return new LockConfiguration(
             getName(annotation),
-            now.plus(getLockAtMostFor(annotation)),
-            now.plus(getLockAtLeastFor(annotation)));
+            getLockAtMostFor(annotation),
+            getLockAtLeastFor(annotation));
     }
 
     private String getName(AnnotationData annotation) {
@@ -96,7 +92,7 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
         }
     }
 
-    TemporalAmount getLockAtMostFor(AnnotationData annotation) {
+    Duration getLockAtMostFor(AnnotationData annotation) {
         return getValue(
             annotation.getLockAtMostFor(),
             annotation.getLockAtMostForString(),
@@ -105,7 +101,7 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
         );
     }
 
-    TemporalAmount getLockAtLeastFor(AnnotationData annotation) {
+    Duration getLockAtLeastFor(AnnotationData annotation) {
         return getValue(
             annotation.getLockAtLeastFor(),
             annotation.getLockAtLeastForString(),
@@ -114,7 +110,7 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
         );
     }
 
-    private TemporalAmount getValue(long valueFromAnnotation, String stringValueFromAnnotation, TemporalAmount defaultValue, final String paramName) {
+    private Duration getValue(long valueFromAnnotation, String stringValueFromAnnotation, Duration defaultValue, final String paramName) {
         if (valueFromAnnotation >= 0) {
             return Duration.of(valueFromAnnotation, MILLIS);
         } else if (StringUtils.hasText(stringValueFromAnnotation)) {

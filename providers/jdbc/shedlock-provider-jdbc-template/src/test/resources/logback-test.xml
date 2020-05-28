@@ -6,6 +6,8 @@
         </encoder>
     </appender>
 
+    <logger name="com.zaxxer.hikari.HikariDataSource" level="WARN" />
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>

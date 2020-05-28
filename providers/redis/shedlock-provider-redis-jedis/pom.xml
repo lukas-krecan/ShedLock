@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.6.1-SNAPSHOT</version>
+        <version>4.11.2-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.6.1-SNAPSHOT</version>
+    <version>4.11.2-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.12.5</version>
+            <version>${test-containers.version}</version>
             <scope>test</scope>
         </dependency>
 

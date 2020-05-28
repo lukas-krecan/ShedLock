@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,9 +55,9 @@ class StringToDurationConverter implements Converter<String, Duration> {
 
     static final StringToDurationConverter INSTANCE = new StringToDurationConverter();
 
-    private static Pattern ISO8601 = Pattern.compile("^[\\+\\-]?P.*$");
+    private static final Pattern ISO8601 = Pattern.compile("^[\\+\\-]?P.*$");
 
-    private static Pattern SIMPLE = Pattern.compile("^([\\+\\-]?\\d+)([a-zA-Z]{0,2})$");
+    private static final Pattern SIMPLE = Pattern.compile("^([\\+\\-]?\\d+)([a-zA-Z]{0,2})$");
 
     private static final Map<String, ChronoUnit> UNITS;
 

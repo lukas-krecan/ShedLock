@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -38,10 +39,17 @@ public abstract class AbstractSimpleLock implements SimpleLock {
     protected abstract void doUnlock();
 
     @Override
-    @NotNull
-    public final Optional<SimpleLock> extend(@NotNull Instant lockAtMostUntil, @NotNull Instant lockAtLeastUntil) {
+    @NonNull
+    @Deprecated
+    public final Optional<SimpleLock> extend(@NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
+        Instant now = Instant.now();
+        return extend(Duration.between(now, lockAtMostUntil), Duration.between(now, lockAtLeastUntil));
+    }
+
+    @Override
+    public @NonNull Optional<SimpleLock> extend(@NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         checkValidity();
-        Optional<SimpleLock> result = doExtend(new LockConfiguration(lockConfiguration.getName(), lockAtMostUntil, lockAtLeastUntil));
+        Optional<SimpleLock> result = doExtend(new LockConfiguration(lockConfiguration.getName(), lockAtMostFor, lockAtLeastFor));
         valid = false;
         return result;
     }

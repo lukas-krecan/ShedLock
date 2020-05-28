@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.FuzzTester;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -28,9 +29,9 @@ public class TransactionalFuzzTester {
     public static void fuzzTestShouldWorkWithTransaction(LockProvider lockProvider, DataSource dataSource) throws ExecutionException, InterruptedException {
         new FuzzTester(lockProvider) {
             @Override
-            protected Void task(int iterations) {
+            protected Void task(int iterations, Job job) {
                 TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
-                return transactionTemplate.execute(status -> super.task(iterations));
+                return transactionTemplate.execute(status -> super.task(iterations, job));
             }
 
             @Override

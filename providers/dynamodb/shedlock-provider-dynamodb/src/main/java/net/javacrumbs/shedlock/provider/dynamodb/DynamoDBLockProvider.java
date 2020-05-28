@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package net.javacrumbs.shedlock.provider.dynamodb;
 
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
@@ -27,11 +26,12 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
-import org.jetbrains.annotations.NotNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
 
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 /**
@@ -88,14 +88,14 @@ public class DynamoDBLockProvider implements LockProvider {
      *
      * @param table existing DynamoDB table to be used
      */
-    public DynamoDBLockProvider(@NotNull Table table) {
-        this.table = table;
+    public DynamoDBLockProvider(@NonNull Table table) {
+        this.table = requireNonNull(table, "table can not be null");
         this.hostname = Utils.getHostname();
     }
 
     @Override
-    @NotNull
-    public Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
@@ -115,9 +115,8 @@ public class DynamoDBLockProvider implements LockProvider {
             // 1. The lock document does not exist yet - it is inserted - we have the lock
             // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
             // 3. The lock document exists and lockUtil > now - ConditionalCheckFailedException is thrown
-            UpdateItemOutcome updated = table.updateItem(request);
-            assert lockUntilIso.equals(updated.getItem().getString(LOCK_UNTIL));
-            return Optional.of(new DynamoDBLock(lockConfiguration));
+            table.updateItem(request);
+            return Optional.of(new DynamoDBLock(table, lockConfiguration));
         } catch (ConditionalCheckFailedException e) {
             // Condition failed. This means there was a lock with lockUntil > now.
             return Optional.empty();
@@ -128,9 +127,12 @@ public class DynamoDBLockProvider implements LockProvider {
         return ClockProvider.now();
     }
 
-    private final class DynamoDBLock extends AbstractSimpleLock {
-        private DynamoDBLock(LockConfiguration lockConfiguration) {
+    private static final class DynamoDBLock extends AbstractSimpleLock {
+        private final Table table;
+
+        private DynamoDBLock(Table table, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
+            this.table = table;
         }
 
         @Override
@@ -144,8 +146,7 @@ public class DynamoDBLockProvider implements LockProvider {
                             .withString(":lockUntil", unlockTimeIso)
                     )
                     .withReturnValues(ReturnValue.UPDATED_NEW);
-            UpdateItemOutcome updated = table.updateItem(request);
-            assert unlockTimeIso.equals(updated.getItem().getString(LOCK_UNTIL));
+            table.updateItem(request);
         }
     }
 }

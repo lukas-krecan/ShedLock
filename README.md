@@ -13,7 +13,7 @@ Feedback and pull-requests welcome!
 #### ShedLock is not a distributed scheduler
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
-executed repeatedly.
+executed repeatedly. Moreover, the locks are time-based and ShedLock assumes that clocks on the nodes are synchronized.
 
 + [Components](#components)
 + [Usage](#usage)
@@ -21,6 +21,7 @@ executed repeatedly.
   - [JdbcTemplate](#jdbctemplate)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
+  - [DynamoDB 2](#dynamodb-2)
   - [ZooKeeper (using Curator)](#zookeeper-using-curator)
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
@@ -29,6 +30,7 @@ executed repeatedly.
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
+  - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
@@ -58,7 +60,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.5.2</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -67,7 +69,7 @@ Now we need to integrate the library with Spring. In order to enable schedule lo
 ```java
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "30s")
+@EnableSchedulerLock(defaultLockAtMostFor = "10m)
 class MySpringConfiguration {
     ...
 }
@@ -131,15 +133,26 @@ There are several implementations of LockProvider.
 First, create lock table (**please note that `name` has to be primary key**)
 
 ```sql
-CREATE TABLE shedlock(
-    name VARCHAR(64),
-    lock_until TIMESTAMP(3) NULL,
-    locked_at TIMESTAMP(3) NULL,
-    locked_by  VARCHAR(255),
-    PRIMARY KEY (name)
-)
+# MySQL, MariaDB
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
+    locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
+
+# Postgres
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL,
+    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
+
+# Oracle
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
+    locked_at TIMESTAMP(3) NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
+
+# MS SQL
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL,
+    locked_at datetime2 NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
+
+# DB2
+CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAMP NOT NULL,
+    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
-script for MS SQL is [here](https://github.com/lukas-krecan/ShedLock/issues/3#issuecomment-275656227) and for Oracle [here](https://github.com/lukas-krecan/ShedLock/issues/81#issue-355599950)
 
 Add dependency
 
@@ -147,7 +160,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -157,16 +170,20 @@ Configure:
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 
 ...
-
 @Bean
 public LockProvider lockProvider(DataSource dataSource) {
-    return new JdbcTemplateLockProvider(dataSource);
+            return new JdbcTemplateLockProvider(
+                JdbcTemplateLockProvider.Configuration.builder()
+                .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+                .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
+                .build()
+            );
 }
 ```
+By specifying `usingDbTime()` (introduced in 4.9.3) the lock provider will use UTC time based on the DB server time.
+If you do not specify this option, current time on the client will be used (the time may differ between clients).
 
-Tested with MySql, Postgres and HSQLDB, should work on all other JDBC compliant databases.
-
-For more fine-grained configuration use the `Configuration` object
+For more fine-grained configuration use other options of the `Configuration` object
 
 ```java
 new JdbcTemplateLockProvider(builder()
@@ -174,11 +191,11 @@ new JdbcTemplateLockProvider(builder()
     .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
     .withLockedByValue("my-value")
-    .withTimeZone(TimeZone.getTimeZone("CEST"))
+    .withTimeZone(TimeZone.getTimeZone("UTC"))
     .build())
 ```
 
-If you need to specify a schema, you can set it in table name using the usual dot notation
+If you need to specify a schema, you can set it in the table name using the usual dot notation
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
@@ -194,7 +211,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -211,16 +228,46 @@ public LockProvider lockProvider(MongoClient mongo) {
 }
 ```
 
-Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.4.0
+Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.7.0
+
+
+#### Reactive Mongo
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
+    <version>4.11.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(MongoClient mongo) {
+    return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(databaseName))
+}
+```
+
+Please note that MongoDB integration requires Mongo >= 4.x and mongodb-driver-reactivestreams 1.x
+
 
 #### DynamoDB
+This depends on AWS SDK v1.
+
 Import the project
 
  ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -233,7 +280,37 @@ import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 
 @Bean
 public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB) {
-    return new DynamoDBLockProvider(dynamoDB.getTable("existingTableName"));
+    return new DynamoDBLockProvider(dynamoDB.getTable("Shedlock"));
+}
+```
+
+> Please note that the lock table must be created externally.
+> `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
+> A table definition is available from `DynamoDBLockProvider`'s Javadoc.
+
+#### DynamoDB 2
+This depends on AWS SDK v2.
+
+Import the project
+
+ ```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-dynamodb2</artifactId>
+    <version>4.11.1</version>
+</dependency>
+```
+
+Configure:
+
+ ```java
+import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.DynamoDbClient dynamoDB) {
+    return new DynamoDBLockProvider(dynamoDB, "Shedlock");
 }
 ```
 
@@ -247,7 +324,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -271,7 +348,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -302,7 +379,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -325,8 +402,11 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
+    <!-- Hazelcast < 4 -->
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <version>4.6.0/version>
+    <!-- Hazelcast 4 -->
+    <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
+    <version>4.11.1/version>
 </dependency>
 ```
 
@@ -343,6 +423,8 @@ public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
 }
 ```
 
+For Hazelcast 4 use `shedlock-provider-hazelcast4` module and `net.javacrumbs.shedlock.provider.hazelcast4` package.
+
 #### Couchbase
 Import the project
 
@@ -350,7 +432,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.6.0/version>
+    <version>4.11.1/version>
 </dependency>
 ```
 
@@ -374,7 +456,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -402,7 +484,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.6.0/version>
+    <version>4.11.1/version>
 </dependency>
 ```
 
@@ -425,6 +507,26 @@ CREATE KEYSPACE shedlock with replication={'class':'SimpleStrategy', 'replicatio
 CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt timestamp, lockedBy text);
 ```
 
+Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
+
+### Multi-tenancy
+If you have multi-tenancy use-case you can use a lock provider similar to this one
+(see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultiTenancyLockProviderIntegrationTest.java#L87))
+```java
+private static abstract class MultiTenancyLockProvider implements LockProvider {
+    private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
+
+    @Override
+    public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+        String tenantName = getTenantName(lockConfiguration);
+        return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
+    }
+
+    protected abstract LockProvider createLockProvider(String tenantName) ;
+
+    protected abstract String getTenantName(LockConfiguration lockConfiguration);
+}
+```
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
@@ -441,7 +543,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.6.0</version>
+    <version>4.11.1</version>
 </dependency>
 ```
 
@@ -537,10 +639,18 @@ public void scheduledTask() {
 }
 ```
 
+In unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread.
+
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
 annotation, everyting should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
 have to open the method by yourself.
+
+## Caveats
+Locks in ShedLock have expiration time which leads to following possible issues.
+1. If the task runs longer than `lockAtMostFor`, the task can be executed more than once
+2. If the clock difference between two nodes is more than `lockAtLeastFor` or minimal execution time the task can be
+executed more than once.
 
 ## Troubleshooting
 Help, ShedLock does not do what it's supposed to do!
@@ -561,6 +671,42 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.11.1
+* MongoLockProvider uses mongodb-driver-sync
+* Removed deprecated constructors from MongoLockProvider
+
+## 4.10.1
+* New Mongo reactive streams driver (thanks @codependent)
+
+## 4.9.3
+* Fixed JdbcTemplateLockProvider useDbTime() locking #244 thanks @gjorgievskivlatko
+
+## 4.9.2
+* Do not fail on DB type determining code if DB connection is not available
+
+## 4.9.1
+* Support for server time in DB2
+* removed shedlock-provider-jdbc-internal module
+
+## 4.9.0
+* Support for server time in JdbcTemplateLockProvider
+* Using custom non-null annotations
+* Trimming time precision to milliseconds
+* Micronaut upgraded to 1.3.4
+* Add automatic DB tests for Oracle, MariaDB and MS SQL.
+
+## 4.8.0
+* DynamoDB 2 module introduced (thanks Mark Egan)
+* JDBC template code refactored to not log error on failed insert in Postgres
+    * INSERT .. ON CONFLICT UPDATE is used for Postgres
+
+## 4.7.1
+* Make LockAssert.TestHelper public
+
+## 4.7.0
+* New module for Hazelcasts 4
+* Ability to switch-off LockAssert in unit tests
+
 ## 4.6.0
 * Support for Meta annotations and annotation inheritance in Spring
 
