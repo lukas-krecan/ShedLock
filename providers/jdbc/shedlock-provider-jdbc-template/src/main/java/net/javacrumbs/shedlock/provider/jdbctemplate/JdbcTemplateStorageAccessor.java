@@ -41,12 +41,13 @@ import static java.util.Objects.requireNonNull;
 class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
-    private final SqlStatementsSource sqlStatementsSource;
+    private final Configuration configuration;
+    private SqlStatementsSource sqlStatementsSource;
 
     JdbcTemplateStorageAccessor(@NonNull Configuration configuration) {
         requireNonNull(configuration, "configuration can not be null");
         this.jdbcTemplate = new NamedParameterJdbcTemplate(configuration.getJdbcTemplate());
-        this.sqlStatementsSource = SqlStatementsSource.create(configuration);
+        this.configuration = configuration;
         PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null ?
             configuration.getTransactionManager() :
             new DataSourceTransactionManager(configuration.getJdbcTemplate().getDataSource());
@@ -58,7 +59,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         try {
-            String sql = sqlStatementsSource.getInsertStatement();
+            String sql = sqlStatementsSource().getInsertStatement();
             return transactionTemplate.execute(status -> {
                 Map<String, Object> params = params(lockConfiguration);
                 int insertedRows = jdbcTemplate.update(sql, params);
@@ -74,7 +75,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
-        String sql = sqlStatementsSource.getUpdateStatement();
+        String sql = sqlStatementsSource().getUpdateStatement();
         try {
             return transactionTemplate.execute(status -> {
                 int updatedRows = jdbcTemplate.update(sql, params(lockConfiguration));
@@ -88,7 +89,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean extend(@NonNull LockConfiguration lockConfiguration) {
-        String sql = sqlStatementsSource.getExtendStatement();
+        String sql = sqlStatementsSource().getExtendStatement();
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         return transactionTemplate.execute(status -> {
@@ -99,7 +100,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
-        String sql = sqlStatementsSource.getUnlockStatement();
+        String sql = sqlStatementsSource().getUnlockStatement();
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
@@ -110,6 +111,15 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @NonNull
     private Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
-        return sqlStatementsSource.params(lockConfiguration);
+        return sqlStatementsSource().params(lockConfiguration);
+    }
+
+    private SqlStatementsSource sqlStatementsSource() {
+        synchronized (configuration) {
+            if (sqlStatementsSource == null) {
+                sqlStatementsSource = SqlStatementsSource.create(configuration);
+            }
+            return sqlStatementsSource;
+        }
     }
 }
