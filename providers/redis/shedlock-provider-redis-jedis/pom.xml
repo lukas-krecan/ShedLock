@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.playtika.testcontainers</groupId>
             <artifactId>embedded-redis</artifactId>
-            <version>1.74</version>
+            <version>1.38</version>
             <scope>test</scope>
         </dependency>
 
