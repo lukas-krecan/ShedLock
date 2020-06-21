@@ -50,7 +50,7 @@
     </modules>
 
     <properties>
-        <spring.version>5.1.12.RELEASE</spring.version>
+        <spring.version>5.2.7.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
