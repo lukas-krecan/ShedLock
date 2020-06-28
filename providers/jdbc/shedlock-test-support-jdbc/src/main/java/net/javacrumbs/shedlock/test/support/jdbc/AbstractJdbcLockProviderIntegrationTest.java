@@ -69,7 +69,8 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, now(), now(), ?)", LOCK_NAME1, "me");
+        Timestamp previousLockTime = Timestamp.from(Instant.now().minusSeconds(60));
+        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, previousLockTime, previousLockTime, "me");
         shouldCreateLock();
     }
 
