@@ -10,7 +10,7 @@ assignees: ''
 **Read the documentation**
 Read the documentation, especially the [troubleshooting](https://github.com/lukas-krecan/ShedLock#troubleshooting) section.
 
-Update to latest version.
+Update to the latest version.
 
 **Describe the bug**
 1. Which version do you use
