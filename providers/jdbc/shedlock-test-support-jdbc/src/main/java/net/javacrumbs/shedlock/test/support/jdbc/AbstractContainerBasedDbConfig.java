@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
-public abstract class AbstractContainerBasedDbConfig<T extends JdbcDatabaseContainer<T>> extends AbstractDbConfig {
+abstract class AbstractContainerBasedDbConfig<T extends JdbcDatabaseContainer<T>> extends AbstractDbConfig {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final T container;
 
