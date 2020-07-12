@@ -40,8 +40,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class MultiTenancyLockProviderIntegrationTest {
     public static final String LOCK_NAME = "lock_name";
     public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO);
-    private static final JdbcTestUtils h2TestUtils = new JdbcTestUtils(new H2Config());;
-    private static final JdbcTestUtils hsqlTestUtils = new JdbcTestUtils(new HsqlConfig());
+    private static final JdbcTestUtils h2TestUtils;
+    private static final JdbcTestUtils hsqlTestUtils;
+
+    static {
+        H2Config h2Config = new H2Config();
+        h2Config.startDb();
+        h2TestUtils = new JdbcTestUtils(h2Config);
+
+        HsqlConfig hsqlConfig = new HsqlConfig();
+        hsqlConfig.startDb();
+        hsqlTestUtils = new JdbcTestUtils(hsqlConfig);
+    }
 
     @Test
     void shouldUseDifferDatabaseForEachTennant() {
