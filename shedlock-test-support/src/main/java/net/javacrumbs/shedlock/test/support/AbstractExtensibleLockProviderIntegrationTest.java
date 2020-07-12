@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.test.support;
 
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
@@ -63,7 +62,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         sleepFor(Duration.ofMillis(1));
         assertThat(lock).isNotEmpty();
 
-        Optional<SimpleLock> newLock = lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now());
+        Optional<SimpleLock> newLock = lock.get().extend(Duration.ofSeconds(10), Duration.ZERO);
         assertThat(newLock).isEmpty();
         assertUnlocked(LOCK_NAME1);
     }
@@ -71,33 +70,39 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
 
     @Test
     public void shouldBeAbleToExtendAtLeast() {
-        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
-        assertThat(lock).isNotEmpty();
+        SimpleLock lock = lock();
 
-        Optional<SimpleLock> newLock = lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now().plusSeconds(9));
-        assertThat(newLock).isNotEmpty();
-        newLock.get().unlock();
+        SimpleLock newLock = extendLock(lock);
+        newLock.unlock();
         assertLocked(LOCK_NAME1);
     }
 
     @Test
     public void lockCanNotBeExtendedTwice() {
-        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
-        assertThat(lock).isNotEmpty();
-        Optional<SimpleLock> newLock = lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now().plusSeconds(9));
-        assertThat(newLock).isNotEmpty();
+        SimpleLock lock = lock();
+        extendLock(lock);
 
-        assertInvalidLock(() -> lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now().plusSeconds(9)));
+        assertInvalidLock(() -> lock.extend(Duration.ofSeconds(10), Duration.ofSeconds(9)));
     }
 
     @Test
     public void lockCanNotBeUnlockedAfterExtending() {
+        SimpleLock lock = lock();
+        extendLock(lock);
+
+        assertInvalidLock(lock::unlock);
+    }
+
+    private SimpleLock extendLock(SimpleLock lock) {
+        Optional<SimpleLock> newLock = lock.extend(Duration.ofSeconds(10), Duration.ofSeconds(9));
+        assertThat(newLock).isNotEmpty();
+        return newLock.get();
+    }
+
+    private SimpleLock lock() {
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(10), Duration.ZERO));
         assertThat(lock).isNotEmpty();
-        Optional<SimpleLock> newLock = lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now().plusSeconds(9));
-        assertThat(newLock).isNotEmpty();
-
-        assertInvalidLock(() -> lock.get().unlock());
+        return lock.get();
     }
 
     void assertInvalidLock(ThrowableAssert.ThrowingCallable operation) {
