@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -42,25 +41,7 @@ public abstract class AbstractJedisLockProviderIntegrationTest extends AbstractL
     protected final static int PORT = 6379;
 
     @Container
-    public static final GenericContainer redis;
-
-    static {
-        RedisProperties properties = new RedisProperties();
-        properties.host = "localhost";
-        properties.port = PORT;
-        properties.requirepass = false;
-
-        Consumer<OutputFrame> consumer = frame -> LOGGER.info(frame.getUtf8String());
-        redis = new FixedHostPortGenericContainer("redis:5-alpine")
-            .withFixedExposedPort(PORT, PORT)
-            .withExposedPorts(PORT)
-            .withLogConsumer(consumer)
-            .withCopyFileToContainer(MountableFile.forClasspathResource("redis.conf"), "/data/redis.conf")
-            .withCopyFileToContainer(MountableFile.forClasspathResource("nodes.conf"), "/data/nodes.conf")
-            .waitingFor(new RedisClusterStatusCheck(properties))
-            //.waitingFor(new RedisStatusCheck(properties))
-            .withCommand("redis-server", "/data/redis.conf");
-    }
+    public static final RedisContainer redis = new RedisContainer();
 
     protected static JedisPool jedisPool;
 
@@ -82,6 +63,27 @@ public abstract class AbstractJedisLockProviderIntegrationTest extends AbstractL
     protected void assertLocked(String lockName) {
         try (Jedis jedis = jedisPool.getResource()) {
             assertNotNull(jedis.get(JedisLockProvider.buildKey(lockName, ENV)));
+        }
+    }
+
+    static class RedisContainer extends FixedHostPortGenericContainer<RedisContainer> {
+        public RedisContainer() {
+            super("redis:5-alpine");
+
+            RedisProperties properties = new RedisProperties();
+            properties.host = "localhost";
+            properties.port = PORT;
+            properties.requirepass = false;
+
+            Consumer<OutputFrame> consumer = frame -> LOGGER.info(frame.getUtf8String());
+            this.withFixedExposedPort(PORT, PORT)
+                .withExposedPorts(PORT)
+                .withLogConsumer(consumer)
+                .withCopyFileToContainer(MountableFile.forClasspathResource("redis.conf"), "/data/redis.conf")
+                .withCopyFileToContainer(MountableFile.forClasspathResource("nodes.conf"), "/data/nodes.conf")
+                .waitingFor(new RedisClusterStatusCheck(properties))
+                //.waitingFor(new RedisStatusCheck(properties))
+                .withCommand("redis-server", "/data/redis.conf");
         }
     }
 }
