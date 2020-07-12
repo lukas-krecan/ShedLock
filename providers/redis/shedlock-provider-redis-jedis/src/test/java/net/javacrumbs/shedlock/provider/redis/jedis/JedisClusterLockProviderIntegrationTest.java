@@ -16,19 +16,43 @@
 package net.javacrumbs.shedlock.provider.redis.jedis;
 
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
-public class JedisClusterLockProviderIntegrationTest extends AbstractJedisLockProviderIntegrationTest {
+import static net.javacrumbs.shedlock.provider.redis.jedis.RedisContainer.ENV;
+import static net.javacrumbs.shedlock.provider.redis.jedis.RedisContainer.PORT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+@Testcontainers
+public class JedisClusterLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+
+    @Container
+    public static final RedisContainer redis = new RedisContainer(PORT);
 
     private LockProvider lockProvider;
 
+    private JedisCluster jedisCluster;
+
     @BeforeEach
     public void createLockProvider() {
-        JedisCluster jedisCluster = new JedisCluster(new HostAndPort(redis.getContainerIpAddress(), redis.getFirstMappedPort()));
+        jedisCluster = new JedisCluster(new HostAndPort(redis.getContainerIpAddress(), redis.getFirstMappedPort()));
         lockProvider = new JedisLockProvider(jedisCluster, ENV);
     }
+    @Override
+    protected void assertUnlocked(String lockName) {
+        assertNull(jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV)));
+    }
+
+    @Override
+    protected void assertLocked(String lockName) {
+        assertNotNull(jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV)));
+    }
+
 
     @Override
     protected LockProvider getLockProvider() {
