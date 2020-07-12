@@ -34,7 +34,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, originalLockDuration, Duration.ZERO));
         assertThat(lock).isNotEmpty();
         assertLocked(LOCK_NAME1);
-        Optional<SimpleLock> newLock = lock.get().extend(ClockProvider.now().plusSeconds(10), ClockProvider.now());
+        Optional<SimpleLock> newLock = lock.get().extend(Duration.ofSeconds(10), Duration.ZERO);
         assertThat(newLock).isNotEmpty();
 
         // wait for the original lock to be released
