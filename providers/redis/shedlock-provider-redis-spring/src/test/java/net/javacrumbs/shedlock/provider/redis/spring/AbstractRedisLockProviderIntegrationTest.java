@@ -17,37 +17,18 @@ package net.javacrumbs.shedlock.provider.redis.spring;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import redis.embedded.RedisServer;
-
-import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-    private static RedisServer redisServer;
-    private RedisLockProvider lockProvider;
-    private StringRedisTemplate redisTemplate;
 
-    protected final static int PORT = 6380;
-    protected final static String HOST = "localhost";
+    private final RedisLockProvider lockProvider;
+    private final StringRedisTemplate redisTemplate;
+
     private final static String ENV = "test";
     private final static String KEY_PREFIX = "test-prefix";
-
-
-    @BeforeAll
-    public static void startRedis() throws IOException {
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-    }
-
-    @AfterAll
-    public static void stopRedis() {
-        redisServer.stop();
-    }
 
 
     public AbstractRedisLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
