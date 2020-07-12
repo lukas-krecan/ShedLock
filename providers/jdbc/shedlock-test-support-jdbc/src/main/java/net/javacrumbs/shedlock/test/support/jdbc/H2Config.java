@@ -35,4 +35,9 @@ public class H2Config implements DbConfig {
     public String getPassword() {
         return "";
     }
+
+    @Override
+    public String nowExpression() {
+        return "CURRENT_TIMESTAMP(3)";
+    }
 }

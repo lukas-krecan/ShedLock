@@ -17,10 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractOracleJdbcLockProviderIntegrationTest;
-import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class OracleServerTimeJdbcTemplateLockProviderIntegrationTest extends AbstractOracleJdbcLockProviderIntegrationTest implements ServerTimeTest {
     @Override
@@ -32,13 +29,9 @@ public class OracleServerTimeJdbcTemplateLockProviderIntegrationTest extends Abs
             .build()
         );
     }
-    @Override
-    protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= SYS_EXTRACT_UTC(SYSTIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
-    }
 
     @Override
-    protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > SYS_EXTRACT_UTC(SYSTIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+    protected boolean useDbTime() {
+        return true;
     }
 }

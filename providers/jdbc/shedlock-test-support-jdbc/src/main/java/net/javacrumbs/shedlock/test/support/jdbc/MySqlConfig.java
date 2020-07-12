@@ -18,9 +18,6 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.containers.output.OutputFrame;
-
-import java.util.function.Consumer;
 
 public final class MySqlConfig implements DbConfig {
 
@@ -58,6 +55,11 @@ public final class MySqlConfig implements DbConfig {
     @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL, locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
+
+    @Override
+    public String nowExpression() {
+        return "UTC_TIMESTAMP(3)";
     }
 
     private static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {

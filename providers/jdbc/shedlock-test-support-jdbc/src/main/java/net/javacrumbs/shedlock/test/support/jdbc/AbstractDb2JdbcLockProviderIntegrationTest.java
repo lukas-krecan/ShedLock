@@ -18,18 +18,17 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 public abstract class AbstractDb2JdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final Db2ServerConfig dbConfig = new Db2ServerConfig();
 
     @BeforeAll
-    public static void startMySql() {
+    public static void startDb() {
         dbConfig.startDb();
     }
 
     @AfterAll
-    public static void shutDownMysql() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 
@@ -37,11 +36,4 @@ public abstract class AbstractDb2JdbcLockProviderIntegrationTest extends Abstrac
     protected DbConfig getDbConfig() {
         return dbConfig;
     }
-
-    @Test
-    public void shouldCreateLockIfRecordAlreadyExists() {
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, CURRENT TIMESTAMP - CURRENT TIMEZONE, CURRENT TIMESTAMP - CURRENT TIMEZONE, ?)", LOCK_NAME1, "me");
-        shouldCreateLock();
-    }
-
 }

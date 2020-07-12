@@ -19,8 +19,6 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractMariaDbJdbcLockProviderIntegrationTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class MariaDbServerTimeJdbcTemplateLockProviderIntegrationTest extends AbstractMariaDbJdbcLockProviderIntegrationTest implements ServerTimeTest {
     @Override
     public StorageBasedLockProvider getLockProvider() {
@@ -31,13 +29,9 @@ public class MariaDbServerTimeJdbcTemplateLockProviderIntegrationTest extends Ab
             .build()
         );
     }
-    @Override
-    protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= now()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
-    }
 
     @Override
-    protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > now()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+    protected boolean useDbTime() {
+        return true;
     }
 }

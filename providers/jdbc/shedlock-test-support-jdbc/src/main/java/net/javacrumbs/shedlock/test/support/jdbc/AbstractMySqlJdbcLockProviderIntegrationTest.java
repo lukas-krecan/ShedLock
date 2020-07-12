@@ -23,12 +23,12 @@ public abstract class AbstractMySqlJdbcLockProviderIntegrationTest extends Abstr
     private static final MySqlConfig dbConfig = new MySqlConfig();
 
     @BeforeAll
-    public static void startMySql() {
+    public static void startDb() {
         dbConfig.startDb();
     }
 
     @AfterAll
-    public static void shutDownMysql() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 

@@ -49,14 +49,14 @@ public class MultiTenancyLockProviderIntegrationTest {
 
         Optional<SimpleLock> lock1 = lockProvider.lock(LOCK_CONFIGURATION);
         assertThat(lock1).isNotEmpty();
-        assertThat(h2TestUtils.getLockedUntil(LOCK_NAME).toInstant()).isAfter(ClockProvider.now());
+        assertThat(h2TestUtils.getLockInfo(LOCK_NAME).getLockUntil()).isAfter(ClockProvider.now());
         assertThatThrownBy(() -> hsqlTestUtils.getLockedUntil(LOCK_NAME)).isInstanceOf(EmptyResultDataAccessException.class);
 
         lock1.get().unlock();
 
         Optional<SimpleLock> lock2 = lockProvider.lock(LOCK_CONFIGURATION);
         assertThat(lock2).isNotEmpty();
-        assertThat(hsqlTestUtils.getLockedUntil(LOCK_NAME).toInstant()).isAfter(ClockProvider.now());
+        assertThat(hsqlTestUtils.getLockInfo(LOCK_NAME).getLockUntil()).isAfter(ClockProvider.now());
         lock2.get().unlock();
     }
 

@@ -18,9 +18,6 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MariaDBContainer;
-import org.testcontainers.containers.output.OutputFrame;
-
-import java.util.function.Consumer;
 
 public final class MariaDbConfig implements DbConfig {
 
@@ -58,6 +55,11 @@ public final class MariaDbConfig implements DbConfig {
     @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
+
+    @Override
+    public String nowExpression() {
+        return "UTC_TIMESTAMP(3)";
     }
 
     private static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {

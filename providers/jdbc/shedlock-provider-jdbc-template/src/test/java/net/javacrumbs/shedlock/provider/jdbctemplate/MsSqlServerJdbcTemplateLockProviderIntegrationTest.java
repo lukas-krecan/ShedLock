@@ -23,4 +23,9 @@ public class MsSqlServerJdbcTemplateLockProviderIntegrationTest extends Abstract
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcTemplateLockProvider(getDatasource());
     }
+
+    @Override
+    protected boolean useDbTime() {
+        return true;
+    }
 }

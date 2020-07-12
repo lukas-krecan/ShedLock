@@ -17,10 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractH2JdbcLockProviderIntegrationTest;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class H2ServerTimeJdbcTemplateLockProviderIntegrationTest extends AbstractH2JdbcLockProviderIntegrationTest {
     @Override
@@ -32,13 +29,9 @@ public class H2ServerTimeJdbcTemplateLockProviderIntegrationTest extends Abstrac
             .build()
         );
     }
-    @Override
-    protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= now()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
-    }
 
     @Override
-    protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > now()", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+    protected boolean useDbTime() {
+        return true;
     }
 }

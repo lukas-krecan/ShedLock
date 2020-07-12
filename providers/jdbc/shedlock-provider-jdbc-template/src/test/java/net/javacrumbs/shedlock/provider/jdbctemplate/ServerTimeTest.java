@@ -35,7 +35,6 @@ public interface ServerTimeTest {
         time = Instant.now();
         getLockProvider().lock(new LockConfiguration(LOCK_NAME, Duration.ofSeconds(120), Duration.ZERO));
         assertThat(getTestUtils().getLockedUntil(LOCK_NAME).toLocalDateTime()).isBetween(atUtc(time.plusSeconds(110)), atUtc(time.plusSeconds(130)));
-
     }
 
     static LocalDateTime atUtc(Instant before) {

@@ -17,11 +17,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.containers.output.OutputFrame;
-
-import java.util.function.Consumer;
 
 public final class OracleServerConfig implements DbConfig {
 
@@ -56,5 +52,10 @@ public final class OracleServerConfig implements DbConfig {
     @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL, locked_at TIMESTAMP(3) NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
+
+    @Override
+    public String nowExpression() {
+        return "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
     }
 }

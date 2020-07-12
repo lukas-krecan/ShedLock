@@ -23,12 +23,12 @@ public abstract class AbstractMariaDbJdbcLockProviderIntegrationTest extends Abs
     private static final MariaDbConfig dbConfig = new MariaDbConfig();
 
     @BeforeAll
-    public static void startMySql() {
+    public static void startDb() {
         dbConfig.startDb();
     }
 
     @AfterAll
-    public static void shutDownMysql() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 

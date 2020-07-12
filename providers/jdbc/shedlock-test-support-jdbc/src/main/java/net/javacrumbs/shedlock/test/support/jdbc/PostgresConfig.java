@@ -18,9 +18,6 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.output.OutputFrame;
-
-import java.util.function.Consumer;
 
 public final class PostgresConfig implements DbConfig {
 
@@ -54,6 +51,11 @@ public final class PostgresConfig implements DbConfig {
     @Override
     public String getPassword() {
         return postgres.getPassword();
+    }
+
+    @Override
+    public String nowExpression() {
+        return "timezone('utc', CURRENT_TIMESTAMP)";
     }
 
     private static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {

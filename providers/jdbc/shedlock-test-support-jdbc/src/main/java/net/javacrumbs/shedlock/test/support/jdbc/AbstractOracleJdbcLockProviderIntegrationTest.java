@@ -16,23 +16,19 @@
 package net.javacrumbs.shedlock.test.support.jdbc;
 
 
-import net.javacrumbs.shedlock.core.ClockProvider;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import java.sql.Timestamp;
 
 public abstract class AbstractOracleJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final OracleServerConfig dbConfig = new OracleServerConfig();
 
     @BeforeAll
-    public static void startMySql() {
+    public static void startDb() {
         dbConfig.startDb();
     }
 
     @AfterAll
-    public static void shutDownMysql() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 
@@ -40,11 +36,4 @@ public abstract class AbstractOracleJdbcLockProviderIntegrationTest extends Abst
     protected DbConfig getDbConfig() {
         return dbConfig;
     }
-
-    @Test
-    public void shouldCreateLockIfRecordAlreadyExists() {
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, SYS_EXTRACT_UTC(SYSTIMESTAMP), SYS_EXTRACT_UTC(SYSTIMESTAMP), ?)", LOCK_NAME1, "me");
-        shouldCreateLock();
-    }
-
 }
