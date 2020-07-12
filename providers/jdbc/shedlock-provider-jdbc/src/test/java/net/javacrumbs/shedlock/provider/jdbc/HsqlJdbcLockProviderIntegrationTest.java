@@ -41,6 +41,11 @@ public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProvide
     }
 
     @Override
+    protected boolean useDbTime() {
+        return false;
+    }
+
+    @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcLockProvider(testUtils.getDatasource());
     }

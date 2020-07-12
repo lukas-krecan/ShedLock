@@ -41,6 +41,11 @@ public class MySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProvid
     }
 
     @Override
+    protected boolean useDbTime() {
+        return false;
+    }
+
+    @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcLockProvider(testUtils.getDatasource());
     }

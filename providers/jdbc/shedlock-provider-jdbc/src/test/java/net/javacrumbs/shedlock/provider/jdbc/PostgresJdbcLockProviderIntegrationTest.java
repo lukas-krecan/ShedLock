@@ -41,6 +41,11 @@ public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcLockPro
     }
 
     @Override
+    protected boolean useDbTime() {
+        return false;
+    }
+
+    @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcLockProvider(testUtils.getDatasource());
     }

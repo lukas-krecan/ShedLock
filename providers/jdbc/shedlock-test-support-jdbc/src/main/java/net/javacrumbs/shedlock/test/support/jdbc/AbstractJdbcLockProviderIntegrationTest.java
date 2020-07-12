@@ -42,9 +42,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     protected abstract DbConfig getDbConfig();
 
-    protected boolean useDbTime() {
-        return false;
-    }
+    protected abstract boolean useDbTime();
 
     @AfterEach
     public void cleanup() {
