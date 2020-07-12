@@ -15,19 +15,24 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractH2JdbcLockProviderIntegrationTest;
-import org.springframework.jdbc.core.JdbcTemplate;
+import net.javacrumbs.shedlock.test.support.jdbc.H2Config;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
+public class H2JdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
+    private static final H2Config dbConfig = new H2Config();
 
-public class H2JdbcTemplateLockProviderIntegrationTest extends AbstractH2JdbcLockProviderIntegrationTest {
+    public H2JdbcTemplateLockProviderIntegrationTest() {
+        super(dbConfig);
+    }
 
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(builder()
-            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .build()
-        );
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutDownDb() {
+        dbConfig.shutdownDb();
     }
 }

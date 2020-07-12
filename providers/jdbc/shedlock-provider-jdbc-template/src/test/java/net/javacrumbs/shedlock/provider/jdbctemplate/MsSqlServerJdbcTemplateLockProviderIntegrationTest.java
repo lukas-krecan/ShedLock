@@ -15,12 +15,24 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractMsSqlServerJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.MsSqlServerConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-public class MsSqlServerJdbcTemplateLockProviderIntegrationTest extends AbstractMsSqlServerJdbcLockProviderIntegrationTest {
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(getDatasource());
+public class MsSqlServerJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
+    private static final MsSqlServerConfig dbConfig = new MsSqlServerConfig();
+
+    public MsSqlServerJdbcTemplateLockProviderIntegrationTest() {
+        super(dbConfig);
+    }
+
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutdownDb() {
+        dbConfig.shutdownDb();
     }
 }

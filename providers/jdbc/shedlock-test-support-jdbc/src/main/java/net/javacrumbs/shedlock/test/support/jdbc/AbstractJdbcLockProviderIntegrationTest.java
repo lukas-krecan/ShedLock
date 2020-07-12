@@ -42,6 +42,8 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     protected abstract DbConfig getDbConfig();
 
+    protected abstract boolean useDbTime();
+
     @AfterEach
     public void cleanup() {
         testUtils.clean();
@@ -53,18 +55,17 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     @Override
     protected void assertUnlocked(String lockName) {
-        Instant lockedUntil = getLockedUntil(lockName).toInstant();
-        assertThat(lockedUntil).isBeforeOrEqualTo(ClockProvider.now().truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
-    }
-
-    private Timestamp getLockedUntil(String lockName) {
-        return testUtils.getLockedUntil(lockName);
+        JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);
+        Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
+        assertThat(lockInfo.getLockUntil()).isBeforeOrEqualTo(now.truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        Instant lockedUntil = getLockedUntil(lockName).toInstant();
-        assertThat(lockedUntil).isAfter(ClockProvider.now());
+        JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);
+        Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
+
+        assertThat(lockInfo.getLockUntil()).isAfter(now);
     }
 
     @Test
@@ -89,5 +90,9 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     protected DataSource getDatasource() {
         return testUtils.getDatasource();
+    }
+
+    protected JdbcTestUtils.LockInfo getLockInfo(String lockName) {
+        return testUtils.getLockInfo(lockName);
     }
 }

@@ -16,9 +16,35 @@
 package net.javacrumbs.shedlock.provider.jdbc;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractMySqlJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-public class MySqlJdbcLockProviderIntegrationTest extends AbstractMySqlJdbcLockProviderIntegrationTest {
+public class MySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
+    private static final MySqlConfig dbConfig = new MySqlConfig();
+
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutDownDb() {
+        dbConfig.shutdownDb();
+    }
+
+    @Override
+    protected DbConfig getDbConfig() {
+        return dbConfig;
+    }
+
+    @Override
+    protected boolean useDbTime() {
+        return false;
+    }
+
     @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcLockProvider(testUtils.getDatasource());

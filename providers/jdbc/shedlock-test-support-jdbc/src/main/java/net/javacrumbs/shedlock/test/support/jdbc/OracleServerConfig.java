@@ -15,46 +15,20 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.containers.output.OutputFrame;
 
-import java.util.function.Consumer;
-
-public final class OracleServerConfig implements DbConfig {
-
-    private OracleContainer oracle;
-    private static final Logger logger = LoggerFactory.getLogger(OracleServerConfig.class);
-
-    public void startDb() {
-        oracle = new OracleContainer("oracleinanutshell/oracle-xe-11g")
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
-        oracle.start();
-    }
-
-    public void shutdownDb() {
-        oracle.stop();
-    }
-
-    public String getJdbcUrl() {
-        return oracle.getJdbcUrl();
-
-    }
-
-    @Override
-    public String getUsername() {
-        return oracle.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return oracle.getPassword();
+public final class OracleServerConfig extends AbstractContainerBasedDbConfig<OracleContainer> {
+    public OracleServerConfig() {
+        super(new OracleContainer("oracleinanutshell/oracle-xe-11g"));
     }
 
     @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL, locked_at TIMESTAMP(3) NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
+
+    @Override
+    public String nowExpression() {
+        return "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
     }
 }

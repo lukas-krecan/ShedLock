@@ -18,24 +18,22 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Db2Container;
-import org.testcontainers.containers.OracleContainer;
-import org.testcontainers.containers.output.OutputFrame;
 
-import java.util.function.Consumer;
-
-public final class Db2ServerConfig implements DbConfig {
+public final class Db2ServerConfig extends AbstractDbConfig {
 
     private Db2Container db2;
     private static final Logger logger = LoggerFactory.getLogger(Db2ServerConfig.class);
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         db2 = new Db2Container()
             .acceptLicense()
             .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         db2.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    protected void doShutdownDb() {
         db2.stop();
     }
 
@@ -57,5 +55,10 @@ public final class Db2ServerConfig implements DbConfig {
     @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL)";
+    }
+
+    @Override
+    public String nowExpression() {
+        return "(CURRENT TIMESTAMP - CURRENT TIMEZONE)";
     }
 }
