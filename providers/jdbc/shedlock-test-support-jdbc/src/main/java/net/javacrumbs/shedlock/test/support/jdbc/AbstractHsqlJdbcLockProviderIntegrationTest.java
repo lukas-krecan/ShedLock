@@ -15,11 +15,26 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+
 public abstract class AbstractHsqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final HsqlConfig dbConfig = new HsqlConfig();
+    private static JdbcTestUtils testUtils;
+
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+        testUtils = new JdbcTestUtils(dbConfig);
+    }
+
+    @AfterAll
+    public static void shutDownDb() {
+        dbConfig.shutdownDb();
+    }
 
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public JdbcTestUtils getTestUtils() {
+        return testUtils;
     }
 }

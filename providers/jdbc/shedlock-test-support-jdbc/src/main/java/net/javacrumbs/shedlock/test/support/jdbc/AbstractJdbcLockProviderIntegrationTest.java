@@ -20,7 +20,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -33,23 +32,13 @@ import java.util.concurrent.ExecutionException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
-    protected JdbcTestUtils testUtils;
-
-    @BeforeEach
-    public void initTestUtils() {
-        testUtils = new JdbcTestUtils(getDbConfig());
-    }
-
-    protected abstract DbConfig getDbConfig();
 
     @AfterEach
     public void cleanup() {
-        testUtils.clean();
+        getTestUtils().clean();
     }
 
-    public JdbcTestUtils getTestUtils() {
-        return testUtils;
-    }
+    public abstract JdbcTestUtils getTestUtils();
 
     @Override
     protected void assertUnlocked(String lockName) {
@@ -58,7 +47,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     }
 
     private Timestamp getLockedUntil(String lockName) {
-        return testUtils.getLockedUntil(lockName);
+        return getTestUtils().getLockedUntil(lockName);
     }
 
     @Override
@@ -70,7 +59,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
         Timestamp previousLockTime = Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS));
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, previousLockTime, previousLockTime, "me");
+        getTestUtils().getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, previousLockTime, previousLockTime, "me");
         assertUnlocked(LOCK_NAME1);
         shouldCreateLock();
     }
@@ -88,6 +77,6 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     }
 
     protected DataSource getDatasource() {
-        return testUtils.getDatasource();
+        return getTestUtils().getDatasource();
     }
 }

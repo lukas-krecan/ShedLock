@@ -29,7 +29,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
 
     @Test
     public void shouldBeAbleToExtendLock() {
-        Duration originalLockDuration = Duration.ofMillis(1_000);
+        Duration originalLockDuration = Duration.ofSeconds(1);
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, originalLockDuration, Duration.ZERO));
         assertThat(lock).isNotEmpty();
         assertLocked(LOCK_NAME1);

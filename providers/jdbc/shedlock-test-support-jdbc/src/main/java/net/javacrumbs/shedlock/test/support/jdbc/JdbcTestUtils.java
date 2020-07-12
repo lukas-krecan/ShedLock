@@ -42,8 +42,7 @@ public final class JdbcTestUtils {
     }
 
     public void clean() {
-        jdbcTemplate.execute("DROP TABLE shedlock");
-        datasource.close();
+        jdbcTemplate.execute("DELETE FROM shedlock");
     }
 
     public JdbcTemplate getJdbcTemplate() {

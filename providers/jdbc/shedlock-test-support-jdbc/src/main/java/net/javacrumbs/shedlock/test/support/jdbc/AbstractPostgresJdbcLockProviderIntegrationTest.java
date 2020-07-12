@@ -18,23 +18,23 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-import java.io.IOException;
-
 public abstract class AbstractPostgresJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final PostgresConfig dbConfig = new PostgresConfig();
+    private static JdbcTestUtils testUtils;
 
     @BeforeAll
     public static void startDb() {
         dbConfig.startDb();
+        testUtils = new JdbcTestUtils(dbConfig);
     }
 
     @AfterAll
-    public static void shutdownDb() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public JdbcTestUtils getTestUtils() {
+        return testUtils;
     }
 }

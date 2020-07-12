@@ -35,17 +35,17 @@ public class PostgresServerTimeJdbcTemplateLockProviderIntegrationTest extends A
 
     @Override
     protected void assertUnlocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= timezone('utc', CURRENT_TIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(getTestUtils().getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until <= timezone('utc', CURRENT_TIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        assertThat(testUtils.getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > timezone('utc', CURRENT_TIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
+        assertThat(getTestUtils().getJdbcTemplate().queryForObject("SELECT count(*) FROM shedlock WHERE name = ? and lock_until > timezone('utc', CURRENT_TIMESTAMP)", new Object[]{lockName}, Integer.class)).isEqualTo(1);
     }
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, timezone('utc', CURRENT_TIMESTAMP), timezone('utc', CURRENT_TIMESTAMP), ?)", LOCK_NAME1, "me");
+        getTestUtils().getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, timezone('utc', CURRENT_TIMESTAMP), timezone('utc', CURRENT_TIMESTAMP), ?)", LOCK_NAME1, "me");
         shouldCreateLock();
     }
 }

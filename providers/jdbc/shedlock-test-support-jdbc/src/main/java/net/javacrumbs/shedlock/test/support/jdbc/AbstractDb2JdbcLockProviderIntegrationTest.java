@@ -22,20 +22,22 @@ import org.junit.jupiter.api.Test;
 
 public abstract class AbstractDb2JdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final Db2ServerConfig dbConfig = new Db2ServerConfig();
+    private static JdbcTestUtils testUtils;
 
     @BeforeAll
-    public static void startMySql() {
+    public static void startDb() {
         dbConfig.startDb();
+        testUtils = new JdbcTestUtils(dbConfig);
     }
 
     @AfterAll
-    public static void shutDownMysql() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public JdbcTestUtils getTestUtils() {
+        return testUtils;
     }
 
     @Test

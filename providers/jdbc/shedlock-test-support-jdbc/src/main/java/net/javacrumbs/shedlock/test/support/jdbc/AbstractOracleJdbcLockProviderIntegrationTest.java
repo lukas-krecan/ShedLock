@@ -16,29 +16,28 @@
 package net.javacrumbs.shedlock.test.support.jdbc;
 
 
-import net.javacrumbs.shedlock.core.ClockProvider;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Timestamp;
-
 public abstract class AbstractOracleJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final OracleServerConfig dbConfig = new OracleServerConfig();
+    private static JdbcTestUtils testUtils;
 
     @BeforeAll
-    public static void startMySql() {
+    public static void startDb() {
         dbConfig.startDb();
+        testUtils = new JdbcTestUtils(dbConfig);
     }
 
     @AfterAll
-    public static void shutDownMysql() {
+    public static void shutDownDb() {
         dbConfig.shutdownDb();
     }
 
     @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public JdbcTestUtils getTestUtils() {
+        return testUtils;
     }
 
     @Test
