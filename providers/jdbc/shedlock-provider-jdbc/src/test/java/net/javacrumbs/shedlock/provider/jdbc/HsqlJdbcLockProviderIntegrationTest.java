@@ -19,9 +19,21 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final HsqlConfig dbConfig = new HsqlConfig();
+
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutDownDb() {
+        dbConfig.shutdownDb();
+    }
 
     @Override
     protected DbConfig getDbConfig() {
