@@ -15,12 +15,24 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractOracleJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.OracleServerConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-public class OracleJdbcTemplateLockProviderIntegrationTest extends AbstractOracleJdbcLockProviderIntegrationTest {
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(getDatasource());
+public class OracleJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
+    private static final OracleServerConfig dbConfig = new OracleServerConfig();
+
+    protected OracleJdbcTemplateLockProviderIntegrationTest() {
+        super(dbConfig);
+    }
+
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutdownDb() {
+        dbConfig.shutdownDb();
     }
 }

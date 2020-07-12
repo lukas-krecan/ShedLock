@@ -19,13 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public final class PostgresConfig implements DbConfig {
-
+public final class PostgresConfig extends AbstractDbConfig {
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
     private MyPostgreSQLContainer postgres;
     private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         postgres = new MyPostgreSQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
@@ -34,7 +34,8 @@ public final class PostgresConfig implements DbConfig {
         postgres.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    protected void doShutdownDb() {
         postgres.stop();
     }
 

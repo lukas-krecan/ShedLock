@@ -15,12 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-public class H2Config implements DbConfig {
-    public void startDb() {
-    }
-
-    public void shutdownDb() {
-    }
+public class H2Config extends AbstractDbConfig {
 
     public String getJdbcUrl() {
         return "jdbc:h2:mem:test";

@@ -19,13 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MariaDBContainer;
 
-public final class MariaDbConfig implements DbConfig {
+public final class MariaDbConfig extends AbstractDbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
     private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
     private MyMariaDbContainer mariaDb;
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         mariaDb = new MyMariaDbContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
@@ -34,7 +35,8 @@ public final class MariaDbConfig implements DbConfig {
         mariaDb.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    protected void doShutdownDb() {
         mariaDb.stop();
     }
 

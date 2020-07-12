@@ -19,24 +19,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-public final class OracleServerConfig implements DbConfig {
+public final class OracleServerConfig extends AbstractDbConfig {
 
     private OracleContainer oracle;
     private static final Logger logger = LoggerFactory.getLogger(OracleServerConfig.class);
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         oracle = new OracleContainer("oracleinanutshell/oracle-xe-11g")
             .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         oracle.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    public void doShutdownDb() {
         oracle.stop();
     }
 
     public String getJdbcUrl() {
         return oracle.getJdbcUrl();
-
     }
 
     @Override

@@ -19,18 +19,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public final class MsSqlServerConfig implements DbConfig {
+public final class MsSqlServerConfig extends AbstractDbConfig {
 
     private MyMSSQLServerContainer mssql;
     private static final Logger logger = LoggerFactory.getLogger(MsSqlServerConfig.class);
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         mssql = new MyMSSQLServerContainer()
             .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         mssql.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    protected void doShutdownDb() {
         mssql.stop();
     }
 

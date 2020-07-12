@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -27,17 +26,11 @@ import java.time.Instant;
 
 public final class JdbcTestUtils {
 
-    private final HikariDataSource datasource;
     private final JdbcTemplate jdbcTemplate;
     private final DbConfig dbConfig;
 
     public JdbcTestUtils(DbConfig dbConfig) {
-        datasource = new HikariDataSource();
-        datasource.setJdbcUrl(dbConfig.getJdbcUrl());
-        datasource.setUsername(dbConfig.getUsername());
-        datasource.setPassword(dbConfig.getPassword());
-
-        jdbcTemplate = new JdbcTemplate(datasource);
+        jdbcTemplate = new JdbcTemplate(dbConfig.getDataSource());
         jdbcTemplate.execute(dbConfig.getCreateTableStatement());
 
         this.dbConfig = dbConfig;
@@ -62,7 +55,6 @@ public final class JdbcTestUtils {
 
     public void clean() {
         jdbcTemplate.execute("DROP TABLE shedlock");
-        datasource.close();
     }
 
     public JdbcTemplate getJdbcTemplate() {
@@ -70,7 +62,7 @@ public final class JdbcTestUtils {
     }
 
     public DataSource getDatasource() {
-        return datasource;
+        return dbConfig.getDataSource();
     }
 
     public static class LockInfo {

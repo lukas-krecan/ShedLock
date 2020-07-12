@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 
 public interface DbConfig {
@@ -33,4 +34,6 @@ public interface DbConfig {
     }
 
     String nowExpression();
+
+    DataSource getDataSource();
 }

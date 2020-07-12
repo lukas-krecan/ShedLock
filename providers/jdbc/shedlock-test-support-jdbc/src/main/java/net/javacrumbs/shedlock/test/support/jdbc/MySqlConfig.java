@@ -19,13 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
-public final class MySqlConfig implements DbConfig {
+public final class MySqlConfig extends AbstractDbConfig {
 
     private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(MySqlConfig.class);
     private MyMySQLContainer mysql;
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         mysql = new MyMySQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
@@ -34,7 +35,8 @@ public final class MySqlConfig implements DbConfig {
         mysql.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    protected void doShutdownDb() {
         mysql.stop();
     }
 

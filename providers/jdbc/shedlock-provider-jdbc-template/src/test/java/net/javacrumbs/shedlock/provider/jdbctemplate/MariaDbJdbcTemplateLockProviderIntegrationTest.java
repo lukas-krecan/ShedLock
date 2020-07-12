@@ -15,12 +15,27 @@
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractMariaDbJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.MariaDbConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
-public class MariaDbJdbcTemplateLockProviderIntegrationTest extends AbstractMariaDbJdbcLockProviderIntegrationTest {
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(getDatasource());
+import java.io.IOException;
+
+public class MariaDbJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
+    private static final DbConfig dbConfig = new MariaDbConfig();
+
+    public MariaDbJdbcTemplateLockProviderIntegrationTest() {
+        super(dbConfig);
+    }
+
+    @BeforeAll
+    public static void startDb() throws IOException {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutDownDb() {
+        dbConfig.shutdownDb();
     }
 }

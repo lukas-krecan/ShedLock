@@ -19,19 +19,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Db2Container;
 
-public final class Db2ServerConfig implements DbConfig {
+public final class Db2ServerConfig extends AbstractDbConfig {
 
     private Db2Container db2;
     private static final Logger logger = LoggerFactory.getLogger(Db2ServerConfig.class);
 
-    public void startDb() {
+    @Override
+    protected void doStartDb() {
         db2 = new Db2Container()
             .acceptLicense()
             .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         db2.start();
     }
 
-    public void shutdownDb() {
+    @Override
+    protected void doShutdownDb() {
         db2.stop();
     }
 

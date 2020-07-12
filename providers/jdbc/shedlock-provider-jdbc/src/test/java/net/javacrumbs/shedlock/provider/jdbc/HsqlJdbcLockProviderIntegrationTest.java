@@ -16,9 +16,17 @@
 package net.javacrumbs.shedlock.provider.jdbc;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 
-public class HsqlJdbcLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
+public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
+    private static final HsqlConfig dbConfig = new HsqlConfig();
+
+    @Override
+    protected DbConfig getDbConfig() {
+        return dbConfig;
+    }
 
     @Override
     protected StorageBasedLockProvider getLockProvider() {
