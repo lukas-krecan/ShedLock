@@ -31,9 +31,23 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
     }
 
     @Nested
-    class ClientTime extends ClientTimeJdbcLockProviderIntegrationTest {
-        ClientTime() {
-            super(dbConfig);
+    class ClientTime extends AbstractJdbcLockProviderIntegrationTest {
+        @Override
+        protected DbConfig getDbConfig() {
+            return dbConfig;
+        }
+
+        @Override
+        protected StorageBasedLockProvider getLockProvider() {
+            return new JdbcTemplateLockProvider(builder()
+                .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+                .build()
+            );
+        }
+
+        @Override
+        protected boolean useDbTime() {
+            return false;
         }
     }
 
@@ -68,57 +82,4 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
     }
 }
 
-class ClientTimeJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
-    private final DbConfig dbConfig;
-
-    public ClientTimeJdbcLockProviderIntegrationTest(DbConfig dbConfig) {
-        this.dbConfig = dbConfig;
-    }
-
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
-    }
-
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(builder()
-            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .build()
-        );
-    }
-
-    @Override
-    protected boolean useDbTime() {
-        return false;
-    }
-}
-
-class DbTimeJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
-    private final DbConfig dbConfig;
-
-    public DbTimeJdbcLockProviderIntegrationTest(DbConfig dbConfig) {
-        this.dbConfig = dbConfig;
-    }
-
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
-    }
-
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration
-            .builder()
-            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .usingDbTime()
-            .build()
-        );
-    }
-
-    @Override
-    protected boolean useDbTime() {
-        return true;
-    }
-}
 
