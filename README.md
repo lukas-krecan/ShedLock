@@ -655,13 +655,14 @@ executed more than once.
 ## Troubleshooting
 Help, ShedLock does not do what it's supposed to do!
 
-1. Check the storage. If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured.
+1. Upgrade to the newest version
+2. Check the storage. If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured.
 If there is more than one record with the same name, you are missing a primary key.
-2. Use ShedLock debug log. ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`.
+3. Use ShedLock debug log. ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`.
 It should help you to see what's going on.
-3. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
+4. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
 after each other, `lockAtLeastFor` can prevent it.
-4. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check https://github.com/lukas-krecan/ShedLock/issues/115 or
+5. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check https://github.com/lukas-krecan/ShedLock/issues/115 or
 [this StackOverflow quesiton](https://stackoverflow.com/questions/56017382/how-to-fix-websockets-and-shedlock-compatibility-in-spring-boot-application/56036601#56036601)
 
 
