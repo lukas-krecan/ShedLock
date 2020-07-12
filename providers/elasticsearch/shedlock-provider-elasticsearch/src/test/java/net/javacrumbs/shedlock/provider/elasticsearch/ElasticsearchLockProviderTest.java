@@ -23,20 +23,16 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
-import pl.allegro.tech.embeddedelasticsearch.IndexSettings;
-import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-import static java.lang.ClassLoader.getSystemResourceAsStream;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCK_UNTIL;
@@ -46,18 +42,19 @@ import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockPr
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+@Testcontainers
 public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
-    private static final int EMBEDDED_ELASTIC_PORT = 9350;
-    private static EmbeddedElastic embeddedElastic;
+    @Container
+    private static final ElasticsearchContainer container = new ElasticsearchContainer();
     private RestHighLevelClient highLevelClient;
     private ElasticsearchLockProvider lockProvider;
 
     @BeforeEach
     public void setUp() {
         highLevelClient = new RestHighLevelClient(
-            RestClient.builder(
-                new HttpHost("localhost", EMBEDDED_ELASTIC_PORT, "http")));
+            RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
+        );
         lockProvider = new ElasticsearchLockProvider(highLevelClient);
     }
 
@@ -98,28 +95,6 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
             assertThat((String) m.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded ES failed.");
-        }
-    }
-
-    @BeforeAll
-    public static void startEmbeddedElastic() throws IOException, InterruptedException {
-        embeddedElastic = EmbeddedElastic.builder()
-            .withElasticVersion("6.4.0")
-            .withSetting(PopularProperties.HTTP_PORT, EMBEDDED_ELASTIC_PORT)
-            .withSetting(PopularProperties.CLUSTER_NAME, "my_cluster")
-            .withStartTimeout(2, MINUTES)
-            .withIndex(SCHEDLOCK_DEFAULT_INDEX, IndexSettings.builder()
-                .withType(SCHEDLOCK_DEFAULT_TYPE, getSystemResourceAsStream("shedlock.mapping.json"))
-                .withSettings(getSystemResourceAsStream("shedlock.settings.json"))
-                .build())
-            .build()
-            .start();
-    }
-
-    @AfterAll
-    public static void stopEmbeddedElastic() {
-        if (embeddedElastic != null) {
-            embeddedElastic.stop();
         }
     }
 
