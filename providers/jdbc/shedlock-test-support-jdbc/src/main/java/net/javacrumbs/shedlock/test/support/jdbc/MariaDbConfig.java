@@ -15,43 +15,15 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MariaDBContainer;
 
-public final class MariaDbConfig extends AbstractDbConfig {
-
-    private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
-    private MyMariaDbContainer mariaDb;
-
-    @Override
-    protected void doStartDb() {
-        mariaDb = new MyMariaDbContainer()
+public final class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDbConfig.MyMariaDbContainer> {
+    public MariaDbConfig() {
+        super(new MyMariaDbContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
-        mariaDb.start();
-    }
-
-    @Override
-    protected void doShutdownDb() {
-        mariaDb.stop();
-    }
-
-    public String getJdbcUrl() {
-        return mariaDb.getJdbcUrl();
-    }
-
-    @Override
-    public String getUsername() {
-        return mariaDb.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return mariaDb.getPassword();
+        );
     }
 
     @Override
@@ -64,6 +36,6 @@ public final class MariaDbConfig extends AbstractDbConfig {
         return "UTC_TIMESTAMP(3)";
     }
 
-    private static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {
+    static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {
     }
 }

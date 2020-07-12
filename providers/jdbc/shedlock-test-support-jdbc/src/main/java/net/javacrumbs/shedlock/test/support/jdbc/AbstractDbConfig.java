@@ -7,6 +7,8 @@ import javax.sql.DataSource;
 abstract class AbstractDbConfig implements DbConfig {
     private HikariDataSource dataSource;
 
+    protected static final String TEST_SCHEMA_NAME = "shedlock_test";
+
     @Override
     public synchronized DataSource getDataSource() {
         return dataSource;

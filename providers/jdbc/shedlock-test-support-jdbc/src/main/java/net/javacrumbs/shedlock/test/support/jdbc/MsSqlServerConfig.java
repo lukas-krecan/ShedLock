@@ -15,40 +15,11 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public final class MsSqlServerConfig extends AbstractDbConfig {
-
-    private MyMSSQLServerContainer mssql;
-    private static final Logger logger = LoggerFactory.getLogger(MsSqlServerConfig.class);
-
-    @Override
-    protected void doStartDb() {
-        mssql = new MyMSSQLServerContainer()
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
-        mssql.start();
-    }
-
-    @Override
-    protected void doShutdownDb() {
-        mssql.stop();
-    }
-
-    public String getJdbcUrl() {
-        return mssql.getJdbcUrl();
-
-    }
-
-    @Override
-    public String getUsername() {
-        return mssql.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return mssql.getPassword();
+public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSqlServerConfig.MyMSSQLServerContainer> {
+    public MsSqlServerConfig() {
+        super(new MyMSSQLServerContainer());
     }
 
     @Override
@@ -61,6 +32,6 @@ public final class MsSqlServerConfig extends AbstractDbConfig {
         return "SYSUTCDATETIME()";
     }
 
-    private static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {
+    static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {
     }
 }

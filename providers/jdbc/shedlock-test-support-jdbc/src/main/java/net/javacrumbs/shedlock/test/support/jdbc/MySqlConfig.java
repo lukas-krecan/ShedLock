@@ -15,43 +15,15 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
-public final class MySqlConfig extends AbstractDbConfig {
-
-    private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private static final Logger logger = LoggerFactory.getLogger(MySqlConfig.class);
-    private MyMySQLContainer mysql;
-
-    @Override
-    protected void doStartDb() {
-        mysql = new MyMySQLContainer()
+public final class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfig.MyMySQLContainer> {
+    public MySqlConfig() {
+        super(new MyMySQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
-        mysql.start();
-    }
-
-    @Override
-    protected void doShutdownDb() {
-        mysql.stop();
-    }
-
-    public String getJdbcUrl() {
-        return mysql.getJdbcUrl();
-    }
-
-    @Override
-    public String getUsername() {
-        return mysql.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return mysql.getPassword();
+        );
     }
 
     @Override
@@ -64,6 +36,6 @@ public final class MySqlConfig extends AbstractDbConfig {
         return "UTC_TIMESTAMP(3)";
     }
 
-    private static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {
+    static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {
     }
 }

@@ -15,43 +15,14 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public final class PostgresConfig extends AbstractDbConfig {
-    private static final String TEST_SCHEMA_NAME = "shedlock_test";
-    private MyPostgreSQLContainer postgres;
-    private static final Logger logger = LoggerFactory.getLogger(PostgresConfig.class);
-
-    @Override
-    protected void doStartDb() {
-        postgres = new MyPostgreSQLContainer()
+public final class PostgresConfig extends AbstractContainerBasedDbConfig<PostgresConfig.MyPostgreSQLContainer> {
+    public PostgresConfig() {
+        super(new MyPostgreSQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
-            .withPassword("pass")
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
-        postgres.start();
-    }
-
-    @Override
-    protected void doShutdownDb() {
-        postgres.stop();
-    }
-
-    public String getJdbcUrl() {
-        return postgres.getJdbcUrl();
-
-    }
-
-    @Override
-    public String getUsername() {
-        return postgres.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return postgres.getPassword();
+            .withPassword("pass"));
     }
 
     @Override
@@ -59,6 +30,6 @@ public final class PostgresConfig extends AbstractDbConfig {
         return "timezone('utc', CURRENT_TIMESTAMP)";
     }
 
-    private static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {
+    static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {
     }
 }

@@ -15,39 +15,11 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-public final class OracleServerConfig extends AbstractDbConfig {
-
-    private OracleContainer oracle;
-    private static final Logger logger = LoggerFactory.getLogger(OracleServerConfig.class);
-
-    @Override
-    protected void doStartDb() {
-        oracle = new OracleContainer("oracleinanutshell/oracle-xe-11g")
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
-        oracle.start();
-    }
-
-    @Override
-    public void doShutdownDb() {
-        oracle.stop();
-    }
-
-    public String getJdbcUrl() {
-        return oracle.getJdbcUrl();
-    }
-
-    @Override
-    public String getUsername() {
-        return oracle.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return oracle.getPassword();
+public final class OracleServerConfig extends AbstractContainerBasedDbConfig<OracleContainer> {
+    public OracleServerConfig() {
+        super(new OracleContainer("oracleinanutshell/oracle-xe-11g"));
     }
 
     @Override
