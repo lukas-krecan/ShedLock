@@ -33,7 +33,6 @@ import org.reactivestreams.Publisher;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
