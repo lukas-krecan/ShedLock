@@ -17,10 +17,7 @@ package net.javacrumbs.shedlock.provider.couchbase.javaclient;
 
 
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
-import com.couchbase.client.java.cluster.BucketSettings;
-import com.couchbase.client.java.cluster.DefaultBucketSettings;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.env.CouchbaseEnvironment;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
@@ -108,7 +105,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     public void assertLocked(String lockName) {
         JsonDocument lockDocument = bucket.get(lockName);
         assertThat(parse((String) lockDocument.content().get(LOCK_UNTIL))).isAfter(now());
-        assertThat(parse((String) lockDocument.content().get(LOCKED_AT))).isBefore(now());
+        assertThat(parse((String) lockDocument.content().get(LOCKED_AT))).isBeforeOrEqualTo(now());
         assertThat(lockDocument.content().get(LOCKED_BY)).asString().isNotEmpty();
     }
 
