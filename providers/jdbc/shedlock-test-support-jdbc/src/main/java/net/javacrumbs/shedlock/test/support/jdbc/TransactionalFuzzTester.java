@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.FuzzTester;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;

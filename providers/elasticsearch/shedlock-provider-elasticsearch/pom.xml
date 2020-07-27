@@ -13,7 +13,6 @@
 
     <properties>
         <elasticsearch.version>6.4.0</elasticsearch.version>
-        <embedded-elasticsearch.version>2.7.0</embedded-elasticsearch.version>
     </properties>
 
     <dependencies>
@@ -28,7 +27,7 @@
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
             <version>${elasticsearch.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support</artifactId>
@@ -37,9 +36,16 @@
         </dependency>
 
         <dependency>
-            <groupId>pl.allegro.tech</groupId>
-            <artifactId>embedded-elasticsearch</artifactId>
-            <version>${embedded-elasticsearch.version}</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${test-containers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${test-containers.version}</version>
             <scope>test</scope>
         </dependency>
 

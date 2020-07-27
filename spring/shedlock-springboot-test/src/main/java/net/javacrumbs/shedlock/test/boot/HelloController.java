@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.test.boot;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -42,6 +42,8 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     protected abstract DbConfig getDbConfig();
 
+    protected abstract boolean useDbTime();
+
     @AfterEach
     public void cleanup() {
         testUtils.clean();
@@ -53,23 +55,24 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     @Override
     protected void assertUnlocked(String lockName) {
-        Instant lockedUntil = getLockedUntil(lockName).toInstant();
-        assertThat(lockedUntil).isBeforeOrEqualTo(ClockProvider.now().truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
-    }
-
-    private Timestamp getLockedUntil(String lockName) {
-        return testUtils.getLockedUntil(lockName);
+        JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);
+        Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
+        assertThat(lockInfo.getLockUntil()).isBeforeOrEqualTo(now.truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        Instant lockedUntil = getLockedUntil(lockName).toInstant();
-        assertThat(lockedUntil).isAfter(ClockProvider.now());
+        JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);
+        Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
+
+        assertThat(lockInfo.getLockUntil()).isAfter(now);
     }
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
-        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, now(), now(), ?)", LOCK_NAME1, "me");
+        Timestamp previousLockTime = Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS));
+        testUtils.getJdbcTemplate().update("INSERT INTO shedlock(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)", LOCK_NAME1, previousLockTime, previousLockTime, "me");
+        assertUnlocked(LOCK_NAME1);
         shouldCreateLock();
     }
 
@@ -87,5 +90,9 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
 
     protected DataSource getDatasource() {
         return testUtils.getDatasource();
+    }
+
+    protected JdbcTestUtils.LockInfo getLockInfo(String lockName) {
+        return testUtils.getLockInfo(lockName);
     }
 }

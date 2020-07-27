@@ -17,44 +17,26 @@ package net.javacrumbs.shedlock.provider.redis.spring1;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
-import redis.embedded.RedisServer;
-
-import java.io.IOException;
 
 import static net.javacrumbs.shedlock.provider.redis.spring1.RedisLockProvider.getExpirationFromValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-    private static RedisServer redisServer;
-    private RedisLockProvider lockProvider;
-    private StringRedisTemplate redisTemplate;
 
-    protected final static int PORT = 6380;
-    protected final static String HOST = "localhost";
+    private final RedisLockProvider lockProvider;
+    private final StringRedisTemplate redisTemplate;
+
     private final static String ENV = "test";
     private final static String KEY_PREFIX = "test-prefix";
 
 
-    @BeforeAll
-    public static void startRedis() throws IOException {
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-    }
-
-    @AfterAll
-    public static void stopRedis() {
-        redisServer.stop();
-    }
-
-
     public AbstractRedisLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
         lockProvider = new RedisLockProvider(connectionFactory, ENV, KEY_PREFIX);
+
         redisTemplate = new StringRedisTemplate(connectionFactory);
     }
 
@@ -70,13 +52,13 @@ public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractL
 
     private boolean isLocked(String lockName) {
         return redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                byte[] rawKey = buildKey(lockName).getBytes();
-                if (!connection.exists(rawKey)) {
-                    return false;
-                }
-                Expiration expiration = getExpirationFromValue(connection.get(rawKey));
-                return expiration.getExpirationTimeInMilliseconds() > 0;
-            });
+            byte[] rawKey = buildKey(lockName).getBytes();
+            if (!connection.exists(rawKey)) {
+                return false;
+            }
+            Expiration expiration = getExpirationFromValue(connection.get(rawKey));
+            return expiration.getExpirationTimeInMilliseconds() > 0;
+        });
     }
 
     private String buildKey(String lockName) {

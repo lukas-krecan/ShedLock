@@ -3,7 +3,6 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -18,8 +18,9 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.ColumnNames;
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractHsqlJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -31,20 +32,27 @@ import java.util.Optional;
 
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 
-public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdbcLockProviderIntegrationTest {
+public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
+    private static final HsqlConfig dbConfig = new HsqlConfig();
 
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcTemplateLockProvider(builder()
-            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-            .build()
-        );
+    public HsqlJdbcTemplateLockProviderIntegrationTest() {
+        super(dbConfig);
+    }
+
+    @BeforeAll
+    public static void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public static void shutdownDb() {
+        dbConfig.shutdownDb();
     }
 
     @Test
     public void shouldBeAbleToSetCustomColumnNames() throws SQLException {
         try (
-            Connection conn = getDatasource().getConnection();
+            Connection conn = dbConfig.getDataSource().getConnection();
             Statement statement = conn.createStatement()
         ) {
             statement.execute("CREATE TABLE shdlck(n VARCHAR(64), lck_untl TIMESTAMP(3), lckd_at TIMESTAMP(3), lckd_by  VARCHAR(255), PRIMARY KEY (n))");
@@ -53,7 +61,7 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractHsqlJdb
         JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
             .withTableName("shdlck")
             .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
-            .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+            .withJdbcTemplate(new JdbcTemplate(dbConfig.getDataSource()))
             .withLockedByValue("my-value")
             .build());
 

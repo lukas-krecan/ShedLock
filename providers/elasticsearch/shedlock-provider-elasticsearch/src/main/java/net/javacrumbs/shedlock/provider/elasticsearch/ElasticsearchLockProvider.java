@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.support.WriteRequest;
@@ -30,7 +31,6 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.io.IOException;
 import java.time.Instant;

@@ -21,12 +21,12 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

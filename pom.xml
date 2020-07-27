@@ -50,14 +50,14 @@
     </modules>
 
     <properties>
-        <spring.version>5.1.12.RELEASE</spring.version>
+        <spring.version>5.2.7.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
         <junit.version>5.6.2</junit.version>
-        <test-containers.version>1.14.1</test-containers.version>
-        <kotlin.version>1.3.71</kotlin.version>
-        <micronaut.version>1.3.4</micronaut.version>
+        <test-containers.version>1.14.3</test-containers.version>
+        <kotlin.version>1.3.72</kotlin.version>
+        <micronaut.version>2.0.0</micronaut.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.21</version>
+            <version>1.7.30</version>
         </dependency>
 
         <dependency>
@@ -116,14 +116,14 @@
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
-                <version>3.1.0</version>
+                <version>4.0.3</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.10.0</version>
+                <version>3.16.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -161,21 +161,21 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M4</version>
+                <version>3.0.0-M5</version>
                 <configuration>
-                    <forkCount>3</forkCount>
-                    <argLine>${argLine} -Xmx512m</argLine>
+                    <forkCount>5</forkCount>
+                    <argLine>-Xmx512m</argLine>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.2.0</version>
                 <configuration>
                     <!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
                     <source>8</source>
@@ -185,25 +185,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.5</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
