@@ -19,6 +19,7 @@ import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.inject.ExecutableMethod;
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -48,6 +49,7 @@ class MicronautLockConfigurationExtractor {
 
     private LockConfiguration getLockConfiguration(AnnotationValue<SchedulerLock> annotation) {
         return new LockConfiguration(
+            ClockProvider.now(),
             getName(annotation),
             getLockAtMostFor(annotation),
             getLockAtLeastFor(annotation)

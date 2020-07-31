@@ -42,6 +42,7 @@ public class LockConfiguration {
      */
     private final Duration lockAtLeastFor;
 
+    @Deprecated
     public LockConfiguration(@NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
     }
@@ -61,7 +62,17 @@ public class LockConfiguration {
         this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil));
     }
 
-    private LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
+    /**
+     * Creates LockConfiguration. Even though it looks like this class may be reused, it internally stores createdAt time
+     * to support LockProviders that do not support server time so it's strongly recommended to create a new configuration for
+     * each use.
+     *
+     * @param createdAt
+     * @param name
+     * @param lockAtMostFor
+     * @param lockAtLeastFor
+     */
+    public LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         this.createdAt = Objects.requireNonNull(createdAt);
         this.name = Objects.requireNonNull(name);
         this.lockAtMostFor = Objects.requireNonNull(lockAtMostFor);
