@@ -47,6 +47,7 @@
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
+        <module>providers/consul/shedlock-provider-consul</module>
     </modules>
 
     <properties>
