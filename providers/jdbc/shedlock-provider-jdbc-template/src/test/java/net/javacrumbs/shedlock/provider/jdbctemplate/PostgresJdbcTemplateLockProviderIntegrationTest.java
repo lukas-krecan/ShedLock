@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.TimeZone;
 
 import static java.lang.Thread.sleep;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -120,17 +121,17 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
             JdbcTemplateStorageAccessor accessor = getAccessor(usingDbTime);
 
 
-            accessor.insertRecord(new LockConfiguration(OTHER_LOCK, Duration.ofSeconds(5), Duration.ZERO));
+            accessor.insertRecord(new LockConfiguration(now(), OTHER_LOCK, Duration.ofSeconds(5), Duration.ZERO));
             Timestamp otherLockValidity = getTestUtils().getLockedUntil(OTHER_LOCK);
 
             assertThat(
-                accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofMillis(10), Duration.ZERO))
+                accessor.insertRecord(new LockConfiguration(now(), MY_LOCK, Duration.ofMillis(10), Duration.ZERO))
             ).isEqualTo(true);
 
             sleep(10);
 
             assertThat(
-                accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofMillis(10), Duration.ZERO))
+                accessor.insertRecord(new LockConfiguration(now(), MY_LOCK, Duration.ofMillis(10), Duration.ZERO))
             ).isEqualTo(true);
 
             // check that the other lock has not been affected by "my-lock" update

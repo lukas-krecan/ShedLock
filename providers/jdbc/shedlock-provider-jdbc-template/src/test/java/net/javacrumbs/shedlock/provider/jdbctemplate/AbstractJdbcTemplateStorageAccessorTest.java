@@ -4,6 +4,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +12,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 
 import static java.lang.Thread.sleep;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractJdbcTemplateStorageAccessorTest {
@@ -43,13 +45,13 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
         JdbcTemplateStorageAccessor accessor = getAccessor(usingDbTime);
 
         assertThat(
-            accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofSeconds(10), Duration.ZERO))
+            accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10)))
         ).isEqualTo(true);
 
         Timestamp originalLockValidity = testUtils.getLockedUntil(MY_LOCK);
 
         assertThat(
-            accessor.insertRecord(new LockConfiguration(MY_LOCK, Duration.ofSeconds(10), Duration.ZERO))
+            accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10)))
         ).isEqualTo(false);
 
         assertThat(testUtils.getLockedUntil(MY_LOCK)).isEqualTo(originalLockValidity);
@@ -69,8 +71,8 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
         JdbcTemplateStorageAccessor accessor = getAccessor(usingDbTime);
 
         Duration lockAtMostFor = Duration.ofMillis(10);
-        assertThat(accessor.insertRecord(new LockConfiguration(MY_LOCK, lockAtMostFor, Duration.ZERO))).isEqualTo(true);
-        assertThat(accessor.insertRecord(new LockConfiguration(OTHER_LOCK, lockAtMostFor, Duration.ZERO))).isEqualTo(true);
+        assertThat(accessor.insertRecord(lockConfig(MY_LOCK, lockAtMostFor))).isEqualTo(true);
+        assertThat(accessor.insertRecord(lockConfig(OTHER_LOCK, lockAtMostFor))).isEqualTo(true);
 
         Timestamp myLockLockedUntil = testUtils.getLockedUntil(MY_LOCK);
         Timestamp otherLockLockedUntil = testUtils.getLockedUntil(OTHER_LOCK);
@@ -81,13 +83,18 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
 
 
         // act
-        assertThat(accessor.updateRecord(new LockConfiguration(MY_LOCK, lockAtMostFor, Duration.ZERO))).isEqualTo(true);
+        assertThat(accessor.updateRecord(new LockConfiguration(now(), MY_LOCK, lockAtMostFor, Duration.ZERO))).isEqualTo(true);
 
 
         // assert
         assertThat(testUtils.getLockedUntil(MY_LOCK)).isAfter(myLockLockedUntil);
         // check that the other lock has not been affected by "my-lock" update
         assertThat(testUtils.getLockedUntil(OTHER_LOCK)).isEqualTo(otherLockLockedUntil);
+    }
+
+    @NotNull
+    private LockConfiguration lockConfig(String myLock, Duration lockAtMostFor) {
+        return new LockConfiguration(now(), myLock, lockAtMostFor, Duration.ZERO);
     }
 
     @NonNull

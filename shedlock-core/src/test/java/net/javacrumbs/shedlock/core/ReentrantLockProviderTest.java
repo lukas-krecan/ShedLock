@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,7 +38,7 @@ class ReentrantLockProviderTest {
     private final LockProvider lockProvider = new ReentrantLockProvider();
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
-    private final LockConfiguration configuration = new LockConfiguration("test", Duration.ofSeconds(60), Duration.ZERO);
+    private final LockConfiguration configuration = new LockConfiguration(now(),"test", Duration.ofSeconds(60), Duration.ZERO);
 
     @BeforeEach
     void configureMocks() {

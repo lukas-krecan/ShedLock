@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -14,7 +15,7 @@ import static org.mockito.Mockito.when;
 class DefaultLockingTaskExecutorTest {
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final DefaultLockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
-    private final LockConfiguration lockConfig = new LockConfiguration("test", Duration.ofSeconds(100), Duration.ZERO);
+    private final LockConfiguration lockConfig = new LockConfiguration(now(),"test", Duration.ofSeconds(100), Duration.ZERO);
 
     @Test
     void lockShouldBeReentrant() {
