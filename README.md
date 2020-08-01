@@ -30,6 +30,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
+  - [Consul](#consul)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
@@ -508,6 +509,54 @@ CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt
 ```
 
 Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
+
+#### Consul
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-consul</artifactId>
+    <version>4.13.0</version>
+</dependency>
+```
+
+Consul lock provider has 2 implementations.
+* `ConsulTtlLockProvider` uses standard consul session TTL mechanism for locking. There is a caveat: [minimum consul session TTL is 10 seconds](https://www.consul.io/docs/internals/sessions). \
+It means that even if you provide `lockAtLeastFor` setting, it will still hold a session for at least 20 seconds (consul holds a session for TTL*2 time). It is still ok for a long-running tasks and big `lockAtMostFor` values.
+* `ConsulSchedulableLockProvider` has a background thread that constantly renews the session and unlocks it in a separate task. It allows usage of low `lockAtLeastFor` and `lockAtMostFor` values.\
+Keep in mind, that it has a background thread that makes requests to Consul. In most cases you would prefer
+to use `ConsulSchedulableLockProvider` except if you have a long-running task and have a big `lockAtMostFor` setting when you can use more simplier `ConsulTtlLockProvider`.
+  * `ConsulSchedulableLockProvider` uses 20 seconds session TTL by default which is renewed in background.
+You can change the session TTL to increase or decrease renewal intervals using `ConsulSchedulableLockProvider.setSessionTtl(Duration)` method.
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.consul.ConsulTtlLockProvider;
+
+...
+
+@Bean
+public ConsulTtlLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
+    return new ConsulTtlLockProvider(cqlSession);
+}
+```
+
+or
+
+```java
+import net.javacrumbs.shedlock.provider.consul.ConsulSchedulableLockProvider;
+
+...
+
+@Bean
+public ConsulSchedulableLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
+    return new ConsulSchedulableLockProvider(cqlSession);
+}
+```
+
+Please, note that both Consul lock providers uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one

@@ -65,7 +65,8 @@ class ConsulSchedulableLockProviderIntegrationTest extends AbstractLockProviderI
     void shouldRenewSessionUntilAtMostForPassed() throws InterruptedException {
         // consul has 10 seconds minimum TTL so for the integration testing purposes we need to have lockedAtMostFor higher than 10
         LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofSeconds(12), Duration.ZERO);
-        LockProvider lockProvider = getLockProvider();
+        lockProvider.setSessionTtl(ConsulLockProvider.MIN_TTL);
+
         Optional<SimpleLock> lock1 = lockProvider.lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
