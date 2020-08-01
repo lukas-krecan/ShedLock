@@ -2,18 +2,11 @@ package net.javacrumbs.shedlock.provider.consul;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
-import com.ecwid.consul.v1.Response;
-import com.ecwid.consul.v1.kv.model.GetValue;
-import com.ecwid.consul.v1.kv.model.PutParams;
-import com.ecwid.consul.v1.session.model.NewSession;
-import com.ecwid.consul.v1.session.model.Session;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -37,15 +30,21 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
  * period, new session will be created for a TTL minimum 10 seconds minimum. Keeping in mind the aforementioned double TTL
  * even if you have 1 second left to hold for lockAtLeastFor, most likely the lock time be 10 seconds minimum and most
  * likely it will be 20 seconds.</p>
+ *
+ * <p>If you need more granularity and if your lockAtMostFor is small, it's advised to use {@link ConsulSchedulableLockProvider}</p>
+ *
+ * @author Artur Kalimullin
  */
-public class ConsulTtlLockProvider implements LockProvider {
-    final static String CONSUL_LOCK_POSTFIX = "-leader";
-    final static Duration MIN_TTL = Duration.ofSeconds(10);
+public class ConsulTtlLockProvider extends ConsulLockProvider {
     private final static Logger logger = LoggerFactory.getLogger(ConsulTtlLockProvider.class);
-    private final ConsulClient consulClient;
 
     public ConsulTtlLockProvider(ConsulClient consulClient) {
-        this.consulClient = consulClient;
+        super(consulClient);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return logger;
     }
 
     @Override
@@ -57,7 +56,8 @@ public class ConsulTtlLockProvider implements LockProvider {
         return tryLock(sessionId, lockConfiguration);
     }
 
-    void unlock(String sessionId, LockConfiguration lockConfiguration) {
+    @Override
+    protected void unlock(String sessionId, LockConfiguration lockConfiguration) {
         Duration additionalSessionTtl = Duration.between(now(), lockConfiguration.getLockAtLeastUntil());
         consulClient.sessionDestroy(sessionId, QueryParams.DEFAULT);
         if (!additionalSessionTtl.isNegative() && additionalSessionTtl.getNano() > 0) {
@@ -65,43 +65,5 @@ public class ConsulTtlLockProvider implements LockProvider {
             String newSessionId = createSession(lockConfiguration.getName(), additionalSessionTtl);
             tryLock(newSessionId, lockConfiguration);
         }
-    }
-
-    @Nonnull
-    Optional<SimpleLock> extend(String sessionId, LockConfiguration lockConfiguration) {
-        consulClient.renewSession(sessionId, QueryParams.DEFAULT);
-        return tryLock(sessionId, lockConfiguration);
-    }
-
-    private String createSession(String name, Duration lockTtl) {
-        NewSession sessions = new NewSession();
-        sessions.setName(name);
-        sessions.setLockDelay(0);
-        sessions.setBehavior(Session.Behavior.DELETE);
-        long ttlInSeconds = Math.max(lockTtl.getSeconds(), MIN_TTL.getSeconds());
-        sessions.setTtl(ttlInSeconds + "s");
-        String sessionId = consulClient.sessionCreate(sessions, QueryParams.DEFAULT).getValue();
-        logger.error("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
-        return sessionId;
-    }
-
-    private Optional<SimpleLock> tryLock(String sessionId, LockConfiguration lockConfiguration) {
-        PutParams putParams = new PutParams();
-        putParams.setAcquireSession(sessionId);
-        String jobName = getJobName(lockConfiguration);
-        boolean isLockSuccessful = consulClient.setKVValue(jobName, lockConfiguration.getName(), putParams).getValue();
-        if (isLockSuccessful) {
-            return Optional.of(new ConsulSimpleLock(lockConfiguration, this, sessionId, now()));
-        }
-        return Optional.empty();
-    }
-
-    private String getJobName(LockConfiguration lockConfiguration) {
-        return lockConfiguration.getName() + CONSUL_LOCK_POSTFIX;
-    }
-
-    private boolean isLocked(LockConfiguration lockConfiguration) {
-        Response<GetValue> maybeLock = consulClient.getKVValue(getJobName(lockConfiguration));
-        return null != maybeLock.getValue() && null != maybeLock.getValue().getSession();
     }
 }
