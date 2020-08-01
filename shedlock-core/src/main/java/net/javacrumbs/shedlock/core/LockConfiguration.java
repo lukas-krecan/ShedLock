@@ -63,9 +63,9 @@ public class LockConfiguration {
     }
 
     /**
-     * Creates LockConfiguration. Even though it looks like this class may be reused, it internally stores createdAt time
-     * to support LockProviders that do not support server time so it's strongly recommended to create a new configuration for
-     * each use.
+     * Creates LockConfiguration. There are two types of lock providers. One that uses "db time" which requires relative
+     * values of lockAtMostFor and lockAtLeastFor (currently it's only JdbcTemplateLockProvider). Second type of
+     * lock provider uses absolute time calculated from `createdAt`.
      *
      * @param createdAt
      * @param name
