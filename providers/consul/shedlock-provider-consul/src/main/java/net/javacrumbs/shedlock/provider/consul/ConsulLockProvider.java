@@ -2,8 +2,6 @@ package net.javacrumbs.shedlock.provider.consul;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
-import com.ecwid.consul.v1.Response;
-import com.ecwid.consul.v1.kv.model.GetValue;
 import com.ecwid.consul.v1.kv.model.PutParams;
 import com.ecwid.consul.v1.session.model.NewSession;
 import com.ecwid.consul.v1.session.model.Session;
@@ -52,11 +50,6 @@ abstract class ConsulLockProvider implements LockProvider {
 
     private String getLeaderKey(LockConfiguration lockConfiguration) {
         return lockConfiguration.getName() + consulLockPostfix;
-    }
-
-    boolean isLocked(LockConfiguration lockConfiguration) {
-        Response<GetValue> maybeLock = consulClient.getKVValue(getLeaderKey(lockConfiguration));
-        return null != maybeLock.getValue() && null != maybeLock.getValue().getSession();
     }
 
     public ConsulLockProvider setConsulLockPostfix(String consulLockPostfix) {

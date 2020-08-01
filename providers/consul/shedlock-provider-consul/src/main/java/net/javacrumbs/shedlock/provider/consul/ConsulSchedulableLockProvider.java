@@ -27,9 +27,10 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
  * This is the reason consul <a href="https://www.consul.io/docs/internals/sessions">recommends</a> to set the lowest possible TTL
  * and constantly extend it.</p>
  *
- * <p>The lock is acquired for a defined session TTL (10 seconds by default). It will be constantly renewed in background
- * until lockAtMostFor. As minimum session time is 10 seconds, in case if session won't be unlocked, it may happen that
- * lock will be hold for more than lockAtMostFor but no more than 20 seconds.</p>
+ * <p>The lock is acquired for a defined session TTL (20 seconds by default). It will be constantly renewed in background
+ * until lockAtMostFor. Renewal period is TTL/2 so even in case of a renewal failure, it will still have a chance to renew session.
+ * As minimum session time is 10 seconds, in case if session won't be unlocked, it may happen that lock will be hold for more
+ * than lockAtMostFor but no more than 20 seconds.</p>
  *
  * <p>If {@code @SchedulerLock.lockAtLeastFor} is specified, the background thread will remove the associated session.</p>
  *
@@ -45,7 +46,7 @@ public class ConsulSchedulableLockProvider extends ConsulLockProvider {
     private final Map<String, ScheduledFuture<?>> jobToScheduledTasksMap = new HashMap<>();
     private final Object scheduleMonitor = new Object();
     private final ScheduledExecutorService scheduler;
-    private Duration sessionTtl = Duration.ofSeconds(10);
+    private Duration sessionTtl = Duration.ofSeconds(20);
 
     public ConsulSchedulableLockProvider(ConsulClient consulClient) {
         super(consulClient);
@@ -56,9 +57,6 @@ public class ConsulSchedulableLockProvider extends ConsulLockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        if (isLocked(lockConfiguration)) {
-            return Optional.empty();
-        }
         String sessionId = createSession(lockConfiguration.getName(), sessionTtl);
         Optional<SimpleLock> lock = tryLock(sessionId, lockConfiguration);
         lock.ifPresent(l -> {
@@ -68,12 +66,12 @@ public class ConsulSchedulableLockProvider extends ConsulLockProvider {
                 ScheduledFuture<?> task;
                 if (lockConfiguration.getLockAtMostFor().compareTo(sessionTtl) > 0) {
                     task = scheduler.scheduleAtFixedRate(
-                        () -> renewUntilAtMostFor(sessionId, lockConfiguration),
-                        sessionTtl.toMillis(), sessionTtl.toMillis(), TimeUnit.MILLISECONDS
+                        catchExceptions(() -> renewUntilAtMostFor(sessionId, lockConfiguration)),
+                        sessionTtl.dividedBy(2).toMillis(), sessionTtl.dividedBy(2).toMillis(), TimeUnit.MILLISECONDS
                     );
                 } else {
                     task = scheduler.schedule(
-                        () -> unlock(sessionId, lockConfiguration),
+                        catchExceptions(() -> unlock(sessionId, lockConfiguration)),
                         lockConfiguration.getLockAtMostFor().toMillis(), TimeUnit.MILLISECONDS
                     );
                 }
@@ -83,20 +81,6 @@ public class ConsulSchedulableLockProvider extends ConsulLockProvider {
         return lock;
     }
 
-    private void renewUntilAtMostFor(String sessionId, LockConfiguration lockConfiguration) {
-        renew(sessionId);
-        Duration timeLeft = Duration.between(now(), lockConfiguration.getLockAtMostUntil());
-        if (timeLeft.compareTo(sessionTtl) < 0) {
-            synchronized (scheduleMonitor) {
-                jobToScheduledTasksMap.remove(lockConfiguration.getName()).cancel(false);
-                jobToScheduledTasksMap.put(
-                    lockConfiguration.getName(),
-                    scheduler.schedule(() -> unlock(sessionId, lockConfiguration), timeLeft.toMillis(), TimeUnit.MILLISECONDS)
-                );
-            }
-        }
-    }
-
     @Override
     protected void unlock(String sessionId, LockConfiguration lockConfiguration) {
         Duration additionalSessionTtl = Duration.between(now(), lockConfiguration.getLockAtLeastUntil());
@@ -104,16 +88,50 @@ public class ConsulSchedulableLockProvider extends ConsulLockProvider {
             logger.info("Additional locking is required for session {}", sessionId);
             renew(sessionId);
             synchronized (scheduleMonitor) {
-                jobToScheduledTasksMap.remove(lockConfiguration.getName()).cancel(true);
+                removeAssociatedTask(lockConfiguration);
                 jobToScheduledTasksMap.put(
                     lockConfiguration.getName(),
-                    scheduler.schedule(() -> destroy(sessionId), additionalSessionTtl.toMillis(), TimeUnit.MILLISECONDS)
+                    scheduler.schedule(
+                        catchExceptions(() -> destroy(sessionId)),
+                        additionalSessionTtl.toMillis(), TimeUnit.MILLISECONDS
+                    )
                 );
             }
         } else {
-            destroy(sessionId);
             synchronized (scheduleMonitor) {
                 cancelScheduledTaskIfPresent(lockConfiguration);
+            }
+            destroy(sessionId);
+        }
+    }
+
+    private Runnable catchExceptions(Runnable runnable) {
+        return () -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                logger.warn("Exception while execution", t);
+            }
+        };
+    }
+
+    private boolean removeAssociatedTask(LockConfiguration lockConfiguration) {
+        return jobToScheduledTasksMap.remove(lockConfiguration.getName()).cancel(true);
+    }
+
+    private void renewUntilAtMostFor(String sessionId, LockConfiguration lockConfiguration) {
+        renew(sessionId);
+        Duration timeLeft = Duration.between(now(), lockConfiguration.getLockAtMostUntil());
+        if (timeLeft.compareTo(sessionTtl) < 0) {
+            synchronized (scheduleMonitor) {
+                removeAssociatedTask(lockConfiguration);
+                jobToScheduledTasksMap.put(
+                    lockConfiguration.getName(),
+                    scheduler.schedule(
+                        catchExceptions(() -> unlock(sessionId, lockConfiguration)),
+                        timeLeft.toMillis(), TimeUnit.MILLISECONDS
+                    )
+                );
             }
         }
     }

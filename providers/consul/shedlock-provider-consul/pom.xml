@@ -42,6 +42,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.30</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -54,7 +55,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.hazelcast4
+                                net.javacrumbs.shedlock.provider.consul
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

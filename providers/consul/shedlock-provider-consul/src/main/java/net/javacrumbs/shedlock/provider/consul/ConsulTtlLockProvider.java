@@ -49,9 +49,6 @@ public class ConsulTtlLockProvider extends ConsulLockProvider {
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        if (isLocked(lockConfiguration)) {
-            return Optional.empty();
-        }
         String sessionId = createSession(lockConfiguration.getName(), lockConfiguration.getLockAtMostFor());
         return tryLock(sessionId, lockConfiguration);
     }
