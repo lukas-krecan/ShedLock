@@ -8,6 +8,7 @@ import com.ecwid.consul.v1.session.model.Session;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,20 +37,31 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
  * @author Artur Kalimullin
  */
 public class ConsulLockProvider implements LockProvider {
-    private final static Logger logger = LoggerFactory.getLogger(ConsulLockProvider.class);
-    private volatile ScheduledExecutorService unlockScheduler;
-    private Duration minSessionTtl = Duration.ofSeconds(10);
+    private static final Logger logger = LoggerFactory.getLogger(ConsulLockProvider.class);
+    private static final String DEFAULT_CONSUL_LOCK_POSTFIX = "-leader";
+    private final ScheduledExecutorService unlockScheduler = Executors.newSingleThreadScheduledExecutor();
 
-    private String consulLockPostfix = "-leader";
+    private final Duration minSessionTtl;
+    private final String consulLockPostfix;
     private final ConsulClient consulClient;
 
-
     public ConsulLockProvider(ConsulClient consulClient) {
+        this(consulClient, Duration.ofSeconds(10), DEFAULT_CONSUL_LOCK_POSTFIX);
+    }
+
+    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl) {
+        this(consulClient, minSessionTtl, DEFAULT_CONSUL_LOCK_POSTFIX);
+    }
+
+    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix) {
         this.consulClient = consulClient;
+        this.consulLockPostfix = consulLockPostfix;
+        this.minSessionTtl = minSessionTtl;
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String sessionId = createSession(lockConfiguration);
         return tryLock(sessionId, lockConfiguration);
     }
@@ -57,7 +69,7 @@ public class ConsulLockProvider implements LockProvider {
     void unlock(String sessionId, LockConfiguration lockConfiguration) {
         Duration additionalSessionTtl = Duration.between(now(), lockConfiguration.getLockAtLeastUntil());
         if (!additionalSessionTtl.isNegative() && !additionalSessionTtl.isZero()) {
-            logger.info("Lock will still be held for {}", additionalSessionTtl);
+            logger.debug("Lock will still be held for {}", additionalSessionTtl);
             scheduleUnlock(sessionId, additionalSessionTtl);
         } else {
             destroy(sessionId);
@@ -72,7 +84,7 @@ public class ConsulLockProvider implements LockProvider {
         newSession.setBehavior(Session.Behavior.DELETE);
         newSession.setTtl(ttlInSeconds + "s");
         String sessionId = consulClient.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
-        logger.info("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
+        logger.debug("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
         return sessionId;
     }
 
@@ -92,13 +104,6 @@ public class ConsulLockProvider implements LockProvider {
     }
 
     private void scheduleUnlock(String sessionId, Duration unlockTime) {
-        if (null == unlockScheduler) {
-            synchronized (this) {
-                if (null == unlockScheduler) {
-                    unlockScheduler = Executors.newSingleThreadScheduledExecutor();
-                }
-            }
-        }
         unlockScheduler.schedule(
             catchExceptions(() -> destroy(sessionId)),
             unlockTime.toMillis(), TimeUnit.MILLISECONDS
@@ -106,7 +111,7 @@ public class ConsulLockProvider implements LockProvider {
     }
 
     private void destroy(String sessionId) {
-        logger.info("Destroying session {}", sessionId);
+        logger.debug("Destroying session {}", sessionId);
         consulClient.sessionDestroy(sessionId, QueryParams.DEFAULT);
     }
 
@@ -118,15 +123,5 @@ public class ConsulLockProvider implements LockProvider {
                 logger.warn("Exception while execution", t);
             }
         };
-    }
-
-    public ConsulLockProvider setConsulLockPostfix(String consulLockPostfix) {
-        this.consulLockPostfix = consulLockPostfix;
-        return this;
-    }
-
-    public ConsulLockProvider setMinSessionTtl(Duration minSessionTtl) {
-        this.minSessionTtl = minSessionTtl;
-        return this;
     }
 }
