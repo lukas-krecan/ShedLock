@@ -511,6 +511,8 @@ CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt
 Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
 
 #### Consul
+ConsulLockProvider has one limitation: lockAtMostFor setting will have a minimum value of 10 seconds. It is dictated by consul's session limitations.
+
 Import the project
 
 ```xml
@@ -521,38 +523,16 @@ Import the project
 </dependency>
 ```
 
-Consul lock provider has 2 implementations.
-* `ConsulTtlLockProvider` uses standard consul session TTL mechanism for locking. There is a caveat: [minimum consul session TTL is 10 seconds](https://www.consul.io/docs/internals/sessions). \
-It means that even if you provide `lockAtLeastFor` setting, it will still hold a session for at least 20 seconds (consul holds a session for TTL*2 time). It is still ok for a long-running tasks and big `lockAtMostFor` values.
-* `ConsulSchedulableLockProvider` has a background thread that constantly renews the session and unlocks it in a separate task. It allows usage of low `lockAtLeastFor` and `lockAtMostFor` values.\
-Keep in mind, that it has a background thread that makes requests to Consul. In most cases you would prefer
-to use `ConsulSchedulableLockProvider` except if you have a long-running task and have a big `lockAtMostFor` setting when you can use more simplier `ConsulTtlLockProvider`.
-  * `ConsulSchedulableLockProvider` uses 20 seconds session TTL by default which is renewed in background.
-You can change the session TTL to increase or decrease renewal intervals using `ConsulSchedulableLockProvider.setSessionTtl(Duration)` method.
-
 Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.consul.ConsulTtlLockProvider;
+import net.javacrumbs.shedlock.provider.consul.ConsulLockProvider;
 
 ...
 
 @Bean
-public ConsulTtlLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
-    return new ConsulTtlLockProvider(cqlSession);
-}
-```
-
-or
-
-```java
-import net.javacrumbs.shedlock.provider.consul.ConsulSchedulableLockProvider;
-
-...
-
-@Bean
-public ConsulSchedulableLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
-    return new ConsulSchedulableLockProvider(cqlSession);
+public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
+    return new ConsulLockProvider(consulClient);
 }
 ```
 

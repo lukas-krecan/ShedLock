@@ -19,34 +19,30 @@ import java.util.Optional;
 import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ConsulSchedulableLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
-    private static ConsulClient CONSUL_CLIENT;
+    public static ConsulClient CONSUL_CLIENT;
     private static ConsulProcess consul;
-    private ConsulSchedulableLockProvider lockProvider;
 
     @BeforeAll
-    public static void beforeAll() {
-        System.setProperty("org.slf4j.simpleLogger.log.net.javacrumbs.shedlock", "DEBUG");
+    public static void startConsul() {
         consul = ConsulStarterBuilder.consulStarter().build().start();
         CONSUL_CLIENT = new ConsulClient(consul.getAddress(), consul.getHttpPort());
     }
 
     @AfterAll
-    public static void afterAll() {
+    public static void stopConsul() {
         consul.close();
-        System.clearProperty("org.slf4j.simpleLogger.log.net.javacrumbs.shedlock");
     }
 
     @BeforeEach
-    public void setUp() {
+    public void resetConsul() {
         consul.reset();
-        lockProvider = new ConsulSchedulableLockProvider(CONSUL_CLIENT);
     }
 
     @Override
     protected LockProvider getLockProvider() {
-        return lockProvider;
+        return new ConsulLockProvider(CONSUL_CLIENT);
     }
 
     @Override
@@ -62,18 +58,30 @@ class ConsulSchedulableLockProviderIntegrationTest extends AbstractLockProviderI
     }
 
     @Test
-    void shouldRenewSessionUntilAtMostForPassed() throws InterruptedException {
-        // consul has 10 seconds minimum TTL so for the integration testing purposes we need to have lockedAtMostFor higher than 10
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofSeconds(12), Duration.ZERO);
-        lockProvider.setSessionTtl(ConsulLockProvider.MIN_TTL);
-
-        Optional<SimpleLock> lock1 = lockProvider.lock(configWithShortTimeout);
+    @Override
+    public void shouldTimeout() throws InterruptedException {
+        // as consul has 10 seconds ttl minimum and has double ttl unlocking time, you have to wait for 20 seconds for the unlock time.
+        Duration lockAtMostFor = Duration.ofSeconds(11);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, lockAtMostFor, Duration.ZERO);
+        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        sleep(11000);
-        assertLocked(LOCK_NAME1);
-
-        sleep(1000 + 100);
+        sleep(lockAtMostFor.multipliedBy(2).toMillis() + 100);
         assertUnlocked(LOCK_NAME1);
+
+        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO));
+        assertThat(lock2).isNotEmpty();
+        lock2.get().unlock();
+    }
+
+    @Test
+    public void shouldNotTimeoutIfLessThanMinTtlPassed() throws InterruptedException {
+        Duration lockAtMostFor = Duration.ofSeconds(1);
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, lockAtMostFor, Duration.ZERO);
+        Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
+        assertThat(lock1).isNotEmpty();
+
+        sleep(lockAtMostFor.multipliedBy(2).toMillis() + 100);
+        assertLocked(LOCK_NAME1);
     }
 }
