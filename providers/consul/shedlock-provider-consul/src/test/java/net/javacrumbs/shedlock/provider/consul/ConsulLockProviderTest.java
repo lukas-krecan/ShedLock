@@ -27,7 +27,7 @@ class ConsulLockProviderTest {
     // lower values may produce false negatives because scheduler may not complete necessary tasks in time
     private static final Duration SMALL_MIN_TTL = Duration.ofMillis(200);
     private ConsulClient mockConsulClient = mock(ConsulClient.class);
-    private ConsulLockProvider lockProvider = new ConsulLockProvider(mockConsulClient).setMinSessionTtl(SMALL_MIN_TTL);
+    private ConsulLockProvider lockProvider = new ConsulLockProvider(mockConsulClient, SMALL_MIN_TTL);
 
     @BeforeEach
     void setUp() {
