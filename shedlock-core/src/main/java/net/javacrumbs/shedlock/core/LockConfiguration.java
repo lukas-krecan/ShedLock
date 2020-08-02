@@ -38,7 +38,7 @@ public class LockConfiguration {
     private final Duration lockAtMostFor;
 
     /**
-     * The lock will be held at least this duratio even if the task holding the lock finishes earlier.
+     * The lock will be held at least this duration even if the task holding the lock finishes earlier.
      */
     private final Duration lockAtLeastFor;
 

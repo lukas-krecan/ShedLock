@@ -30,6 +30,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
+  - [Consul](#consul)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
@@ -508,6 +509,34 @@ CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt
 ```
 
 Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
+
+#### Consul
+ConsulLockProvider has one limitation: lockAtMostFor setting will have a minimum value of 10 seconds. It is dictated by consul's session limitations.
+
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-consul</artifactId>
+    <version>4.13.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.consul.ConsulLockProvider;
+
+...
+
+@Bean
+public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
+    return new ConsulLockProvider(consulClient);
+}
+```
+
+Please, note that both Consul lock providers uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
