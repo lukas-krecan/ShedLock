@@ -530,13 +530,13 @@ import net.javacrumbs.shedlock.provider.consul.ConsulLockProvider;
 
 ...
 
-@Bean
+@Bean // for micronaut please define preDestroy property @Bean(preDestroy="close")
 public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
     return new ConsulLockProvider(consulClient);
 }
 ```
 
-Please, note that both Consul lock providers uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
+Please, note that Consul lock provider uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one

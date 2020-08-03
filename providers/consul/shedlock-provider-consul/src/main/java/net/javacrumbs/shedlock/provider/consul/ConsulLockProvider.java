@@ -36,27 +36,31 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
  *
  * @author Artur Kalimullin
  */
-public class ConsulLockProvider implements LockProvider {
+public class ConsulLockProvider implements LockProvider, AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ConsulLockProvider.class);
     private static final String DEFAULT_CONSUL_LOCK_POSTFIX = "-leader";
+    private static final Duration DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL = Duration.ofSeconds(2);
     private final ScheduledExecutorService unlockScheduler = Executors.newSingleThreadScheduledExecutor();
 
     private final Duration minSessionTtl;
     private final String consulLockPostfix;
     private final ConsulClient consulClient;
+    private final Duration gracefulShutdownInterval;
 
     public ConsulLockProvider(ConsulClient consulClient) {
-        this(consulClient, Duration.ofSeconds(10), DEFAULT_CONSUL_LOCK_POSTFIX);
+        this(consulClient, Duration.ofSeconds(10), DEFAULT_CONSUL_LOCK_POSTFIX, DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL);
     }
 
     public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl) {
-        this(consulClient, minSessionTtl, DEFAULT_CONSUL_LOCK_POSTFIX);
+        this(consulClient, minSessionTtl, DEFAULT_CONSUL_LOCK_POSTFIX, DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL);
     }
 
-    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix) {
+    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix, Duration gracefulShutdownInterval) {
         this.consulClient = consulClient;
         this.consulLockPostfix = consulLockPostfix;
         this.minSessionTtl = minSessionTtl;
+        this.gracefulShutdownInterval = gracefulShutdownInterval;
+        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
     }
 
     @Override
@@ -123,5 +127,16 @@ public class ConsulLockProvider implements LockProvider {
                 logger.warn("Exception while execution", t);
             }
         };
+    }
+
+    @Override
+    public void close() {
+        unlockScheduler.shutdown();
+        try {
+            if (!unlockScheduler.awaitTermination(gracefulShutdownInterval.toMillis(), TimeUnit.MILLISECONDS)) {
+                unlockScheduler.shutdownNow();
+            }
+        } catch (InterruptedException ignored) {
+        }
     }
 }
