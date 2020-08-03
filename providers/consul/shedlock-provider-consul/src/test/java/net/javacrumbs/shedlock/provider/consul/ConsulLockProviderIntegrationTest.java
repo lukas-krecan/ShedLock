@@ -21,13 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
-    public static ConsulClient CONSUL_CLIENT;
+    public static ConsulClient consulClient;
     private static ConsulProcess consul;
 
     @BeforeAll
     public static void startConsul() {
         consul = ConsulStarterBuilder.consulStarter().build().start();
-        CONSUL_CLIENT = new ConsulClient(consul.getAddress(), consul.getHttpPort());
+        consulClient = new ConsulClient(consul.getAddress(), consul.getHttpPort());
     }
 
     @AfterAll
@@ -42,19 +42,23 @@ class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationT
 
     @Override
     protected LockProvider getLockProvider() {
-        return new ConsulLockProvider(CONSUL_CLIENT);
+        return new ConsulLockProvider(consulClient);
     }
 
     @Override
     protected void assertUnlocked(final String lockName) {
-        GetValue leader = CONSUL_CLIENT.getKVValue(lockName + "-leader").getValue();
+        GetValue leader = getLockValue(lockName);
         assertThat(leader).isNull();
     }
 
     @Override
     protected void assertLocked(final String lockName) {
-        GetValue leader = CONSUL_CLIENT.getKVValue(lockName + "-leader").getValue();
+        GetValue leader = getLockValue(lockName);
         assertThat(Optional.ofNullable(leader).map(GetValue::getSession)).isNotEmpty();
+    }
+
+    private GetValue getLockValue(String lockName) {
+        return consulClient.getKVValue(lockName + "-leader").getValue();
     }
 
     @Test
