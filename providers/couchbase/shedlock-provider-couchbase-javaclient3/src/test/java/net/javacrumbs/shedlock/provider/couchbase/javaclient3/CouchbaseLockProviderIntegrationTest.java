@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.couchbase.javaclient;
+package net.javacrumbs.shedlock.provider.couchbase.javaclient3;
 
 import com.couchbase.client.core.env.SeedNode;
 import com.couchbase.client.java.Bucket;
@@ -38,16 +38,16 @@ import java.util.Set;
 
 import static java.time.Instant.parse;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static net.javacrumbs.shedlock.provider.couchbase.javaclient.Couchbase3LockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.couchbase.javaclient.Couchbase3LockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.couchbase.javaclient.Couchbase3LockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Couchbase3LockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
+public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String BUCKET_NAME = "test";
 
-    private Couchbase3LockProvider lockProvider;
+    private CouchbaseLockProvider lockProvider;
     private static Cluster cluster;
     private static Bucket bucket;
     private static CouchbaseContainer container;
@@ -76,7 +76,7 @@ public class Couchbase3LockProviderIntegrationTest extends AbstractStorageBasedL
 
     @BeforeEach
     public void createLockProvider()  {
-        lockProvider = new Couchbase3LockProvider(bucket);
+        lockProvider = new CouchbaseLockProvider(bucket);
     }
 
     @AfterEach

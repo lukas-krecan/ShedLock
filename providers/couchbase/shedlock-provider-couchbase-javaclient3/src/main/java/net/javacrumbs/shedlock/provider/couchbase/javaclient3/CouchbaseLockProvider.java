@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.couchbase.javaclient;
+package net.javacrumbs.shedlock.provider.couchbase.javaclient3;
 
 import com.couchbase.client.core.error.CasMismatchException;
 import com.couchbase.client.core.error.DocumentExistsException;
@@ -65,25 +65,25 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
  * </li>
  * </ol>
  */
-public class Couchbase3LockProvider extends StorageBasedLockProvider {
+public class CouchbaseLockProvider extends StorageBasedLockProvider {
     private static final String LOCK_NAME = "name";
     static final String LOCK_UNTIL = "lockedUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
 
-    public Couchbase3LockProvider(Bucket bucket) {
-        this(new Couchbase3Accessor(bucket));
+    public CouchbaseLockProvider(Bucket bucket) {
+        this(new CouchbaseAccessor(bucket));
     }
 
-    Couchbase3LockProvider(Couchbase3Accessor couchbase3Accessor) {
-        super(couchbase3Accessor);
+    CouchbaseLockProvider(CouchbaseAccessor couchbaseAccessor) {
+        super(couchbaseAccessor);
     }
 
-    private static class Couchbase3Accessor extends AbstractStorageAccessor {
+    private static class CouchbaseAccessor extends AbstractStorageAccessor {
 
         private final Bucket bucket;
 
-        Couchbase3Accessor(Bucket bucket) {
+        CouchbaseAccessor(Bucket bucket) {
             this.bucket = bucket;
         }
         @Override
