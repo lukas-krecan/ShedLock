@@ -670,7 +670,7 @@ public void scheduledTask() {
 }
 ```
 
-In unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread.
+In unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread (as in this [example](https://github.com/lukas-krecan/ShedLock/commit/e8d63b7c56644c4189e0a8b420d8581d6eae1443)).
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
