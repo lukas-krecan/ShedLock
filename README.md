@@ -658,7 +658,8 @@ scheduling mechanism.
 Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
 ## Lock assert
-To prevent misconfiguration errors, you can assert that the lock works by using LockAssert:
+To prevent misconfiguration errors, like AOP miscofiguration, missing annotataion etc., you can assert that the lock
+works by using LockAssert:
 
 ```java
 @Scheduled(...)
@@ -670,7 +671,7 @@ public void scheduledTask() {
 }
 ```
 
-In unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread (as in this [example](https://github.com/lukas-krecan/ShedLock/commit/e8d63b7c56644c4189e0a8b420d8581d6eae1443)).
+In unit tests you can switch-off the assertion by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread (as in this [example](https://github.com/lukas-krecan/ShedLock/commit/e8d63b7c56644c4189e0a8b420d8581d6eae1443)).
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
