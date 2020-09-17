@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -118,6 +119,7 @@ public class FuzzTester {
 
         public LockConfiguration getLockConfiguration() {
             return new LockConfiguration(
+                ClockProvider.now(),
                 lockName,
                 Duration.of(5, ChronoUnit.MINUTES),
                 Duration.of(5, ChronoUnit.MILLIS)

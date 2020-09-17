@@ -33,13 +33,14 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class MultiTenancyLockProviderIntegrationTest {
     public static final String LOCK_NAME = "lock_name";
-    public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO);
+    public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(now(), LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO);
     private static final JdbcTestUtils h2TestUtils;
     private static final JdbcTestUtils hsqlTestUtils;
 

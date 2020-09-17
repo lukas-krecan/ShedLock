@@ -30,6 +30,7 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 
 public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
@@ -65,7 +66,7 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTem
             .withLockedByValue("my-value")
             .build());
 
-        Optional<SimpleLock> lock = provider.lock(new LockConfiguration("test", Duration.ofSeconds(10), Duration.ZERO));
+        Optional<SimpleLock> lock = provider.lock(new LockConfiguration(now(), "test", Duration.ofSeconds(10), Duration.ZERO));
         lock.get().unlock();
     }
 }

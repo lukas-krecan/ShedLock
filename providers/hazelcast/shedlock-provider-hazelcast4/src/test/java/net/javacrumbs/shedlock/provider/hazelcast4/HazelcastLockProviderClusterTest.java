@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HazelcastLockProviderClusterTest {
@@ -115,6 +116,6 @@ public class HazelcastLockProviderClusterTest {
     }
 
     protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
-        return new LockConfiguration(name, lockAtMostFor, lockAtLeastFor);
+        return new LockConfiguration(now(), name, lockAtMostFor, lockAtLeastFor);
     }
 }

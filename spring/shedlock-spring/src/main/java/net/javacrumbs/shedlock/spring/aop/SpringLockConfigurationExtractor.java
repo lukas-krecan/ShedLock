@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -79,6 +80,7 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
 
     private LockConfiguration getLockConfiguration(AnnotationData annotation) {
         return new LockConfiguration(
+            ClockProvider.now(),
             getName(annotation),
             getLockAtMostFor(annotation),
             getLockAtLeastFor(annotation));

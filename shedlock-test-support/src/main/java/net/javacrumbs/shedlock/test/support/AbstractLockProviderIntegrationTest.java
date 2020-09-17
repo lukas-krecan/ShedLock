@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support;
 
+import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -147,6 +148,6 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
-        return new LockConfiguration(name, lockAtMostFor, lockAtLeastFor);
+        return new LockConfiguration(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
    }
 }

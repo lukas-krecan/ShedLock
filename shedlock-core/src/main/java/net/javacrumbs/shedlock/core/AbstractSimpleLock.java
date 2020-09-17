@@ -49,7 +49,7 @@ public abstract class AbstractSimpleLock implements SimpleLock {
     @Override
     public @NonNull Optional<SimpleLock> extend(@NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         checkValidity();
-        Optional<SimpleLock> result = doExtend(new LockConfiguration(lockConfiguration.getName(), lockAtMostFor, lockAtLeastFor));
+        Optional<SimpleLock> result = doExtend(new LockConfiguration(ClockProvider.now(), lockConfiguration.getName(), lockAtMostFor, lockAtLeastFor));
         valid = false;
         return result;
     }

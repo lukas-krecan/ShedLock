@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public interface ServerTimeTest {
@@ -25,7 +26,7 @@ public interface ServerTimeTest {
     @Test
     default void lockUntilShouldBeInUtc() {
         Instant time = Instant.now();
-        Optional<SimpleLock> lock = getLockProvider().lock(new LockConfiguration(LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO));
+        Optional<SimpleLock> lock = getLockProvider().lock(new LockConfiguration(now(), LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO));
         assertThat(getTestUtils().getLockedUntil(LOCK_NAME).toLocalDateTime()).isBetween(atUtc(time.plusSeconds(50)), atUtc(time.plusSeconds(70)));
 
         time = Instant.now();
@@ -33,7 +34,7 @@ public interface ServerTimeTest {
         assertThat(getTestUtils().getLockedUntil(LOCK_NAME).toLocalDateTime()).isBetween(atUtc(time.minusSeconds(10)), atUtc(time.plusSeconds(10)));
 
         time = Instant.now();
-        getLockProvider().lock(new LockConfiguration(LOCK_NAME, Duration.ofSeconds(120), Duration.ZERO));
+        getLockProvider().lock(new LockConfiguration(now(), LOCK_NAME, Duration.ofSeconds(120), Duration.ZERO));
         assertThat(getTestUtils().getLockedUntil(LOCK_NAME).toLocalDateTime()).isBetween(atUtc(time.plusSeconds(110)), atUtc(time.plusSeconds(130)));
     }
 

@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.12.0-SNAPSHOT</version>
+    <version>4.14.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
         <module>micronaut/shedlock-micronaut</module>
@@ -36,6 +36,7 @@
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
+        <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
@@ -47,6 +48,7 @@
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
+        <module>providers/consul/shedlock-provider-consul</module>
     </modules>
 
     <properties>

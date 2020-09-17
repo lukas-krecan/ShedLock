@@ -38,10 +38,11 @@ public class LockConfiguration {
     private final Duration lockAtMostFor;
 
     /**
-     * The lock will be held at least this duratio even if the task holding the lock finishes earlier.
+     * The lock will be held at least this duration even if the task holding the lock finishes earlier.
      */
     private final Duration lockAtLeastFor;
 
+    @Deprecated
     public LockConfiguration(@NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
     }
@@ -61,7 +62,17 @@ public class LockConfiguration {
         this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil));
     }
 
-    private LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
+    /**
+     * Creates LockConfiguration. There are two types of lock providers. One that uses "db time" which requires relative
+     * values of lockAtMostFor and lockAtLeastFor (currently it's only JdbcTemplateLockProvider). Second type of
+     * lock provider uses absolute time calculated from `createdAt`.
+     *
+     * @param createdAt
+     * @param name
+     * @param lockAtMostFor
+     * @param lockAtLeastFor
+     */
+    public LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
         this.createdAt = Objects.requireNonNull(createdAt);
         this.name = Objects.requireNonNull(name);
         this.lockAtMostFor = Objects.requireNonNull(lockAtMostFor);

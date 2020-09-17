@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,7 +19,7 @@ class LockAssertTest {
 
     @Test
     void assertLockedShouldNotFailIfLockHeld() {
-        LockConfiguration lockConfiguration = new LockConfiguration("test", Duration.ofSeconds(10), Duration.ZERO);
+        LockConfiguration lockConfiguration = new LockConfiguration(now(), "test", Duration.ofSeconds(10), Duration.ZERO);
 
         LockProvider lockProvider = mock(LockProvider.class);
         when(lockProvider.lock(lockConfiguration)).thenReturn(Optional.of(mock(SimpleLock.class)));

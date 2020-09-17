@@ -30,6 +30,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ElasticSearch](#elasticsearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
+  - [Consul](#consul)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
@@ -60,7 +61,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -160,7 +161,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -211,7 +212,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -238,7 +239,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -267,7 +268,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -297,7 +298,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -324,7 +325,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -348,7 +349,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -379,7 +380,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -406,7 +407,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.12.0/version>
+    <version>4.14.0/version>
 </dependency>
 ```
 
@@ -432,7 +433,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.12.0/version>
+    <version>4.14.0/version>
 </dependency>
 ```
 
@@ -449,6 +450,8 @@ public CouchbaseLockProvider lockProvider(Bucket bucket) {
 }
 ```
 
+For Couchbase 3 use `shedlock-provider-couchbase3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
+
 #### Elasticsearch
 I am really not sure that it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
 
@@ -456,7 +459,7 @@ I am really not sure that it's a good idea to use Elasticsearch as a lock provid
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -484,7 +487,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.12.0/version>
+    <version>4.14.0/version>
 </dependency>
 ```
 
@@ -508,6 +511,34 @@ CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt
 ```
 
 Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
+
+#### Consul
+ConsulLockProvider has one limitation: lockAtMostFor setting will have a minimum value of 10 seconds. It is dictated by consul's session limitations.
+
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-consul</artifactId>
+    <version>4.14.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.consul.ConsulLockProvider;
+
+...
+
+@Bean // for micronaut please define preDestroy property @Bean(preDestroy="close")
+public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
+    return new ConsulLockProvider(consulClient);
+}
+```
+
+Please, note that Consul lock provider uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
@@ -543,7 +574,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.12.0</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
@@ -627,7 +658,8 @@ scheduling mechanism.
 Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
 ## Lock assert
-To prevent misconfiguration errors, you can assert that the lock works by using LockAssert:
+To prevent misconfiguration errors, like AOP miscofiguration, missing annotataion etc., you can assert that the lock
+works by using LockAssert:
 
 ```java
 @Scheduled(...)
@@ -639,7 +671,7 @@ public void scheduledTask() {
 }
 ```
 
-In unit tests you can switch-off the assert by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread.
+In unit tests you can switch-off the assertion by calling `LockAssert.TestHelper.makeAllAssertsPass(true)` on given thread (as in this [example](https://github.com/lukas-krecan/ShedLock/commit/e8d63b7c56644c4189e0a8b420d8581d6eae1443)).
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
@@ -672,6 +704,16 @@ after each other, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.14.0
+* Support for Couchbase 3 driver (thanks @blitzenzzz)
+* Removed forgotten configuration files form micronaut package (thanks @drmaas)
+* Shutdown hook for Consul (thanks @kaliy)
+
+## 4.13.0
+* Support for Consul (thanks @kaliy)
+* Various dependencies updated
+* Deprecated default LockConfiguration constructor
+
 ## 4.12.0
 * Lazy initialization of SqlStatementsSource #258
 
