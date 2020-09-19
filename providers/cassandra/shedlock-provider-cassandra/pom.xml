@@ -35,9 +35,16 @@
         </dependency>
 
         <dependency>
-            <groupId>org.cassandraunit</groupId>
-            <artifactId>cassandra-unit</artifactId>
-            <version>4.3.1.0</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${test-containers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>cassandra</artifactId>
+            <version>${test-containers.version}</version>
             <scope>test</scope>
         </dependency>
 
