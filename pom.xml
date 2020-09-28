@@ -26,6 +26,7 @@
         <module>micronaut/micronaut-test</module>
         <module>spring/shedlock-spring</module>
         <module>spring/shedlock-springboot-test</module>
+        <module>spring/shedlock-springboot24-test</module>
         <module>spring/shedlock-springboot22-test</module>
         <module>spring/shedlock-springboot22-sleuth-test</module>
         <module>spring/shedlock-springboot22-kotlin-test</module>
