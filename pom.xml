@@ -28,7 +28,7 @@
         <module>spring/test/shedlock-springboot-test</module>
         <module>spring/test/shedlock-springboot24-test</module>
         <module>spring/test/shedlock-springboot22-test</module>
-        <module>spring/test/shedlock-springboot22-sleuth-test</module>
+        <module>spring/test/shedlock-springboot-sleuth-test</module>
         <module>spring/test/shedlock-springboot-kotlin-test</module>
         <module>spring/test/shedlock-testng-test</module>
         <module>shedlock-test-support</module>
