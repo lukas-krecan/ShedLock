@@ -31,6 +31,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
   - [Consul](#consul)
+  - [ArangoDB](#arangodb)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
@@ -539,6 +540,31 @@ public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulCl
 ```
 
 Please, note that Consul lock provider uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
+
+### ArangoDB
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-arangodb</artifactId>
+    <version>4.14.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.arangodb.ArangoLockProvider;
+
+...
+
+@Bean
+public ArangoLockProvider lockProvider(final ArangoOperations arangoTemplate) {
+    return new ArangoLockProvider(arangoTemplate.driver().db(DB_NAME));
+}
+```
+
+Please, note that ArangoDB lock provider uses ArangoDB driver v6.7, which is part of [arango-spring-data](https://github.com/arangodb/spring-data) in version 3.3.0.
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
