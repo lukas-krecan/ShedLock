@@ -11,6 +11,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 
@@ -22,7 +26,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
+@Testcontainers
 public class ArangoLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+
+    @Container
+    public static final ArangoContainer arangoContainer = new ArangoContainer();
 
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
@@ -37,9 +45,10 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
 
     @BeforeAll
     static void beforeAll() {
+        arangoContainer.start();
 
         arango = new ArangoDB.Builder()
-            .host(DB_HOSTNAME, DB_PORT)
+            .host(DB_HOSTNAME, arangoContainer.getMappedPort(DB_PORT))
             .user(DB_USER)
             .password(DB_PASSWORD)
             .useSsl(false)
@@ -62,6 +71,7 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
     static void afterAll() {
         arango.db(DB_NAME).drop();
         arango.shutdown();
+        arangoContainer.stop();
     }
 
     @BeforeEach
@@ -111,4 +121,14 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
         return instantOne.compareTo(instantTwo) <= 0;
     }
 
+    private static class ArangoContainer extends GenericContainer<ArangoContainer> {
+        ArangoContainer() {
+            super("arangodb/arangodb:3.7.2");
+            withEnv("ARANGO_NO_AUTH", "1");
+            withLogConsumer(outputFrame -> logger().info(outputFrame.getUtf8String()));
+            addExposedPort(DB_PORT);
+            setCommand("arangod", "--server.endpoint", "tcp://0.0.0.0:8529");
+            waitingFor(Wait.forLogMessage(".*is ready for business. Have fun!.*", 1));
+        }
+    }
 }
