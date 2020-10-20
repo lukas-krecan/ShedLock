@@ -22,6 +22,8 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import java.time.Instant;
 import java.util.Optional;
 
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
+
 /**
  * Arango Lock Provider needs existing collection
  * <br>
@@ -38,9 +40,7 @@ public class ArangoLockProvider implements LockProvider {
     static final String LOCKED_BY = "lockedBy";
     static final String COLLECTION_NAME = "shedLock";
 
-    private final String hostname;
     private final ArangoCollection arangoCollection;
-
 
     /**
      * Instantiates a new Arango lock provider.
@@ -58,13 +58,11 @@ public class ArangoLockProvider implements LockProvider {
      */
     public ArangoLockProvider(@NonNull ArangoCollection arangoCollection) {
         this.arangoCollection = arangoCollection;
-        this.hostname = Utils.getHostname();
     }
 
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-
         String transactionId = null;
 
         try {
@@ -127,7 +125,6 @@ public class ArangoLockProvider implements LockProvider {
     private void updateLockAtMostUntil(String transactionId,
                                        BaseDocument existingDocument,
                                        Instant lockAtMostUntil) {
-
         setDocumentAttributes(existingDocument, lockAtMostUntil);
         arangoCollection.updateDocument(existingDocument.getKey(), existingDocument,
             new DocumentUpdateOptions().streamTransactionId(transactionId));
@@ -136,7 +133,7 @@ public class ArangoLockProvider implements LockProvider {
     private void setDocumentAttributes(BaseDocument baseDocument, Instant lockAtMostUntil) {
         baseDocument.addAttribute(LOCK_UNTIL, Utils.toIsoString(lockAtMostUntil));
         baseDocument.addAttribute(LOCKED_AT, Utils.toIsoString(ClockProvider.now()));
-        baseDocument.addAttribute(LOCKED_BY, hostname);
+        baseDocument.addAttribute(LOCKED_BY, getHostname());
     }
 
     private static final class ArangoLock extends AbstractSimpleLock {
