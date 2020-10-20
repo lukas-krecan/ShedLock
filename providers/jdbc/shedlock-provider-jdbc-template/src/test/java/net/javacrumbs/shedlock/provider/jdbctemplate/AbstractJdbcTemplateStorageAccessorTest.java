@@ -4,7 +4,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -92,7 +91,7 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
         assertThat(testUtils.getLockedUntil(OTHER_LOCK)).isEqualTo(otherLockLockedUntil);
     }
 
-    @NotNull
+    @NonNull
     private LockConfiguration lockConfig(String myLock, Duration lockAtMostFor) {
         return new LockConfiguration(now(), myLock, lockAtMostFor, Duration.ZERO);
     }
