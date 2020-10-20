@@ -4,7 +4,6 @@ import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoDB;
 import com.arangodb.ArangoDatabase;
 import com.arangodb.entity.BaseDocument;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
@@ -18,12 +17,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.arangodb.ArangoLockProvider.COLLECTION_NAME;
 import static net.javacrumbs.shedlock.provider.arangodb.ArangoLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.arangodb.ArangoLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.arangodb.ArangoLockProvider.LOCK_UNTIL;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @Testcontainers
@@ -93,32 +92,32 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
     @Override
     protected void assertUnlocked(String lockName) {
         BaseDocument document = getDocument(lockName);
-        Instant instantLockedAt = Instant.parse((String) document.getAttribute(LOCKED_AT));
-        Instant instantLockUntil = Instant.parse((String) document.getAttribute(LOCK_UNTIL));
+        Instant instantLockedAt = getInstant(document, LOCKED_AT);
+        Instant instantLockUntil = getInstant(document, LOCK_UNTIL);
 
-        assertFalse(((String) document.getAttribute(LOCKED_BY)).isEmpty());
-        assertTrue(isBeforeOrEquals(instantLockedAt, ClockProvider.now()));
-        assertTrue(isBeforeOrEquals(instantLockUntil, ClockProvider.now()));
+        assertThat(document.getAttribute(LOCKED_BY).toString()).isNotEmpty();
+        assertThat(instantLockedAt).isBeforeOrEqualTo(now());
+        assertThat(instantLockUntil).isBeforeOrEqualTo(now());
+    }
+
+    private Instant getInstant(BaseDocument document, String lockedAt) {
+        return Instant.parse(document.getAttribute(lockedAt).toString());
     }
 
     @Override
     protected void assertLocked(String lockName) {
         BaseDocument document = getDocument(lockName);
 
-        Instant instantLockedAt = Instant.parse(document.getAttribute(LOCKED_AT).toString());
-        Instant instantLockUntil = Instant.parse(document.getAttribute(LOCK_UNTIL).toString());
+        Instant instantLockedAt = getInstant(document, LOCKED_AT);
+        Instant instantLockUntil = getInstant(document, LOCK_UNTIL);
 
-        assertFalse(document.getAttribute(LOCKED_BY).toString().isEmpty());
-        assertTrue(isBeforeOrEquals(instantLockedAt, ClockProvider.now()));
-        assertTrue(instantLockUntil.isAfter(ClockProvider.now()));
+        assertThat(document.getAttribute(LOCKED_BY).toString()).isNotEmpty();
+        assertThat(instantLockedAt).isBeforeOrEqualTo(now());
+        assertThat(instantLockUntil).isAfter(now());
     }
 
     private BaseDocument getDocument(String lockName) {
         return arangoCollection.getDocument(lockName, BaseDocument.class);
-    }
-
-    private boolean isBeforeOrEquals(Instant instantOne, Instant instantTwo) {
-        return instantOne.compareTo(instantTwo) <= 0;
     }
 
     private static class ArangoContainer extends GenericContainer<ArangoContainer> {
