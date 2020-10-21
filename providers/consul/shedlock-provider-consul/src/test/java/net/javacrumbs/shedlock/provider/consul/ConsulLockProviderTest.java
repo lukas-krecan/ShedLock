@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.consul;
 
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.PutParams;
 import net.javacrumbs.shedlock.core.ClockProvider;
@@ -62,6 +63,16 @@ class ConsulLockProviderTest {
 
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig("naruto", SMALL_MIN_TTL, SMALL_MIN_TTL.dividedBy(2)));
         assertThat(lock).isEmpty();
+    }
+
+    @Test
+    void destroysSessionIfLockIsAlreadyObtained() {
+        when(mockConsulClient.setKVValue(eq("naruto-leader"), any(), any(PutParams.class)))
+            .thenReturn(new Response<>(false, null, null, null));
+
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig("naruto", SMALL_MIN_TTL, SMALL_MIN_TTL.dividedBy(2)));
+        assertThat(lock).isEmpty();
+        verify(mockConsulClient).sessionDestroy(any(), eq(QueryParams.DEFAULT));
     }
 
     @Test

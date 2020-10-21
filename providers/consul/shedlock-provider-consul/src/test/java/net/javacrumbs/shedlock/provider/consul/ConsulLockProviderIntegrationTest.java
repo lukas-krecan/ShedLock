@@ -1,7 +1,10 @@
 package net.javacrumbs.shedlock.provider.consul;
 
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.QueryParams;
+import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
+import com.ecwid.consul.v1.session.model.Session;
 import com.pszymczyk.consul.ConsulProcess;
 import com.pszymczyk.consul.ConsulStarterBuilder;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -9,11 +12,13 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
@@ -38,6 +43,14 @@ class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationT
     @BeforeEach
     public void resetConsul() {
         consul.reset();
+    }
+
+    @AfterEach
+    public void checkSessions() {
+        Response<List<Session>> sessionListResponse = consulClient.getSessionList(QueryParams.DEFAULT);
+        assertThat(sessionListResponse.getValue())
+            .as("There should no sessions remain in consul after all locks have been released.")
+            .isEmpty();
     }
 
     @Override
@@ -87,5 +100,8 @@ class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationT
 
         sleep(lockAtMostFor.multipliedBy(2).toMillis() + 100);
         assertLocked(LOCK_NAME1);
+
+        // release lock to satisfy condition for #checkSessions()
+        lock1.get().unlock();
     }
 }

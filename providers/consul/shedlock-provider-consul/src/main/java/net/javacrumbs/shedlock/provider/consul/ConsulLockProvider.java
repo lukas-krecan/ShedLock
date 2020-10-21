@@ -100,6 +100,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         if (isLockSuccessful) {
             return Optional.of(new ConsulSimpleLock(lockConfiguration, this, sessionId));
         }
+        destroy(sessionId);
         return Optional.empty();
     }
 
