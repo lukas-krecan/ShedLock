@@ -67,6 +67,7 @@ public class FuzzTester {
 
         assertThat(job2.getCounter()).isEqualTo(THREADS / 2 * ITERATIONS);
         assertThat(job1.getCounter()).isEqualTo((THREADS / 2 - 1) * ITERATIONS + SHORT_ITERATION);
+        sleepFor(job1.getLockConfiguration().getLockAtLeastFor());
     }
 
     private void waitForIt(List<Future<Void>> futures) throws InterruptedException, ExecutionException {
@@ -101,12 +102,16 @@ public class FuzzTester {
         return false;
     }
 
-    private void sleep() {
+    private void sleepFor(Duration duration) {
         try {
-            Thread.sleep(1);
+            Thread.sleep(duration.toMillis());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sleep() {
+        sleepFor(Duration.ofMillis(1));
     }
 
     protected static class Job {
