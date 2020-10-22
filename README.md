@@ -541,7 +541,7 @@ public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulCl
 
 Please, note that Consul lock provider uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
 
-### ArangoDB
+#### ArangoDB
 Import the project
 ```xml
 <dependency>
