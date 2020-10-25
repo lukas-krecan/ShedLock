@@ -114,7 +114,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>2.27.0</version>
+                <version>3.5.15</version>
                 <scope>test</scope>
             </dependency>
 
@@ -128,7 +128,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.16.1</version>
+                <version>3.17.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -228,6 +228,11 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>versions-maven-plugin</artifactId>
+                        <version>2.7</version>
                     </plugin>
                 </plugins>
             </build>
