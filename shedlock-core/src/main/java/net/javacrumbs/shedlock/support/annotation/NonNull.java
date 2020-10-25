@@ -16,8 +16,6 @@
 
 package net.javacrumbs.shedlock.support.annotation;
 
-import javax.annotation.Nonnull;
-import javax.annotation.meta.TypeQualifierNickname;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,7 +28,6 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-@Nonnull
-@TypeQualifierNickname
+@org.jetbrains.annotations.NotNull
 public @interface NonNull {
 }

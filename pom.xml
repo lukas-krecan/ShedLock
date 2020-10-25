@@ -56,7 +56,7 @@
     <properties>
         <spring.version>5.2.7.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>9</jdk.version>
         <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
         <spring-boot23.version>2.3.4.RELEASE</spring-boot23.version>
         <junit.version>5.6.2</junit.version>
@@ -64,6 +64,9 @@
         <kotlin.version>1.4.10</kotlin.version>
         <micronaut.version>2.0.0</micronaut.version>
         <logback.version>1.2.3</logback.version>
+        <moditect.sourceGroup>${project.groupId}</moditect.sourceGroup>
+        <moditect.sourceArtifact>${project.artifactId}</moditect.sourceArtifact>
+        <moditect.sourceVersion>${project.version}</moditect.sourceVersion>
     </properties>
 
     <dependencies>
@@ -71,13 +74,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.30</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -190,6 +186,26 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <version>1.0.0.RC1</version>
+                <executions>
+                    <execution>
+                        <id>add-module-infos</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
+                            <module>
+                                <moduleInfoFile>src/moditect/module-info.java</moduleInfoFile>
+                            </module>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
