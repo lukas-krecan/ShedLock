@@ -68,7 +68,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         } catch (DuplicateKeyException e) {
             return false;
         } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
-            logger.warn("Unexpected exception", e);
+            logger.error("Unexpected exception", e);
             return false;
         }
     }
@@ -82,7 +82,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 return updatedRows > 0;
             });
         } catch (DataIntegrityViolationException e) {
-            logger.warn("Unexpected exception", e);
+            logger.error("Unexpected exception", e);
             return false;
         }
     }
