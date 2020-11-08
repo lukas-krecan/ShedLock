@@ -25,13 +25,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast-client</artifactId>
-            <version>3.12.7</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support</artifactId>
             <version>${project.version}</version>
