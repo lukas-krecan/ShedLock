@@ -408,7 +408,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.15.1/version>
+    <version>4.15.1</version>
 </dependency>
 ```
 
@@ -434,7 +434,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.15.1/version>
+    <version>4.15.1</version>
 </dependency>
 ```
 
@@ -488,7 +488,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.15.1/version>
+    <version>4.15.1</version>
 </dependency>
 ```
 
