@@ -100,7 +100,7 @@ at the same time.
 You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
 executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
 **You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
-`lockAtMostFor` the resulting behavior may be unpredictable (more then one process will effectively hold the lock).
+`lockAtMostFor` the resulting behavior may be unpredictable (more than one process will effectively hold the lock).
 
 If you do not specify `lockAtMostFor` in `@SchedulerLock` default value from `@EnableSchedulerLock` will be used.
 
