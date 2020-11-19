@@ -6,7 +6,7 @@ ShedLock makes sure that your scheduled tasks are executed at most once at the s
 If a task is being executed on one node, it acquires a lock which prevents execution of the same task from another node (or thread).
 Please note, that **if one task is already being executed on one node, execution on other nodes does not wait, it is simply skipped**.
 
-ShedLock uses external store like Mongo, JDBC database, Redis, Hazelcast, ZooKeeper or others for coordination.
+ShedLock uses an external store like Mongo, JDBC database, Redis, Hazelcast, ZooKeeper or others for coordination.
 
 Feedback and pull-requests welcome!
 
@@ -109,7 +109,7 @@ Its main purpose is to prevent execution from multiple nodes in case of really s
 
 #### Example
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
-Moreover, you want to execute it at most once per 15 minutes. In such case, you can configure it like this
+Moreover, you want to execute it at most once per 15 minutes. In that case, you can configure it like this:
 
  ```java
 import net.javacrumbs.shedlock.core.SchedulerLock;
@@ -124,7 +124,7 @@ public void scheduledTask() {
 ```
 By setting `lockAtMostFor` we make sure that the lock is released even if the node dies and by setting `lockAtLeastFor`
 we make sure it's not executed more than once in fifteen minutes.
-Please note that **`lockAtMostFor` is just a safety net for a case that the node executing the task dies, so set it to
+Please note that **`lockAtMostFor` is just a safety net in case that the node executing the task dies, so set it to
 a time that is significantly larger than maximum estimated execution time.**  If the task takes longer than `lockAtMostFor`,
 it may be executed again and the results will be unpredictable (more processes will hold the lock).
 
@@ -644,7 +644,7 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 
 ## Modes of Spring integration
-ShedLock supports two modes of Spring integration. One that uses AOP proxy about scheduled method (PROXY_METHOD)
+ShedLock supports two modes of Spring integration. One that uses an AOP proxy around scheduled method (PROXY_METHOD)
 and one that proxies TaskScheduler (PROXY_SCHEDULER)
 
 #### Scheduled Method proxy
@@ -684,7 +684,7 @@ scheduling mechanism.
 Spring XML configuration is not supported as of version 3.0.0. If you need it, please use version 2.6.0 or file an issue explaining why it is needed.
 
 ## Lock assert
-To prevent misconfiguration errors, like AOP miscofiguration, missing annotataion etc., you can assert that the lock
+To prevent misconfiguration errors, like AOP misconfiguration, missing annotation etc., you can assert that the lock
 works by using LockAssert:
 
 ```java
@@ -701,11 +701,11 @@ In unit tests you can switch-off the assertion by calling `LockAssert.TestHelper
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
-annotation, everyting should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
+annotation, everything should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
 have to open the method by yourself.
 
 ## Caveats
-Locks in ShedLock have expiration time which leads to following possible issues.
+Locks in ShedLock have an expiration time which leads to the following possible issues.
 1. If the task runs longer than `lockAtMostFor`, the task can be executed more than once
 2. If the clock difference between two nodes is more than `lockAtLeastFor` or minimal execution time the task can be
 executed more than once.
@@ -718,8 +718,8 @@ Help, ShedLock does not do what it's supposed to do!
 If there is more than one record with the same name, you are missing a primary key.
 3. Use ShedLock debug log. ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`.
 It should help you to see what's going on.
-4. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they can be executed one
-after each other, `lockAtLeastFor` can prevent it.
+4. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they could be executed one
+after another, `lockAtLeastFor` can prevent it.
 5. If you encounter weird error complaining that a Proxy is not class of `ThreadPoolTaskScheduler` please check https://github.com/lukas-krecan/ShedLock/issues/115 or
 [this StackOverflow quesiton](https://stackoverflow.com/questions/56017382/how-to-fix-websockets-and-shedlock-compatibility-in-spring-boot-application/56036601#56036601)
 
@@ -826,10 +826,10 @@ after each other, `lockAtLeastFor` can prevent it.
 ## 4.0.1
 * DefaultLockingTaskExecutor made reentrant #175
 ## 4.0.0
-Version 4.0.0 is a major release changing quite a lot stuff
+Version 4.0.0 is a major release changing quite a lot of stuff
 * `net.javacrumbs.shedlock.core.SchedulerLock` has been replaced by `net.javacrumbs.shedlock.spring.annotation.SchedulerLock`. The original annotation has been in wrong module and
 was too complex. Please use the new annotation, the old one still works, but in few years it will be removed.
-* Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there was lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
+* Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there were a lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
 use `PROXY_SCHEDULER` mode if you specifay it manually.
 * Support for more readable [duration strings](#duration-specification)
 * Support for lock assertion `LockAssert.assertLocked()`
