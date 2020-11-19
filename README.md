@@ -454,7 +454,7 @@ public CouchbaseLockProvider lockProvider(Bucket bucket) {
 For Couchbase 3 use `shedlock-provider-couchbase3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
 
 #### Elasticsearch
-I am really not sure that it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
+I am really not sure it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
 
 ```xml
 <dependency>
