@@ -29,6 +29,7 @@ import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.Inte
 public class SchedulerLockConfigurationSelector implements ImportSelector {
 
     @Override
+    @NonNull
     public String[] selectImports(@NonNull AnnotationMetadata metadata) {
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
         InterceptMode mode = attributes.getEnum("interceptMode");
