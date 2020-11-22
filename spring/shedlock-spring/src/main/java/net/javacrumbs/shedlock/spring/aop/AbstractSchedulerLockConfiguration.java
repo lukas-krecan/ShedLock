@@ -70,6 +70,10 @@ class AbstractSchedulerLockConfiguration implements ImportAware, EmbeddedValueRe
         return resolver;
     }
 
+    protected int getOrder() {
+        return annotationAttributes.getNumber("order");
+    }
+
     public StringToDurationConverter getDurationConverter() {
         return durationConverter;
     }

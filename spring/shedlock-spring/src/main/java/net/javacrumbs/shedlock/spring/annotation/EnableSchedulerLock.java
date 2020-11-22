@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.spring.annotation;
 import net.javacrumbs.shedlock.spring.aop.SchedulerLockConfigurationSelector;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -84,4 +85,11 @@ public @interface EnableSchedulerLock {
      * to standard Java interface-based proxies.
      */
     boolean proxyTargetClass() default false;
+
+    /**
+     * Indicate the ordering of the execution of the locking advisor
+     * when multiple advices are applied at a specific joinpoint.
+     * <p>The default is {@link Ordered#LOWEST_PRECEDENCE}.
+     */
+    int order() default Ordered.LOWEST_PRECEDENCE;
 }
