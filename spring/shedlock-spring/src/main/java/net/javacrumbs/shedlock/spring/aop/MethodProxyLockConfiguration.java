@@ -29,7 +29,12 @@ class MethodProxyLockConfiguration extends AbstractSchedulerLockConfiguration {
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     MethodProxyScheduledLockAdvisor proxyScheduledLockAopBeanPostProcessor(@Lazy LockProvider lockProvider) {
-        return new MethodProxyScheduledLockAdvisor(new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver(), getDurationConverter()), new DefaultLockingTaskExecutor(lockProvider));
+        MethodProxyScheduledLockAdvisor advisor = new MethodProxyScheduledLockAdvisor(
+            new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), getResolver(), getDurationConverter()),
+            new DefaultLockingTaskExecutor(lockProvider)
+        );
+        advisor.setOrder(getOrder());
+        return advisor;
 
     }
 }
