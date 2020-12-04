@@ -46,9 +46,10 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
     private final String consulLockPostfix;
     private final ConsulClient consulClient;
     private final Duration gracefulShutdownInterval;
+    private final String token;
 
     public ConsulLockProvider(ConsulClient consulClient) {
-        this(consulClient, Duration.ofSeconds(10), DEFAULT_CONSUL_LOCK_POSTFIX, DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL);
+        this(consulClient, Duration.ofSeconds(10));
     }
 
     public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl) {
@@ -56,10 +57,15 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
     }
 
     public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix, Duration gracefulShutdownInterval) {
+        this(consulClient, minSessionTtl, consulLockPostfix, gracefulShutdownInterval, null);
+    }
+
+    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix, Duration gracefulShutdownInterval, String token) {
         this.consulClient = consulClient;
         this.consulLockPostfix = consulLockPostfix;
         this.minSessionTtl = minSessionTtl;
         this.gracefulShutdownInterval = gracefulShutdownInterval;
+        this.token = token;
         Runtime.getRuntime().addShutdownHook(new Thread(this::close));
     }
 
@@ -87,7 +93,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         newSession.setLockDelay(0);
         newSession.setBehavior(Session.Behavior.DELETE);
         newSession.setTtl(ttlInSeconds + "s");
-        String sessionId = consulClient.sessionCreate(newSession, QueryParams.DEFAULT).getValue();
+        String sessionId = consulClient.sessionCreate(newSession, QueryParams.DEFAULT, token).getValue();
         logger.debug("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
         return sessionId;
     }

@@ -33,7 +33,7 @@ class ConsulLockProviderTest {
     @BeforeEach
     void setUp() {
         lockProvider = new ConsulLockProvider(mockConsulClient);
-        when(mockConsulClient.sessionCreate(any(), any())).thenReturn(new Response<>(UUID.randomUUID().toString(), null, null, null));
+        when(mockConsulClient.sessionCreate(any(), any(), any())).thenReturn(new Response<>(UUID.randomUUID().toString(), null, null, null));
         when(mockConsulClient.setKVValue(any(), any(), any(PutParams.class))).thenReturn(new Response<>(true, null, null, null));
     }
 
