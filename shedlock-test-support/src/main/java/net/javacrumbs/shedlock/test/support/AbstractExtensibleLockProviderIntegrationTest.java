@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class AbstractExtensibleLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
-    private final Duration originalLockDuration = Duration.ofMillis(3_000);
+    private final Duration originalLockDuration = Duration.ofMillis(2_000);
 
     @Test
     public void shouldBeAbleToExtendLock() {

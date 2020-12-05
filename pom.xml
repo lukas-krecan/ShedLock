@@ -168,7 +168,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
-                    <forkCount>5</forkCount>
+                    <forkCount>4</forkCount>
                     <argLine>-Xmx512m</argLine>
                 </configuration>
             </plugin>
