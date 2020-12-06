@@ -37,7 +37,7 @@ import java.util.Optional;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
-class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
+public class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
     private final StringValueResolver embeddedValueResolver;
@@ -69,7 +69,15 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
         return Optional.empty();
     }
 
-    public Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
+    /**
+     * To be used by external libraries to extract the lock configuration.
+     */
+    @NonNull
+    public LockConfiguration getLockConfiguration(@NonNull SchedulerLock annotation) {
+        return getLockConfiguration(toAnnotationData(annotation));
+    }
+
+    Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
         AnnotationData annotation = findAnnotation(target, method);
         if (shouldLock(annotation)) {
             return Optional.of(getLockConfiguration(annotation));
@@ -161,9 +169,13 @@ class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
         }
         SchedulerLock annotation2 = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
         if (annotation2 != null) {
-            return new AnnotationData(annotation2.name(), -1, annotation2.lockAtMostFor(), -1, annotation2.lockAtLeastFor());
+            return toAnnotationData(annotation2);
         }
         return null;
+    }
+
+    private AnnotationData toAnnotationData(SchedulerLock annotation) {
+        return new AnnotationData(annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
     }
 
     private boolean shouldLock(AnnotationData annotation) {
