@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
 /**
@@ -37,36 +38,146 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
  * @author Artur Kalimullin
  */
 public class ConsulLockProvider implements LockProvider, AutoCloseable {
+
     private static final Logger logger = LoggerFactory.getLogger(ConsulLockProvider.class);
     private static final String DEFAULT_CONSUL_LOCK_POSTFIX = "-leader";
     private static final Duration DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL = Duration.ofSeconds(2);
+    private static final Duration DEFAULT_MIN_SESSION_TTL = Duration.ofSeconds(10);
+
     private final ScheduledExecutorService unlockScheduler = Executors.newSingleThreadScheduledExecutor();
 
-    private final Duration minSessionTtl;
-    private final String consulLockPostfix;
-    private final ConsulClient consulClient;
-    private final Duration gracefulShutdownInterval;
-    private final String token;
+    private final Configuration configuration;
 
-    public ConsulLockProvider(ConsulClient consulClient) {
-        this(consulClient, Duration.ofSeconds(10));
+    public ConsulLockProvider(@NonNull ConsulClient consulClient) {
+        this(Configuration.builder()
+            .withConsulClient(consulClient)
+            .build()
+        );
     }
 
-    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl) {
-        this(consulClient, minSessionTtl, DEFAULT_CONSUL_LOCK_POSTFIX, DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL);
+    public ConsulLockProvider(@NonNull ConsulClient consulClient, Duration minSessionTtl) {
+        this(Configuration.builder()
+            .withConsulClient(consulClient)
+            .withMinSessionTtl(minSessionTtl)
+            .build()
+        );
     }
 
-    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix, Duration gracefulShutdownInterval) {
-        this(consulClient, minSessionTtl, consulLockPostfix, gracefulShutdownInterval, null);
+    public ConsulLockProvider(
+        @NonNull ConsulClient consulClient,
+        Duration minSessionTtl,
+        String consulLockPostfix,
+        Duration gracefulShutdownInterval) {
+
+        this(Configuration.builder()
+            .withConsulClient(consulClient)
+            .withMinSessionTtl(minSessionTtl)
+            .withConsulLockPostfix(consulLockPostfix)
+            .withGracefulShutdownInterval(gracefulShutdownInterval)
+            .build()
+        );
     }
 
-    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl, String consulLockPostfix, Duration gracefulShutdownInterval, String token) {
-        this.consulClient = consulClient;
-        this.consulLockPostfix = consulLockPostfix;
-        this.minSessionTtl = minSessionTtl;
-        this.gracefulShutdownInterval = gracefulShutdownInterval;
-        this.token = token;
-        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
+    public ConsulLockProvider(@NonNull Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    public static final class Configuration {
+
+        private final Duration minSessionTtl;
+        private final String consulLockPrefix;
+        private final String consulLockPostfix;
+        private final ConsulClient consulClient;
+        private final Duration gracefulShutdownInterval;
+        private final String token;
+
+        public Configuration(
+            Duration minSessionTtl,
+            String consulLockPostfix,
+            ConsulClient consulClient,
+            Duration gracefulShutdownInterval,
+            String token, String consulLockPrefix) {
+
+            this.minSessionTtl = minSessionTtl;
+            this.consulLockPrefix = consulLockPrefix;
+            this.consulLockPostfix = consulLockPostfix;
+            this.consulClient = requireNonNull(consulClient, "consulClient can not be null");
+            this.gracefulShutdownInterval = gracefulShutdownInterval;
+            this.token = token;
+        }
+
+        public Duration getMinSessionTtl() {
+            return minSessionTtl;
+        }
+
+        public String getConsulLockPostfix() {
+            return consulLockPostfix;
+        }
+
+        public ConsulClient getConsulClient() {
+            return consulClient;
+        }
+
+        public Duration getGracefulShutdownInterval() {
+            return gracefulShutdownInterval;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public String getConsulLockPrefix() {
+            return consulLockPrefix;
+        }
+
+        public static Configuration.Builder builder() {
+            return new Configuration.Builder();
+        }
+
+        public static final class Builder {
+
+            private Duration minSessionTtl = DEFAULT_MIN_SESSION_TTL;
+            private String consulLockPostfix = DEFAULT_CONSUL_LOCK_POSTFIX;
+            private ConsulClient consulClient;
+            private Duration gracefulShutdownInterval = DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL;
+            private String token;
+            private String consulLockPrefix;
+
+            public Builder withMinSessionTtl(Duration minSessionTtl) {
+                this.minSessionTtl = minSessionTtl;
+                return this;
+            }
+
+            public Builder withConsulLockPostfix(String consulLockPostfix) {
+                this.consulLockPostfix = consulLockPostfix;
+                return this;
+            }
+
+            public Builder withConsulClient(ConsulClient consulClient) {
+                this.consulClient = consulClient;
+                return this;
+            }
+
+            public Builder withGracefulShutdownInterval(Duration gracefulShutdownInterval) {
+                this.gracefulShutdownInterval = gracefulShutdownInterval;
+                return this;
+            }
+
+            public Builder withToken(String token) {
+                this.token = token;
+                return this;
+            }
+
+            public Builder withConsulLockPrefix(String leaderKeyPrefix) {
+                this.consulLockPrefix = leaderKeyPrefix;
+                return this;
+            }
+
+            public ConsulLockProvider.Configuration build() {
+                return new ConsulLockProvider.Configuration(
+                    minSessionTtl, consulLockPostfix, consulClient, gracefulShutdownInterval, token, consulLockPrefix);
+            }
+        }
     }
 
     @Override
@@ -87,13 +198,17 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
     }
 
     private String createSession(LockConfiguration lockConfiguration) {
-        long ttlInSeconds = Math.max(lockConfiguration.getLockAtMostFor().getSeconds(), minSessionTtl.getSeconds());
+        long ttlInSeconds = Math.max(lockConfiguration.getLockAtMostFor().getSeconds(),
+            configuration.getMinSessionTtl().getSeconds());
         NewSession newSession = new NewSession();
         newSession.setName(lockConfiguration.getName());
         newSession.setLockDelay(0);
         newSession.setBehavior(Session.Behavior.DELETE);
         newSession.setTtl(ttlInSeconds + "s");
-        String sessionId = consulClient.sessionCreate(newSession, QueryParams.DEFAULT, token).getValue();
+
+        String sessionId = configuration.getConsulClient().sessionCreate(
+            newSession, QueryParams.DEFAULT, configuration.getToken()).getValue();
+
         logger.debug("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
         return sessionId;
     }
@@ -102,7 +217,9 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         PutParams putParams = new PutParams();
         putParams.setAcquireSession(sessionId);
         String leaderKey = getLeaderKey(lockConfiguration);
-        boolean isLockSuccessful = consulClient.setKVValue(leaderKey, lockConfiguration.getName(), putParams).getValue();
+        boolean isLockSuccessful = configuration.getConsulClient()
+            .setKVValue(leaderKey, lockConfiguration.getName(), putParams).getValue();
+
         if (isLockSuccessful) {
             return Optional.of(new ConsulSimpleLock(lockConfiguration, this, sessionId));
         }
@@ -111,7 +228,11 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
     }
 
     private String getLeaderKey(LockConfiguration lockConfiguration) {
-        return lockConfiguration.getName() + consulLockPostfix;
+
+        if (configuration.getConsulLockPrefix() == null)
+            return lockConfiguration.getName() + configuration.getConsulLockPostfix();
+
+        return configuration.getConsulLockPrefix() + "/" + lockConfiguration.getName() + configuration.getConsulLockPostfix();
     }
 
     private void scheduleUnlock(String sessionId, Duration unlockTime) {
@@ -123,7 +244,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
 
     private void destroy(String sessionId) {
         logger.debug("Destroying session {}", sessionId);
-        consulClient.sessionDestroy(sessionId, QueryParams.DEFAULT);
+        configuration.getConsulClient().sessionDestroy(sessionId, QueryParams.DEFAULT);
     }
 
     private Runnable catchExceptions(Runnable runnable) {
@@ -140,7 +261,8 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
     public void close() {
         unlockScheduler.shutdown();
         try {
-            if (!unlockScheduler.awaitTermination(gracefulShutdownInterval.toMillis(), TimeUnit.MILLISECONDS)) {
+            if (!unlockScheduler.awaitTermination(configuration.getGracefulShutdownInterval().toMillis(),
+                TimeUnit.MILLISECONDS)) {
                 unlockScheduler.shutdownNow();
             }
         } catch (InterruptedException ignored) {
