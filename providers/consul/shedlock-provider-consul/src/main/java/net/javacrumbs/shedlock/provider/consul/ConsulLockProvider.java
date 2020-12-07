@@ -68,7 +68,6 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         Duration minSessionTtl,
         String consulLockPostfix,
         Duration gracefulShutdownInterval) {
-
         this(Configuration.builder()
             .withConsulClient(consulClient)
             .withMinSessionTtl(minSessionTtl)
@@ -82,8 +81,98 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         this.configuration = configuration;
     }
 
-    public static final class Configuration {
+    @Override
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+        String sessionId = createSession(lockConfiguration);
+        return tryLock(sessionId, lockConfiguration);
+    }
 
+    void unlock(String sessionId, LockConfiguration lockConfiguration) {
+        Duration additionalSessionTtl = Duration.between(now(), lockConfiguration.getLockAtLeastUntil());
+        if (!additionalSessionTtl.isNegative() && !additionalSessionTtl.isZero()) {
+            logger.debug("Lock will still be held for {}", additionalSessionTtl);
+            scheduleUnlock(sessionId, additionalSessionTtl);
+        } else {
+            destroy(sessionId);
+        }
+    }
+
+    private String createSession(LockConfiguration lockConfiguration) {
+        long ttlInSeconds = Math.max(lockConfiguration.getLockAtMostFor().getSeconds(),
+            configuration.getMinSessionTtl().getSeconds());
+        NewSession newSession = new NewSession();
+        newSession.setName(lockConfiguration.getName());
+        newSession.setLockDelay(0);
+        newSession.setBehavior(Session.Behavior.DELETE);
+        newSession.setTtl(ttlInSeconds + "s");
+
+        String sessionId = consulClient().sessionCreate(newSession, QueryParams.DEFAULT, configuration.getToken()).getValue();
+
+        logger.debug("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
+        return sessionId;
+    }
+
+    private Optional<SimpleLock> tryLock(String sessionId, LockConfiguration lockConfiguration) {
+        PutParams putParams = new PutParams();
+        putParams.setAcquireSession(sessionId);
+        String leaderKey = getLeaderKey(lockConfiguration);
+        boolean isLockSuccessful = consulClient().setKVValue(leaderKey, lockConfiguration.getName(), putParams).getValue();
+
+        if (isLockSuccessful) {
+            return Optional.of(new ConsulSimpleLock(lockConfiguration, this, sessionId));
+        }
+        destroy(sessionId);
+        return Optional.empty();
+    }
+
+    private String getLeaderKey(LockConfiguration lockConfiguration) {
+
+        if (configuration.getConsulLockPrefix() == null)
+            return lockConfiguration.getName() + configuration.getConsulLockPostfix();
+
+        return configuration.getConsulLockPrefix() + "/" + lockConfiguration.getName() + configuration.getConsulLockPostfix();
+    }
+
+    private void scheduleUnlock(String sessionId, Duration unlockTime) {
+        unlockScheduler.schedule(
+            catchExceptions(() -> destroy(sessionId)),
+            unlockTime.toMillis(), TimeUnit.MILLISECONDS
+        );
+    }
+
+    private void destroy(String sessionId) {
+        logger.debug("Destroying session {}", sessionId);
+        consulClient().sessionDestroy(sessionId, QueryParams.DEFAULT);
+    }
+
+    private Runnable catchExceptions(Runnable runnable) {
+        return () -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                logger.warn("Exception while execution", t);
+            }
+        };
+    }
+
+    @Override
+    public void close() {
+        unlockScheduler.shutdown();
+        try {
+            if (!unlockScheduler.awaitTermination(configuration.getGracefulShutdownInterval().toMillis(),
+                TimeUnit.MILLISECONDS)) {
+                unlockScheduler.shutdownNow();
+            }
+        } catch (InterruptedException ignored) {
+        }
+    }
+
+    private ConsulClient consulClient() {
+        return configuration.getConsulClient();
+    }
+
+    public static final class Configuration {
         private final Duration minSessionTtl;
         private final String consulLockPrefix;
         private final String consulLockPostfix;
@@ -91,7 +180,10 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         private final Duration gracefulShutdownInterval;
         private final String token;
 
-        public Configuration(
+        /**
+         * Use Builder to create.
+         */
+        Configuration(
             Duration minSessionTtl,
             String consulLockPostfix,
             ConsulClient consulClient,
@@ -180,92 +272,4 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         }
     }
 
-    @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        String sessionId = createSession(lockConfiguration);
-        return tryLock(sessionId, lockConfiguration);
-    }
-
-    void unlock(String sessionId, LockConfiguration lockConfiguration) {
-        Duration additionalSessionTtl = Duration.between(now(), lockConfiguration.getLockAtLeastUntil());
-        if (!additionalSessionTtl.isNegative() && !additionalSessionTtl.isZero()) {
-            logger.debug("Lock will still be held for {}", additionalSessionTtl);
-            scheduleUnlock(sessionId, additionalSessionTtl);
-        } else {
-            destroy(sessionId);
-        }
-    }
-
-    private String createSession(LockConfiguration lockConfiguration) {
-        long ttlInSeconds = Math.max(lockConfiguration.getLockAtMostFor().getSeconds(),
-            configuration.getMinSessionTtl().getSeconds());
-        NewSession newSession = new NewSession();
-        newSession.setName(lockConfiguration.getName());
-        newSession.setLockDelay(0);
-        newSession.setBehavior(Session.Behavior.DELETE);
-        newSession.setTtl(ttlInSeconds + "s");
-
-        String sessionId = configuration.getConsulClient().sessionCreate(
-            newSession, QueryParams.DEFAULT, configuration.getToken()).getValue();
-
-        logger.debug("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
-        return sessionId;
-    }
-
-    private Optional<SimpleLock> tryLock(String sessionId, LockConfiguration lockConfiguration) {
-        PutParams putParams = new PutParams();
-        putParams.setAcquireSession(sessionId);
-        String leaderKey = getLeaderKey(lockConfiguration);
-        boolean isLockSuccessful = configuration.getConsulClient()
-            .setKVValue(leaderKey, lockConfiguration.getName(), putParams).getValue();
-
-        if (isLockSuccessful) {
-            return Optional.of(new ConsulSimpleLock(lockConfiguration, this, sessionId));
-        }
-        destroy(sessionId);
-        return Optional.empty();
-    }
-
-    private String getLeaderKey(LockConfiguration lockConfiguration) {
-
-        if (configuration.getConsulLockPrefix() == null)
-            return lockConfiguration.getName() + configuration.getConsulLockPostfix();
-
-        return configuration.getConsulLockPrefix() + "/" + lockConfiguration.getName() + configuration.getConsulLockPostfix();
-    }
-
-    private void scheduleUnlock(String sessionId, Duration unlockTime) {
-        unlockScheduler.schedule(
-            catchExceptions(() -> destroy(sessionId)),
-            unlockTime.toMillis(), TimeUnit.MILLISECONDS
-        );
-    }
-
-    private void destroy(String sessionId) {
-        logger.debug("Destroying session {}", sessionId);
-        configuration.getConsulClient().sessionDestroy(sessionId, QueryParams.DEFAULT);
-    }
-
-    private Runnable catchExceptions(Runnable runnable) {
-        return () -> {
-            try {
-                runnable.run();
-            } catch (Throwable t) {
-                logger.warn("Exception while execution", t);
-            }
-        };
-    }
-
-    @Override
-    public void close() {
-        unlockScheduler.shutdown();
-        try {
-            if (!unlockScheduler.awaitTermination(configuration.getGracefulShutdownInterval().toMillis(),
-                TimeUnit.MILLISECONDS)) {
-                unlockScheduler.shutdownNow();
-            }
-        } catch (InterruptedException ignored) {
-        }
-    }
 }

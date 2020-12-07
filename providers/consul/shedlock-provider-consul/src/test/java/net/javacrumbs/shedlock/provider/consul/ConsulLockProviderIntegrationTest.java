@@ -55,7 +55,10 @@ class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationT
 
     @Override
     protected LockProvider getLockProvider() {
-        return new ConsulLockProvider(consulClient);
+        return new ConsulLockProvider(
+            ConsulLockProvider.Configuration.builder()
+                .withConsulClient(consulClient).build()
+        );
     }
 
     @Override
