@@ -107,7 +107,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         newSession.setBehavior(Session.Behavior.DELETE);
         newSession.setTtl(ttlInSeconds + "s");
 
-        String sessionId = consulClient().sessionCreate(newSession, QueryParams.DEFAULT, configuration.getToken()).getValue();
+        String sessionId = client().sessionCreate(newSession, QueryParams.DEFAULT, token()).getValue();
 
         logger.debug("Acquired session {} for {} seconds", sessionId, ttlInSeconds);
         return sessionId;
@@ -117,13 +117,17 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         PutParams putParams = new PutParams();
         putParams.setAcquireSession(sessionId);
         String leaderKey = getLeaderKey(lockConfiguration);
-        boolean isLockSuccessful = consulClient().setKVValue(leaderKey, lockConfiguration.getName(), putParams).getValue();
+        boolean isLockSuccessful = client().setKVValue(leaderKey, lockConfiguration.getName(), token(), putParams).getValue();
 
         if (isLockSuccessful) {
             return Optional.of(new ConsulSimpleLock(lockConfiguration, this, sessionId));
         }
         destroy(sessionId);
         return Optional.empty();
+    }
+
+    private String token() {
+        return configuration.getToken();
     }
 
     private String getLeaderKey(LockConfiguration lockConfiguration) {
@@ -143,7 +147,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
 
     private void destroy(String sessionId) {
         logger.debug("Destroying session {}", sessionId);
-        consulClient().sessionDestroy(sessionId, QueryParams.DEFAULT);
+        client().sessionDestroy(sessionId, QueryParams.DEFAULT, token());
     }
 
     private Runnable catchExceptions(Runnable runnable) {
@@ -168,7 +172,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
         }
     }
 
-    private ConsulClient consulClient() {
+    private ConsulClient client() {
         return configuration.getConsulClient();
     }
 
