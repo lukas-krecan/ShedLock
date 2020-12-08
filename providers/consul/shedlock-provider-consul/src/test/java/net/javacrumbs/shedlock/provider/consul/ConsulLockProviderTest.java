@@ -33,7 +33,7 @@ class ConsulLockProviderTest {
     @BeforeEach
     void setUp() {
         when(mockConsulClient.sessionCreate(any(), any(), any())).thenReturn(new Response<>(UUID.randomUUID().toString(), null, null, null));
-        when(mockConsulClient.setKVValue(any(), any(), any(), any(PutParams.class))).thenReturn(new Response<>(true, null, null, null));
+        mockLock(any(), true);
     }
 
     @Test
@@ -57,8 +57,7 @@ class ConsulLockProviderTest {
 
     @Test
     void doesNotLockIfLockIsAlreadyObtained() {
-        when(mockConsulClient.setKVValue(eq("naruto-leader"), any(), any(), any(PutParams.class)))
-            .thenReturn(new Response<>(false, null, null, null));
+        mockLock(eq("naruto-leader"), false);
 
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig("naruto", SMALL_MIN_TTL, SMALL_MIN_TTL.dividedBy(2)));
         assertThat(lock).isEmpty();
@@ -66,8 +65,7 @@ class ConsulLockProviderTest {
 
     @Test
     void destroysSessionIfLockIsAlreadyObtained() {
-        when(mockConsulClient.setKVValue(eq("naruto-leader"), any(), any(), any(PutParams.class)))
-            .thenReturn(new Response<>(false, null, null, null));
+        mockLock(eq("naruto-leader"), false);
 
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig("naruto", SMALL_MIN_TTL, SMALL_MIN_TTL.dividedBy(2)));
         assertThat(lock).isEmpty();
@@ -91,6 +89,11 @@ class ConsulLockProviderTest {
         sleep(SMALL_MIN_TTL.toMillis() + 10);
 
         verify(mockConsulClient, times(2)).sessionDestroy(anyString(), any(), any());
+    }
+
+    private void mockLock(String eq, boolean b) {
+        when(mockConsulClient.setKVValue(eq, any(), any(), any(PutParams.class)))
+            .thenReturn(new Response<>(b, null, null, null));
     }
 
     private LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
