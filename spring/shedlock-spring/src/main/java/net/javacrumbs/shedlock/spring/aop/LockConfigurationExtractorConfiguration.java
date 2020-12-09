@@ -1,6 +1,5 @@
 package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +18,7 @@ class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration 
     private StringValueResolver resolver;
 
     @Bean
-    ExtendedLockConfigurationExtractor lockConfigurationExtractor() {
+    SpringLockConfigurationExtractor lockConfigurationExtractor() {
         return new SpringLockConfigurationExtractor(defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), resolver, durationConverter);
     }
 

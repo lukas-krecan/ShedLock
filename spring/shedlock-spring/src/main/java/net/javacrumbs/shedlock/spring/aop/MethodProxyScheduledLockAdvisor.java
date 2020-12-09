@@ -18,7 +18,6 @@ package net.javacrumbs.shedlock.spring.aop;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
-import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.aopalliance.aop.Advice;
@@ -38,7 +37,7 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
 
     private final Advice advice;
 
-    MethodProxyScheduledLockAdvisor(ExtendedLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
+    MethodProxyScheduledLockAdvisor(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
         this.advice = new LockingInterceptor(lockConfigurationExtractor, lockingTaskExecutor);
     }
 
@@ -67,10 +66,10 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     }
 
     private static class LockingInterceptor implements MethodInterceptor {
-        private final ExtendedLockConfigurationExtractor lockConfigurationExtractor;
+        private final SpringLockConfigurationExtractor lockConfigurationExtractor;
         private final LockingTaskExecutor lockingTaskExecutor;
 
-        LockingInterceptor(ExtendedLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
+        LockingInterceptor(SpringLockConfigurationExtractor lockConfigurationExtractor, LockingTaskExecutor lockingTaskExecutor) {
             this.lockConfigurationExtractor = lockConfigurationExtractor;
             this.lockingTaskExecutor = lockingTaskExecutor;
         }

@@ -15,9 +15,9 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public abstract class AbstractSchedulerProxyTest {
     protected TaskScheduler taskScheduler;
 
     @Autowired
-    private ExtendedLockConfigurationExtractor extractor;
+    private LockConfigurationExtractor extractor;
 
     private final SimpleLock simpleLock = mock(SimpleLock.class);
 

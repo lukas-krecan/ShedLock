@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
+import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.support.annotation.Nullable;
@@ -37,7 +37,7 @@ import java.util.Optional;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
-class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtractor {
+class SpringLockConfigurationExtractor implements LockConfigurationExtractor {
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
     private final StringValueResolver embeddedValueResolver;
@@ -69,8 +69,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         return Optional.empty();
     }
 
-    @Override
-    public Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
+    Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
         AnnotationData annotation = findAnnotation(target, method);
         if (shouldLock(annotation)) {
             return Optional.of(getLockConfiguration(annotation));
