@@ -1,21 +1,24 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static java.util.Objects.requireNonNull;
+
+import java.time.Instant;
+import java.util.Optional;
+
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
-
-import java.time.Instant;
-import java.util.Optional;
-
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
 /**
  * StorageAccessor for cassandra.
@@ -25,11 +28,6 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
  * but it's a performance optimization. Moreover, the fuzzTest sometimes fails without them.
  */
 class CassandraStorageAccessor extends AbstractStorageAccessor {
-    private static final String LOCK_NAME = "name";
-    private static final String LOCK_UNTIL = "lockUntil";
-    private static final String LOCKED_AT = "lockedAt";
-    private static final String LOCKED_BY = "lockedBy";
-
     private final String hostname;
     private final String table;
     private final String lockName;
@@ -39,26 +37,16 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final CqlSession cqlSession;
     private final ConsistencyLevel consistencyLevel;
 
-    CassandraStorageAccessor(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel) {
+    CassandraStorageAccessor(@NonNull Configuration configuration) {
+    	requireNonNull(configuration, "configuration can not be null");
         this.hostname = Utils.getHostname();
-        this.table = table;
-        this.lockName = LOCK_NAME;
-        this.lockUntil = LOCK_UNTIL;
-        this.lockedAt = LOCKED_AT;
-        this.lockedBy = LOCKED_BY;
-        this.cqlSession = cqlSession;
-        this.consistencyLevel = consistencyLevel;
-    }
-    
-    CassandraStorageAccessor(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull String lockNameColumn, @NonNull String lockUntilColumn, @NonNull String lockedAtColumn, @NonNull String lockedByColumn, @NonNull ConsistencyLevel consistencyLevel) {
-        this.hostname = Utils.getHostname();
-        this.table = table;
-        this.lockName = lockNameColumn;
-        this.lockUntil = lockUntilColumn;
-        this.lockedAt = lockedAtColumn;
-        this.lockedBy = lockedByColumn;
-        this.cqlSession = cqlSession;
-        this.consistencyLevel = consistencyLevel;
+        this.table = configuration.getTable();
+        this.lockName = configuration.getColumnNames().getLockName();
+        this.lockUntil = configuration.getColumnNames().getLockUntil();
+        this.lockedAt = configuration.getColumnNames().getLockedAt();
+        this.lockedBy = configuration.getColumnNames().getLockedBy();
+        this.cqlSession = configuration.getCqlSession();
+        this.consistencyLevel = configuration.getConsistencyLevel();
     }
     
     @Override
