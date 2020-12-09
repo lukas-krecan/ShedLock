@@ -32,16 +32,35 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
 
     private final String hostname;
     private final String table;
+    private final String lockName;
+    private final String lockUntil;
+    private final String lockedAt;
+    private final String lockedBy;
     private final CqlSession cqlSession;
     private final ConsistencyLevel consistencyLevel;
 
     CassandraStorageAccessor(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel) {
         this.hostname = Utils.getHostname();
         this.table = table;
+        this.lockName = LOCK_NAME;
+        this.lockUntil = LOCK_UNTIL;
+        this.lockedAt = LOCKED_AT;
+        this.lockedBy = LOCKED_BY;
         this.cqlSession = cqlSession;
         this.consistencyLevel = consistencyLevel;
     }
-
+    
+    CassandraStorageAccessor(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull String lockNameColumn, @NonNull String lockUntilColumn, @NonNull String lockedAtColumn, @NonNull String lockedByColumn, @NonNull ConsistencyLevel consistencyLevel) {
+        this.hostname = Utils.getHostname();
+        this.table = table;
+        this.lockName = lockNameColumn;
+        this.lockUntil = lockUntilColumn;
+        this.lockedAt = lockedAtColumn;
+        this.lockedBy = lockedByColumn;
+        this.cqlSession = cqlSession;
+        this.consistencyLevel = consistencyLevel;
+    }
+    
     @Override
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         if (find(lockConfiguration.getName()).isPresent()) {
@@ -85,17 +104,17 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     Optional<Lock> find(String name) {
         SimpleStatement selectStatement = QueryBuilder.selectFrom(table)
-            .column(LOCK_UNTIL)
-            .column(LOCKED_AT)
-            .column(LOCKED_BY)
-            .whereColumn(LOCK_NAME).isEqualTo(literal(name))
+            .column(lockUntil)
+            .column(lockedAt)
+            .column(lockedBy)
+            .whereColumn(lockName).isEqualTo(literal(name))
             .build()
             .setConsistencyLevel(consistencyLevel);
 
         ResultSet resultSet = cqlSession.execute(selectStatement);
         Row row = resultSet.one();
         if (row != null) {
-            return Optional.of(new Lock(row.getInstant(LOCK_UNTIL), row.getInstant(LOCKED_AT), row.getString(LOCKED_BY)));
+            return Optional.of(new Lock(row.getInstant(lockUntil), row.getInstant(lockedAt), row.getString(lockedBy)));
         } else {
             return Optional.empty();
         }
@@ -109,10 +128,10 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     private boolean insert(String name, Instant until) {
         return execute(QueryBuilder.insertInto(table)
-                .value(LOCK_NAME, literal(name))
-                .value(LOCK_UNTIL, literal(until))
-                .value(LOCKED_AT, literal(ClockProvider.now()))
-                .value(LOCKED_BY, literal(hostname))
+                .value(lockName, literal(name))
+                .value(lockUntil, literal(until))
+                .value(lockedAt, literal(ClockProvider.now()))
+                .value(lockedBy, literal(hostname))
                 .ifNotExists()
                 .build());
     }
@@ -125,11 +144,11 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     private boolean update(String name, Instant until) {
         return execute(QueryBuilder.update(table)
-                .setColumn(LOCK_UNTIL, literal(until))
-                .setColumn(LOCKED_AT, literal(ClockProvider.now()))
-                .setColumn(LOCKED_BY, literal(hostname))
-                .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-                .ifColumn(LOCK_UNTIL).isLessThan(literal(ClockProvider.now()))
+                .setColumn(lockUntil, literal(until))
+                .setColumn(lockedAt, literal(ClockProvider.now()))
+                .setColumn(lockedBy, literal(hostname))
+                .whereColumn(lockName).isEqualTo(literal(name))
+                .ifColumn(lockUntil).isLessThan(literal(ClockProvider.now()))
                 .build());
     }
 
@@ -141,10 +160,10 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     private boolean updateUntil(String name, Instant until) {
         return execute(QueryBuilder.update(table)
-                .setColumn(LOCK_UNTIL, literal(until))
-                .whereColumn(LOCK_NAME).isEqualTo(literal(name))
-                .ifColumn(LOCK_UNTIL).isGreaterThanOrEqualTo(literal(ClockProvider.now()))
-                .ifColumn(LOCKED_BY).isEqualTo(literal(hostname))
+                .setColumn(lockUntil, literal(until))
+                .whereColumn(lockName).isEqualTo(literal(name))
+                .ifColumn(lockUntil).isGreaterThanOrEqualTo(literal(ClockProvider.now()))
+                .ifColumn(lockedBy).isEqualTo(literal(hostname))
                 .build());
     }
 

@@ -24,4 +24,8 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
     public CassandraLockProvider(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel) {
         super(new CassandraStorageAccessor(cqlSession, table, consistencyLevel));
     }
+    
+    public CassandraLockProvider(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull String lockNameColumn, @NonNull String lockUntilColumn, @NonNull String lockedAtColumn, @NonNull String lockedByColumn, @NonNull ConsistencyLevel consistencyLevel) {
+        super(new CassandraStorageAccessor(cqlSession, table, lockNameColumn, lockUntilColumn, lockedAtColumn, lockedByColumn, consistencyLevel));
+    }
 }
