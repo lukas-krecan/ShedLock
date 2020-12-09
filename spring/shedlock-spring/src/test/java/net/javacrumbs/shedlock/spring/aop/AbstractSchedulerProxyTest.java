@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -50,6 +51,9 @@ public abstract class AbstractSchedulerProxyTest {
 
     @Autowired
     protected TaskScheduler taskScheduler;
+
+    @Autowired
+    private ExtendedLockConfigurationExtractor extractor;
 
     private final SimpleLock simpleLock = mock(SimpleLock.class);
 
@@ -111,7 +115,7 @@ public abstract class AbstractSchedulerProxyTest {
         assertThat(taskScheduler).isInstanceOf(TaskExecutor.class);
 
         ((TaskExecutor)taskScheduler).execute(() -> {});
-        verifyZeroInteractions(lockProvider);
+        verifyNoInteractions(lockProvider);
     }
 
     private long getDefaultLockAtLeastFor() {
@@ -130,7 +134,12 @@ public abstract class AbstractSchedulerProxyTest {
     @Test
     public void shouldNotLockProviderOnPureRunnable() throws ExecutionException, InterruptedException {
         taskScheduler.schedule(() -> { }, now()).get();
-        verifyZeroInteractions(lockProvider);
+        verifyNoInteractions(lockProvider);
+    }
+
+    @Test
+    public void extractorShouldBeDefined() {
+        assertThat(extractor).isNotNull();
     }
 
     @net.javacrumbs.shedlock.core.SchedulerLock(name = "lockName")

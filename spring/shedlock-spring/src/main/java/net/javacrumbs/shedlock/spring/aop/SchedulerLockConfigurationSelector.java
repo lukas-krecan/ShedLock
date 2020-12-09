@@ -34,9 +34,9 @@ public class SchedulerLockConfigurationSelector implements ImportSelector {
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
         InterceptMode mode = attributes.getEnum("interceptMode");
         if (mode == PROXY_METHOD) {
-            return new String[]{AutoProxyRegistrar.class.getName(), MethodProxyLockConfiguration.class.getName()};
+            return new String[]{AutoProxyRegistrar.class.getName(), LockConfigurationExtractorConfiguration.class.getName(), MethodProxyLockConfiguration.class.getName()};
         } else if (mode == PROXY_SCHEDULER) {
-            return new String[]{AutoProxyRegistrar.class.getName(), SchedulerProxyLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
+            return new String[]{AutoProxyRegistrar.class.getName(), LockConfigurationExtractorConfiguration.class.getName(), SchedulerProxyLockConfiguration.class.getName(), RegisterDefaultTaskSchedulerPostProcessor.class.getName()};
         } else {
             throw new UnsupportedOperationException("Unknown mode " + mode);
         }
