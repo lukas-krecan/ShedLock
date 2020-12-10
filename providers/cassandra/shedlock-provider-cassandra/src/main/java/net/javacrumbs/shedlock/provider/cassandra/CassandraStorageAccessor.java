@@ -1,24 +1,23 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
-import static java.util.Objects.requireNonNull;
-
-import java.time.Instant;
-import java.util.Optional;
-
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
+
+import java.time.Instant;
+import java.util.Optional;
+
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static java.util.Objects.requireNonNull;
 
 /**
  * StorageAccessor for cassandra.
@@ -38,7 +37,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final ConsistencyLevel consistencyLevel;
 
     CassandraStorageAccessor(@NonNull Configuration configuration) {
-    	requireNonNull(configuration, "configuration can not be null");
+        requireNonNull(configuration, "configuration can not be null");
         this.hostname = Utils.getHostname();
         this.table = configuration.getTable();
         this.lockName = configuration.getColumnNames().getLockName();
@@ -48,7 +47,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         this.cqlSession = configuration.getCqlSession();
         this.consistencyLevel = configuration.getConsistencyLevel();
     }
-    
+
     @Override
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         if (find(lockConfiguration.getName()).isPresent()) {
@@ -116,12 +115,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     private boolean insert(String name, Instant until) {
         return execute(QueryBuilder.insertInto(table)
-                .value(lockName, literal(name))
-                .value(lockUntil, literal(until))
-                .value(lockedAt, literal(ClockProvider.now()))
-                .value(lockedBy, literal(hostname))
-                .ifNotExists()
-                .build());
+            .value(lockName, literal(name))
+            .value(lockUntil, literal(until))
+            .value(lockedAt, literal(ClockProvider.now()))
+            .value(lockedBy, literal(hostname))
+            .ifNotExists()
+            .build());
     }
 
     /**
@@ -132,12 +131,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     private boolean update(String name, Instant until) {
         return execute(QueryBuilder.update(table)
-                .setColumn(lockUntil, literal(until))
-                .setColumn(lockedAt, literal(ClockProvider.now()))
-                .setColumn(lockedBy, literal(hostname))
-                .whereColumn(lockName).isEqualTo(literal(name))
-                .ifColumn(lockUntil).isLessThan(literal(ClockProvider.now()))
-                .build());
+            .setColumn(lockUntil, literal(until))
+            .setColumn(lockedAt, literal(ClockProvider.now()))
+            .setColumn(lockedBy, literal(hostname))
+            .whereColumn(lockName).isEqualTo(literal(name))
+            .ifColumn(lockUntil).isLessThan(literal(ClockProvider.now()))
+            .build());
     }
 
     /**
@@ -148,11 +147,11 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      */
     private boolean updateUntil(String name, Instant until) {
         return execute(QueryBuilder.update(table)
-                .setColumn(lockUntil, literal(until))
-                .whereColumn(lockName).isEqualTo(literal(name))
-                .ifColumn(lockUntil).isGreaterThanOrEqualTo(literal(ClockProvider.now()))
-                .ifColumn(lockedBy).isEqualTo(literal(hostname))
-                .build());
+            .setColumn(lockUntil, literal(until))
+            .whereColumn(lockName).isEqualTo(literal(name))
+            .ifColumn(lockUntil).isGreaterThanOrEqualTo(literal(ClockProvider.now()))
+            .ifColumn(lockedBy).isEqualTo(literal(hostname))
+            .build());
     }
 
 
