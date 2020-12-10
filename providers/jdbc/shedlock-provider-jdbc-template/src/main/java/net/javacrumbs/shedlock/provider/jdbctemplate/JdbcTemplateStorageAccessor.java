@@ -19,6 +19,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
+import org.springframework.dao.CannotSerializeTransactionException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -65,7 +66,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 int insertedRows = jdbcTemplate.update(sql, params);
                 return insertedRows > 0;
             });
-        } catch (DuplicateKeyException e) {
+        } catch (DuplicateKeyException | CannotSerializeTransactionException e) {
             return false;
         } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
             logger.error("Unexpected exception", e);
@@ -81,6 +82,8 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 int updatedRows = jdbcTemplate.update(sql, params(lockConfiguration));
                 return updatedRows > 0;
             });
+        } catch (CannotSerializeTransactionException e) {
+            return false;
         } catch (DataIntegrityViolationException e) {
             logger.error("Unexpected exception", e);
             return false;
