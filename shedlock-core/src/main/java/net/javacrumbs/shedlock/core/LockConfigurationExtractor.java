@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.core;
 
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
@@ -25,4 +26,7 @@ import java.util.Optional;
 public interface LockConfigurationExtractor {
     @NonNull
     Optional<LockConfiguration> getLockConfiguration(@NonNull Runnable task);
+
+    @NonNull
+    Optional<LockConfiguration> getLockConfiguration(@NonNull Object target, @NonNull Method method);
 }
