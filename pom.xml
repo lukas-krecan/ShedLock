@@ -51,6 +51,7 @@
         <module>providers/cassandra/shedlock-provider-cassandra</module>
         <module>providers/consul/shedlock-provider-consul</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
+        <module>providers/etcd/shedlock-provider-etcd</module>
     </modules>
 
     <properties>
