@@ -35,8 +35,6 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -72,7 +70,7 @@ public class EtcdLockProvider implements LockProvider {
     }
 
     private static final class EtcdLock extends AbstractSimpleLock {
-        private static final BigDecimal MILLIS_IN_SECOND = BigDecimal.valueOf(1000);
+        private static final long MILLIS_IN_SECOND = 1000L;
         private final String key;
         private Long successLeaseId;
         private final EtcdTemplate etcdTemplate;
@@ -121,9 +119,7 @@ public class EtcdLockProvider implements LockProvider {
         }
 
         private long getSecondsUntil(Instant instant) {
-            return BigDecimal.valueOf(getMsUntil(instant))
-                .divide(MILLIS_IN_SECOND, RoundingMode.CEILING)
-                .longValue();
+            return (long) Math.ceil((double) getMsUntil(instant) / MILLIS_IN_SECOND);
         }
 
         private long getMsUntil(Instant instant) {
