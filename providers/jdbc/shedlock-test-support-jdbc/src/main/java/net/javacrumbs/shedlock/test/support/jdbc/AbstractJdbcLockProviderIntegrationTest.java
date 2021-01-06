@@ -49,10 +49,6 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
         testUtils.clean();
     }
 
-    public JdbcTestUtils getTestUtils() {
-        return testUtils;
-    }
-
     @Override
     protected void assertUnlocked(String lockName) {
         JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);

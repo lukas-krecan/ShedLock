@@ -19,17 +19,18 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.14.1-SNAPSHOT</version>
+    <version>4.19.2-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
         <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/micronaut-test</module>
         <module>spring/shedlock-spring</module>
-        <module>spring/shedlock-springboot-test</module>
-        <module>spring/shedlock-springboot22-test</module>
-        <module>spring/shedlock-springboot22-sleuth-test</module>
-        <module>spring/shedlock-springboot22-kotlin-test</module>
-        <module>spring/shedlock-testng-test</module>
+        <module>spring/test/shedlock-springboot-test</module>
+        <module>spring/test/shedlock-springboot24-test</module>
+        <module>spring/test/shedlock-springboot22-test</module>
+        <module>spring/test/shedlock-springboot-sleuth-test</module>
+        <module>spring/test/shedlock-springboot-kotlin-test</module>
+        <module>spring/test/shedlock-testng-test</module>
         <module>shedlock-test-support</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
@@ -49,6 +50,7 @@
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
         <module>providers/consul/shedlock-provider-consul</module>
+        <module>providers/arangodb/shedlock-provider-arangodb</module>
     </modules>
 
     <properties>
@@ -56,9 +58,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
+        <spring-boot23.version>2.3.4.RELEASE</spring-boot23.version>
         <junit.version>5.6.2</junit.version>
         <test-containers.version>1.14.3</test-containers.version>
-        <kotlin.version>1.3.72</kotlin.version>
+        <kotlin.version>1.4.10</kotlin.version>
         <micronaut.version>2.0.0</micronaut.version>
         <logback.version>1.2.3</logback.version>
     </properties>
@@ -111,7 +114,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>2.27.0</version>
+                <version>3.5.15</version>
                 <scope>test</scope>
             </dependency>
 
@@ -125,7 +128,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.16.1</version>
+                <version>3.17.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -165,7 +168,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M5</version>
                 <configuration>
-                    <forkCount>5</forkCount>
+                    <forkCount>4</forkCount>
                     <argLine>-Xmx512m</argLine>
                 </configuration>
             </plugin>
@@ -225,6 +228,11 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>versions-maven-plugin</artifactId>
+                        <version>2.7</version>
                     </plugin>
                 </plugins>
             </build>

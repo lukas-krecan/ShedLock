@@ -8,9 +8,10 @@ abstract class AbstractDbConfig implements DbConfig {
     private HikariDataSource dataSource;
 
     protected static final String TEST_SCHEMA_NAME = "shedlock_test";
+    private Integer transactionIsolation;
 
     @Override
-    public synchronized DataSource getDataSource() {
+    public DataSource getDataSource() {
         return dataSource;
     }
 
@@ -21,6 +22,9 @@ abstract class AbstractDbConfig implements DbConfig {
         newDataSource.setJdbcUrl(getJdbcUrl());
         newDataSource.setUsername(getUsername());
         newDataSource.setPassword(getPassword());
+        if (transactionIsolation != null) {
+            newDataSource.setTransactionIsolation(String.valueOf(transactionIsolation));
+        }
         dataSource = newDataSource;
     }
 
@@ -36,5 +40,9 @@ abstract class AbstractDbConfig implements DbConfig {
 
     protected void doShutdownDb() {
 
+    }
+
+    public void setTransactionIsolation(int transactionIsolation) {
+        this.transactionIsolation = transactionIsolation;
     }
 }

@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.aop.MethodProxyAopConfig.AnotherTestBean;
 import net.javacrumbs.shedlock.spring.aop.MethodProxyAopConfig.TestBean;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +46,9 @@ import static org.mockito.Mockito.when;
 public class MethodProxyAopTest {
     @Autowired
     private LockProvider lockProvider;
+
+    @Autowired
+    private ExtendedLockConfigurationExtractor extractor;
 
     @Autowired
     private TestBean testBean;
@@ -145,5 +149,10 @@ public class MethodProxyAopTest {
         anotherTestBean.runManually();
         verify(lockProvider).lock(hasParams("classAnnotation", 30_000, 100));
         verify(simpleLock).unlock();
+    }
+
+    @Test
+    public void extractorShouldBeDefined() {
+        assertThat(extractor).isNotNull();
     }
 }
