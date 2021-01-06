@@ -45,6 +45,13 @@ import java.util.concurrent.CompletableFuture;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
+/**
+ * Uses etcd keys and the version of the key value pairs as locking mechanism.
+ * <p>
+ * https://etcd.io/docs/v3.4.0/learning/api/#key-value-pair
+ *
+ * The timeout is implemented with the lease concept of etcd, which grants a TTL for key value pairs.
+ */
 public class EtcdLockProvider implements LockProvider {
 
     private static final String KEY_PREFIX = "job-lock";
@@ -65,7 +72,7 @@ public class EtcdLockProvider implements LockProvider {
     }
 
     private static final class EtcdLock extends AbstractSimpleLock {
-        public static final BigDecimal MILLIS_IN_SECOND = BigDecimal.valueOf(1000);
+        private static final BigDecimal MILLIS_IN_SECOND = BigDecimal.valueOf(1000);
         private final String key;
         private Long successLeaseId;
         private final EtcdTemplate etcdTemplate;
@@ -102,12 +109,13 @@ public class EtcdLockProvider implements LockProvider {
                 try {
                     etcdTemplate.revoke(successLeaseId);
                 } catch (Exception e) {
-                    throw new LockException("Can not remove node", e);
+                    throw new LockException("Can not revoke old leaseId " + successLeaseId, e);
                 }
             } else {
+                // implement lockAtLeast functionality with a new leaseId
                 Long leaseId = etcdTemplate.createLease(keepLockFor);
 
-                etcdTemplate.updateLease(key, buildValue(), leaseId);
+                etcdTemplate.putWithLeaseId(key, buildValue(), leaseId);
                 this.successLeaseId = leaseId;
             }
         }
@@ -160,6 +168,8 @@ public class EtcdLockProvider implements LockProvider {
 
                 GetOption getOption = GetOption.DEFAULT;
 
+                // Version is the version of the key.
+                // A deletion resets the version to zero and any modification of the key increases its version.
                 Txn txn = kvClient.txn()
                     .If(new Cmp(lockKey, Cmp.Op.EQUAL, CmpTarget.version(0)))
                     .Then(Op.put(lockKey, ByteSequence.from(value.getBytes()), putOption))
@@ -184,7 +194,15 @@ public class EtcdLockProvider implements LockProvider {
             }
         }
 
-        public void updateLease(String key, String value, Long leaseId) {
+        /**
+         * Set the provided leaseId lease for the key-value pair similar to the CLI command
+         * <p>
+         * etcdctl put key value --lease <leaseId>
+         * <p>
+         * If the key has already been put with an other leaseId earlier, the old leaseId
+         * will be timed out and then removed, eventually.
+         */
+        public void putWithLeaseId(String key, String value, Long leaseId) {
             ByteSequence lockKey = ByteSequence.from(key.getBytes());
             ByteSequence lockValue = ByteSequence.from(value.getBytes());
 
