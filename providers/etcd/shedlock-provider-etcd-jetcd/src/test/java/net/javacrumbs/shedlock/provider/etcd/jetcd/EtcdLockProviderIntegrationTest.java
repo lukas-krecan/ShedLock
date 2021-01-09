@@ -21,14 +21,15 @@ import io.etcd.jetcd.KV;
 import io.etcd.jetcd.test.EtcdClusterExtension;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.time.Duration;
-
-import static java.lang.Thread.sleep;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static java.time.Duration.ofSeconds;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
@@ -36,7 +37,7 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     @RegisterExtension
     static EtcdClusterExtension etcdCluster = new EtcdClusterExtension("it-cluster", 1);
 
-    private LockProvider lockProvider;
+    private EtcdLockProvider lockProvider;
     private KV kvClient;
 
     @BeforeEach
@@ -46,6 +47,11 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
         warmUpLeaseClient(client);
         kvClient = client.getKVClient();
         lockProvider = new EtcdLockProvider(client);
+    }
+
+    @AfterEach
+    public void clear() {
+        kvClient.delete(buildKey(LOCK_NAME1));
     }
 
     private void warmUpLeaseClient(Client client) {
@@ -62,7 +68,7 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     @Test
     @Override
     public void shouldTimeout() throws InterruptedException {
-        doTestTimeout(Duration.ofSeconds(1));
+        doTestTimeout(ofSeconds(1));
     }
 
     /**
@@ -76,23 +82,26 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
 
     @Override
     protected void assertUnlocked(String lockName) {
-        ByteSequence key = ByteSequence.from(EtcdLockProvider.buildKey(lockName, EtcdLockProvider.ENV_DEFAULT).getBytes());
+        await().timeout(ofSeconds(1)).untilAsserted(() -> assertKeysFound(lockName, 0));
+    }
+
+    @Override
+    protected void assertLocked(String lockName) {
+        assertKeysFound(lockName, 1);
+    }
+
+    private void assertKeysFound(String lockName, int expected) {
+        ByteSequence key = buildKey(lockName);
         try {
-            sleep(500);
-            assertEquals(0, kvClient.get(key).get().getCount());
+            assertThat(kvClient.get(key).get().getCount()).isEqualTo(expected);
         } catch (Exception ex) {
             fail(ex);
         }
     }
 
-    @Override
-    protected void assertLocked(String lockName) {
-        ByteSequence key = ByteSequence.from(EtcdLockProvider.buildKey(lockName, EtcdLockProvider.ENV_DEFAULT).getBytes());
-        try {
-            assertEquals(1, kvClient.get(key).get().getCount());
-        } catch (Exception ex) {
-            fail(ex);
-        }
+    @NotNull
+    private ByteSequence buildKey(String lockName) {
+        return ByteSequence.from(lockProvider.buildKey(lockName).getBytes());
     }
 
     @Override

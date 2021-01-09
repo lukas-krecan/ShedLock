@@ -51,20 +51,27 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 public class EtcdLockProvider implements LockProvider {
     private static final double MILLIS_IN_SECOND = 1000;
 
-    private static final String KEY_PREFIX = "job-lock";
-    // prepared multi-environment support
-    static final String ENV_DEFAULT = "default";
+    private static final String KEY_PREFIX = "shedlock";
+
+    private static final String ENV_DEFAULT = "default";
 
     private final EtcdTemplate etcdTemplate;
 
+    private final String environment;
+
     public EtcdLockProvider(@NonNull Client client) {
+        this(client, ENV_DEFAULT);
+    }
+
+    public EtcdLockProvider(@NonNull Client client, @NonNull String environment) {
         this.etcdTemplate = new EtcdTemplate(client);
+        this.environment = environment;
     }
 
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        String key = buildKey(lockConfiguration.getName(), ENV_DEFAULT);
+        String key = buildKey(lockConfiguration.getName());
         String value = buildValue();
 
         Optional<Long> leaseIdOpt = etcdTemplate.tryToLock(key, value, lockConfiguration.getLockAtMostUntil());
@@ -82,6 +89,10 @@ public class EtcdLockProvider implements LockProvider {
 
     private String buildValue() {
         return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
+    }
+
+    String buildKey(String lockName) {
+        return String.format("%s:%s:%s", KEY_PREFIX, environment, lockName);
     }
 
     private static final class EtcdLock extends AbstractSimpleLock {
@@ -119,10 +130,6 @@ public class EtcdLockProvider implements LockProvider {
                 etcdTemplate.revoke(this.successLeaseId);
             }
         }
-    }
-
-    static String buildKey(String lockName, String env) {
-        return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
     }
 
     private static class EtcdTemplate {
@@ -171,7 +178,7 @@ public class EtcdLockProvider implements LockProvider {
 
         public void revoke(Long leaseId) {
             try {
-                leaseClient.revoke(leaseId);
+                leaseClient.revoke(leaseId).get();
             } catch (Exception e) {
                 throw new LockException("Failed to revoke lease " + leaseId, e);
             }

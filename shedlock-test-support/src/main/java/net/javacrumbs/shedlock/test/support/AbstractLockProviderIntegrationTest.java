@@ -109,6 +109,7 @@ public abstract class AbstractLockProviderIntegrationTest {
         LockConfiguration lockConfiguration = lockConfig(LOCK_NAME1);
         for (int i = 0; i < 10; i++) {
             Optional<SimpleLock> lock = getLockProvider().lock(lockConfiguration);
+            assertThat(lock).describedAs("Successfully locked").isNotEmpty();
             assertThat(getLockProvider().lock(lockConfiguration)).isEmpty();
             assertThat(lock).isNotEmpty();
             lock.get().unlock();
@@ -128,7 +129,7 @@ public abstract class AbstractLockProviderIntegrationTest {
     protected void doTestShouldLockAtLeastFor(int sleepForMs) throws InterruptedException {
         // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before this time
         Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
-        assertThat(lock1).isNotEmpty();
+        assertThat(lock1).describedAs("Should be locked").isNotEmpty();
         lock1.get().unlock();
 
         // Even though we have unlocked the lock, it will be held for some time
