@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-etcd</artifactId>
+    <artifactId>shedlock-provider-etcd-jetcd</artifactId>
 
     <properties>
         <jetcd.version>0.5.4</jetcd.version>
@@ -59,7 +59,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.etcd
+                                net.javacrumbs.shedlock.provider.etcd.jetcd
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

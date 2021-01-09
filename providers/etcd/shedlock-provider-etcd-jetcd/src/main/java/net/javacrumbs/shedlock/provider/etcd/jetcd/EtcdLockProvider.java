@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.etcd;
+package net.javacrumbs.shedlock.provider.etcd.jetcd;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -21,11 +21,9 @@ import io.etcd.jetcd.KV;
 import io.etcd.jetcd.Lease;
 import io.etcd.jetcd.Txn;
 import io.etcd.jetcd.kv.TxnResponse;
-import io.etcd.jetcd.lease.LeaseGrantResponse;
 import io.etcd.jetcd.op.Cmp;
 import io.etcd.jetcd.op.CmpTarget;
 import io.etcd.jetcd.op.Op;
-import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
@@ -38,8 +36,8 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
+import static io.etcd.jetcd.options.GetOption.DEFAULT;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
@@ -51,6 +49,7 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
  * The timeout is implemented with the lease concept of etcd, which grants a TTL for key value pairs.
  */
 public class EtcdLockProvider implements LockProvider {
+    private static final double MILLIS_IN_SECOND = 1000;
 
     private static final String KEY_PREFIX = "job-lock";
     // prepared multi-environment support
@@ -66,36 +65,37 @@ public class EtcdLockProvider implements LockProvider {
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName(), ENV_DEFAULT);
-        return new EtcdLock(key, etcdTemplate, lockConfiguration).lease();
+        String value = buildValue();
+
+        Optional<Long> leaseIdOpt = etcdTemplate.tryToLock(key, value, lockConfiguration.getLockAtMostUntil());
+        return leaseIdOpt.map(leaseId -> new EtcdLock(key, value, leaseId, etcdTemplate, lockConfiguration));
+
+    }
+
+    private static long getSecondsUntil(Instant instant) {
+        return (long) Math.ceil(getMsUntil(instant) / MILLIS_IN_SECOND);
+    }
+
+    private static long getMsUntil(Instant instant) {
+        return Duration.between(ClockProvider.now(), instant).toMillis();
+    }
+
+    private String buildValue() {
+        return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
     }
 
     private static final class EtcdLock extends AbstractSimpleLock {
-        private static final long MILLIS_IN_SECOND = 1000L;
         private final String key;
-        private Long successLeaseId;
+        private final String value;
+        private final Long successLeaseId;
         private final EtcdTemplate etcdTemplate;
 
-        private EtcdLock(String key, EtcdTemplate etcdTemplate, LockConfiguration lockConfiguration) {
+        private EtcdLock(String key, String value, Long successLeaseId, EtcdTemplate etcdTemplate, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
-            this.etcdTemplate = etcdTemplate;
-        }
-
-        EtcdLock successLeaseId(Long successLeaseId) {
+            this.value = value;
             this.successLeaseId = successLeaseId;
-            return this;
-        }
-
-        Optional<SimpleLock> lease() {
-            Long leaseId = etcdTemplate.createLease(getSecondsUntil(lockConfiguration.getLockAtMostUntil()));
-
-            Optional<Long> lockSuccess = etcdTemplate.tryToLock(key, buildValue(), leaseId);
-            if (lockSuccess.isPresent()) {
-                return lockSuccess.map(this::successLeaseId);
-            } else {
-                etcdTemplate.revoke(leaseId);
-                return Optional.empty();
-            }
+            this.etcdTemplate = etcdTemplate;
         }
 
         @Override
@@ -105,6 +105,7 @@ public class EtcdLockProvider implements LockProvider {
             // lock at least until is in the past
             if (keepLockFor <= 0) {
                 try {
+                    // By revoking lease we remove the value and thus release the lock
                     etcdTemplate.revoke(successLeaseId);
                 } catch (Exception e) {
                     throw new LockException("Can not revoke old leaseId " + successLeaseId, e);
@@ -112,24 +113,12 @@ public class EtcdLockProvider implements LockProvider {
             } else {
                 // implement lockAtLeast functionality with a new leaseId
                 Long leaseId = etcdTemplate.createLease(keepLockFor);
-
-                etcdTemplate.putWithLeaseId(key, buildValue(), leaseId);
-                this.successLeaseId = leaseId;
+                // by putting the key with new shorter lease we change the TTL of the value
+                etcdTemplate.putWithLeaseId(key, value, leaseId);
+                // revoke the old lease
+                etcdTemplate.revoke(this.successLeaseId);
             }
         }
-
-        private long getSecondsUntil(Instant instant) {
-            return (long) Math.ceil((double) getMsUntil(instant) / MILLIS_IN_SECOND);
-        }
-
-        private long getMsUntil(Instant instant) {
-            return Duration.between(ClockProvider.now(), instant).toMillis();
-        }
-
-        private String buildValue() {
-            return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
-        }
-
     }
 
     static String buildKey(String lockName, String env) {
@@ -146,40 +135,38 @@ public class EtcdLockProvider implements LockProvider {
         }
 
         public Long createLease(long lockUntilInSeconds) {
-            CompletableFuture<LeaseGrantResponse> leaseGrantResp = leaseClient.grant(lockUntilInSeconds);
             try {
-                return leaseGrantResp.get().getID();
+                return leaseClient.grant(lockUntilInSeconds).get().getID();
             } catch (Exception e) {
                 throw new LockException("Failed create lease", e);
             }
         }
 
-        public Optional<Long> tryToLock(String key, String value, Long leaseId) {
+        public Optional<Long> tryToLock(String key, String value, Instant lockAtMostUntil) {
+            Long leaseId = createLease(getSecondsUntil(lockAtMostUntil));
             try {
-                ByteSequence lockKey = ByteSequence.from(key.getBytes());
-
-                PutOption putOption = PutOption.newBuilder()
-                    .withLeaseId(leaseId)
-                    .build();
-
-                GetOption getOption = GetOption.DEFAULT;
+                ByteSequence lockKey = toByteSequence(key);
+                PutOption putOption = putOptionWithLeaseId(leaseId);
 
                 // Version is the version of the key.
                 // A deletion resets the version to zero and any modification of the key increases its version.
                 Txn txn = kvClient.txn()
                     .If(new Cmp(lockKey, Cmp.Op.EQUAL, CmpTarget.version(0)))
-                    .Then(Op.put(lockKey, ByteSequence.from(value.getBytes()), putOption))
-                    .Else(Op.get(lockKey, getOption));
-                CompletableFuture<TxnResponse> txnRespFuture = txn.commit();
+                    .Then(Op.put(lockKey, toByteSequence(value), putOption))
+                    .Else(Op.get(lockKey, DEFAULT));
 
-                TxnResponse tr = txnRespFuture.get();
+                TxnResponse tr = txn.commit().get();
                 if (tr.isSucceeded()) {
                     return Optional.of(leaseId);
+                } else {
+                    revoke(leaseId);
+                    return Optional.empty();
                 }
             } catch (Exception e) {
+                revoke(leaseId);
                 throw new LockException("Failed to set lock " + key, e);
             }
-            return Optional.empty();
+
         }
 
         public void revoke(Long leaseId) {
@@ -199,13 +186,19 @@ public class EtcdLockProvider implements LockProvider {
          * will be timed out and then removed, eventually.
          */
         public void putWithLeaseId(String key, String value, Long leaseId) {
-            ByteSequence lockKey = ByteSequence.from(key.getBytes());
-            ByteSequence lockValue = ByteSequence.from(value.getBytes());
+            ByteSequence lockKey = toByteSequence(key);
+            ByteSequence lockValue = toByteSequence(value);
 
-            PutOption putOption = PutOption.newBuilder()
-                .withLeaseId(leaseId)
-                .build();
+            PutOption putOption = putOptionWithLeaseId(leaseId);
             kvClient.put(lockKey, lockValue, putOption);
+        }
+
+        private ByteSequence toByteSequence(String key) {
+            return ByteSequence.from(key.getBytes());
+        }
+
+        private PutOption putOptionWithLeaseId(Long leaseId) {
+            return PutOption.newBuilder().withLeaseId(leaseId).build();
         }
     }
 
