@@ -32,6 +32,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Cassandra](#cassandra)
   - [Consul](#consul)
   - [ArangoDB](#arangodb)
+  - [Etcd](#etcd)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
@@ -62,7 +63,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -106,6 +107,8 @@ If you do not specify `lockAtMostFor` in `@SchedulerLock` default value from `@E
 
 Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept.
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
+
+All the annotations support Spring Expression Language (SpEL).
 
 #### Example
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
@@ -162,7 +165,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -213,7 +216,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -240,7 +243,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -269,7 +272,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -299,7 +302,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -326,7 +329,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -350,7 +353,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -381,7 +384,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -408,7 +411,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -434,7 +437,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -460,7 +463,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -488,7 +491,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -522,7 +525,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -547,7 +550,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -565,6 +568,29 @@ public ArangoLockProvider lockProvider(final ArangoOperations arangoTemplate) {
 ```
 
 Please, note that ArangoDB lock provider uses ArangoDB driver v6.7, which is part of [arango-spring-data](https://github.com/arangodb/spring-data) in version 3.3.0.
+
+#### Etcd
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-etcd-jetcd</artifactId>
+    <version>4.20.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.etcd.jetcd.EtcdLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(Client client) {
+    return new EtcdLockProvider(client);
+}
+```
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
@@ -600,7 +626,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.19.1</version>
+    <version>4.20.0</version>
 </dependency>
 ```
 
@@ -730,6 +756,9 @@ after another, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.20.0
+* Support for etcd (thanks grofoli)
+
 ## 4.19.1
 * Fixed devtools compatibility #368
 
