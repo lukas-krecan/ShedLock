@@ -87,11 +87,15 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldTimeout() throws InterruptedException {
-        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO);
+        doTestTimeout(Duration.ofMillis(50));
+    }
+
+    protected void doTestTimeout(Duration lockAtMostFor) throws InterruptedException {
+        LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, lockAtMostFor, Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        sleep(55);
+        sleep(lockAtMostFor.toMillis() * 2);
         assertUnlocked(LOCK_NAME1);
 
         Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO));
@@ -105,6 +109,7 @@ public abstract class AbstractLockProviderIntegrationTest {
         LockConfiguration lockConfiguration = lockConfig(LOCK_NAME1);
         for (int i = 0; i < 10; i++) {
             Optional<SimpleLock> lock = getLockProvider().lock(lockConfiguration);
+            assertThat(lock).describedAs("Successfully locked").isNotEmpty();
             assertThat(getLockProvider().lock(lockConfiguration)).isEmpty();
             assertThat(lock).isNotEmpty();
             lock.get().unlock();
@@ -118,16 +123,20 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldLockAtLeastFor() throws InterruptedException {
+        doTestShouldLockAtLeastFor(100);
+    }
+
+    protected void doTestShouldLockAtLeastFor(int sleepForMs) throws InterruptedException {
         // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before this time
         Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
-        assertThat(lock1).isNotEmpty();
+        assertThat(lock1).describedAs("Should be locked").isNotEmpty();
         lock1.get().unlock();
 
         // Even though we have unlocked the lock, it will be held for some time
         assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).describedAs("Can not acquire lock, grace period did not pass yet").isEmpty();
 
         // Let's wait for the lock to be automatically released
-        sleep(LOCK_AT_LEAST_FOR.toMillis() + 100);
+        sleep(LOCK_AT_LEAST_FOR.toMillis() + sleepForMs);
 
         // Should be able to acquire now
         Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));

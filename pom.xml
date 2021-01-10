@@ -41,8 +41,6 @@
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
-        <module>providers/hazelcast/shedlock-provider-hazelcast</module>
-        <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/redis/shedlock-provider-redis-spring-1</module>
@@ -51,6 +49,9 @@
         <module>providers/cassandra/shedlock-provider-cassandra</module>
         <module>providers/consul/shedlock-provider-consul</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
+        <module>providers/etcd/shedlock-provider-etcd-jetcd</module>
+        <module>providers/hazelcast/shedlock-provider-hazelcast</module>
+        <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
     </modules>
 
     <properties>
