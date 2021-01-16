@@ -878,7 +878,7 @@ Version 4.0.0 is a major release changing quite a lot of stuff
 * `net.javacrumbs.shedlock.core.SchedulerLock` has been replaced by `net.javacrumbs.shedlock.spring.annotation.SchedulerLock`. The original annotation has been in wrong module and
 was too complex. Please use the new annotation, the old one still works, but in few years it will be removed.
 * Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there were a lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
-use `PROXY_SCHEDULER` mode if you specifay it manually.
+use `PROXY_SCHEDULER` mode if you specify it manually.
 * Support for more readable [duration strings](#duration-specification)
 * Support for lock assertion `LockAssert.assertLocked()`
 * [Support for Micronaut](#micronaut-integration) added
