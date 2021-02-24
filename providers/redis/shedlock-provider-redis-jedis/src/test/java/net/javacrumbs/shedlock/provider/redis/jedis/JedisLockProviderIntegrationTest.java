@@ -28,8 +28,7 @@ import redis.clients.jedis.JedisPool;
 
 import static net.javacrumbs.shedlock.provider.redis.jedis.RedisContainer.ENV;
 import static net.javacrumbs.shedlock.provider.redis.jedis.RedisContainer.PORT;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 public class JedisLockProviderIntegrationTest  {
@@ -50,12 +49,16 @@ public class JedisLockProviderIntegrationTest  {
         }
         @Override
         protected void assertUnlocked(String lockName) {
-            assertNull(jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV)));
+            assertThat(getLock(lockName)).isNull();
         }
 
         @Override
         protected void assertLocked(String lockName) {
-            assertNotNull(jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV)));
+            assertThat(getLock(lockName)).isNotNull();
+        }
+
+        private String getLock(String lockName) {
+            return jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV));
         }
 
         @Override
@@ -79,15 +82,19 @@ public class JedisLockProviderIntegrationTest  {
         @Override
         protected void assertUnlocked(String lockName) {
             try (Jedis jedis = jedisPool.getResource()) {
-                assertNull(jedis.get(JedisLockProvider.buildKey(lockName, ENV)));
+                assertThat(getLock(lockName, jedis)).isNull();
             }
         }
 
         @Override
         protected void assertLocked(String lockName) {
             try (Jedis jedis = jedisPool.getResource()) {
-                assertNotNull(jedis.get(JedisLockProvider.buildKey(lockName, ENV)));
+                assertThat(getLock(lockName, jedis)).isNotNull();
             }
+        }
+
+        private String getLock(String lockName, Jedis jedis) {
+            return jedis.get(JedisLockProvider.buildKey(lockName, ENV));
         }
 
         @Override
