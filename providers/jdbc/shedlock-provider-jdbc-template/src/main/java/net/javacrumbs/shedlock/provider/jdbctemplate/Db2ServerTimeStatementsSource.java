@@ -8,7 +8,7 @@ import java.util.Map;
 
 class Db2ServerTimeStatementsSource extends SqlStatementsSource {
     private final String now = "(CURRENT TIMESTAMP - CURRENT TIMEZONE)";
-    private final String lockAtMostFor = "ADD_SECONDS(" + now + ", :lockAtMostForSeconds)";
+    private final String lockAtMostFor = "("+ now + " + :lockAtMostForSeconds SECONDS)";
 
     Db2ServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
@@ -26,7 +26,7 @@ class Db2ServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getUnlockStatement() {
-        String lockAtLeastFor = "ADD_SECONDS(" + lockedAt() + ", :lockAtLeastForSeconds)";
+        String lockAtLeastFor = "(" + lockedAt() + "+ :lockAtLeastForSeconds SECONDS)";
         return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > " + now + " THEN " + lockAtLeastFor + " ELSE " + now + " END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
     }
 
