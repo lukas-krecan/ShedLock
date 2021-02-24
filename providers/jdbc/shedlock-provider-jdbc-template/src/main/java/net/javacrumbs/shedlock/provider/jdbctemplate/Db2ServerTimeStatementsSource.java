@@ -8,7 +8,7 @@ import java.util.Map;
 
 class Db2ServerTimeStatementsSource extends SqlStatementsSource {
     private final String now = "(CURRENT TIMESTAMP - CURRENT TIMEZONE)";
-    private final String lockAtMostFor = "ADD_SECONDS(" + now + ", :lockAtMostForSeconds)";
+    private final String lockAtMostFor = "("+ now + " + :lockAtMostForSeconds SECONDS)";
 
     Db2ServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
