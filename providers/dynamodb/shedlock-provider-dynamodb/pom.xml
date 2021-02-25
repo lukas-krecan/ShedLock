@@ -11,6 +11,10 @@
     <artifactId>shedlock-provider-dynamodb</artifactId>
     <version>4.20.1-SNAPSHOT</version>
 
+    <properties>
+        <jackson.version>2.12.1</jackson.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
@@ -21,7 +25,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-dynamodb</artifactId>
-            <version>1.11.807</version>
+            <version>1.11.962</version>
         </dependency>
 
         <dependency>
@@ -42,6 +46,21 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- fixing clash between testcontainers and aws Jackson versions -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
             <scope>test</scope>
         </dependency>
 
