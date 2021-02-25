@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>9.2.0.jre15</version>
+            <version>9.2.0.jre8</version>
         </dependency>
 
         <dependency>
