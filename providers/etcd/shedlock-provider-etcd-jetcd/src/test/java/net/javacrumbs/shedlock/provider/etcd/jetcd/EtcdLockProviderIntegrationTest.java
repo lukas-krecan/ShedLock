@@ -21,7 +21,6 @@ import io.etcd.jetcd.KV;
 import io.etcd.jetcd.test.EtcdClusterExtension;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,7 +98,6 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
         }
     }
 
-    @NotNull
     private ByteSequence buildKey(String lockName) {
         return ByteSequence.from(lockProvider.buildKey(lockName).getBytes());
     }
