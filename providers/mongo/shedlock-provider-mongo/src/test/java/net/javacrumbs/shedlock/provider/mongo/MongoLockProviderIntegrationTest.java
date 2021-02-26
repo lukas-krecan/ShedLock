@@ -22,7 +22,7 @@ import com.mongodb.client.result.DeleteResult;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
@@ -56,7 +56,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
 
     @BeforeAll
     public static void startMongo() throws IOException {
-        mongodExe = starter.prepare(new MongodConfigBuilder()
+        mongodExe = starter.prepare(MongodConfig.builder()
             .version(Version.Main.V3_6)
             .build());
         mongod = mongodExe.start();
