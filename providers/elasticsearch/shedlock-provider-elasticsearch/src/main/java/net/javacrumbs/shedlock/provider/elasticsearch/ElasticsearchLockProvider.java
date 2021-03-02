@@ -23,7 +23,6 @@ import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse;
-import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -41,6 +40,7 @@ import java.util.Optional;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static org.elasticsearch.action.support.WriteRequest.RefreshPolicy.IMMEDIATE;
 
 /**
  * Lock using ElasticSearch &gt;= 6.4.0.
@@ -125,17 +125,13 @@ public class ElasticsearchLockProvider implements LockProvider {
             Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
                 lockConfiguration.getLockAtMostUntil(),
                 now());
-            UpdateRequest ur = new UpdateRequest()
-                .index(index)
-                .type(type)
-                .id(lockConfiguration.getName())
+            UpdateRequest ur = updateRequest(lockConfiguration)
                 .script(new Script(ScriptType.INLINE,
                     "painless",
                     UPDATE_SCRIPT,
                     lockObject)
                 )
-                .upsert(lockObject)
-                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+                .upsert(lockObject);
             UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
             if (res.getResult() != DocWriteResponse.Result.NOOP) {
                 return Optional.of(new ElasticsearchSimpleLock(lockConfiguration));
@@ -149,6 +145,14 @@ public class ElasticsearchLockProvider implements LockProvider {
                 throw new LockException("Unexpected exception occurred", e);
             }
         }
+    }
+
+    private UpdateRequest updateRequest(@NonNull LockConfiguration lockConfiguration) {
+        return new UpdateRequest()
+            .index(index)
+            .type(type)
+            .id(lockConfiguration.getName())
+            .setRefreshPolicy(IMMEDIATE);
     }
 
     private Map<String, Object> lockObject(String name, Instant lockUntil, Instant lockedAt) {
@@ -170,10 +174,7 @@ public class ElasticsearchLockProvider implements LockProvider {
         public void doUnlock() {
             // Set lockUtil to now or lockAtLeastUntil whichever is later
             try {
-                UpdateRequest ur = new UpdateRequest()
-                    .index(index)
-                    .type(type)
-                    .id(lockConfiguration.getName())
+                UpdateRequest ur = updateRequest(lockConfiguration)
                     .script(new Script(ScriptType.INLINE,
                         "painless",
                         "ctx._source.lockUntil = params.unlockTime",
