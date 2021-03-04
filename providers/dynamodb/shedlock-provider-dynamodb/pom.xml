@@ -12,7 +12,7 @@
     <version>4.20.2-SNAPSHOT</version>
 
     <properties>
-        <jackson.version>2.12.1</jackson.version>
+        <jackson.version>2.12.2</jackson.version>
     </properties>
 
     <dependencies>
