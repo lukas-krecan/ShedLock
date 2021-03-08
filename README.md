@@ -289,7 +289,7 @@ public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.Dyna
 }
 ```
 
-> Please note that the lock table must be created externally.
+> Please note that the lock table must be created externally with `_id` as a partition key.
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
@@ -319,7 +319,7 @@ public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.Dynamo
 }
 ```
 
-> Please note that the lock table must be created externally.
+> Please note that the lock table must be created externally with `_id` as a partition key.
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
