@@ -668,6 +668,9 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 ```
 
+## Extending the lock
+Some lock providers support extension of the lock. For the time being, it requires manual lock manipulation,
+directly using `LockProvider` and calling `extend` method on the `SimpleLock`.
 
 ## Modes of Spring integration
 ShedLock supports two modes of Spring integration. One that uses an AOP proxy around scheduled method (PROXY_METHOD)
