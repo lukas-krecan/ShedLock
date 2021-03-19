@@ -58,8 +58,8 @@
         <spring.version>5.3.5</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <spring-boot22.version>2.4.4</spring-boot22.version>
-        <spring-boot23.version>2.4.4</spring-boot23.version>
+        <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
+        <spring-boot23.version>2.3.4.RELEASE</spring-boot23.version>
         <spring-boot24.version>2.4.4</spring-boot24.version>
         <junit.version>5.7.1</junit.version>
         <test-containers.version>1.15.2</test-containers.version>
