@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -43,7 +44,8 @@ import static java.util.Objects.requireNonNull;
  */
 class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String hostname;
-    private final String table;
+    private final CqlIdentifier table;
+    private final CqlIdentifier keyspace;
     private final String lockName;
     private final String lockUntil;
     private final String lockedAt;
@@ -55,6 +57,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         requireNonNull(configuration, "configuration can not be null");
         this.hostname = Utils.getHostname();
         this.table = configuration.getTable();
+        this.keyspace = configuration.getKeyspace();
         this.lockName = configuration.getColumnNames().getLockName();
         this.lockUntil = configuration.getColumnNames().getLockUntil();
         this.lockedAt = configuration.getColumnNames().getLockedAt();
@@ -105,7 +108,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @return optional lock row or empty
      */
     Optional<Lock> find(String name) {
-        SimpleStatement selectStatement = QueryBuilder.selectFrom(table)
+        SimpleStatement selectStatement = QueryBuilder.selectFrom(keyspace, table)
             .column(lockUntil)
             .column(lockedAt)
             .column(lockedBy)
@@ -129,7 +132,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param until new until instant value
      */
     private boolean insert(String name, Instant until) {
-        return execute(QueryBuilder.insertInto(table)
+        return execute(QueryBuilder.insertInto(keyspace, table)
             .value(lockName, literal(name))
             .value(lockUntil, literal(until))
             .value(lockedAt, literal(ClockProvider.now()))
@@ -145,7 +148,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param until new until instant value
      */
     private boolean update(String name, Instant until) {
-        return execute(QueryBuilder.update(table)
+        return execute(QueryBuilder.update(keyspace, table)
             .setColumn(lockUntil, literal(until))
             .setColumn(lockedAt, literal(ClockProvider.now()))
             .setColumn(lockedBy, literal(hostname))
@@ -161,7 +164,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
      * @param until new until instant value
      */
     private boolean updateUntil(String name, Instant until) {
-        return execute(QueryBuilder.update(table)
+        return execute(QueryBuilder.update(keyspace, table)
             .setColumn(lockUntil, literal(until))
             .whereColumn(lockName).isEqualTo(literal(name))
             .ifColumn(lockUntil).isGreaterThanOrEqualTo(literal(ClockProvider.now()))

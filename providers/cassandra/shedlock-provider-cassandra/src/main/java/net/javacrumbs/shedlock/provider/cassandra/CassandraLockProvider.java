@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.provider.cassandra;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -50,27 +51,31 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
      * Convenience class to specify configuration
      */
     public static final class Configuration {
-        private final String table;
+        private final CqlIdentifier table;
         private final ColumnNames columnNames;
         private final CqlSession cqlSession;
         private final ConsistencyLevel consistencyLevel;
+        private final CqlIdentifier keyspace;
 
         Configuration(
             @NonNull CqlSession cqlSession,
-            @NonNull String table,
+            @NonNull CqlIdentifier table,
             @NonNull ColumnNames columnNames,
-            @NonNull ConsistencyLevel consistencyLevel) {
+            @NonNull ConsistencyLevel consistencyLevel,
+            CqlIdentifier keyspace
+        ) {
             this.table = requireNonNull(table, "table can not be null");
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
             this.cqlSession = requireNonNull(cqlSession, "cqlSession can not be null");
-            this.consistencyLevel = requireNonNull(consistencyLevel, "consistencyLevel column can not be null");
+            this.consistencyLevel = requireNonNull(consistencyLevel, "consistencyLevel can not be null");
+            this.keyspace = keyspace;
         }
 
         public ColumnNames getColumnNames() {
             return columnNames;
         }
 
-        public String getTable() {
+        public CqlIdentifier getTable() {
             return table;
         }
 
@@ -82,6 +87,10 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             return consistencyLevel;
         }
 
+        public CqlIdentifier getKeyspace() {
+            return keyspace;
+        }
+
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -90,12 +99,17 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
          * Convenience builder class to build Configuration
          */
         public static final class Builder {
-            private String table;
+            private CqlIdentifier table;
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
             private CqlSession cqlSession;
-            private ConsistencyLevel consistencyLevel;
+            private ConsistencyLevel consistencyLevel = ConsistencyLevel.QUORUM;
+            private CqlIdentifier keyspace;
 
             public Builder withTableName(@NonNull String table) {
+                return withTableName(CqlIdentifier.fromCql(table));
+            }
+
+            public Builder withTableName(@NonNull CqlIdentifier table) {
                 this.table = table;
                 return this;
             }
@@ -115,8 +129,13 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            public Builder withKeyspace(@NonNull CqlIdentifier keyspace) {
+                this.keyspace = keyspace;
+                return this;
+            }
+
             public CassandraLockProvider.Configuration build() {
-                return new CassandraLockProvider.Configuration(cqlSession, table, columnNames, consistencyLevel);
+                return new CassandraLockProvider.Configuration(cqlSession, table, columnNames, consistencyLevel, keyspace);
             }
         }
     }
