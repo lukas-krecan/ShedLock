@@ -81,7 +81,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot23.version}</version>
+                <version>${spring-boot-old.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

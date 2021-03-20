@@ -25,9 +25,8 @@
         <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/micronaut-test</module>
         <module>spring/shedlock-spring</module>
+        <module>spring/test/shedlock-springboot-old-test</module>
         <module>spring/test/shedlock-springboot-test</module>
-        <module>spring/test/shedlock-springboot24-test</module>
-        <module>spring/test/shedlock-springboot22-test</module>
         <module>spring/test/shedlock-springboot-sleuth-test</module>
         <module>spring/test/shedlock-springboot-kotlin-test</module>
         <module>spring/test/shedlock-testng-test</module>
@@ -59,8 +58,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
-        <spring-boot23.version>2.3.4.RELEASE</spring-boot23.version>
-        <spring-boot24.version>2.4.4</spring-boot24.version>
+        <spring-boot-old.version>2.3.4.RELEASE</spring-boot-old.version>
+        <spring-boot-current.version>2.4.4</spring-boot-current.version>
         <junit.version>5.7.1</junit.version>
         <test-containers.version>1.15.2</test-containers.version>
         <kotlin.version>1.4.31</kotlin.version>
