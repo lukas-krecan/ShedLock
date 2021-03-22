@@ -21,6 +21,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.servererrors.WriteTimeoutException;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -72,7 +73,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
             return false;
         }
 
-        return insert(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        try {
+            return insert(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        } catch (WriteTimeoutException e) {
+            logger.warn("Error on insert", e);
+            return false;
+        }
     }
 
     @Override
@@ -82,7 +88,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
             return false;
         }
 
-        return update(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        try {
+            return update(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        } catch (WriteTimeoutException e) {
+            logger.warn("Error on update", e);
+            return false;
+        }
     }
 
     @Override
