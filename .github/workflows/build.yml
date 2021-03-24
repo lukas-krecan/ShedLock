@@ -7,7 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [1.8, 11, 15]
+        java: [ '8', '11', '16' ]
+        # Kotlin needs access to java.util
+        include:
+          - java: '8'
+            maven-opts: ''
+          - java: '11'
+            maven-opts: ''
+          - java: '16'
+            maven-opts: --add-opens java.base/java.util=ALL-UNNAMED
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }}
@@ -21,4 +29,6 @@ jobs:
           key: m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: m2
       - name: Build with Maven
+        env:
+          MAVEN_OPTS: ${{ matrix.maven-opts }}
         run: mvn test javadoc:javadoc

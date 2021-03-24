@@ -239,6 +239,25 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>permit-illegal-access</id>
+            <activation>
+                <jdk>[16,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>--illegal-access=permit</argLine>
+                            <forkCount>4</forkCount>
+                            <argLine>-Xmx512m</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <scm>
         <connection>scm:git:git@github.com:lukas-krecan/ShedLock.git</connection>
