@@ -61,7 +61,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
         JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);
         Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
 
-        assertThat(lockInfo.getLockUntil()).describedAs("is locked").isAfter(now);
+        assertThat(lockInfo.getLockUntil()).describedAs(getClass().getName() + " is locked").isAfter(now);
     }
 
     @Test
