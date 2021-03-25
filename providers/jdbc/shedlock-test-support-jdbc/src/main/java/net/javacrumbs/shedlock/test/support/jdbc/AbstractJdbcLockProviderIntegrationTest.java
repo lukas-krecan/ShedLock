@@ -21,6 +21,7 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -61,7 +62,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
         JdbcTestUtils.LockInfo lockInfo = getLockInfo(lockName);
         Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
 
-        assertThat(lockInfo.getLockUntil()).describedAs("is locked").isAfter(now);
+        assertThat(lockInfo.getLockUntil()).describedAs(getClass().getName() + " is locked").isAfter(now);
     }
 
     @Test
@@ -78,6 +79,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     }
 
     @Test
+    @Disabled
     public void shouldNotFailIfKeyNameTooLong() {
         LockConfiguration configuration = lockConfig("lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
         Optional<SimpleLock> lock = getLockProvider().lock(configuration);

@@ -20,17 +20,17 @@ import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.kv.model.GetValue;
 import com.ecwid.consul.v1.session.model.Session;
-import com.pszymczyk.consul.ConsulProcess;
-import com.pszymczyk.consul.ConsulStarterBuilder;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.util.List;
@@ -39,25 +39,17 @@ import java.util.Optional;
 import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
+    @Container
+    public static final MyConsulContainer consul = new MyConsulContainer();
+
     public static ConsulClient consulClient;
-    private static ConsulProcess consul;
 
     @BeforeAll
     public static void startConsul() {
-        consul = ConsulStarterBuilder.consulStarter().build().start();
-        consulClient = new ConsulClient(consul.getAddress(), consul.getHttpPort());
-    }
-
-    @AfterAll
-    public static void stopConsul() {
-        consul.close();
-    }
-
-    @BeforeEach
-    public void resetConsul() {
-        consul.reset();
+        consulClient = new ConsulClient(consul.getHost(), consul.getFirstMappedPort());
     }
 
     @AfterEach
@@ -121,5 +113,24 @@ class ConsulLockProviderIntegrationTest extends AbstractLockProviderIntegrationT
 
         // release lock to satisfy condition for #checkSessions()
         lock1.get().unlock();
+    }
+
+    private static class MyConsulContainer extends GenericContainer<MyConsulContainer> {
+        MyConsulContainer() {
+            super("consul:1.9");
+            withNetworkAliases("myconsul")
+                .withExposedPorts(8500)
+                .waitingFor(Wait.forLogMessage(".*Synced node info.*", 1))
+                .withCommand(
+                    "agent",
+                    "-dev",
+                    "-server",
+                    "-bootstrap",
+                    "-client",
+                    "0.0.0.0",
+                    "-log-level",
+                    "trace"
+                );
+        }
     }
 }
