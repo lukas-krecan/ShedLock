@@ -37,5 +37,8 @@ public final class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfi
     }
 
     static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {
+        MyMySQLContainer() {
+            super("mysql:8");
+        }
     }
 }
