@@ -29,6 +29,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -68,7 +69,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             });
         } catch (DuplicateKeyException | CannotSerializeTransactionException e) {
             return false;
-        } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
+        } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException | TransactionSystemException e) {
             logger.error("Unexpected exception", e);
             return false;
         }
@@ -84,7 +85,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             });
         } catch (CannotSerializeTransactionException e) {
             return false;
-        } catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException | TransactionSystemException e) {
             logger.error("Unexpected exception", e);
             return false;
         }
