@@ -104,6 +104,15 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
+        try {
+            doUnlock(lockConfiguration);
+        } catch (TransactionSystemException e) {
+            logger.info("Unlock failed due to TransactionSystemException - retrying");
+            doUnlock(lockConfiguration);
+        }
+    }
+
+    private void doUnlock(LockConfiguration lockConfiguration) {
         String sql = sqlStatementsSource().getUnlockStatement();
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
