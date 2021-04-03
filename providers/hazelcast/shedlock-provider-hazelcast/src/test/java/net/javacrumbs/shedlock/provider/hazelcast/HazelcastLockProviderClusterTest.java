@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -36,9 +37,9 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class HazelcastLockProviderClusterTest {
 
-    private static final String LOCK_NAME_1 = "clusterLock1";
+    private static final String LOCK_NAME_1 = UUID.randomUUID().toString();
 
-    private static final String LOCK_NAME_2 = "clusterLock2";
+    private static final String LOCK_NAME_2 = UUID.randomUUID().toString();
 
     private static HazelcastLockProvider lockProvider1;
 
