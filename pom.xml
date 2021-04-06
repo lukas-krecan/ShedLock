@@ -32,14 +32,16 @@
         <module>spring/test/shedlock-springboot-kotlin-test</module>
         <module>spring/test/shedlock-testng-test</module>
         <module>shedlock-test-support</module>
+        <module>providers/hazelcast/shedlock-provider-hazelcast</module>
+        <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
+        <module>providers/jdbc/shedlock-provider-jdbc</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
-        <module>providers/jdbc/shedlock-provider-jdbc</module>
-        <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
@@ -50,8 +52,6 @@
         <module>providers/consul/shedlock-provider-consul</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
         <module>providers/etcd/shedlock-provider-etcd-jetcd</module>
-        <module>providers/hazelcast/shedlock-provider-hazelcast</module>
-        <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
     </modules>
 
     <properties>
