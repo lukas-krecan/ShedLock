@@ -37,9 +37,9 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class HazelcastLockProviderClusterTest {
 
-    private static final String LOCK_NAME_1 = UUID.randomUUID().toString();
+    private final String LOCK_NAME_1 = UUID.randomUUID().toString();
 
-    private static final String LOCK_NAME_2 = UUID.randomUUID().toString();
+    private final String LOCK_NAME_2 = UUID.randomUUID().toString();
 
     private static HazelcastLockProvider lockProvider1;
 
