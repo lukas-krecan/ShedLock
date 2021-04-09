@@ -66,6 +66,7 @@
         <kotlin.version>1.4.32</kotlin.version>
         <micronaut.version>2.4.2</micronaut.version>
         <logback.version>1.2.3</logback.version>
+        <hsql.version>2.6.0</hsql.version>
     </properties>
 
     <dependencies>

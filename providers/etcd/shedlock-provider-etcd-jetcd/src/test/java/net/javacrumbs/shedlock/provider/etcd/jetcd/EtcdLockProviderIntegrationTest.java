@@ -71,7 +71,7 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     }
 
     /**
-     * Modified for etcd, since its lease grants only suppport TTL in seconds
+     * Modified for etcd, since its lease grants only support TTL in seconds
      */
     @Test
     @Override
