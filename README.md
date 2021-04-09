@@ -196,7 +196,6 @@ new JdbcTemplateLockProvider(builder()
     .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
     .withLockedByValue("my-value")
-    .withTimeZone(TimeZone.getTimeZone("UTC"))
     .build())
 ```
 
@@ -204,9 +203,9 @@ If you need to specify a schema, you can set it in the table name using the usua
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
-**Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing locks
+**Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing lock rows
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
-that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
+that multiple locks will be held.
 
 
 #### Mongo
