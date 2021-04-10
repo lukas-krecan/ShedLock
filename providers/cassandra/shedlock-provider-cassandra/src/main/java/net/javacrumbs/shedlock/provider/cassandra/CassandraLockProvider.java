@@ -43,10 +43,6 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         this(Configuration.builder().withCqlSession(cqlSession).withTableName(table).withConsistencyLevel(consistencyLevel).build());
     }
     
-    public CassandraLockProvider(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel, @NonNull ConsistencyLevel serialConsistencyLevel) {
-        this(Configuration.builder().withCqlSession(cqlSession).withTableName(table).withConsistencyLevel(consistencyLevel).withSerialConsistencyLevel(serialConsistencyLevel).build());
-    }
-
     public CassandraLockProvider(@NonNull Configuration configuration) {
         super(new CassandraStorageAccessor(configuration));
     }
