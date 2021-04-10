@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.util.function.BiFunction;
 
 import static java.util.Objects.requireNonNull;
 
@@ -43,33 +44,20 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
         String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)";
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
+        return executeCommand(sql, statement -> {
             statement.setString(1, lockConfiguration.getName());
             statement.setTimestamp(2, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setTimestamp(3, Timestamp.from(ClockProvider.now()));
             statement.setString(4, getHostname());
             int insertedRows = statement.executeUpdate();
-            if (insertedRows > 0) {
-                return true;
-            }
-        } catch (SQLException e) {
-            handleInsertionException(sql, e);
-        }
-        return false;
+            return insertedRows > 0;
+        }, this::handleInsertionException);
     }
 
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
+        return executeCommand(sql, statement -> {
             Timestamp now = Timestamp.from(ClockProvider.now());
             statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setTimestamp(2, now);
@@ -78,10 +66,7 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
             statement.setTimestamp(5, now);
             int updatedRows = statement.executeUpdate();
             return updatedRows > 0;
-        } catch (SQLException e) {
-            handleUpdateException(sql, e);
-            return false;
-        }
+        }, this::handleUpdateException);
     }
 
     @Override
@@ -90,39 +75,48 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
 
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
+        return executeCommand(sql, statement -> {
             statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
             statement.setString(2, lockConfiguration.getName());
             statement.setString(3, getHostname());
             statement.setTimestamp(4, Timestamp.from(ClockProvider.now()));
             return statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            handleUnlockException(sql, e);
-            return false;
-        }
+        }, this::handleUnlockException);
     }
 
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ?";
+        executeCommand(sql, statement -> {
+            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getUnlockTime()));
+            statement.setString(2, lockConfiguration.getName());
+            statement.executeUpdate();
+            return null;
+        }, this::handleUnlockException);
+    }
+
+    private <T> T executeCommand(
+        String sql,
+        SqlFunction<PreparedStatement, T> body,
+        BiFunction<String, SQLException, T> exceptionHandler
+    ) {
         try (
             Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             connection.setAutoCommit(true); // just to be sure, should be set by default
-            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getUnlockTime()));
-            statement.setString(2, lockConfiguration.getName());
-            statement.executeUpdate();
+            return body.apply(statement);
         } catch (SQLException e) {
-            handleUnlockException(sql, e);
+            return exceptionHandler.apply(sql, e);
         }
     }
 
-    void handleInsertionException(String sql, SQLException e) {
+    @FunctionalInterface
+    interface SqlFunction<T, R> {
+        R apply(T t) throws SQLException;
+    }
+
+    boolean handleInsertionException(String sql, SQLException e) {
         if (e instanceof SQLIntegrityConstraintViolationException) {
             // lock record already exists
         } else {
@@ -130,13 +124,14 @@ class JdbcStorageAccessor extends AbstractStorageAccessor {
             // we will try update in the next step, su if there is another problem, an exception will be thrown there
             logger.debug("Exception thrown when inserting record", e);
         }
+        return false;
     }
 
-    void handleUpdateException(String sql, SQLException e) {
+    boolean handleUpdateException(String sql, SQLException e) {
         throw new LockException("Unexpected exception when locking", e);
     }
 
-    void handleUnlockException(String sql, SQLException e) {
+    boolean handleUnlockException(String sql, SQLException e) {
         throw new LockException("Unexpected exception when unlocking", e);
     }
 }
