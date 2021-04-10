@@ -53,12 +53,8 @@ public class MicronautDataLockProvider extends StorageBasedLockProvider {
         this(new DataSourceTransactionManager(datasource), DEFAULT_TABLE_NAME);
     }
 
-    public MicronautDataLockProvider(@NonNull DataSource datasource, @NonNull SynchronousTransactionManager<Connection> transactionManager) {
+    public MicronautDataLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager) {
         this(transactionManager, DEFAULT_TABLE_NAME);
-    }
-
-    public MicronautDataLockProvider(@NonNull DataSource datasource, @NonNull String tableName) {
-        this(new DataSourceTransactionManager(datasource), tableName);
     }
 
     public MicronautDataLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
