@@ -29,10 +29,13 @@ import java.util.function.BiFunction;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Internal class, please do not use.
+ */
 public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccessor {
     private final String tableName;
 
-    AbstractJdbcStorageAccessor(@NonNull String tableName) {
+    public AbstractJdbcStorageAccessor(@NonNull String tableName) {
         this.tableName = requireNonNull(tableName, "tableName can not be null");
     }
 
@@ -97,11 +100,6 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
         BiFunction<String, SQLException, T> exceptionHandler
     );
 
-    @FunctionalInterface
-    interface SqlFunction<T, R> {
-        R apply(T t) throws SQLException;
-    }
-
     boolean handleInsertionException(String sql, SQLException e) {
         if (e instanceof SQLIntegrityConstraintViolationException) {
             // lock record already exists
@@ -120,4 +118,10 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     boolean handleUnlockException(String sql, SQLException e) {
         throw new LockException("Unexpected exception when unlocking", e);
     }
+
+    @FunctionalInterface
+    public interface SqlFunction<T, R> {
+        R apply(T t) throws SQLException;
+    }
 }
+
