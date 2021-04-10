@@ -53,6 +53,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String lockedBy;
     private final CqlSession cqlSession;
     private final ConsistencyLevel consistencyLevel;
+    private final ConsistencyLevel serialConsistencyLevel;
 
     CassandraStorageAccessor(@NonNull Configuration configuration) {
         requireNonNull(configuration, "configuration can not be null");
@@ -65,6 +66,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
         this.lockedBy = configuration.getColumnNames().getLockedBy();
         this.cqlSession = configuration.getCqlSession();
         this.consistencyLevel = configuration.getConsistencyLevel();
+        this.serialConsistencyLevel = configuration.getSerialConsistencyLevel();
     }
 
     @Override
@@ -185,6 +187,6 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
 
 
     private boolean execute(SimpleStatement statement) {
-        return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel)).wasApplied();
+        return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel).setSerialConsistencyLevel(serialConsistencyLevel)).wasApplied();
     }
 }

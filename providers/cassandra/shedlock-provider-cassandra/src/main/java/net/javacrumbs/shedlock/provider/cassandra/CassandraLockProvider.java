@@ -42,7 +42,7 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
     public CassandraLockProvider(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel) {
         this(Configuration.builder().withCqlSession(cqlSession).withTableName(table).withConsistencyLevel(consistencyLevel).build());
     }
-
+    
     public CassandraLockProvider(@NonNull Configuration configuration) {
         super(new CassandraStorageAccessor(configuration));
     }
@@ -55,6 +55,7 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         private final ColumnNames columnNames;
         private final CqlSession cqlSession;
         private final ConsistencyLevel consistencyLevel;
+        private final ConsistencyLevel serialConsistencyLevel;
         private final CqlIdentifier keyspace;
 
         Configuration(
@@ -62,12 +63,14 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             @NonNull CqlIdentifier table,
             @NonNull ColumnNames columnNames,
             @NonNull ConsistencyLevel consistencyLevel,
+            @NonNull ConsistencyLevel serialConsistencyLevel,
             CqlIdentifier keyspace
         ) {
             this.table = requireNonNull(table, "table can not be null");
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
             this.cqlSession = requireNonNull(cqlSession, "cqlSession can not be null");
             this.consistencyLevel = requireNonNull(consistencyLevel, "consistencyLevel can not be null");
+            this.serialConsistencyLevel = requireNonNull(serialConsistencyLevel, "serialConsistencyLevel can not be null");
             this.keyspace = keyspace;
         }
 
@@ -86,8 +89,12 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         public ConsistencyLevel getConsistencyLevel() {
             return consistencyLevel;
         }
+        
+        public ConsistencyLevel getSerialConsistencyLevel() {
+			return serialConsistencyLevel;
+		}
 
-        public CqlIdentifier getKeyspace() {
+		public CqlIdentifier getKeyspace() {
             return keyspace;
         }
 
@@ -103,6 +110,7 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
             private CqlSession cqlSession;
             private ConsistencyLevel consistencyLevel = ConsistencyLevel.QUORUM;
+            private ConsistencyLevel serialConsistencyLevel = ConsistencyLevel.SERIAL;
             private CqlIdentifier keyspace;
 
             public Builder withTableName(@NonNull String table) {
@@ -129,13 +137,24 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            /**
+             * Since Shedlock internally uses CAS (Compare And Set) operations
+             * This configuration helps to have a granular control on the CAS consistency.
+             * @return Builder
+             */
+            
+            public Builder withSerialConsistencyLevel(@NonNull ConsistencyLevel serialConsistencyLevel) {
+                this.serialConsistencyLevel = serialConsistencyLevel;
+                return this;
+            }
+            
             public Builder withKeyspace(@NonNull CqlIdentifier keyspace) {
                 this.keyspace = keyspace;
                 return this;
             }
 
             public CassandraLockProvider.Configuration build() {
-                return new CassandraLockProvider.Configuration(cqlSession, table, columnNames, consistencyLevel, keyspace);
+                return new CassandraLockProvider.Configuration(cqlSession, table, columnNames, consistencyLevel, serialConsistencyLevel, keyspace);
             }
         }
     }
