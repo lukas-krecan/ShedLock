@@ -20,7 +20,7 @@
 
         <dependency>
             <groupId>io.micronaut.data</groupId>
-            <artifactId>micronaut-data-jdbc</artifactId>
+            <artifactId>micronaut-data-tx</artifactId>
             <version>${micronaut-data.version}</version>
         </dependency>
 
