@@ -28,9 +28,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionSystemException;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
@@ -62,11 +61,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         try {
             String sql = sqlStatementsSource().getInsertStatement();
-            return transactionTemplate.execute(status -> {
-                Map<String, Object> params = params(lockConfiguration);
-                int insertedRows = jdbcTemplate.update(sql, params);
-                return insertedRows > 0;
-            });
+            return execute(sql, lockConfiguration);
         } catch (DuplicateKeyException | CannotSerializeTransactionException e) {
             return false;
         } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException | TransactionSystemException e) {
@@ -79,10 +74,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         String sql = sqlStatementsSource().getUpdateStatement();
         try {
-            return transactionTemplate.execute(status -> {
-                int updatedRows = jdbcTemplate.update(sql, params(lockConfiguration));
-                return updatedRows > 0;
-            });
+            return execute(sql, lockConfiguration);
         } catch (CannotSerializeTransactionException e) {
             return false;
         } catch (DataIntegrityViolationException | TransactionSystemException e) {
@@ -96,10 +88,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         String sql = sqlStatementsSource().getExtendStatement();
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
-        return transactionTemplate.execute(status -> {
-            int updatedRows = jdbcTemplate.update(sql, params(lockConfiguration));
-            return updatedRows > 0;
-        });
+        return execute(sql, lockConfiguration);
     }
 
     @Override
@@ -114,12 +103,12 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     private void doUnlock(LockConfiguration lockConfiguration) {
         String sql = sqlStatementsSource().getUnlockStatement();
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
-                jdbcTemplate.update(sql, params(lockConfiguration));
-            }
-        });
+        execute(sql, lockConfiguration);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private boolean execute(String sql, LockConfiguration lockConfiguration) throws TransactionException {
+        return transactionTemplate.execute(status -> jdbcTemplate.update(sql, params(lockConfiguration)) > 0);
     }
 
     @NonNull
