@@ -127,7 +127,8 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
             .column(lockedBy)
             .whereColumn(lockName).isEqualTo(literal(name))
             .build()
-            .setConsistencyLevel(consistencyLevel);
+            .setConsistencyLevel(consistencyLevel)
+            .setSerialConsistencyLevel(serialConsistencyLevel);
 
         ResultSet resultSet = cqlSession.execute(selectStatement);
         Row row = resultSet.one();

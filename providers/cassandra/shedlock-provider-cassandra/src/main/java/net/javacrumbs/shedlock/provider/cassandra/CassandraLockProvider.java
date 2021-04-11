@@ -42,7 +42,7 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
     public CassandraLockProvider(@NonNull CqlSession cqlSession, @NonNull String table, @NonNull ConsistencyLevel consistencyLevel) {
         this(Configuration.builder().withCqlSession(cqlSession).withTableName(table).withConsistencyLevel(consistencyLevel).build());
     }
-    
+
     public CassandraLockProvider(@NonNull Configuration configuration) {
         super(new CassandraStorageAccessor(configuration));
     }
@@ -89,12 +89,12 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         public ConsistencyLevel getConsistencyLevel() {
             return consistencyLevel;
         }
-        
-        public ConsistencyLevel getSerialConsistencyLevel() {
-			return serialConsistencyLevel;
-		}
 
-		public CqlIdentifier getKeyspace() {
+        public ConsistencyLevel getSerialConsistencyLevel() {
+            return serialConsistencyLevel;
+        }
+
+        public CqlIdentifier getKeyspace() {
             return keyspace;
         }
 
@@ -142,12 +142,12 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
              * This configuration helps to have a granular control on the CAS consistency.
              * @return Builder
              */
-            
+
             public Builder withSerialConsistencyLevel(@NonNull ConsistencyLevel serialConsistencyLevel) {
                 this.serialConsistencyLevel = serialConsistencyLevel;
                 return this;
             }
-            
+
             public Builder withKeyspace(@NonNull CqlIdentifier keyspace) {
                 this.keyspace = keyspace;
                 return this;
@@ -173,9 +173,9 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
          */
         public ColumnNames(String lockName, String lockUntil, String lockedAt, String lockedBy) {
             this.lockName = requireNonNull(lockName, "'lockName' column name can not be null");
-            this.lockUntil = requireNonNull(lockUntil,"'lockUntil' column name can not be null");
-            this.lockedAt = requireNonNull(lockedAt,"'lockedAt' column name can not be null");
-            this.lockedBy = requireNonNull(lockedBy,"'lockedBy' column name can not be null");
+            this.lockUntil = requireNonNull(lockUntil, "'lockUntil' column name can not be null");
+            this.lockedAt = requireNonNull(lockedAt, "'lockedAt' column name can not be null");
+            this.lockedBy = requireNonNull(lockedBy, "'lockedBy' column name can not be null");
         }
 
         public String getLockName() {
