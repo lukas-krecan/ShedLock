@@ -294,7 +294,7 @@ Add dependency
 Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.micronautdata.MicronautDataLockProvider;
+import MicronautDataLockProvider;
 
 ...
 @Bean

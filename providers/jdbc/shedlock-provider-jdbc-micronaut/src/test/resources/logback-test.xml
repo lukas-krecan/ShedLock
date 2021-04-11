@@ -8,7 +8,7 @@
 
     <logger name="com.zaxxer.hikari.HikariDataSource" level="WARN" />
     <!-- Do not log errors from `shouldNotFailIfKeyNameTooLong` tests -->
-    <logger name="net.javacrumbs.shedlock.provider.micronautdata.MicronautDataStorageAccessor" level="ERROR" />
+    <logger name="MicronautDataStorageAccessor" level="ERROR" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

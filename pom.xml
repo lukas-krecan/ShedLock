@@ -37,7 +37,7 @@
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
-        <module>providers/jdbc/shedlock-provider-micronaut-data</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-micronaut</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>

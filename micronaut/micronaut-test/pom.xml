@@ -16,6 +16,7 @@
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>net.javacrumbs.micronaut.test.Application</exec.mainClass>
+        <micronaut-data.version>2.3.1</micronaut-data.version>
     </properties>
     <repositories>
         <repository>
@@ -61,6 +62,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.micronaut.data</groupId>
+            <artifactId>micronaut-data-jdbc</artifactId>
+            <version>${micronaut-data.version}</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
@@ -90,7 +96,7 @@
 
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -170,6 +176,11 @@
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-validation</artifactId>
                                 <version>${micronaut.version}</version>
+                            </path>
+                            <path>
+                                <groupId>io.micronaut.data</groupId>
+                                <artifactId>micronaut-data-processor</artifactId>
+                                <version>${micronaut-data.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>

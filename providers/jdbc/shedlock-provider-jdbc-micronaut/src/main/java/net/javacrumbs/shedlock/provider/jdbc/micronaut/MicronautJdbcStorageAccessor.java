@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.micronautdata;
+package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
 import io.micronaut.transaction.SynchronousTransactionManager;
 import io.micronaut.transaction.TransactionDefinition;
@@ -27,12 +27,12 @@ import java.util.function.BiFunction;
 
 import static java.util.Objects.requireNonNull;
 
-class MicronautDataStorageAccessor extends AbstractJdbcStorageAccessor {
+class MicronautJdbcStorageAccessor extends AbstractJdbcStorageAccessor {
     private final SynchronousTransactionManager<Connection> transactionManager;
 
     private final TransactionDefinition.Propagation propagation = TransactionDefinition.Propagation.REQUIRES_NEW;
 
-    MicronautDataStorageAccessor(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
+    MicronautJdbcStorageAccessor(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
         super(tableName);
         this.transactionManager = requireNonNull(transactionManager, "transactionManager can not be null");
     }

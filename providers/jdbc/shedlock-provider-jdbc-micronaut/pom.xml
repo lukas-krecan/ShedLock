@@ -8,7 +8,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-micronaut-data</artifactId>
+    <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
     <version>4.22.2-SNAPSHOT</version>
 
     <dependencies>

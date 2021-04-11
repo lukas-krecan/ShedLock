@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.micronautdata;
+package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
 import io.micronaut.transaction.SynchronousTransactionManager;
 import io.micronaut.transaction.jdbc.DataSourceTransactionManager;
@@ -45,19 +45,19 @@ import java.sql.Connection;
  * </li>
  * </ol>
  */
-public class MicronautDataLockProvider extends StorageBasedLockProvider {
+public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
 
     private static final String DEFAULT_TABLE_NAME = "shedlock";
 
-    public MicronautDataLockProvider(@NonNull DataSource datasource) {
+    public MicronautJdbcLockProvider(@NonNull DataSource datasource) {
         this(new DataSourceTransactionManager(datasource), DEFAULT_TABLE_NAME);
     }
 
-    public MicronautDataLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager) {
+    public MicronautJdbcLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager) {
         this(transactionManager, DEFAULT_TABLE_NAME);
     }
 
-    public MicronautDataLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
-        super(new MicronautDataStorageAccessor(transactionManager, tableName));
+    public MicronautJdbcLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
+        super(new MicronautJdbcStorageAccessor(transactionManager, tableName));
     }
 }

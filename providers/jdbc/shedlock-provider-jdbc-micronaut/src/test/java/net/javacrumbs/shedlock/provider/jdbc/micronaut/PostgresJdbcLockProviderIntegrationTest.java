@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.micronautdata;
+package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
-import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-public class MySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
-    private static final MySqlConfig dbConfig = new MySqlConfig();
+public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
+    private static final PostgresConfig dbConfig = new PostgresConfig();
 
     @BeforeAll
     public static void startDb() {
@@ -31,7 +31,7 @@ public class MySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProvid
     }
 
     @AfterAll
-    public static void shutDownDb() {
+    public static void shutdownDb() {
         dbConfig.shutdownDb();
     }
 
@@ -47,6 +47,6 @@ public class MySqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProvid
 
     @Override
     protected StorageBasedLockProvider getLockProvider() {
-        return new MicronautDataLockProvider(testUtils.getDatasource());
+        return new MicronautJdbcLockProvider(testUtils.getDatasource());
     }
 }
