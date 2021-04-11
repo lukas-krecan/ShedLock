@@ -22,13 +22,12 @@ import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider
 
 import javax.inject.Singleton;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 @Factory
 public class Configuration {
 
     @Singleton
-    public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) throws SQLException {
+    public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) {
         return new MicronautJdbcLockProvider(transactionManager);
     }
 }

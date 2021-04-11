@@ -18,7 +18,6 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Components](#components)
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
-  - [Jdbc](#jdbc)
   - [JdbcTemplate](#jdbctemplate)
   - [Micronaut Data Jdbc](#micronaut-data-jdbc)
   - [Mongo](#mongo)
@@ -136,53 +135,6 @@ it may be executed again and the results will be unpredictable (more processes w
 ### Configure LockProvider
 There are several implementations of LockProvider.
 
-#### Jdbc
-First, create lock table (**please note that `name` has to be primary key**)
-
-```sql
-# MySQL, MariaDB
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
-    locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# Postgres
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL,
-    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# Oracle
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
-    locked_at TIMESTAMP(3) NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# MS SQL
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL,
-    locked_at datetime2 NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# DB2
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAMP NOT NULL,
-    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
-```
-
-Add dependency
-
-```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-jdbc</artifactId>
-    <version>4.13.0</version>
-</dependency>
-```
-
-Configure:
-
-```java
-import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-
-...
-@Bean
-public LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcLockProvider(dataSource);
-}
-```
-
 #### JdbcTemplate
 First, create lock table (**please note that `name` has to be primary key**)
 
@@ -207,6 +159,8 @@ CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL,
 CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAMP NOT NULL,
     locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
+
+Or use [this](src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
 
 Add dependency
 
@@ -257,49 +211,31 @@ so the row will NOT be automatically recreated until application restart. If you
 that multiple locks will be held.
 
 #### Micronaut Data Jdbc
-First, create lock table (**please note that `name` has to be primary key**)
+If you are using Micronaut data and you do not want to add dependency on Spring JDBC, you can use
+Micronaut JDBC support. Just be aware that it has just a basic functionality when compared to
+the JdbcTemplate provider.
 
-```sql
-# MySQL, MariaDB
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
-    locked_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3), locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# Postgres
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL,
-    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# Oracle
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP(3) NOT NULL,
-    locked_at TIMESTAMP(3) NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# MS SQL
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL,
-    locked_at datetime2 NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name));
-
-# DB2
-CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAMP NOT NULL,
-    locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
-```
+First, create lock table as described in the [JdbcTemplate](#jdbctemplate) section above.
 
 Add dependency
 
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-micronaut-data</artifactId>
-    <version>4.13.0</version>
+    <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
+    <version>4.22.1</version>
 </dependency>
 ```
 
 Configure:
 
 ```java
-import MicronautDataLockProvider;
+import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider;
 
 ...
-@Bean
-public LockProvider lockProvider(DataSource dataSource) {
-        return new MicronautDataLockProvider(dataSource);
+@Singleton
+public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) {
+    return new MicronautJdbcLockProvider(transactionManager);
 }
 ```
 
