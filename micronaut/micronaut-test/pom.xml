@@ -62,6 +62,10 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.micronaut.liquibase</groupId>
+            <artifactId>micronaut-liquibase</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-jdbc</artifactId>
             <version>${micronaut-data.version}</version>

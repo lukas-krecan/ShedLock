@@ -16,11 +16,11 @@
 package net.javacrumbs.micronaut.test;
 
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.transaction.TransactionOperations;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider;
 
 import javax.inject.Singleton;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -28,17 +28,7 @@ import java.sql.SQLException;
 public class Configuration {
 
     @Singleton
-    public LockProvider lockProvider(DataSource dataSource) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.prepareStatement("CREATE TABLE shedlock(\n" +
-                "    name VARCHAR(64),\n" +
-                "    lock_until TIMESTAMP(3) NULL,\n" +
-                "    locked_at TIMESTAMP(3) NULL,\n" +
-                "    locked_by  VARCHAR(255),\n" +
-                "    PRIMARY KEY (name)\n" +
-                ")").execute();
-        }
-
-        return new MicronautJdbcLockProvider(dataSource);
+    public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) throws SQLException {
+        return new MicronautJdbcLockProvider(transactionManager);
     }
 }

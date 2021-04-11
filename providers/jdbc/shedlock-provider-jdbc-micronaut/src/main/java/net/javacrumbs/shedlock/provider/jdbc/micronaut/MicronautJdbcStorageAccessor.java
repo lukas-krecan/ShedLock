@@ -15,8 +15,8 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
-import io.micronaut.transaction.SynchronousTransactionManager;
 import io.micronaut.transaction.TransactionDefinition;
+import io.micronaut.transaction.TransactionOperations;
 import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
@@ -28,11 +28,11 @@ import java.util.function.BiFunction;
 import static java.util.Objects.requireNonNull;
 
 class MicronautJdbcStorageAccessor extends AbstractJdbcStorageAccessor {
-    private final SynchronousTransactionManager<Connection> transactionManager;
+    private final TransactionOperations<Connection> transactionManager;
 
     private final TransactionDefinition.Propagation propagation = TransactionDefinition.Propagation.REQUIRES_NEW;
 
-    MicronautJdbcStorageAccessor(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
+    MicronautJdbcStorageAccessor(@NonNull TransactionOperations<Connection> transactionManager, @NonNull String tableName) {
         super(tableName);
         this.transactionManager = requireNonNull(transactionManager, "transactionManager can not be null");
     }

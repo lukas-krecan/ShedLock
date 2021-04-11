@@ -12,7 +12,11 @@ datasources:
     driverClassName: org.h2.Driver
     username: sa
     password: ''
-    schema-generate: CREATE_DROP
+    schema-generate: NONE
     dialect: H2
+liquibase:
+  datasources:
+    default:
+      change-log: 'classpath:db/liquibase-changelog.xml'
 
 

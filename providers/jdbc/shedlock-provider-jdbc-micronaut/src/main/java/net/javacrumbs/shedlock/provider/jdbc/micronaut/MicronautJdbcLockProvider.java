@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
-import io.micronaut.transaction.SynchronousTransactionManager;
+import io.micronaut.transaction.TransactionOperations;
 import io.micronaut.transaction.jdbc.DataSourceTransactionManager;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -53,11 +53,11 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
         this(new DataSourceTransactionManager(datasource), DEFAULT_TABLE_NAME);
     }
 
-    public MicronautJdbcLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager) {
+    public MicronautJdbcLockProvider(@NonNull TransactionOperations<Connection> transactionManager) {
         this(transactionManager, DEFAULT_TABLE_NAME);
     }
 
-    public MicronautJdbcLockProvider(@NonNull SynchronousTransactionManager<Connection> transactionManager, @NonNull String tableName) {
+    public MicronautJdbcLockProvider(@NonNull TransactionOperations<Connection> transactionManager, @NonNull String tableName) {
         super(new MicronautJdbcStorageAccessor(transactionManager, tableName));
     }
 }
