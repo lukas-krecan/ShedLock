@@ -19,6 +19,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
   - [JdbcTemplate](#jdbctemplate)
+  - [Micronaut Data Jdbc](#micronaut-data-jdbc)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
   - [DynamoDB 2](#dynamodb-2)
@@ -159,6 +160,8 @@ CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAM
     locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
 
+Or use [this](micronaut/micronaut-test/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
+
 Add dependency
 
 ```xml
@@ -207,6 +210,34 @@ If you need to specify a schema, you can set it in the table name using the usua
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
 that multiple locks will be held.
 
+#### Micronaut Data Jdbc
+If you are using Micronaut data and you do not want to add dependency on Spring JDBC, you can use
+Micronaut JDBC support. Just be aware that it has just a basic functionality when compared to
+the JdbcTemplate provider.
+
+First, create lock table as described in the [JdbcTemplate](#jdbctemplate) section above.
+
+Add dependency
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
+    <version>4.22.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider;
+
+...
+@Singleton
+public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) {
+    return new MicronautJdbcLockProvider(transactionManager);
+}
+```
 
 #### Mongo
 Import the project

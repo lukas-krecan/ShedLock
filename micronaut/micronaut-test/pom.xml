@@ -61,6 +61,15 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.micronaut.liquibase</groupId>
+            <artifactId>micronaut-liquibase</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.data</groupId>
+            <artifactId>micronaut-data-jdbc</artifactId>
+            <version>${micronaut-data.version}</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
@@ -90,7 +99,7 @@
 
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -170,6 +179,11 @@
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-validation</artifactId>
                                 <version>${micronaut.version}</version>
+                            </path>
+                            <path>
+                                <groupId>io.micronaut.data</groupId>
+                                <artifactId>micronaut-data-processor</artifactId>
+                                <version>${micronaut-data.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>

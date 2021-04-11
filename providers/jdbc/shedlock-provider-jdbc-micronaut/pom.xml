@@ -8,7 +8,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-jdbc</artifactId>
+    <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
     <version>4.22.2-SNAPSHOT</version>
 
     <dependencies>
@@ -16,6 +16,12 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-internal</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micronaut.data</groupId>
+            <artifactId>micronaut-data-tx</artifactId>
+            <version>${micronaut-data.version}</version>
         </dependency>
 
         <dependency>
@@ -35,7 +41,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.jdbc
+                                net.javacrumbs.shedlock.provider.jdbc.micronaut
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>

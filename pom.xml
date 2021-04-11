@@ -35,8 +35,10 @@
         <module>providers/hazelcast/shedlock-provider-hazelcast</module>
         <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-internal</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
+        <module>providers/jdbc/shedlock-provider-jdbc-micronaut</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
@@ -65,6 +67,7 @@
         <test-containers.version>1.15.2</test-containers.version>
         <kotlin.version>1.4.32</kotlin.version>
         <micronaut.version>2.4.2</micronaut.version>
+        <micronaut-data.version>2.3.1</micronaut-data.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 

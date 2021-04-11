@@ -15,128 +15,38 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Timestamp;
+import java.util.function.BiFunction;
 
 import static java.util.Objects.requireNonNull;
 
-class JdbcStorageAccessor extends AbstractStorageAccessor {
+class JdbcStorageAccessor extends AbstractJdbcStorageAccessor {
     private final DataSource dataSource;
-    private final String tableName;
 
     JdbcStorageAccessor(@NonNull DataSource dataSource, @NonNull String tableName) {
+        super(tableName);
         this.dataSource = requireNonNull(dataSource, "dataSource can not be null");
-        this.tableName = requireNonNull(tableName, "tableName can not be null");
     }
 
-    @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
-        // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
-        String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)";
+    protected <T> T executeCommand(
+        String sql,
+        SqlFunction<PreparedStatement, T> body,
+        BiFunction<String, SQLException, T> exceptionHandler
+    ) {
         try (
             Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             connection.setAutoCommit(true); // just to be sure, should be set by default
-            statement.setString(1, lockConfiguration.getName());
-            statement.setTimestamp(2, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-            statement.setTimestamp(3, Timestamp.from(ClockProvider.now()));
-            statement.setString(4, getHostname());
-            int insertedRows = statement.executeUpdate();
-            if (insertedRows > 0) {
-                return true;
-            }
+            return body.apply(statement);
         } catch (SQLException e) {
-            handleInsertionException(sql, e);
+            return exceptionHandler.apply(sql, e);
         }
-        return false;
-    }
-
-    @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
-            Timestamp now = Timestamp.from(ClockProvider.now());
-            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-            statement.setTimestamp(2, now);
-            statement.setString(3, getHostname());
-            statement.setString(4, lockConfiguration.getName());
-            statement.setTimestamp(5, now);
-            int updatedRows = statement.executeUpdate();
-            return updatedRows > 0;
-        } catch (SQLException e) {
-            handleUpdateException(sql, e);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
-
-        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
-
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
-            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getLockAtMostUntil()));
-            statement.setString(2, lockConfiguration.getName());
-            statement.setString(3, getHostname());
-            statement.setTimestamp(4, Timestamp.from(ClockProvider.now()));
-            return statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            handleUnlockException(sql, e);
-            return false;
-        }
-    }
-
-    @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ?";
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
-            statement.setTimestamp(1, Timestamp.from(lockConfiguration.getUnlockTime()));
-            statement.setString(2, lockConfiguration.getName());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            handleUnlockException(sql, e);
-        }
-    }
-
-    void handleInsertionException(String sql, SQLException e) {
-        if (e instanceof SQLIntegrityConstraintViolationException) {
-            // lock record already exists
-        } else {
-            // can not throw exception here, some drivers (Postgres) do not throw SQLIntegrityConstraintViolationException on duplicate key
-            // we will try update in the next step, su if there is another problem, an exception will be thrown there
-            logger.debug("Exception thrown when inserting record", e);
-        }
-    }
-
-    void handleUpdateException(String sql, SQLException e) {
-        throw new LockException("Unexpected exception when locking", e);
-    }
-
-    void handleUnlockException(String sql, SQLException e) {
-        throw new LockException("Unexpected exception when unlocking", e);
     }
 }
