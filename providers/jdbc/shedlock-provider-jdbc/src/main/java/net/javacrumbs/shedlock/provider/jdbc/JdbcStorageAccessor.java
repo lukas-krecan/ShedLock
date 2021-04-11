@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
+import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import javax.sql.DataSource;

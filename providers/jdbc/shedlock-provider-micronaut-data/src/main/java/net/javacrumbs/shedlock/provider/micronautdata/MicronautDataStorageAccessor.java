@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.provider.micronautdata;
 
 import io.micronaut.transaction.SynchronousTransactionManager;
 import io.micronaut.transaction.TransactionDefinition;
-import net.javacrumbs.shedlock.provider.jdbc.AbstractJdbcStorageAccessor;
+import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.sql.Connection;
