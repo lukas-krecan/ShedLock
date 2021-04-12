@@ -21,7 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class JdbcTemplateStorageAccessorTest {
 
@@ -35,7 +35,7 @@ class JdbcTemplateStorageAccessorTest {
                 .build()
         );
 
-        verifyZeroInteractions(dataSource);
+        verifyNoInteractions(dataSource);
     }
 
 }

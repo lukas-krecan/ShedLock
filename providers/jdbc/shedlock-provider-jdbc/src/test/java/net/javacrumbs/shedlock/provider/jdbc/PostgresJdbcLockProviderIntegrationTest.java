@@ -15,38 +15,14 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 
-public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
+public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
     private static final PostgresConfig dbConfig = new PostgresConfig();
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutdownDb() {
-        dbConfig.shutdownDb();
-    }
 
     @Override
     protected DbConfig getDbConfig() {
         return dbConfig;
-    }
-
-    @Override
-    protected boolean useDbTime() {
-        return false;
-    }
-
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcLockProvider(testUtils.getDatasource());
     }
 }
