@@ -6,10 +6,10 @@
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
         <version>4.23.1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>micronaut-test</artifactId>
+    <artifactId>micronaut-jdbc</artifactId>
     <version>4.23.1-SNAPSHOT</version>
 
     <properties>
