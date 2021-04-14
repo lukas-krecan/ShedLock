@@ -1,3 +1,18 @@
+/**
+ * Copyright 2009 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -8,7 +23,7 @@ import java.util.Map;
 
 class Db2ServerTimeStatementsSource extends SqlStatementsSource {
     private final String now = "(CURRENT TIMESTAMP - CURRENT TIMEZONE)";
-    private final String lockAtMostFor = "ADD_SECONDS(" + now + ", :lockAtMostForSeconds)";
+    private final String lockAtMostFor = "("+ now + " + :lockAtMostForMicros MICROSECONDS)";
 
     Db2ServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
@@ -26,7 +41,7 @@ class Db2ServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getUnlockStatement() {
-        String lockAtLeastFor = "ADD_SECONDS(" + lockedAt() + ", :lockAtLeastForSeconds)";
+        String lockAtLeastFor = "(" + lockedAt() + "+ :lockAtLeastForMicros MICROSECONDS)";
         return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > " + now + " THEN " + lockAtLeastFor + " ELSE " + now + " END WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy";
     }
 
@@ -41,8 +56,8 @@ class Db2ServerTimeStatementsSource extends SqlStatementsSource {
         Map<String, Object> params = new HashMap<>();
         params.put("name", lockConfiguration.getName());
         params.put("lockedBy", configuration.getLockedByValue());
-        params.put("lockAtMostForSeconds", ((double) lockConfiguration.getLockAtMostFor().toMillis()) / 1000);
-        params.put("lockAtLeastForSeconds", ((double) lockConfiguration.getLockAtLeastFor().toMillis()) / 1000);
+        params.put("lockAtMostForMicros", ((double) lockConfiguration.getLockAtMostFor().toNanos() / 1_000));
+        params.put("lockAtLeastForMicros", ((double) lockConfiguration.getLockAtLeastFor().toNanos() / 1_000));
         return params;
     }
 }

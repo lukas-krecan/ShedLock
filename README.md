@@ -19,6 +19,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
   - [JdbcTemplate](#jdbctemplate)
+  - [Micronaut Data Jdbc](#micronaut-data-jdbc)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
   - [DynamoDB 2](#dynamodb-2)
@@ -32,6 +33,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Cassandra](#cassandra)
   - [Consul](#consul)
   - [ArangoDB](#arangodb)
+  - [Etcd](#etcd)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
@@ -62,7 +64,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -106,6 +108,8 @@ If you do not specify `lockAtMostFor` in `@SchedulerLock` default value from `@E
 
 Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept.
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
+
+All the annotations support Spring Expression Language (SpEL).
 
 #### Example
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
@@ -156,13 +160,15 @@ CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAM
     locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
 
+Or use [this](micronaut/micronaut-test/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
+
 Add dependency
 
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -193,7 +199,6 @@ new JdbcTemplateLockProvider(builder()
     .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
     .withLockedByValue("my-value")
-    .withTimeZone(TimeZone.getTimeZone("UTC"))
     .build())
 ```
 
@@ -201,10 +206,38 @@ If you need to specify a schema, you can set it in the table name using the usua
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
 
 #### Warning
-**Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing locks
+**Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing lock rows
 so the row will NOT be automatically recreated until application restart. If you need to, you can edit the row/document, risking only
-that multiple locks will be held. Since 1.0.0 you can clean the cache by calling `clearCache()` on LockProvider.
+that multiple locks will be held.
 
+#### Micronaut Data Jdbc
+If you are using Micronaut data and you do not want to add dependency on Spring JDBC, you can use
+Micronaut JDBC support. Just be aware that it has just a basic functionality when compared to
+the JdbcTemplate provider.
+
+First, create lock table as described in the [JdbcTemplate](#jdbctemplate) section above.
+
+Add dependency
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
+    <version>4.23.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider;
+
+...
+@Singleton
+public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) {
+    return new MicronautJdbcLockProvider(transactionManager);
+}
+```
 
 #### Mongo
 Import the project
@@ -213,7 +246,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -240,7 +273,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -269,7 +302,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -286,7 +319,7 @@ public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.Dyna
 }
 ```
 
-> Please note that the lock table must be created externally.
+> Please note that the lock table must be created externally with `_id` as a partition key.
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
@@ -299,7 +332,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -316,7 +349,7 @@ public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.Dynamo
 }
 ```
 
-> Please note that the lock table must be created externally.
+> Please note that the lock table must be created externally with `_id` as a partition key.
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
@@ -326,7 +359,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -350,7 +383,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -381,7 +414,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -408,7 +441,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -434,7 +467,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -460,7 +493,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -488,7 +521,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -501,7 +534,7 @@ import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider;
 
 @Bean
 public CassandraLockProvider lockProvider(CqlSession cqlSession) {
-    return new CassandraLockProvider(cqlSession);
+    return new CassandraLockProvider(Configuration.builder().withCqlSession(session));
 }
 ```
 
@@ -522,7 +555,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -547,7 +580,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -565,6 +598,29 @@ public ArangoLockProvider lockProvider(final ArangoOperations arangoTemplate) {
 ```
 
 Please, note that ArangoDB lock provider uses ArangoDB driver v6.7, which is part of [arango-spring-data](https://github.com/arangodb/spring-data) in version 3.3.0.
+
+#### Etcd
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-etcd-jetcd</artifactId>
+    <version>4.23.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.etcd.jetcd.EtcdLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(Client client) {
+    return new EtcdLockProvider(client);
+}
+```
 
 ### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
@@ -600,7 +656,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.19.1</version>
+    <version>4.23.0</version>
 </dependency>
 ```
 
@@ -642,6 +698,9 @@ executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostU
 
 ```
 
+## Extending the lock
+Some lock providers support extension of the lock. For the time being, it requires manual lock manipulation,
+directly using `LockProvider` and calling `extend` method on the `SimpleLock`.
 
 ## Modes of Spring integration
 ShedLock supports two modes of Spring integration. One that uses an AOP proxy around scheduled method (PROXY_METHOD)
@@ -730,6 +789,27 @@ after another, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.23.0
+* Ability to set serialConsistencyLevel in Cassandra (thanks @DebajitKumarPhukan)
+* Introduced shedlock-provider-jdbc-micronaut module (thanks @drmaas)
+
+## 4.22.1
+* Catching and logging Cassandra exception
+
+## 4.22.0
+* Support for custom keyspace in Cassandra provider
+
+## 4.21.0
+* Elastic unlock using IMMEDIATE refresh policy #422
+* DB2 JDBC lock provider uses microseconds in DB time
+* Various library upgrades
+
+## 4.20.1
+* Fixed DB JDBC server time #378
+
+## 4.20.0
+* Support for etcd (thanks grofoli)
+
 ## 4.19.1
 * Fixed devtools compatibility #368
 
@@ -849,7 +929,7 @@ Version 4.0.0 is a major release changing quite a lot of stuff
 * `net.javacrumbs.shedlock.core.SchedulerLock` has been replaced by `net.javacrumbs.shedlock.spring.annotation.SchedulerLock`. The original annotation has been in wrong module and
 was too complex. Please use the new annotation, the old one still works, but in few years it will be removed.
 * Default intercept mode changed from `PROXY_SCHEDULER` to `PROXY_METHOD`. The reason is that there were a lot of issues with  `PROXY_SCHEDULER` (for example #168). You can still
-use `PROXY_SCHEDULER` mode if you specifay it manually.
+use `PROXY_SCHEDULER` mode if you specify it manually.
 * Support for more readable [duration strings](#duration-specification)
 * Support for lock assertion `LockAssert.assertLocked()`
 * [Support for Micronaut](#micronaut-integration) added

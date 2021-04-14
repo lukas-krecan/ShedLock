@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2020 the original author or authors.
+ * Copyright 2009 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,38 +15,14 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 
-public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
+public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
     private static final HsqlConfig dbConfig = new HsqlConfig();
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutDownDb() {
-        dbConfig.shutdownDb();
-    }
 
     @Override
     protected DbConfig getDbConfig() {
         return dbConfig;
-    }
-
-    @Override
-    protected boolean useDbTime() {
-        return false;
-    }
-
-    @Override
-    protected StorageBasedLockProvider getLockProvider() {
-        return new JdbcLockProvider(testUtils.getDatasource());
     }
 }

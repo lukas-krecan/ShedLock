@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.19.2-SNAPSHOT</version>
+        <version>4.23.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.19.2-SNAPSHOT</version>
+    <version>4.23.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -25,9 +25,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.pszymczyk.consul</groupId>
-            <artifactId>embedded-consul</artifactId>
-            <version>2.1.4</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${test-containers.version}</version>
             <scope>test</scope>
         </dependency>
 

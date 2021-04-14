@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.19.2-SNAPSHOT</version>
+        <version>4.23.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.19.2-SNAPSHOT</version>
+    <version>4.23.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -21,13 +21,13 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>3.12.4</version>
+            <version>3.12.8</version>
         </dependency>
 
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>2.2.0</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
 

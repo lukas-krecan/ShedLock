@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2020 the original author or authors.
+ * Copyright 2009 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class HazelcastLockProviderClusterTest {
 
-    private static final String LOCK_NAME_1 = "clusterLock1";
+    private final String LOCK_NAME_1 = UUID.randomUUID().toString();
 
-    private static final String LOCK_NAME_2 = "clusterLock2";
+    private final String LOCK_NAME_2 = UUID.randomUUID().toString();
 
     private static HazelcastLockProvider lockProvider1;
 
@@ -76,10 +79,18 @@ public class HazelcastLockProviderClusterTest {
         assertThat(lock21).isEmpty();
         lock11.get().unlock();
         lock22.get().unlock();
-        Optional<SimpleLock> lock12Bis = lockProvider2.lock(simpleLockConfig(LOCK_NAME_1));
-        assertThat(lock12Bis).isNotEmpty();
-        Optional<SimpleLock> lock21Bis = lockProvider1.lock(simpleLockConfig(LOCK_NAME_2));
-        assertThat(lock21Bis).isNotEmpty();
+        assertUnlocked(lockProvider2, LOCK_NAME_1);
+        assertUnlocked(lockProvider1, LOCK_NAME_2);
+    }
+
+    private void assertUnlocked(HazelcastLockProvider lockProvider,  String lockName) {
+        HazelcastLock lock = lockProvider.getLock(lockName);
+        if (lock != null) {
+            Instant now = now();
+            if (!lock.isExpired(now)) {
+                fail("Expected to be unlocked but got lock " + lock + " current time is " + now);
+            }
+        }
     }
 
     @Test

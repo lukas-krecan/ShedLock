@@ -1,12 +1,12 @@
 /**
- * Copyright 2009-2020 the original author or authors.
- * <p>
+ * Copyright 2009 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
@@ -57,7 +57,7 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
 
     @BeforeAll
     public static void startMongo() throws IOException {
-        mongodExe = starter.prepare(new MongodConfigBuilder()
+        mongodExe = starter.prepare(MongodConfig.builder()
             .version(Version.Main.V3_6)
             .build());
         mongod = mongodExe.start();

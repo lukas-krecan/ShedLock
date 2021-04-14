@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.19.2-SNAPSHOT</version>
+        <version>4.23.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.19.2-SNAPSHOT</version>
+    <version>4.23.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
-            <version>2.3.1.RELEASE</version>
+            <version>2.4.7</version>
         </dependency>
 
         <dependency>
@@ -41,21 +41,21 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>3.3.0</version>
+            <version>3.5.2</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>5.3.1.RELEASE</version>
+            <version>6.1.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-data-20</artifactId>
-            <version>3.13.2</version>
+            <version>3.15.3</version>
             <scope>test</scope>
         </dependency>
 

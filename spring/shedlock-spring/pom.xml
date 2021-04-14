@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.19.2-SNAPSHOT</version>
+        <version>4.23.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-spring</artifactId>
-    <version>4.19.2-SNAPSHOT</version>
+    <version>4.23.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.5</version>
+            <version>1.9.6</version>
             <optional>true</optional>
         </dependency>
         <dependency>
