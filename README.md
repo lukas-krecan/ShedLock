@@ -188,8 +188,9 @@ public LockProvider lockProvider(DataSource dataSource) {
             );
 }
 ```
-By specifying `usingDbTime()` (introduced in 4.9.3) the lock provider will use UTC time based on the DB server time.
-If you do not specify this option, current time on the client will be used (the time may differ between clients).
+By specifying `usingDbTime()` the lock provider will use UTC time based on the DB server clock.
+If you do not specify this option, clock from the app server will be used (the clocks on app servers may not be
+synchronized thus leading to various locking issues).
 
 For more fine-grained configuration use other options of the `Configuration` object
 
