@@ -35,6 +35,7 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+@Disabled
 public class HazelcastLockProviderClusterTest {
 
     private final String LOCK_NAME_1 = UUID.randomUUID().toString();
