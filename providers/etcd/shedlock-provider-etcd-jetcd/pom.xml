@@ -11,7 +11,7 @@
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
 
     <properties>
-        <jetcd.version>0.5.4</jetcd.version>
+        <jetcd.version>0.5.5</jetcd.version>
     </properties>
 
     <dependencies>
