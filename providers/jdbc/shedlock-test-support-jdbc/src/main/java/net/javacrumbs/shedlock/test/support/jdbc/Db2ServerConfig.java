@@ -37,6 +37,7 @@ public final class Db2ServerConfig extends AbstractDbConfig {
         db2.stop();
     }
 
+    @Override
     public String getJdbcUrl() {
         return db2.getJdbcUrl();
 

@@ -26,7 +26,7 @@ class ScheduledTasks {
     @Scheduled(fixedRate = 100)
     @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "\${lock.at.most.for}")
     fun reportCurrentTime() {
-        assertLocked();
+        assertLocked()
         println(Date())
     }
 }

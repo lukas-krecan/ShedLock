@@ -108,6 +108,7 @@ public class MultiTenancyLockProviderIntegrationTest {
         }
 
 
+        @Override
         protected LockProvider createLockProvider(String tenantName) {
             if (TENANT_1.equals(tenantName)) {
                 return new JdbcTemplateLockProvider(builder()
@@ -122,6 +123,7 @@ public class MultiTenancyLockProviderIntegrationTest {
             }
         }
 
+        @Override
         protected String getTenantName(LockConfiguration lockConfiguration) {
             // round robin
             // In reality this would use ThreadLocal to figure out the tenant.

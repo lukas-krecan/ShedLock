@@ -30,8 +30,6 @@ public class ApplicationTest {
 
     @Test
     void shouldStart() {
-        await().untilAsserted(() -> {
-            assertThat(scheduledTasks.wasCalled()).isTrue();
-        });
+        await().untilAsserted(() -> assertThat(scheduledTasks.wasCalled()).isTrue());
     }
 }

@@ -25,7 +25,7 @@ abstract class AbstractContainerBasedDbConfig<T extends JdbcDatabaseContainer<T>
 
     public AbstractContainerBasedDbConfig(T container) {
         this.container = container
-            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));;
+            .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
     }
 
     @Override
@@ -38,6 +38,7 @@ abstract class AbstractContainerBasedDbConfig<T extends JdbcDatabaseContainer<T>
         container.stop();
     }
 
+    @Override
     public String getJdbcUrl() {
         return container.getJdbcUrl();
     }

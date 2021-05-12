@@ -34,6 +34,7 @@ class JdbcStorageAccessor extends AbstractJdbcStorageAccessor {
         this.dataSource = requireNonNull(dataSource, "dataSource can not be null");
     }
 
+    @Override
     protected <T> T executeCommand(
         String sql,
         SqlFunction<PreparedStatement, T> body,

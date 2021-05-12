@@ -16,11 +16,8 @@
 package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 
@@ -41,16 +38,11 @@ public final class JdbcTestUtils {
     }
 
     public LockInfo getLockInfo(String lockName) {
-        return jdbcTemplate.query("SELECT name, lock_until, " + dbConfig.nowExpression() + " as db_time FROM shedlock WHERE name = ?", new Object[]{lockName}, new RowMapper<LockInfo>() {
-            @Override
-            public LockInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
-                return new LockInfo(
-                    rs.getString("name"),
-                    rs.getTimestamp("lock_until").toInstant(),
-                    rs.getTimestamp("db_time").toInstant()
-                );
-            }
-        }).get(0);
+        return jdbcTemplate.query("SELECT name, lock_until, " + dbConfig.nowExpression() + " as db_time FROM shedlock WHERE name = ?", new Object[]{lockName}, (rs, rowNum) -> new LockInfo(
+            rs.getString("name"),
+            rs.getTimestamp("lock_until").toInstant(),
+            rs.getTimestamp("db_time").toInstant()
+        )).get(0);
     }
 
     public void clean() {
