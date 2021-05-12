@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
@@ -125,11 +126,11 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
     }
 
     private static byte[] serialize(Instant date) {
-        return toIsoString(date).getBytes();
+        return toIsoString(date).getBytes(UTF_8);
     }
 
     private static Instant parse(byte[] data) {
-        return Instant.parse(new String(data));
+        return Instant.parse(new String(data, UTF_8));
     }
 
     String getNodePath(String lockName) {
