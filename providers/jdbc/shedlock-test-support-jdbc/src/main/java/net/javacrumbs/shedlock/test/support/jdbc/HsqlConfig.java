@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.test.support.jdbc;
 
 public class HsqlConfig extends AbstractDbConfig {
+    @Override
     public String getJdbcUrl() {
         return "jdbc:hsqldb:mem:mymemdb";
     }

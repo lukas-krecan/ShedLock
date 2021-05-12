@@ -15,12 +15,11 @@
  */
 package net.javacrumbs.shedlock.test.boot
 
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class HelloController(private val jdbcTemplate: JdbcTemplate) {
+class HelloController {
     @RequestMapping("/")
     fun index(): String {
         return "Greetings from Spring Boot!"

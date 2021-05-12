@@ -25,6 +25,7 @@ abstract class AbstractJdbcTest extends AbstractJdbcLockProviderIntegrationTest 
         return false;
     }
 
+    @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JdbcLockProvider(testUtils.getDatasource());
     }

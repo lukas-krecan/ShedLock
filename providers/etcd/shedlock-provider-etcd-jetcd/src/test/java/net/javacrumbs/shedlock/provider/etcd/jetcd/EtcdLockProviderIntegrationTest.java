@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     @RegisterExtension
-    static EtcdClusterExtension etcdCluster = new EtcdClusterExtension("it-cluster", 1);
+    static final EtcdClusterExtension etcdCluster = new EtcdClusterExtension("it-cluster", 1);
 
     private EtcdLockProvider lockProvider;
     private KV kvClient;

@@ -49,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     @Container
-    public static DynaliteContainer dynamoDB = new DynaliteContainer();
+    public static final DynaliteContainer dynamoDB = new DynaliteContainer();
 
     private static final String TABLE_NAME = "Shedlock";
     private static Table lockTable;

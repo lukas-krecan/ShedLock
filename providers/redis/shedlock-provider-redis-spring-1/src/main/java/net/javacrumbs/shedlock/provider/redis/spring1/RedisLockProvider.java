@@ -31,6 +31,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 
 /**
@@ -68,7 +69,7 @@ public class RedisLockProvider implements LockProvider {
         String key = buildKey(lockConfiguration.getName());
         RedisConnection redisConnection = null;
         try {
-            byte[] keyBytes = key.getBytes();
+            byte[] keyBytes = getBytes(key);
             redisConnection = redisConnectionFactory.getConnection();
             if (redisConnection.setNX(keyBytes, buildValue(lockConfiguration.getLockAtMostUntil()))) {
                 return Optional.of(new RedisLock(key, redisConnectionFactory, lockConfiguration));
@@ -85,6 +86,10 @@ public class RedisLockProvider implements LockProvider {
         } finally {
             close(redisConnection);
         }
+    }
+
+    private static byte[] getBytes(String key) {
+        return key.getBytes(UTF_8);
     }
 
     private boolean isUnlocked(byte[] value) {
@@ -125,7 +130,7 @@ public class RedisLockProvider implements LockProvider {
             if (keepLockFor.getExpirationTimeInMilliseconds() <= 0) {
                 try {
                     redisConnection = redisConnectionFactory.getConnection();
-                    redisConnection.del(key.getBytes());
+                    redisConnection.del(getBytes(key));
                 } catch (Exception e) {
                     throw new LockException("Can not remove node", e);
                 } finally {
@@ -134,7 +139,7 @@ public class RedisLockProvider implements LockProvider {
             } else {
                 try {
                     redisConnection = redisConnectionFactory.getConnection();
-                    redisConnection.set(key.getBytes(), buildValue(lockConfiguration.getLockAtMostUntil()), keepLockFor, SetOption.SET_IF_PRESENT);
+                    redisConnection.set(getBytes(key), buildValue(lockConfiguration.getLockAtMostUntil()), keepLockFor, SetOption.SET_IF_PRESENT);
                 } finally {
                     close(redisConnection);
                 }
@@ -147,11 +152,11 @@ public class RedisLockProvider implements LockProvider {
     }
 
     private static byte[] buildValue(Instant lockAtMostUntil) {
-        return String.format("ADDED:%s@%s EXP:%s", ClockProvider.now().toString(), getHostname(), lockAtMostUntil.toString()).getBytes();
+        return getBytes(String.format("ADDED:%s@%s EXP:%s", ClockProvider.now().toString(), getHostname(), lockAtMostUntil.toString()));
     }
 
     static Expiration getExpirationFromValue(byte[] value) {
-        Instant expires = Instant.parse(new String(value).split("EXP:")[1]);
+        Instant expires = Instant.parse(new String(value, UTF_8).split("EXP:")[1]);
         return getExpiration(expires);
     }
 }

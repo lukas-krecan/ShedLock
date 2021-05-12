@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 public class H2Config extends AbstractDbConfig {
 
+    @Override
     public String getJdbcUrl() {
         return "jdbc:h2:mem:test";
     }

@@ -42,7 +42,7 @@ public class AopCleanupTest {
     @EnableScheduling
     @EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
     static class Config {
-        private static LockProvider lockProvider = mock(LockProvider.class);
+        private static final LockProvider lockProvider = mock(LockProvider.class);
 
         @Bean
         public LockProvider lockProvider() {

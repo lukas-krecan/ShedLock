@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     @Container
-    public static DynamoDbContainer dynamoDbContainer =
+    public static final DynamoDbContainer dynamoDbContainer =
         new DynamoDbContainer("quay.io/testcontainers/dynalite:v1.2.1-1")
             .withExposedPorts(4567);
 
