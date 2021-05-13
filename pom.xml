@@ -58,7 +58,7 @@
     </modules>
 
     <properties>
-        <spring.version>5.3.6</spring.version>
+        <spring.version>5.3.7</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
