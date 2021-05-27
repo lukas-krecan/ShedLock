@@ -35,6 +35,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ArangoDB](#arangodb)
   - [Etcd](#etcd)
   - [Multi-tenancy](#Multi-tenancy)
+  - [Apache Ignite](#apache-ignite)
 + [Duration specification](#duration-specification)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
@@ -623,7 +624,7 @@ public LockProvider lockProvider(Client client) {
 }
 ```
 
-### Multi-tenancy
+#### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
 (see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultiTenancyLockProviderIntegrationTest.java#L87))
 ```java
@@ -639,6 +640,29 @@ private static abstract class MultiTenancyLockProvider implements LockProvider {
     protected abstract LockProvider createLockProvider(String tenantName) ;
 
     protected abstract String getTenantName(LockConfiguration lockConfiguration);
+}
+```
+
+#### Apache Ignite
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-ignite</artifactId>
+    <version>4.23.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.ignite.IgniteLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(Ignite ignite) {
+    return new IgniteLockProvider(ignite);
 }
 ```
 
