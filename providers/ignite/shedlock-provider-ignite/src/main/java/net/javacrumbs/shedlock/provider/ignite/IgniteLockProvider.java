@@ -130,8 +130,7 @@ public class IgniteLockProvider implements LockProvider {
         if (oldVal == null || !oldVal.getLockedBy().equals(getHostname()) || !oldVal.getLockUntil().isAfter(now))
             return Optional.empty();
 
-        LockValue newVal = new LockValue(oldVal);
-        newVal.setLockUntil(lockCfg.getLockAtMostUntil());
+        LockValue newVal = oldVal.withLockUntil(lockCfg.getLockAtMostUntil());
 
         if (cache.replace(key, oldVal, newVal))
             return Optional.of(new IgniteLock(lockCfg, this));
@@ -150,8 +149,7 @@ public class IgniteLockProvider implements LockProvider {
         LockValue oldVal = cache.get(key);
 
         if (oldVal != null && oldVal.getLockedBy().equals(getHostname())) {
-            LockValue newVal = new LockValue(oldVal);
-            newVal.setLockUntil(lockCfg.getUnlockTime());
+            LockValue newVal = oldVal.withLockUntil(lockCfg.getUnlockTime());
 
             cache.replace(key, oldVal, newVal);
         }
