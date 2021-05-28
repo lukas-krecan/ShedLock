@@ -24,7 +24,7 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
       - name: Cache Maven packages
-        uses: actions/cache@v2.1.5
+        uses: actions/cache@v2.1.6
         with:
           path: ~/.m2
           key: m2-${{ hashFiles('**/pom.xml') }}
