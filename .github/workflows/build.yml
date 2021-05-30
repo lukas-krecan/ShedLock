@@ -15,7 +15,7 @@ jobs:
           - java: '11'
             maven-opts: ''
           - java: '16'
-            maven-opts: --illegal-access=warn
+            maven-opts: --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Set up JDK ${{ matrix.java }}
