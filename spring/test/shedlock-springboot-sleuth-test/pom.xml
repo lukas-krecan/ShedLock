@@ -70,7 +70,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-sleuth</artifactId>
-                <version>3.0.2</version>
+                <version>3.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
