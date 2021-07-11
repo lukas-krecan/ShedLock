@@ -1,6 +1,4 @@
-CREATE SCHEMA myapp;
-
-CREATE TABLE myapp.shedlock(
+CREATE TABLE shedlock(
     name VARCHAR(64),
     lock_until TIMESTAMP(3) NULL,
     locked_at TIMESTAMP(3) NULL,
