@@ -37,6 +37,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
++ [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
 + [Troubleshooting](#troubleshooting)
