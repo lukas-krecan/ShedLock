@@ -62,7 +62,6 @@
         <spring.version>5.3.8</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <spring-boot22.version>2.2.6.RELEASE</spring-boot22.version>
         <spring-boot-old.version>2.4.8</spring-boot-old.version>
         <spring-boot-current.version>2.5.2</spring-boot-current.version>
         <spring-boot-future.version>2.6.0-SNAPSHOT</spring-boot-future.version>
