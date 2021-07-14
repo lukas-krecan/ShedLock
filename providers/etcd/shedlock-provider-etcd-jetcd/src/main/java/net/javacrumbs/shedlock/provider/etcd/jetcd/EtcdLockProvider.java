@@ -38,6 +38,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static io.etcd.jetcd.options.GetOption.DEFAULT;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
@@ -201,7 +202,7 @@ public class EtcdLockProvider implements LockProvider {
         }
 
         private ByteSequence toByteSequence(String key) {
-            return ByteSequence.from(key.getBytes());
+            return ByteSequence.from(key.getBytes(UTF_8));
         }
 
         private PutOption putOptionWithLeaseId(Long leaseId) {

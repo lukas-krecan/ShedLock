@@ -34,8 +34,10 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Consul](#consul)
   - [ArangoDB](#arangodb)
   - [Etcd](#etcd)
+  - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
 + [Duration specification](#duration-specification)
++ [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
 + [Locking without a framework](#locking-without-a-framework)
 + [Troubleshooting](#troubleshooting)
@@ -64,7 +66,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -160,7 +162,7 @@ CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAM
     locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
 
-Or use [this](micronaut/micronaut-test/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
+Or use [this](micronaut/test/micronaut-jdbc/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
 
 Add dependency
 
@@ -168,7 +170,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -188,8 +190,9 @@ public LockProvider lockProvider(DataSource dataSource) {
             );
 }
 ```
-By specifying `usingDbTime()` (introduced in 4.9.3) the lock provider will use UTC time based on the DB server time.
-If you do not specify this option, current time on the client will be used (the time may differ between clients).
+By specifying `usingDbTime()` the lock provider will use UTC time based on the DB server clock.
+If you do not specify this option, clock from the app server will be used (the clocks on app servers may not be
+synchronized thus leading to various locking issues).
 
 For more fine-grained configuration use other options of the `Configuration` object
 
@@ -223,7 +226,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -246,7 +249,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -273,7 +276,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -302,7 +305,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -332,7 +335,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -359,7 +362,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -383,7 +386,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -414,7 +417,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -441,7 +444,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -467,7 +470,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -493,7 +496,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -521,7 +524,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -555,7 +558,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -580,7 +583,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -605,7 +608,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -622,7 +625,31 @@ public LockProvider lockProvider(Client client) {
 }
 ```
 
-### Multi-tenancy
+
+#### Apache Ignite
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-ignite</artifactId>
+    <version>4.25.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.ignite.IgniteLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(Ignite ignite) {
+    return new IgniteLockProvider(ignite);
+}
+```
+
+#### Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
 (see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultiTenancyLockProviderIntegrationTest.java#L87))
 ```java
@@ -648,6 +675,16 @@ All the annotations where you need to specify a duration support the following f
 * duration in ms - `100` (only Spring integration)
 * ISO-8601 - `PT15M` (see [Duration.parse()](https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-) documentation)
 
+## Extending the lock
+There are some use-cases which require to extend currently held lock. You can use LockExtender in the
+following way:
+
+```java
+LockExtender.extendActiveLock(Duration.ofMinutes(5), ZERO);
+```
+
+Please note that not all lock provider implementations support lock extension.
+
 ## Micronaut integration
 Since version 4.0.0, it's possible to use Micronaut framework for integration
 
@@ -656,7 +693,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.23.0</version>
+    <version>4.25.0</version>
 </dependency>
 ```
 
@@ -789,6 +826,13 @@ after another, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.25.0
+* LockExtender added
+
+## 4.24.0
+* Support for Apache Ignite (thanks @wirtsleg)
+* Library upgrades
+
 ## 4.23.0
 * Ability to set serialConsistencyLevel in Cassandra (thanks @DebajitKumarPhukan)
 * Introduced shedlock-provider-jdbc-micronaut module (thanks @drmaas)

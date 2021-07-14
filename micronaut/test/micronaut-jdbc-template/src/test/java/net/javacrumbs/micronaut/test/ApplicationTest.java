@@ -13,15 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.test.boot;
+package net.javacrumbs.micronaut.test;
 
-import net.javacrumbs.shedlock.core.LockAssert;
+import io.micronaut.test.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
-public class LockUnitTest {
+import javax.inject.Inject;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
+@MicronautTest
+public class ApplicationTest {
+    @Inject
+    private ScheduledTasks scheduledTasks;
+
     @Test
-    public void shouldWork() {
-        LockAssert.TestHelper.makeAllAssertsPass(true);
-        new ScheduledTasks().reportCurrentTime();
+    void shouldStart() {
+        await().untilAsserted(() -> assertThat(scheduledTasks.wasCalled()).isTrue());
     }
 }

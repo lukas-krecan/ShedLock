@@ -69,11 +69,19 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
         } else if (lock.isPresent()) {
             try {
                 LockAssert.startLock(lockName);
+                LockExtender.startLock(lock.get());
                 logger.debug("Locked '{}', lock will be held at most until {}", lockName, lockConfig.getLockAtMostUntil());
                 return TaskResult.result(task.call());
             } finally {
                 LockAssert.endLock();
-                lock.get().unlock();
+                SimpleLock activeLock = LockExtender.endLock();
+                if (activeLock != null) {
+                    activeLock.unlock();
+                } else {
+                    // This should never happen, but I do not know any better way to handle the null case.
+                    logger.warn("No active lock, please report this as a bug.");
+                    lock.get().unlock();
+                }
                 if (logger.isDebugEnabled()) {
                     Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();
                     Instant now = ClockProvider.now();

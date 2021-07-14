@@ -19,9 +19,12 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Date;
 
+import static java.time.Duration.ZERO;
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
+import static net.javacrumbs.shedlock.core.LockExtender.extendActiveLock;
 
 @Component
 public class ScheduledTasks {
@@ -29,6 +32,7 @@ public class ScheduledTasks {
     @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "${lock.at.most.for}")
     public void reportCurrentTime() {
         assertLocked();
+        extendActiveLock(Duration.ofMillis(5), ZERO);
         System.out.println(new Date());
     }
 }

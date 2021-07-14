@@ -24,8 +24,10 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
  * If you use AOP with Kotlin, it does not have to work due to final methods, if you use TaskExecutor wrapper, it can be
  * broken by Sleuth,.
  */
-public class LockAssert {
+public final class LockAssert {
     private static final ThreadLocal<String> currentLockName = ThreadLocal.withInitial(() -> null);
+
+    private LockAssert() { }
 
     static void startLock(String name) {
         currentLockName.set(name);

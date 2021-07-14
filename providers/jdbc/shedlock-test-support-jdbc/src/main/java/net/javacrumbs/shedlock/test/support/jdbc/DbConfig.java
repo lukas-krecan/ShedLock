@@ -16,10 +16,9 @@
 package net.javacrumbs.shedlock.test.support.jdbc;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 
 public interface DbConfig {
-    void startDb() throws IOException;
+    void startDb();
 
     void shutdownDb();
 
