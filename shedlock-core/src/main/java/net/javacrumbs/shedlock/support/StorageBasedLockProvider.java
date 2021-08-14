@@ -16,8 +16,8 @@
 package net.javacrumbs.shedlock.support;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
@@ -43,7 +43,7 @@ import java.util.Optional;
  * </li>
  * </ol>
  */
-public class StorageBasedLockProvider implements LockProvider {
+public class StorageBasedLockProvider implements ExtensibleLockProvider {
     @NonNull
     private final StorageAccessor storageAccessor;
     private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
