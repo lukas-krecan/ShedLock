@@ -60,7 +60,7 @@ public abstract class AbstractSimpleLock implements SimpleLock {
 
     private void checkValidity() {
         if (!valid) {
-            throw new IllegalStateException("Lock is not valid, it has already been unlocked or extended");
+            throw new IllegalStateException("Lock " + lockConfiguration.getName() + " is not valid, it has already been unlocked or extended");
         }
     }
 }

@@ -16,6 +16,7 @@ import static java.time.Duration.ofSeconds;
 import static java.time.Instant.now;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.when;
 class KeepAliveLockProviderTest {
     private final ExtensibleLockProvider wrappedProvider = mock(ExtensibleLockProvider.class);
     private final DeterministicScheduler scheduler = new DeterministicScheduler();
-    private final KeepAliveLockProvider provider = new KeepAliveLockProvider(wrappedProvider, scheduler);
+    private final KeepAliveLockProvider provider = new KeepAliveLockProvider(wrappedProvider, scheduler, ofSeconds(1));
     private final LockConfiguration lockConfiguration = new LockConfiguration(now(), "lock", ofSeconds(3), ofSeconds(2));
     private final SimpleLock originalLock = mock(SimpleLock.class);
 
@@ -75,6 +76,12 @@ class KeepAliveLockProviderTest {
         verify(originalLock).extend(lockConfiguration.getLockAtMostFor(), ofMillis(500));
         tickMs(10_000);
         verifyNoMoreInteractions(originalLock);
+    }
+
+    @Test
+    void shouldFailForShortLockAtMostFor() {
+        assertThatThrownBy(() -> provider.lock(new LockConfiguration(now(), "short", ofMillis(100), ZERO)))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     private void tickMs(int i) {
