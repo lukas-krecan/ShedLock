@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,31 +43,46 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FuzzTester {
 
     private static final int THREADS = 8;
-    private static final int ITERATIONS = 100;
     public static final int SHORT_ITERATION = 10;
 
     private final LockProvider lockProvider;
 
+    private final Duration sleepFor;
+    private final Duration lockAtMostFor;
+    private final int iterations;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public FuzzTester(LockProvider lockProvider) {
+        this(lockProvider, Duration.ofMillis(1), Duration.of(5, MINUTES), 100);
+    }
+
+    public FuzzTester(
+        LockProvider lockProvider,
+        Duration sleepFor,
+        Duration lockAtMostFor,
+        int iterations
+    ) {
         this.lockProvider = lockProvider;
+        this.sleepFor = sleepFor;
+        this.lockAtMostFor = lockAtMostFor;
+        this.iterations = iterations;
     }
 
     public void doFuzzTest() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
-        int[] iterations = range(0, THREADS).map(i -> ITERATIONS).toArray();
-        iterations[0] = SHORT_ITERATION; // short task to simulate MySql issues
-        Job job1 = new Job("lock1");
-        Job job2 = new Job("lock2");
+        int[] iters = range(0, THREADS).map(i -> iterations).toArray();
+        iters[0] = SHORT_ITERATION; // short task to simulate MySql issues
+        Job job1 = new Job("lock1", lockAtMostFor);
+        Job job2 = new Job("lock2", lockAtMostFor);
 
         List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) () ->
-            this.task(iterations[i], i % 2 == 0 ? job1 : job2)).collect(toList()
+            task(iters[i], i % 2 == 0 ? job1 : job2)).collect(toList()
         );
         waitForIt(executor.invokeAll(tasks));
 
-        assertThat(job2.getCounter()).isEqualTo(THREADS / 2 * ITERATIONS);
-        assertThat(job1.getCounter()).isEqualTo((THREADS / 2 - 1) * ITERATIONS + SHORT_ITERATION);
+        assertThat(job2.getCounter()).isEqualTo(THREADS / 2 * iterations);
+        assertThat(job1.getCounter()).isEqualTo((THREADS / 2 - 1) * iterations + SHORT_ITERATION);
         sleepFor(job1.getLockConfiguration().getLockAtLeastFor());
     }
 
@@ -111,22 +127,24 @@ public class FuzzTester {
     }
 
     private void sleep() {
-        sleepFor(Duration.ofMillis(1));
+        sleepFor(sleepFor);
     }
 
     protected static class Job {
         private final String lockName;
         private int counter = 0;
+        private final Duration lockAtMostFor;
 
-        Job(String lockName) {
+        Job(String lockName, Duration lockAtMostFor) {
             this.lockName = lockName;
+            this.lockAtMostFor = lockAtMostFor;
         }
 
         public LockConfiguration getLockConfiguration() {
             return new LockConfiguration(
                 ClockProvider.now(),
                 lockName,
-                Duration.of(5, ChronoUnit.MINUTES),
+                lockAtMostFor,
                 Duration.of(5, ChronoUnit.MILLIS)
             );
         }

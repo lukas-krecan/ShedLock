@@ -21,8 +21,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -70,7 +70,7 @@ import static com.mongodb.client.model.Updates.set;
  * </li>
  * </ol>
  */
-public class MongoLockProvider implements LockProvider {
+public class MongoLockProvider implements ExtensibleLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
