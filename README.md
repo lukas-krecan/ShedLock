@@ -66,7 +66,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -170,7 +170,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -226,7 +226,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -249,7 +249,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -276,7 +276,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -305,7 +305,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -335,7 +335,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -362,7 +362,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -386,7 +386,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -417,7 +417,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -444,7 +444,7 @@ Import the project
     <artifactId>shedlock-provider-hazelcast</artifactId>
     <!-- Hazelcast 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -470,7 +470,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -496,7 +496,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -524,7 +524,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -558,7 +558,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -583,7 +583,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -608,7 +608,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -632,7 +632,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-ignite</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -685,6 +685,21 @@ LockExtender.extendActiveLock(Duration.ofMinutes(5), ZERO);
 
 Please note that not all lock provider implementations support lock extension.
 
+## KeepAliveLockProvider
+There is also KeepAliveLockProvider that is able to keep the lock alive by periodically extending it. It can be
+used by wrapping the original lock provider. My personal opinion is that it should be used only in special cases,
+it adds more complexity to the library and the flow is harder to reason about so please use moderately.
+
+```java
+@Bean
+public LockProvider lockProvider(...) {
+    return new  KeepAliveLockProvider(new XyzProvider(...), scheduler);
+}
+```
+KeepAliveLockProvider extends the lock in the middle of the lockAtMostFor interval. For example, if the lockAtMostFor
+is 10 minutes the lock is extended every 5 minutes for 10 minutes until the lock is released. Please note that the minimal
+lockAtMostFor time supported by this provider is 30s.
+
 ## Micronaut integration
 Since version 4.0.0, it's possible to use Micronaut framework for integration
 
@@ -693,7 +708,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.25.0</version>
+    <version>4.26.0</version>
 </dependency>
 ```
 
@@ -828,6 +843,11 @@ after another, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+
+## 4.26.0
+* KeepAliveLockProvider introduced
+* Library upgrades
+
 ## 4.25.0
 * LockExtender added
 
