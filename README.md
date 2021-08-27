@@ -42,8 +42,8 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Locking without a framework](#locking-without-a-framework)
 + [Troubleshooting](#troubleshooting)
 + [Modes of Spring integration](#modes-of-spring-integration)
-  - [TaskScheduler proxy](#taskscheduler-proxy)
   - [Scheduled method proxy](#scheduled-method-proxy)
+  - [TaskScheduler proxy](#taskscheduler-proxy)
 + [Release notes](#release-notes)
 
 ## Components
@@ -755,7 +755,9 @@ Final and non-public methods are not proxied so either you have to make your sch
 ![Method proxy sequenceDiagram](https://github.com/lukas-krecan/ShedLock/raw/master/documentation/method_proxy.png)
 
 #### TaskScheduler proxy
-This mode wraps Spring `TaskScheduler` in an AOP proxy. It can be switched-on like this (PROXY_SCHEDULER was the default method before 4.0.0):
+This mode wraps Spring `TaskScheduler` in an AOP proxy. **This mode does not play well with instrumentation libraries**
+like opentelementry that also wrap TaskScheduler. Please only use it if you know what you are doing.
+It can be switched-on like this (PROXY_SCHEDULER was the default method before 4.0.0):
 
 ```java
 @EnableSchedulerLock(interceptMode = PROXY_SCHEDULER)
