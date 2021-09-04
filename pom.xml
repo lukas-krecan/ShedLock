@@ -68,8 +68,8 @@
         <junit.version>5.7.2</junit.version>
         <test-containers.version>1.16.0</test-containers.version>
         <kotlin.version>1.5.30</kotlin.version>
-        <micronaut.version>2.5.12</micronaut.version>
-        <micronaut-data.version>2.5.0</micronaut-data.version>
+        <micronaut.version>3.0.0</micronaut.version>
+        <micronaut-data.version>3.0.1</micronaut-data.version>
         <logback.version>1.2.5</logback.version>
     </properties>
 
