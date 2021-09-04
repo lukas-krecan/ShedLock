@@ -24,7 +24,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.Optional;
 
