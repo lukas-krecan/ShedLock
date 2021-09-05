@@ -19,16 +19,17 @@ import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.convert.ConversionService;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
-import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.Optional;
 
 @Singleton
+@javax.inject.Singleton
 public class SchedulerLockInterceptor implements MethodInterceptor<Object, Object> {
     private final LockingTaskExecutor lockingTaskExecutor;
     private final MicronautLockConfigurationExtractor micronautLockConfigurationExtractor;
