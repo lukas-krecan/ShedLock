@@ -20,7 +20,7 @@ import io.micronaut.context.annotation.Factory;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 
-import jakarta.inject.Singleton;
+import javax.inject.Singleton;
 import java.io.IOException;
 
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;

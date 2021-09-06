@@ -20,7 +20,7 @@ import io.micronaut.transaction.TransactionOperations;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider;
 
-import jakarta.inject.Singleton;
+import javax.inject.Singleton;
 import java.sql.Connection;
 
 @Factory
