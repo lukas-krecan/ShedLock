@@ -15,8 +15,7 @@
  */
 package net.javacrumbs.shedlock.micronaut.internal;
 
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import jakarta.inject.Inject;
+import io.micronaut.test.annotation.MicronautTest;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.micronaut.internal.MethodProxyAopConfig.AnotherTestBean;
@@ -25,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -59,7 +59,7 @@ class MethodProxyAopTest {
     @Test
     void shouldNotCallLockProviderWithNoAnnotation() {
         assertThatThrownBy(() -> testBean.noAnnotation()).hasMessageStartingWith("The task is not locked.");
-        verifyNoInteractions(lockProvider);
+        verifyZeroInteractions(lockProvider);
     }
 
     @Test
@@ -86,7 +86,7 @@ class MethodProxyAopTest {
     @Test
     void shouldFailOnReturnType() {
         assertThatThrownBy(() -> testBean.returnsValue()).isInstanceOf(LockingNotSupportedException.class);
-        verifyNoInteractions(lockProvider);
+        verifyZeroInteractions(lockProvider);
     }
 
     @Test
