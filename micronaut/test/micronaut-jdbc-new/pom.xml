@@ -16,7 +16,7 @@
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>net.javacrumbs.micronaut.test2.Application</exec.mainClass>
-        <micronaut.version>3.0.0</micronaut.version>
+        <micronaut.version>3.0.1</micronaut.version>
     </properties>
     <repositories>
         <repository>
