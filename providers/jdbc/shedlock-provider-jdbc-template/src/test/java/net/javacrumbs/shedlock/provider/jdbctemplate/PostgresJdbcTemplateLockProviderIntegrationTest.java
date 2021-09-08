@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Duration;
@@ -83,6 +84,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
                     .withJdbcTemplate(new JdbcTemplate(datasource))
                     .withTableName("shedlock_tz")
                     .withTimeZone(timezone)
+                    .withIsolationLevel(Connection.TRANSACTION_SERIALIZABLE)
                     .build());
 
 
