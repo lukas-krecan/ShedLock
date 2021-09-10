@@ -3,12 +3,12 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.25.1-SNAPSHOT</version>
+        <version>4.27.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-core</artifactId>
-    <version>4.25.1-SNAPSHOT</version>
+    <version>4.27.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -19,6 +19,13 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock-junit5</artifactId>
+            <version>2.12.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 

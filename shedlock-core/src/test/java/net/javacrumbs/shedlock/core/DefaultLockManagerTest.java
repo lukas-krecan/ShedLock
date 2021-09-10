@@ -26,7 +26,7 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class DefaultLockManagerTest {
@@ -46,7 +46,7 @@ class DefaultLockManagerTest {
 
         defaultLockManager.executeWithLock(task);
         verify(task).run();
-        verifyZeroInteractions(lockProvider);
+        verifyNoInteractions(lockProvider);
     }
 
     @Test
@@ -67,7 +67,7 @@ class DefaultLockManagerTest {
         when(lockProvider.lock(LOCK_CONFIGURATION)).thenReturn(Optional.empty());
 
         defaultLockManager.executeWithLock(task);
-        verifyZeroInteractions(task);
+        verifyNoInteractions(task);
     }
 
 }

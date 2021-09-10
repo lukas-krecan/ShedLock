@@ -94,6 +94,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final ColumnNames columnNames;
         private final String lockedByValue;
         private final boolean useDbTime;
+        private final Integer isolationLevel;
 
         Configuration(
             @NonNull JdbcTemplate jdbcTemplate,
@@ -102,8 +103,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             @Nullable TimeZone timeZone,
             @NonNull ColumnNames columnNames,
             @NonNull String lockedByValue,
-            boolean useDbTime
-        ) {
+            boolean useDbTime,
+            @Nullable Integer isolationLevel) {
 
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.transactionManager = transactionManager;
@@ -111,6 +112,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             this.timeZone = timeZone;
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
             this.lockedByValue = requireNonNull(lockedByValue, "lockedByValue can not be null");
+            this.isolationLevel = isolationLevel;
             if (useDbTime && timeZone != null) {
                 throw new IllegalArgumentException("Can not set both useDbTime and timeZone");
             }
@@ -145,6 +147,10 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return useDbTime;
         }
 
+        public Integer getIsolationLevel() {
+            return isolationLevel;
+        }
+
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -158,6 +164,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private String lockedByValue = Utils.getHostname();
             private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
             private boolean useDbTime = false;
+            private Integer isolationLevel;
 
             public Builder withJdbcTemplate(@NonNull JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -197,8 +204,17 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            /**
+             * Sets the isolation level for ShedLock. See {@link java.sql.Connection} for constant definitions.
+             * for constant definitions
+             */
+            public Builder withIsolationLevel(int isolationLevel) {
+                this.isolationLevel = isolationLevel;
+                return this;
+            }
+
             public JdbcTemplateLockProvider.Configuration build() {
-                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames, lockedByValue, useDbTime);
+                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames, lockedByValue, useDbTime, isolationLevel);
             }
         }
 

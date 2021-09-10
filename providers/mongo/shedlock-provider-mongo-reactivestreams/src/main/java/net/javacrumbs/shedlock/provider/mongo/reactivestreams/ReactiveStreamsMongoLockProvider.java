@@ -21,8 +21,8 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
@@ -72,7 +72,7 @@ import static com.mongodb.client.model.Updates.set;
  * </li>
  * </ol>
  */
-public class ReactiveStreamsMongoLockProvider implements LockProvider {
+public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";

@@ -16,8 +16,8 @@
 package net.javacrumbs.shedlock.provider.ignite;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.apache.ignite.Ignite;
@@ -69,7 +69,7 @@ import static net.javacrumbs.shedlock.support.Utils.getHostname;
  * </li>
  * </ol>
  */
-public class IgniteLockProvider implements LockProvider {
+public class IgniteLockProvider implements ExtensibleLockProvider {
     /** Default ShedLock cache name. */
     public static final String DEFAULT_SHEDLOCK_CACHE_NAME = "shedLock";
 

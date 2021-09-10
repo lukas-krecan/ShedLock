@@ -19,11 +19,12 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.25.1-SNAPSHOT</version>
+    <version>4.27.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
         <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/test/micronaut-jdbc</module>
+        <module>micronaut/test/micronaut-jdbc-new</module>
         <module>micronaut/test/micronaut-jdbc-template</module>
         <module>spring/shedlock-spring</module>
         <module>spring/test/shedlock-springboot-old-test</module>
@@ -59,25 +60,25 @@
     </modules>
 
     <properties>
-        <spring.version>5.3.8</spring.version>
+        <spring.version>5.3.9</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <spring-boot-old.version>2.4.8</spring-boot-old.version>
-        <spring-boot-current.version>2.5.2</spring-boot-current.version>
-        <spring-boot-future.version>2.6.0-SNAPSHOT</spring-boot-future.version>
+        <spring-boot-old.version>2.4.10</spring-boot-old.version>
+        <spring-boot-current.version>2.5.4</spring-boot-current.version>
+        <spring-boot-future.version>2.6.0-M1</spring-boot-future.version>
         <junit.version>5.7.2</junit.version>
-        <test-containers.version>1.15.3</test-containers.version>
-        <kotlin.version>1.5.21</kotlin.version>
-        <micronaut.version>2.5.8</micronaut.version>
-        <micronaut-data.version>2.4.7</micronaut-data.version>
-        <logback.version>1.2.3</logback.version>
+        <test-containers.version>1.16.0</test-containers.version>
+        <kotlin.version>1.5.30</kotlin.version>
+        <micronaut.version>2.5.13</micronaut.version>
+        <micronaut-data.version>2.5.0</micronaut-data.version>
+        <logback.version>1.2.5</logback.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.31</version>
+            <version>1.7.32</version>
         </dependency>
 
         <dependency>
@@ -121,7 +122,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>3.11.2</version>
+                <version>3.12.4</version>
                 <scope>test</scope>
             </dependency>
 
@@ -187,7 +188,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.3.1</version>
                 <configuration>
                     <!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
                     <source>8</source>

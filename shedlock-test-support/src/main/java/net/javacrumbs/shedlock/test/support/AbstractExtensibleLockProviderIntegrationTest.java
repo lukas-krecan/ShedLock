@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.test.support;
 
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class AbstractExtensibleLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     private final Duration originalLockDuration = Duration.ofSeconds(2);
+
+    @Override
+    protected abstract ExtensibleLockProvider getLockProvider();
 
     @Test
     public void shouldBeAbleToExtendLock() {

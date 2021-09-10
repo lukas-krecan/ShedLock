@@ -24,6 +24,7 @@ import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.distribution.Version;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.bson.Document;
@@ -79,7 +80,7 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
     }
 
     @Override
-    protected LockProvider getLockProvider() {
+    protected ExtensibleLockProvider getLockProvider() {
         return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(DB_NAME));
     }
 

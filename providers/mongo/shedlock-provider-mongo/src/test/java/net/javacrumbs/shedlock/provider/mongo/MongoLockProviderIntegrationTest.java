@@ -24,6 +24,7 @@ import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.distribution.Version;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.bson.Document;
@@ -78,15 +79,15 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     }
 
     @Override
-    protected LockProvider getLockProvider() {
+    protected ExtensibleLockProvider getLockProvider() {
         return new MongoLockProvider(mongo.getDatabase(DB_NAME));
     }
 
     @Override
     protected void assertUnlocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isBeforeOrEqualsTo(now());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualsTo(now());
+        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isBeforeOrEqualTo(now());
+        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 
@@ -98,7 +99,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     protected void assertLocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
         assertThat((Date) lockDocument.get(LOCK_UNTIL)).isAfter(now());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualsTo(now());
+        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 

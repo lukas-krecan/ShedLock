@@ -55,6 +55,10 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+        if (configuration.getIsolationLevel() != null) {
+            this.transactionTemplate.setIsolationLevel(configuration.getIsolationLevel());
+        }
     }
 
     @Override

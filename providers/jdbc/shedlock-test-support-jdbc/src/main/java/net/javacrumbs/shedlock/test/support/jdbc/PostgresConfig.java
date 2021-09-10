@@ -31,5 +31,8 @@ public final class PostgresConfig extends AbstractContainerBasedDbConfig<Postgre
     }
 
     static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {
+        MyPostgreSQLContainer() {
+            super("postgres:13");
+        }
     }
 }

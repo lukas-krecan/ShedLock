@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.ignite;
 
-import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
@@ -53,7 +53,7 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
     }
 
     @Override
-    protected LockProvider getLockProvider() {
+    protected ExtensibleLockProvider getLockProvider() {
         return new IgniteLockProvider(ignite);
     }
 
