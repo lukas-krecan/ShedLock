@@ -71,7 +71,7 @@
         <kotlin.version>1.5.30</kotlin.version>
         <micronaut.version>2.5.13</micronaut.version>
         <micronaut-data.version>2.5.0</micronaut-data.version>
-        <logback.version>1.2.5</logback.version>
+        <logback.version>1.2.6</logback.version>
     </properties>
 
     <dependencies>
