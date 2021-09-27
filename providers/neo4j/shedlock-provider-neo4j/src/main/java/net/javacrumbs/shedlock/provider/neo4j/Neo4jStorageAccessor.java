@@ -53,15 +53,20 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists
         String cypher = String.format("CREATE (lock:%s {name: $lockName, lock_until: $lockUntil, locked_at: $now, locked_by: $lockedBy })", collectionName);
+        Map<String, Object> parameters = createParameterMap(lockConfiguration);
+        return executeCommand(cypher, result -> {
+            int insertedNodes = result.consume().counters().nodesCreated();
+            return insertedNodes > 0;
+        }, parameters, this::handleInsertionException);
+    }
+
+    private Map<String, Object> createParameterMap(@NonNull LockConfiguration lockConfiguration) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("lockName", lockConfiguration.getName());
         parameters.put("lockedBy", getHostname());
         parameters.put("now", ClockProvider.now().toString());
         parameters.put("lockUntil", lockConfiguration.getLockAtMostUntil().toString());
-        return executeCommand(cypher, result -> {
-            int insertedNodes = result.consume().counters().nodesCreated();
-            return insertedNodes > 0;
-        }, parameters, this::handleInsertionException);
+        return parameters;
     }
 
     @Override
@@ -73,11 +78,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
                 "WHERE l.lock_until <= $now " +
                 "SET l.lock_until = $lockUntil, l.locked_at = $now, l.locked_by = $lockedBy " +
                 "REMOVE l._LOCK_ ", collectionName);
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("lockName", lockConfiguration.getName());
-        parameters.put("lockedBy", getHostname());
-        parameters.put("now", ClockProvider.now().toString());
-        parameters.put("lockUntil", lockConfiguration.getLockAtMostUntil().toString());
+        Map<String, Object> parameters = createParameterMap(lockConfiguration);
         return executeCommand(cypher, statement -> {
             int updatedProperties = statement.consume().counters().propertiesSet();
             return updatedProperties > 1; //ignore explicit lock when counting the updated properties
@@ -93,11 +94,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
             "WHERE l.name = $lockName AND l.locked_by = $lockedBy AND l.lock_until > $now " +
             "SET l.lock_until = $lockUntil " +
             "REMOVE l._LOCK_ ", collectionName);
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("lockName", lockConfiguration.getName());
-        parameters.put("lockedBy", getHostname());
-        parameters.put("now", ClockProvider.now().toString());
-        parameters.put("lockUntil", lockConfiguration.getLockAtMostUntil().toString());
+        Map<String, Object> parameters = createParameterMap(lockConfiguration);
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
 
@@ -117,7 +114,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         executeCommand(cypher, statement -> null, parameters, this::handleUnlockException);
     }
 
-    protected <T> T executeCommand(
+    private <T> T executeCommand(
         String cypher,
         EvaluationFunction<Result, T> body,
         Map<String, Object> parameters,
