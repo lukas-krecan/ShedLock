@@ -78,10 +78,6 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
         container.stop();
     }
 
-    protected boolean useDbTime() {
-        return false;
-    }
-
     @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new Neo4jLockProvider(testUtils.getDriver());
@@ -100,14 +96,14 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
     @Override
     protected void assertUnlocked(String lockName) {
         Neo4jTestUtils.LockInfo lockInfo = getLockInfo(lockName);
-        Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
+        Instant now = ClockProvider.now();
         assertThat(lockInfo.getLockUntil()).describedAs("is unlocked").isBeforeOrEqualTo(now.truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
     }
 
     @Override
     protected void assertLocked(String lockName) {
         Neo4jTestUtils.LockInfo lockInfo = getLockInfo(lockName);
-        Instant now = useDbTime() ? lockInfo.getDbTime(): ClockProvider.now();
+        Instant now = ClockProvider.now();
 
         assertThat(lockInfo.getLockUntil()).describedAs(getClass().getName() + " is locked").isAfter(now);
     }
@@ -217,15 +213,6 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
     @NonNull
     protected Neo4jStorageAccessor getAccessor(boolean usingDbTime) {
         return new Neo4jStorageAccessor(this.testUtils.getDriver(), "shedlock");
-    }
-
-
-    @Test
-    @Disabled
-    public void shouldNotFailIfKeyNameTooLong() {
-        LockConfiguration configuration = lockConfig("lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        Optional<SimpleLock> lock = getLockProvider().lock(configuration);
-        assertThat(lock).isEmpty();
     }
 
     protected Neo4jTestUtils.LockInfo getLockInfo(String lockName) {
