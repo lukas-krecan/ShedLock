@@ -31,7 +31,7 @@ import java.util.function.BiFunction;
 
 import static java.util.Objects.requireNonNull;
 
-public class Neo4jStorageAccessor extends AbstractStorageAccessor {
+class Neo4jStorageAccessor extends AbstractStorageAccessor {
     private final String collectionName;
     private final Driver driver;
 
@@ -44,7 +44,7 @@ public class Neo4jStorageAccessor extends AbstractStorageAccessor {
     private void createLockNameUniqueConstraint(Driver driver) {
         try (Session session = driver.session();
              Transaction transaction = session.beginTransaction()) {
-            transaction.run("CREATE CONSTRAINT UNIQUE_shedlock_name IF NOT EXISTS ON (lock:shedlock) ASSERT lock.name IS UNIQUE");
+            transaction.run(String.format("CREATE CONSTRAINT UNIQUE_%s_name IF NOT EXISTS ON (lock:%s) ASSERT lock.name IS UNIQUE", collectionName, collectionName));
             transaction.commit();
         }
     }
