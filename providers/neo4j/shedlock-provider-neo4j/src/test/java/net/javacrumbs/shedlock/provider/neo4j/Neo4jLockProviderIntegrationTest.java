@@ -17,7 +17,6 @@ package net.javacrumbs.shedlock.provider.neo4j;
 
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.neo4j.driver.AuthTokens;
@@ -43,7 +41,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
@@ -53,24 +50,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     protected Neo4jTestUtils testUtils;
-    protected Neo4jContainer container;
+    protected MyNeo4jContainer container;
+    private Driver driver;
 
     private static final String MY_LOCK = "my-lock";
     private static final String OTHER_LOCK = "other-lock";
 
-    protected Driver getGraphDatabase() {
-        return GraphDatabase.driver(container.getBoltUrl(), AuthTokens.none());
-    }
-
-    private Neo4jContainer getNeo4jContainer() {
-        return new Neo4jContainer(DockerImageName.parse("neo4j").withTag("4.3.3"))
-            .withoutAuthentication();
-    }
-
     @BeforeAll
     public void startDb() {
-        container = getNeo4jContainer();
+        container = new MyNeo4jContainer();
         container.start();
+        driver = GraphDatabase.driver(container.getBoltUrl(), AuthTokens.none());
     }
 
     @AfterAll
@@ -85,7 +75,7 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
 
     @BeforeEach
     public void initTestUtils() {
-        testUtils = new Neo4jTestUtils(getGraphDatabase());
+        testUtils = new Neo4jTestUtils(driver);
     }
 
     @AfterEach
@@ -146,16 +136,16 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
 
     @Test
     void shouldNotUpdateOnInsertIfPreviousDidNotEndWhenNotUsingDbTime() {
-        shouldNotUpdateOnInsertIfPreviousDidNotEnd(false);
+        shouldNotUpdateOnInsertIfPreviousDidNotEnd();
     }
 
     @Test
     void shouldNotUpdateOnInsertIfPreviousDidNotEndWhenUsingDbTime() {
-        shouldNotUpdateOnInsertIfPreviousDidNotEnd(true);
+        shouldNotUpdateOnInsertIfPreviousDidNotEnd();
     }
 
-    private void shouldNotUpdateOnInsertIfPreviousDidNotEnd(boolean usingDbTime) {
-        Neo4jStorageAccessor accessor = getAccessor(usingDbTime);
+    private void shouldNotUpdateOnInsertIfPreviousDidNotEnd() {
+        Neo4jStorageAccessor accessor = getAccessor();
 
         assertThat(
             accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10)))
@@ -172,16 +162,16 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
 
     @Test
     void shouldNotUpdateOtherLockConfigurationsWhenNotUsingDbTime() throws InterruptedException {
-        shouldNotUpdateOtherLockConfigurations(false);
+        shouldNotUpdateOtherLockConfigurations();
     }
 
     @Test
     void shouldNotUpdateOtherLockConfigurationsWhenUsingDbTime() throws InterruptedException {
-        shouldNotUpdateOtherLockConfigurations(true);
+        shouldNotUpdateOtherLockConfigurations();
     }
 
-    private void shouldNotUpdateOtherLockConfigurations(boolean usingDbTime) throws InterruptedException {
-        Neo4jStorageAccessor accessor = getAccessor(usingDbTime);
+    private void shouldNotUpdateOtherLockConfigurations() throws InterruptedException {
+        Neo4jStorageAccessor accessor = getAccessor();
 
         Duration lockAtMostFor = Duration.ofMillis(10);
         assertThat(accessor.insertRecord(lockConfig(MY_LOCK, lockAtMostFor))).isEqualTo(true);
@@ -211,11 +201,18 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
     }
 
     @NonNull
-    protected Neo4jStorageAccessor getAccessor(boolean usingDbTime) {
+    protected Neo4jStorageAccessor getAccessor() {
         return new Neo4jStorageAccessor(this.testUtils.getDriver(), "shedlock");
     }
 
     protected Neo4jTestUtils.LockInfo getLockInfo(String lockName) {
         return testUtils.getLockInfo(lockName);
+    }
+
+    private static class MyNeo4jContainer extends Neo4jContainer<MyNeo4jContainer> {
+        MyNeo4jContainer() {
+            super(DockerImageName.parse("neo4j").withTag("4.3.3"));
+            withoutAuthentication();
+        }
     }
 }

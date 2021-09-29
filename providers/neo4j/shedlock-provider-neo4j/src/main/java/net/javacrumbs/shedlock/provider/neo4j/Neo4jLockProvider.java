@@ -35,7 +35,7 @@ import org.neo4j.driver.Driver;
  * with some additional explicit node locking
  * </li>
  * <li>
- * If the update succeeded (>1 property updated), we have the lock. If the update failed (<=1 properties updated) somebody else holds the lock
+ * If the update succeeded (&gt;1 property updated), we have the lock. If the update failed (&lt;=1 properties updated) somebody else holds the lock
  * or grabbed the lock in a data race caused by Neo4j's read-committed isolation level.
  * </li>
  * <li>

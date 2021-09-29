@@ -21,14 +21,15 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.Transaction;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static java.util.Collections.singletonMap;
+
 public final class Neo4jTestUtils {
 
-    private final org.neo4j.driver.Driver driver;
+    private final Driver driver;
 
     public Neo4jTestUtils(Driver driver) {
         this.driver = driver;
@@ -52,8 +53,7 @@ public final class Neo4jTestUtils {
     }
 
     public Instant getLockedUntil(String lockName) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("lockName", lockName);
+        Map<String, Object> parameters = singletonMap("lockName", lockName);
         return executeTransactionally("MATCH (lock:shedlock) WHERE lock.name = $lockName return lock.lock_until",
             parameters, result -> result.stream()
                 .findFirst()
@@ -62,16 +62,16 @@ public final class Neo4jTestUtils {
     }
 
     public LockInfo getLockInfo(String lockName) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("lockName", lockName);
+        Map<String, Object> parameters = singletonMap("lockName", lockName);
         return executeTransactionally("MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ", parameters, result ->
             result.stream()
                 .findFirst()
                 .map(it -> new LockInfo(
-                    it.get("lock.name").asString(),
-                    Instant.parse(it.get("lock.lock_until").asString()),
-                    it.get("db_time").asLocalDateTime().toInstant(ZoneOffset.UTC))))
-                .orElse(null);
+                        it.get("lock.name").asString(),
+                        Instant.parse(it.get("lock.lock_until").asString())
+                    )
+                )
+        ).orElse(null);
     }
 
     public void clean() {
@@ -85,12 +85,10 @@ public final class Neo4jTestUtils {
     public static class LockInfo {
         private final String name;
         private final Instant lockUntil;
-        private final Instant dbTime;
 
-        LockInfo(String name, Instant lockUntil, Instant dbTime) {
+        LockInfo(String name, Instant lockUntil) {
             this.name = name;
             this.lockUntil = lockUntil;
-            this.dbTime = dbTime;
         }
 
         public String getName() {
@@ -99,10 +97,6 @@ public final class Neo4jTestUtils {
 
         public Instant getLockUntil() {
             return lockUntil;
-        }
-
-        public Instant getDbTime() {
-            return dbTime;
         }
     }
 }

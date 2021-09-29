@@ -42,8 +42,10 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     private void createLockNameUniqueConstraint(Driver driver) {
-        try (Session session = driver.session();
-             Transaction transaction = session.beginTransaction()) {
+        try (
+            Session session = driver.session();
+            Transaction transaction = session.beginTransaction()
+        ) {
             transaction.run(String.format("CREATE CONSTRAINT UNIQUE_%s_name IF NOT EXISTS ON (lock:%s) ASSERT lock.name IS UNIQUE", collectionName, collectionName));
             transaction.commit();
         }
@@ -72,12 +74,12 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format("MATCH (lock:%s) " +
-                "WHERE lock.name = $lockName AND lock.lock_until <= $now " +
-                "SET lock._LOCK_ = true " +
-                "WITH lock as l " +
-                "WHERE l.lock_until <= $now " +
-                "SET l.lock_until = $lockUntil, l.locked_at = $now, l.locked_by = $lockedBy " +
-                "REMOVE l._LOCK_ ", collectionName);
+            "WHERE lock.name = $lockName AND lock.lock_until <= $now " +
+            "SET lock._LOCK_ = true " +
+            "WITH lock as l " +
+            "WHERE l.lock_until <= $now " +
+            "SET l.lock_until = $lockUntil, l.locked_at = $now, l.locked_by = $lockedBy " +
+            "REMOVE l._LOCK_ ", collectionName);
         Map<String, Object> parameters = createParameterMap(lockConfiguration);
         return executeCommand(cypher, statement -> {
             int updatedProperties = statement.consume().counters().propertiesSet();
@@ -120,8 +122,10 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         Map<String, Object> parameters,
         BiFunction<String, Exception, T> exceptionHandler
     ) {
-        try (Session session = driver.session();
-             Transaction transaction = session.beginTransaction()) {
+        try (
+            Session session = driver.session();
+            Transaction transaction = session.beginTransaction()
+        ) {
             Result result = transaction.run(cypher, parameters);
             T apply = body.apply(result);
             transaction.commit();
@@ -145,7 +149,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     @FunctionalInterface
-    public interface EvaluationFunction<T, R> {
+    interface EvaluationFunction<T, R> {
         R apply(T t) throws RuntimeException;
     }
 }
