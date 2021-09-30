@@ -8,3 +8,4 @@ target/
 build/
 .attach_pid*
 micronaut/micronaut-test/dependency-reduced-pom.xml
+dependency-reduced-pom.xml
