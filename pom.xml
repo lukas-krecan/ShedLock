@@ -71,7 +71,7 @@
         <test-containers.version>1.16.0</test-containers.version>
         <kotlin.version>1.5.31</kotlin.version>
         <micronaut.version>2.5.13</micronaut.version>
-        <micronaut-data.version>2.5.0</micronaut-data.version>
+        <micronaut-data.version>3.1.0</micronaut-data.version>
         <logback.version>1.2.6</logback.version>
     </properties>
 
