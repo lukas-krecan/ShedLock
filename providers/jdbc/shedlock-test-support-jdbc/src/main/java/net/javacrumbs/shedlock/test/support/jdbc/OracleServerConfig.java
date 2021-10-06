@@ -31,4 +31,9 @@ public final class OracleServerConfig extends AbstractContainerBasedDbConfig<Ora
     public String nowExpression() {
         return "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
     }
+
+    @Override
+    public String getR2dbcUrl() {
+        return "r2dbc:oracle://localhost:" + container.getOraclePort() + "/" + container.getSid();
+    }
 }

@@ -21,7 +21,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 
 abstract class AbstractContainerBasedDbConfig<T extends JdbcDatabaseContainer<T>> extends AbstractDbConfig {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final T container;
+    protected final T container;
 
     public AbstractContainerBasedDbConfig(T container) {
         this.container = container
