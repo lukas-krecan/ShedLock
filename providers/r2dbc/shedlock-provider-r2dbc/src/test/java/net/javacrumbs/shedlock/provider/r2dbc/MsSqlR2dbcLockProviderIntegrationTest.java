@@ -13,30 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.test.support.jdbc;
+package net.javacrumbs.shedlock.provider.r2dbc;
 
-import javax.sql.DataSource;
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.MsSqlServerConfig;
 
-public interface DbConfig {
-    void startDb();
+public class MsSqlR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
+    private static final DbConfig dbConfig = new MsSqlServerConfig();
 
-    void shutdownDb();
-
-    String getJdbcUrl();
-
-    String getUsername();
-
-    String getPassword();
-
-    default String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP  NOT NULL, locked_at TIMESTAMP  NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
-    }
-
-    String nowExpression();
-
-    DataSource getDataSource();
-
-    default String getR2dbcUrl() {
-        return getJdbcUrl().replace("jdbc", "r2dbc");
+    @Override
+    protected DbConfig getDbConfig() {
+        return dbConfig;
     }
 }

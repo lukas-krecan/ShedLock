@@ -41,7 +41,7 @@ abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest
         if (connectionFactory == null) {
             connectionFactory = ConnectionFactories.get(
                 ConnectionFactoryOptions
-                    .parse(getDbConfig().getJdbcUrl().replace("jdbc", "r2dbc"))
+                    .parse(getDbConfig().getR2dbcUrl())
                     .mutate()
                     .option(USER, getDbConfig().getUsername())
                     .option(PASSWORD, getDbConfig().getPassword())
