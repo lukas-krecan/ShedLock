@@ -34,15 +34,15 @@ public final class JdbcTestUtils {
     }
 
     public Timestamp getLockedUntil(String lockName) {
-        return jdbcTemplate.queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", new Object[]{lockName}, Timestamp.class);
+        return jdbcTemplate.queryForObject("SELECT lock_until FROM shedlock WHERE name = ?", Timestamp.class, lockName);
     }
 
     public LockInfo getLockInfo(String lockName) {
-        return jdbcTemplate.query("SELECT name, lock_until, " + dbConfig.nowExpression() + " as db_time FROM shedlock WHERE name = ?", new Object[]{lockName}, (rs, rowNum) -> new LockInfo(
+        return jdbcTemplate.query("SELECT name, lock_until, " + dbConfig.nowExpression() + " as db_time FROM shedlock WHERE name = ?", (rs, rowNum) -> new LockInfo(
             rs.getString("name"),
             rs.getTimestamp("lock_until").toInstant(),
             rs.getTimestamp("db_time").toInstant()
-        )).get(0);
+        ), lockName).get(0);
     }
 
     public void clean() {
