@@ -19,7 +19,7 @@ import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 
 public class PostgresR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
-    private static final PostgresConfig dbConfig = new PostgresConfig();
+    private static final DbConfig dbConfig = new PostgresConfig();
 
     @Override
     protected DbConfig getDbConfig() {

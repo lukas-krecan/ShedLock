@@ -42,7 +42,6 @@
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/jdbc/shedlock-provider-jdbc-micronaut</module>
-        <module>providers/r2dbc/shedlock-provider-r2dbc-internal</module>
         <module>providers/r2dbc/shedlock-provider-r2dbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
