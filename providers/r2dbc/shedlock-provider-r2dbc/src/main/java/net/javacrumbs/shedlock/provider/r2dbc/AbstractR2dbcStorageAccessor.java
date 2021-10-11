@@ -63,8 +63,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
 
     public Publisher<Boolean> insertRecordReactive(@NonNull LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
-        int index = 0;
-        String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(" + toParameter(++index, "name") + ", " + toParameter(++index, "lock_until") + ", " + toParameter(++index, "locked_at") + ", " + toParameter(++index, "locked_by") + ")";
+        String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(" + toParameter(1, "name") + ", " + toParameter(2, "lock_until") + ", " + toParameter(3, "locked_at") + ", " + toParameter(4, "locked_by") + ")";
         return executeCommand(sql, statement -> {
             statement.bind(0, lockConfiguration.getName());
             statement.bind(1, toCompatibleDate(lockConfiguration.getLockAtMostUntil()));
@@ -75,8 +74,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     public Publisher<Boolean> updateRecordReactive(@NonNull LockConfiguration lockConfiguration) {
-        int index = 0;
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(++index, "lock_until") + ", locked_at = " + toParameter(++index, "locked_at") + ", locked_by = " + toParameter(++index, "locked_by") + " WHERE name = " + toParameter(++index, "name") + " AND lock_until <= " + toParameter(++index, "lock_until");
+        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + ", locked_at = " + toParameter(2, "locked_at") + ", locked_by = " + toParameter(3, "locked_by") + " WHERE name = " + toParameter(4, "name") + " AND lock_until <= " + toParameter(5, "lock_until");
         return executeCommand(sql, statement -> {
             Instant now = ClockProvider.now();
             statement.bind(0, toCompatibleDate(lockConfiguration.getLockAtMostUntil()));
@@ -89,8 +87,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     public Publisher<Boolean> extendReactive(@NonNull LockConfiguration lockConfiguration) {
-        int index = 0;
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(++index, "lock_until") + " WHERE name = " + toParameter(++index, "name") + " AND locked_by = " + toParameter(++index, "locked_by") + " AND lock_until > " + toParameter(++index, "lock_until");
+        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = " + toParameter(2, "name") + " AND locked_by = " + toParameter(3, "locked_by") + " AND lock_until > " + toParameter(4, "now");
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
 
@@ -104,8 +101,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     public Publisher<Void> unlockReactive(@NonNull LockConfiguration lockConfiguration) {
-        int index = 0;
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(++index, "lock_until") + " WHERE name = " + toParameter(++index, "name");
+        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = " + toParameter(2, "name");
         return executeCommand(sql, statement -> {
             statement.bind(0, toCompatibleDate(lockConfiguration.getUnlockTime()));
             statement.bind(1, lockConfiguration.getName());
