@@ -47,8 +47,14 @@ class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
             Mono.from(connectionFactory.create()).doOnNext(it -> it.setAutoCommit(true)),
             conn -> body.apply(conn.createStatement(sql)).onErrorResume(throwable -> exceptionHandler.apply(sql, throwable)),
             Connection::close,
-            (connection, throwable) -> exceptionHandler.apply(sql, throwable),
-            connection -> Mono.empty()
+            (connection, throwable) -> {
+                connection.close();
+                return exceptionHandler.apply(sql, throwable);
+            },
+            connection -> {
+                connection.close();
+                return Mono.empty();
+            }
         );
     }
 
