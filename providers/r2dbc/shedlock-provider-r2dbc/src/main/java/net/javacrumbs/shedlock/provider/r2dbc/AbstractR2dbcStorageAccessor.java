@@ -119,13 +119,9 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
         BiFunction<String, Throwable, Mono<T>> exceptionHandler
     );
 
-    protected Object toCompatibleDate(Instant date) {
-        return date;
-    }
+    protected abstract Object toCompatibleDate(Instant date);
 
-    protected String toParameter(int index, String name) {
-        return "$" + index;
-    }
+    protected abstract String toParameter(int index, String name);
 
     Mono<Boolean> handleInsertionException(String sql, Throwable e) {
         if (e instanceof R2dbcDataIntegrityViolationException) {

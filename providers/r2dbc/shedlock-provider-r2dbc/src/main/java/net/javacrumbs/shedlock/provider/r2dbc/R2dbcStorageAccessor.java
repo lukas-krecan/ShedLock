@@ -22,8 +22,6 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -32,19 +30,11 @@ import static java.util.Objects.requireNonNull;
 class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
 
     private final ConnectionFactory connectionFactory;
-    private final String driver;
-
-    private static final String MSSQL_NAME = "Microsoft SQL Server";
-    private static final String MYSQL_NAME = "MySQL";
-    private static final String POSTGRES_NAME = "PostgreSQL";
-    private static final String H2_NAME = "H2";
-    private static final String MARIA_NAME = "MariaDB";
-    private static final String ORACLE_NAME = "Oracle Database";
+    private R2dbcAdapter adapter;
 
     R2dbcStorageAccessor(@NonNull ConnectionFactory connectionFactory, @NonNull String tableName) {
         super(tableName);
         this.connectionFactory = requireNonNull(connectionFactory, "dataSource can not be null");
-        this.driver = connectionFactory.getMetadata().getName();
     }
 
     @Override
@@ -64,33 +54,20 @@ class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
 
     @Override
     protected String toParameter(int index, String name) {
-        if (MSSQL_NAME.equals(driver)) {
-            return "@" + name;
-        } else if (MYSQL_NAME.equals(driver)) {
-            return "?";
-        } else if (POSTGRES_NAME.equals(driver)) {
-            return "$" + index;
-        } else if (H2_NAME.equals(driver)) {
-            return "$" + index;
-        } else if (MARIA_NAME.equals(driver)) {
-            return "?";
-        } else if (ORACLE_NAME.equals(driver)) {
-            return ":" + name;
-        } else {
-            return "$" + index;
-        }
+       return getAdapter().toParameter(index, name);
     }
 
     @Override
     protected Object toCompatibleDate(Instant date) {
-        if (MSSQL_NAME.equals(driver)) {
-            return LocalDateTime.ofInstant(date, ZoneId.systemDefault());
-        } else if (MARIA_NAME.equals(driver)) {
-            return LocalDateTime.ofInstant(date, ZoneId.systemDefault());
-        } else if (ORACLE_NAME.equals(driver)) {
-            return LocalDateTime.ofInstant(date, ZoneId.systemDefault());
-        } else {
-            return super.toCompatibleDate(date);
+        return getAdapter().toCompatibleDate(date);
+    }
+
+    private R2dbcAdapter getAdapter() {
+        synchronized (this) {
+            if (adapter == null) {
+                adapter = R2dbcAdapter.create(connectionFactory.getMetadata().getName());
+            }
+            return adapter;
         }
     }
 }
