@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -63,7 +63,7 @@ public class DeprecatedMethodProxyAopTest {
     @Test
     public void shouldNotCollLockProviderWithNoAnnotation() {
         testBean.noAnnotation();
-        verifyZeroInteractions(lockProvider);
+        verifyNoInteractions(lockProvider);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class DeprecatedMethodProxyAopTest {
     @Test
     public void shouldFailOnReturnType() {
         assertThatThrownBy(() -> testBean.returnsValue()).isInstanceOf(LockingNotSupportedException.class);
-        verifyZeroInteractions(lockProvider);
+        verifyNoInteractions(lockProvider);
     }
 
     @Test
