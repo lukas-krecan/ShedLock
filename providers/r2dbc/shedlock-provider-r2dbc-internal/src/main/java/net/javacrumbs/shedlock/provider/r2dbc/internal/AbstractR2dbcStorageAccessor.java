@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.r2dbc;
+package net.javacrumbs.shedlock.provider.r2dbc.internal;
 
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Statement;
@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Internal class, please do not use.
  */
-abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
+public abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     private final String tableName;
 
     public AbstractR2dbcStorageAccessor(@NonNull String tableName) {

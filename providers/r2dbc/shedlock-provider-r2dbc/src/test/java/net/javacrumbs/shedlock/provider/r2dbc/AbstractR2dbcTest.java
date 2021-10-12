@@ -9,6 +9,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 
+import java.io.IOException;
+
 import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
 import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
@@ -18,7 +20,7 @@ abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest
     private ConnectionFactory connectionFactory;
 
     @BeforeAll
-    public void startDb() {
+    public void startDb() throws IOException {
         getDbConfig().startDb();
     }
 

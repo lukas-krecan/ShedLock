@@ -11,16 +11,16 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>shedlock-provider-r2dbc</artifactId>
+    <artifactId>shedlock-provider-r2dbc-internal</artifactId>
     <version>4.28.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-provider-r2dbc-internal</artifactId>
+            <artifactId>shedlock-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-spi</artifactId>
@@ -30,22 +30,7 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.4.11</version>
-        </dependency>
-
-        <!-- test -->
-        <dependency>
-            <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-test-support-jdbc</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.r2dbc</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
-            <version>0.8.10.RELEASE</version>
-            <scope>test</scope>
+            <version>3.4.10</version>
         </dependency>
     </dependencies>
 
@@ -58,7 +43,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.r2dbc
+                                net.javacrumbs.shedlock.provider.r2dbc.internal
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
@@ -66,4 +51,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

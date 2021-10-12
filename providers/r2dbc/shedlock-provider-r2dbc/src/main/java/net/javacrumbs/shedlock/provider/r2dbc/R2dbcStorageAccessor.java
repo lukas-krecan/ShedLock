@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.provider.r2dbc;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Statement;
+import net.javacrumbs.shedlock.provider.r2dbc.internal.AbstractR2dbcStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import reactor.core.publisher.Mono;
 
