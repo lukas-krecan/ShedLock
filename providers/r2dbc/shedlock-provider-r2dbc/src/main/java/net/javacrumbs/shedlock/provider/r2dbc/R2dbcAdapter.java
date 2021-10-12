@@ -67,8 +67,6 @@ abstract class R2dbcAdapter {
 
     protected abstract String toParameter(int index, String name);
 
-    protected abstract Object toCompatibleDate(Instant date);
-
     public abstract void bind(Statement statement, int index, String name, Object value);
 
     private static class DefaultR2dbcAdapter extends R2dbcAdapter {
@@ -92,13 +90,16 @@ abstract class R2dbcAdapter {
         }
 
         @Override
-        protected Object toCompatibleDate(Instant date) {
-            return dateConverter.apply(date);
+        public void bind(Statement statement, int index, String name, Object value) {
+            binder.bind(statement, index, name, normalizeValue(value));
         }
 
-        @Override
-        public void bind(Statement statement, int index, String name, Object value) {
-            binder.bind(statement, index, name, value);
+        private Object normalizeValue(Object value) {
+            if (value instanceof Instant) {
+                return dateConverter.apply((Instant) value);
+            } else {
+                return value;
+            }
         }
     }
 

@@ -66,8 +66,8 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
         String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(" + toParameter(1, "name") + ", " + toParameter(2, "lock_until") + ", " + toParameter(3, "locked_at") + ", " + toParameter(4, "locked_by") + ")";
         return executeCommand(sql, statement -> {
             bind(statement, 0, "name", lockConfiguration.getName());
-            bind(statement, 1, "lock_until", toCompatibleDate(lockConfiguration.getLockAtMostUntil()));
-            bind(statement, 2, "locked_at", toCompatibleDate(ClockProvider.now()));
+            bind(statement, 1, "lock_until", lockConfiguration.getLockAtMostUntil());
+            bind(statement, 2, "locked_at", ClockProvider.now());
             bind(statement, 3, "locked_by", getHostname());
             return Mono.from(statement.execute()).flatMap(it -> Mono.from(it.getRowsUpdated())).map(it -> it > 0);
         }, this::handleInsertionException);
@@ -77,11 +77,11 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
         String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + ", locked_at = " + toParameter(2, "locked_at") + ", locked_by = " + toParameter(3, "locked_by") + " WHERE name = " + toParameter(4, "name") + " AND lock_until <= " + toParameter(5, "now");
         return executeCommand(sql, statement -> {
             Instant now = ClockProvider.now();
-            bind(statement, 0, "lock_until", toCompatibleDate(lockConfiguration.getLockAtMostUntil()));
-            bind(statement, 1, "locked_at", toCompatibleDate(now));
+            bind(statement, 0, "lock_until", lockConfiguration.getLockAtMostUntil());
+            bind(statement, 1, "locked_at", now);
             bind(statement, 2, "locked_by", getHostname());
             bind(statement, 3, "name", lockConfiguration.getName());
-            bind(statement, 4, "now", toCompatibleDate(now));
+            bind(statement, 4, "now", now);
             return Mono.from(statement.execute()).flatMap(it -> Mono.from(it.getRowsUpdated())).map(it -> it > 0);
         }, this::handleUpdateException);
     }
@@ -92,10 +92,10 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
 
         return executeCommand(sql, statement -> {
-            bind(statement, 0, "lock_until", toCompatibleDate(lockConfiguration.getLockAtMostUntil()));
+            bind(statement, 0, "lock_until", lockConfiguration.getLockAtMostUntil());
             bind(statement, 1, "name", lockConfiguration.getName());
             bind(statement, 2, "locked_by", getHostname());
-            bind(statement, 3, "now", toCompatibleDate(ClockProvider.now()));
+            bind(statement, 3, "now", ClockProvider.now());
             return Mono.from(statement.execute()).flatMap(it -> Mono.from(it.getRowsUpdated())).map(it -> it > 0);
         }, this::handleUnlockException);
     }
@@ -103,7 +103,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     public Publisher<Void> unlockReactive(@NonNull LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = " + toParameter(2, "name");
         return executeCommand(sql, statement -> {
-            bind(statement, 0, "lock_until", toCompatibleDate(lockConfiguration.getUnlockTime()));
+            bind(statement, 0, "lock_until", lockConfiguration.getUnlockTime());
             bind(statement, 1, "name", lockConfiguration.getName());
             return Mono.from(statement.execute()).flatMap(it -> Mono.from(it.getRowsUpdated())).then();
         }, (s, t) -> handleUnlockException(s, t).then());
@@ -114,8 +114,6 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
         Function<Statement, Mono<T>> body,
         BiFunction<String, Throwable, Mono<T>> exceptionHandler
     );
-
-    protected abstract Object toCompatibleDate(Instant date);
 
     protected abstract String toParameter(int index, String name);
 

@@ -21,7 +21,6 @@ import io.r2dbc.spi.Statement;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -66,11 +65,6 @@ class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
     @Override
     protected void bind(Statement statement, int index, String name, Object value) {
         getAdapter().bind(statement, index, name, value);
-    }
-
-    @Override
-    protected Object toCompatibleDate(Instant date) {
-        return getAdapter().toCompatibleDate(date);
     }
 
     private R2dbcAdapter getAdapter() {
