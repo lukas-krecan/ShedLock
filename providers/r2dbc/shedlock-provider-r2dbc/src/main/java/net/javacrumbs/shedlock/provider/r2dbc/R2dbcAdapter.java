@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import io.r2dbc.spi.Statement;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Instant;
@@ -16,15 +17,35 @@ abstract class R2dbcAdapter {
     static R2dbcAdapter create(@NonNull String driver) {
         switch (driver) {
             case MSSQL_NAME:
-                return new DefaultR2dbcAdapter((index, name) -> "@" + name, R2dbcAdapter::toLocalDate);
+                return new DefaultR2dbcAdapter(
+                    (index, name) -> "@" + name,
+                    R2dbcAdapter::toLocalDate,
+                    R2dbcAdapter::bindByName
+                );
             case MYSQL_NAME:
-                return new DefaultR2dbcAdapter((index, name) -> "?", R2dbcAdapter::toInstant);
+                return new DefaultR2dbcAdapter(
+                    (index, name) -> "?",
+                    R2dbcAdapter::toInstant,
+                    R2dbcAdapter::bindByIndex
+                );
             case MARIA_NAME:
-                return new DefaultR2dbcAdapter((index, name) -> "?", R2dbcAdapter::toLocalDate);
+                return new DefaultR2dbcAdapter(
+                    (index, name) -> "?",
+                    R2dbcAdapter::toLocalDate,
+                    R2dbcAdapter::bindByIndex
+                );
             case ORACLE_NAME:
-                return new DefaultR2dbcAdapter((index, name) -> ":" + name, R2dbcAdapter::toLocalDate);
+                return new DefaultR2dbcAdapter(
+                    (index, name) -> ":" + name,
+                    R2dbcAdapter::toLocalDate,
+                    R2dbcAdapter::bindByName
+                );
             default:
-                return new DefaultR2dbcAdapter((index, name) -> "$" + index, R2dbcAdapter::toInstant);
+                return new DefaultR2dbcAdapter(
+                    (index, name) -> "$" + index,
+                    R2dbcAdapter::toInstant,
+                    R2dbcAdapter::bindByIndex
+                );
         }
     }
 
@@ -36,17 +57,33 @@ abstract class R2dbcAdapter {
         return LocalDateTime.ofInstant(date, ZoneId.systemDefault());
     }
 
+    private static void bindByName(Statement statement, int index, String name, Object value) {
+        statement.bind(name, value);
+    }
+    private static void bindByIndex(Statement statement, int index, String name, Object value) {
+        statement.bind(index, value);
+    }
+
+
     protected abstract String toParameter(int index, String name);
 
     protected abstract Object toCompatibleDate(Instant date);
 
+    public abstract void bind(Statement statement, int index, String name, Object value);
+
     private static class DefaultR2dbcAdapter extends R2dbcAdapter {
         private final ParameterResolver parameterResolver;
         private final Function<Instant, Object> dateConverter;
+        private final ValueBinder binder;
 
-        private DefaultR2dbcAdapter(@NonNull ParameterResolver parameterResolver, @NonNull Function<Instant, Object> dateConverter) {
+        private DefaultR2dbcAdapter(
+            @NonNull ParameterResolver parameterResolver,
+            @NonNull Function<Instant, Object> dateConverter,
+            @NonNull ValueBinder binder
+        ) {
             this.parameterResolver = parameterResolver;
             this.dateConverter = dateConverter;
+            this.binder = binder;
         }
 
         @Override
@@ -58,9 +95,20 @@ abstract class R2dbcAdapter {
         protected Object toCompatibleDate(Instant date) {
             return dateConverter.apply(date);
         }
+
+        @Override
+        public void bind(Statement statement, int index, String name, Object value) {
+            binder.bind(statement, index, name, value);
+        }
     }
 
+    @FunctionalInterface
     private interface ParameterResolver {
         String resolve(int index, String name);
+    }
+
+    @FunctionalInterface
+    private interface ValueBinder {
+        void bind(Statement statement, int index, String name, Object value);
     }
 }

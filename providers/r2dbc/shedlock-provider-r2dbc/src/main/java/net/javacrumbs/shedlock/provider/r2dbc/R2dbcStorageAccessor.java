@@ -64,6 +64,11 @@ class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
     }
 
     @Override
+    protected void bind(Statement statement, int index, String name, Object value) {
+        getAdapter().bind(statement, index, name, value);
+    }
+
+    @Override
     protected Object toCompatibleDate(Instant date) {
         return getAdapter().toCompatibleDate(date);
     }
