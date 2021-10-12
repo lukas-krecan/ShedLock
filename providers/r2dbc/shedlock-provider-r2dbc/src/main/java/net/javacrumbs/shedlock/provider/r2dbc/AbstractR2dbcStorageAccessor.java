@@ -74,7 +74,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     public Publisher<Boolean> updateRecordReactive(@NonNull LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + ", locked_at = " + toParameter(2, "locked_at") + ", locked_by = " + toParameter(3, "locked_by") + " WHERE name = " + toParameter(4, "name") + " AND lock_until <= " + toParameter(5, "lock_until");
+        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + ", locked_at = " + toParameter(2, "locked_at") + ", locked_by = " + toParameter(3, "locked_by") + " WHERE name = " + toParameter(4, "name") + " AND lock_until <= " + toParameter(5, "now");
         return executeCommand(sql, statement -> {
             Instant now = ClockProvider.now();
             statement.bind(0, toCompatibleDate(lockConfiguration.getLockAtMostUntil()));
