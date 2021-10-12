@@ -34,12 +34,18 @@ abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest
                 .build()
         );
 
-        ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(cf)
-            .maxIdleTime(Duration.ofMillis(1000))
-            .maxSize(20)
-            .build();
+        if (usePool()) {
 
-        connectionFactory = new ConnectionPool(configuration);
+            ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(cf)
+                .maxIdleTime(Duration.ofMillis(1000))
+                .maxSize(20)
+                .build();
+
+            connectionFactory = new ConnectionPool(configuration);
+        } else {
+            // Oracle does not support pool - https://github.com/oracle/oracle-r2dbc/issues/29
+            connectionFactory = cf;
+        }
     }
 
     @AfterAll
@@ -59,5 +65,9 @@ abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest
 
     protected ConnectionFactory connectionFactory() {
         return connectionFactory;
+    }
+
+    protected boolean usePool() {
+        return true;
     }
 }

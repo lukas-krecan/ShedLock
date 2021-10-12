@@ -29,4 +29,9 @@ public class OracleR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     protected DbConfig getDbConfig() {
         return dbConfig;
     }
+
+    @Override
+    protected boolean usePool() {
+        return false;
+    }
 }

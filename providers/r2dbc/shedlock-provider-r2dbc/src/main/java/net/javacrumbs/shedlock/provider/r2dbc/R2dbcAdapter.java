@@ -25,7 +25,7 @@ abstract class R2dbcAdapter {
             case MYSQL_NAME:
                 return new DefaultR2dbcAdapter(
                     (index, name) -> "?",
-                    R2dbcAdapter::toInstant,
+                    R2dbcAdapter::toLocalDate,
                     R2dbcAdapter::bindByIndex
                 );
             case MARIA_NAME:
