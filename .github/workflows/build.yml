@@ -7,11 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8', '11', '17' ]
+        java: [ '11', '17' ]
         # Kotlin needs access to java.util
         include:
-          - java: '8'
-            maven-opts: ''
           - java: '11'
             maven-opts: ''
           - java: '17'
