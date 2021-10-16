@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.test.support.jdbc;
+package net.javacrumbs.shedlock.provider.r2dbc;
 
-import javax.sql.DataSource;
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.OracleServerConfig;
+import org.junit.jupiter.api.condition.DisabledOnJre;
 
-public interface DbConfig {
-    void startDb();
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 
-    void shutdownDb();
+@DisabledOnJre(JAVA_8)
+public class OracleR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
+    private static final DbConfig dbConfig = new OracleServerConfig();
 
-    String getJdbcUrl();
-
-    String getUsername();
-
-    String getPassword();
-
-    default String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP  NOT NULL, locked_at TIMESTAMP  NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    @Override
+    protected DbConfig getDbConfig() {
+        return dbConfig;
     }
 
-    String nowExpression();
-
-    DataSource getDataSource();
-
-    default String getR2dbcUrl() {
-        return getJdbcUrl().replace("jdbc", "r2dbc");
+    @Override
+    protected boolean usePool() {
+        return false;
     }
 }
