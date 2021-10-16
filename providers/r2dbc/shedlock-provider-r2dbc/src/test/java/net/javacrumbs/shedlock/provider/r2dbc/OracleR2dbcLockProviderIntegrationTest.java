@@ -17,9 +17,11 @@ package net.javacrumbs.shedlock.provider.r2dbc;
 
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.OracleServerConfig;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.condition.DisabledOnJre;
 
-@Disabled
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
+
+@DisabledOnJre(JAVA_8)
 public class OracleR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     private static final DbConfig dbConfig = new OracleServerConfig();
 
