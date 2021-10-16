@@ -18,11 +18,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.test.support.jdbc.OracleServerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.condition.DisabledOnJre;
 
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
-
-@DisabledOnJre(JAVA_8) // Using ojdbc11
 public class OracleJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
     private static final OracleServerConfig dbConfig = new OracleServerConfig();
 

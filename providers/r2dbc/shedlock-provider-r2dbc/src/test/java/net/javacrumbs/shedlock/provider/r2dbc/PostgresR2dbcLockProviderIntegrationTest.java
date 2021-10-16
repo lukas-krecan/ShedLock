@@ -21,7 +21,7 @@ import org.junit.jupiter.api.condition.DisabledOnJre;
 
 import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 
-@DisabledOnJre(JAVA_8) // Do not work on Java 8
+@DisabledOnJre(JAVA_8) // Does not work on Java 8
 public class PostgresR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     private static final DbConfig dbConfig = new PostgresConfig();
 

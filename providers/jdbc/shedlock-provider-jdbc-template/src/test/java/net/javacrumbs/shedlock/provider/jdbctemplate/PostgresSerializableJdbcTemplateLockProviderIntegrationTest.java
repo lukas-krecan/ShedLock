@@ -21,15 +21,12 @@ import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Connection;
 
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 
-@DisabledOnJre(JAVA_8) // Do not work on Java 8
 public class PostgresSerializableJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private static final PostgresConfig dbConfig = new PostgresConfig();
 

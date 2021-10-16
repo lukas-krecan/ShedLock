@@ -17,11 +17,7 @@ package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
-import org.junit.jupiter.api.condition.DisabledOnJre;
 
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
-
-@DisabledOnJre(JAVA_8) // Do not work on Java 8
 public class PostgresJdbcLockProviderIntegrationTest extends AbstractMicronautJdbcTest {
     private static final PostgresConfig dbConfig = new PostgresConfig();
 
