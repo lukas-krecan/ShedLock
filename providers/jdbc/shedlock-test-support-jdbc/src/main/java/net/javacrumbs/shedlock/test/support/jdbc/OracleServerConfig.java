@@ -19,7 +19,7 @@ import org.testcontainers.containers.OracleContainer;
 
 public final class OracleServerConfig extends AbstractContainerBasedDbConfig<OracleContainer> {
     public OracleServerConfig() {
-        super(createContainer());
+        super(new OracleContainer("gvenzl/oracle-xe"));
     }
 
     @Override
@@ -34,11 +34,7 @@ public final class OracleServerConfig extends AbstractContainerBasedDbConfig<Ora
 
     @Override
     public String getR2dbcUrl() {
-        return "r2dbc:oracle://localhost:" + container.getOraclePort() + "/" + container.getSid();
+        return "r2dbc:oracle://localhost:" + container.getOraclePort() + "/" + container.getDatabaseName();
     }
 
-    private static OracleContainer createContainer() {
-        return new OracleContainer("gvenzl/oracle-xe")
-            .withEnv("ORACLE_PASSWORD", "oracle");
-    }
 }
