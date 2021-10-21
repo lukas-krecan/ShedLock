@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class OracleServerTimeStatementsSource extends SqlStatementsSource {
-    private final String now = "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
-    private final String lockAtMostFor = now + " + :lockAtMostFor";
+    private static final String now = "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
+    private static final String lockAtMostFor = now + " + :lockAtMostFor";
 
     private static final long millisecondsInDay = 24 * 60 * 60 * 1000;
 

@@ -141,15 +141,11 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         } else {
             // Try to find annotation on proxied class
             Class<?> targetClass = AopUtils.getTargetClass(target);
-            if (targetClass != null) {
-                try {
-                    Method methodOnTarget = targetClass
-                        .getMethod(method.getName(), method.getParameterTypes());
-                    return findAnnotation(methodOnTarget);
-                } catch (NoSuchMethodException e) {
-                    return null;
-                }
-            } else {
+            try {
+                Method methodOnTarget = targetClass
+                    .getMethod(method.getName(), method.getParameterTypes());
+                return findAnnotation(methodOnTarget);
+            } catch (NoSuchMethodException e) {
                 return null;
             }
         }

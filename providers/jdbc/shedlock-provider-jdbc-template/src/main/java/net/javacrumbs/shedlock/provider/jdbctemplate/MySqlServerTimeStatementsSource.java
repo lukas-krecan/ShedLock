@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class MySqlServerTimeStatementsSource extends SqlStatementsSource {
-    private final String now = "UTC_TIMESTAMP(3)";
-    private final String lockAtMostFor = "TIMESTAMPADD(MICROSECOND, :lockAtMostForMicros, " + now + ")";
+    private static final String now = "UTC_TIMESTAMP(3)";
+    private static final String lockAtMostFor = "TIMESTAMPADD(MICROSECOND, :lockAtMostForMicros, " + now + ")";
 
     MySqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);

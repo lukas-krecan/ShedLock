@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Db2ServerTimeStatementsSource extends SqlStatementsSource {
-    private final String now = "(CURRENT TIMESTAMP - CURRENT TIMEZONE)";
-    private final String lockAtMostFor = "("+ now + " + :lockAtMostForMicros MICROSECONDS)";
+    private static final String now = "(CURRENT TIMESTAMP - CURRENT TIMEZONE)";
+    private static  final String lockAtMostFor = "("+ now + " + :lockAtMostForMicros MICROSECONDS)";
 
     Db2ServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);
