@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.27.1-SNAPSHOT</version>
+    <version>4.21.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-core</module>
         <module>micronaut/shedlock-micronaut</module>
@@ -42,8 +42,10 @@
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/jdbc/shedlock-provider-jdbc-micronaut</module>
+        <module>providers/r2dbc/shedlock-provider-r2dbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
+        <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
@@ -60,18 +62,18 @@
     </modules>
 
     <properties>
-        <spring.version>5.3.9</spring.version>
+        <spring.version>5.3.12</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <spring-boot-old.version>2.4.10</spring-boot-old.version>
-        <spring-boot-current.version>2.5.4</spring-boot-current.version>
-        <spring-boot-future.version>2.6.0-M1</spring-boot-future.version>
-        <junit.version>5.7.2</junit.version>
-        <test-containers.version>1.16.0</test-containers.version>
-        <kotlin.version>1.5.30</kotlin.version>
+        <spring-boot-old.version>2.4.11</spring-boot-old.version>
+        <spring-boot-current.version>2.5.6</spring-boot-current.version>
+        <spring-boot-future.version>2.6.0-M3</spring-boot-future.version>
+        <junit.version>5.8.1</junit.version>
+        <test-containers.version>1.16.1</test-containers.version>
+        <kotlin.version>1.5.31</kotlin.version>
         <micronaut.version>2.5.13</micronaut.version>
         <micronaut-data.version>2.5.0</micronaut-data.version>
-        <logback.version>1.2.5</logback.version>
+        <logback.version>1.2.6</logback.version>
     </properties>
 
     <dependencies>
@@ -122,7 +124,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>3.12.4</version>
+                <version>4.0.0</version>
                 <scope>test</scope>
             </dependency>
 
@@ -136,7 +138,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.20.2</version>
+                <version>3.21.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

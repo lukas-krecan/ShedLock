@@ -35,4 +35,8 @@ public interface DbConfig {
     String nowExpression();
 
     DataSource getDataSource();
+
+    default String getR2dbcUrl() {
+        return getJdbcUrl().replace("jdbc", "r2dbc");
+    }
 }

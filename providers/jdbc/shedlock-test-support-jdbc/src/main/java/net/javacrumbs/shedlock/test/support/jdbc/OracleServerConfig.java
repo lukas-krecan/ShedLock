@@ -19,7 +19,7 @@ import org.testcontainers.containers.OracleContainer;
 
 public final class OracleServerConfig extends AbstractContainerBasedDbConfig<OracleContainer> {
     public OracleServerConfig() {
-        super(new OracleContainer("oracleinanutshell/oracle-xe-11g"));
+        super(new OracleContainer("gvenzl/oracle-xe"));
     }
 
     @Override
@@ -31,4 +31,10 @@ public final class OracleServerConfig extends AbstractContainerBasedDbConfig<Ora
     public String nowExpression() {
         return "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
     }
+
+    @Override
+    public String getR2dbcUrl() {
+        return "r2dbc:oracle://localhost:" + container.getOraclePort() + "/" + container.getDatabaseName();
+    }
+
 }

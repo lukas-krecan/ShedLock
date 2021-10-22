@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.27.1-SNAPSHOT</version>
+        <version>4.21.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.27.1-SNAPSHOT</version>
+    <version>4.21.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-reactivestreams</artifactId>
-            <version>4.3.2</version>
+            <version>4.3.3</version>
         </dependency>
 
         <dependency>
