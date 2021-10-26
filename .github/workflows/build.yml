@@ -23,12 +23,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
-      - name: Cache Maven packages
-        uses: actions/cache@v2.1.6
-        with:
-          path: ~/.m2
-          key: m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: m2
+          cache: 'maven'
       - name: Build with Maven
         env:
           MAVEN_OPTS: ${{ matrix.maven-opts }}
