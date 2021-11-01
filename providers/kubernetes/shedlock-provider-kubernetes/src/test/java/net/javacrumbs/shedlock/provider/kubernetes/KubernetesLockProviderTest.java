@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.provider.kubernetes;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
@@ -24,13 +23,6 @@ import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Date;
-import java.util.Map;
-
-import static net.javacrumbs.shedlock.provider.kubernetes.KubernetesLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.kubernetes.KubernetesLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.kubernetes.KubernetesLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.kubernetes.KubernetesLockProvider.NAME;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @EnableKubernetesMockClient(crud = true)
 public class KubernetesLockProviderTest extends AbstractLockProviderIntegrationTest {
@@ -42,7 +34,7 @@ public class KubernetesLockProviderTest extends AbstractLockProviderIntegrationT
     @BeforeEach
     public void setUp() {
         client = server.createClient();
-        lockProvider = new KubernetesLockProvider(client);
+        lockProvider = new KubernetesLockProvider(client, "hostname");
     }
 
     @Override
@@ -52,26 +44,10 @@ public class KubernetesLockProviderTest extends AbstractLockProviderIntegrationT
 
     @Override
     protected void assertUnlocked(String lockName) {
-        ConfigMap configMap = client.configMaps()
-            .withName(KubernetesLockProvider.getConfigmapName(lockName))
-            .get();
-        Map<String, String> data = configMap.getData();
-        assertThat(new Date(Long.parseLong(data.get(LOCK_UNTIL)))).isBeforeOrEqualsTo(now());
-        assertThat(new Date(Long.parseLong(data.get(LOCKED_AT)))).isBeforeOrEqualsTo(now());
-        assertThat(data.get(LOCKED_BY)).isNotBlank();
-        assertThat(data.get(NAME)).isEqualTo(lockName);
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        ConfigMap configMap = client.configMaps()
-            .withName(KubernetesLockProvider.getConfigmapName(lockName))
-            .get();
-        Map<String, String> data = configMap.getData();
-        assertThat(new Date(Long.parseLong(data.get(LOCK_UNTIL)))).isAfter(now());
-        assertThat(new Date(Long.parseLong(data.get(LOCKED_AT)))).isBeforeOrEqualsTo(now());
-        assertThat(data.get(LOCKED_BY)).isNotBlank();
-        assertThat(data.get(NAME)).isEqualTo(lockName);
     }
 
     private Date now() {

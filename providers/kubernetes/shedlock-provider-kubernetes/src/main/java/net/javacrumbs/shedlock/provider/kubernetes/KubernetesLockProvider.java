@@ -15,9 +15,10 @@
  */
 package net.javacrumbs.shedlock.provider.kubernetes;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
+import io.fabric8.kubernetes.client.extended.leaderelection.LeaderCallbacks;
+import io.fabric8.kubernetes.client.extended.leaderelection.LeaderElectionConfigBuilder;
+import io.fabric8.kubernetes.client.extended.leaderelection.resourcelock.ConfigMapLock;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -26,67 +27,27 @@ import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-
-/**
- * Lock using ElasticSearch &gt;= 6.4.0.
- * Requires elasticsearch-rest-high-level-client &gt; 6.4.0
- * <p>
- * It uses a collection that contains documents like this:
- * <pre>
- * {
- *    "name" : "lock name",
- *    "lockUntil" :  {
- *      "type":   "date",
- *      "format": "epoch_millis"
- *    },
- *    "lockedAt" : {
- *      "type":   "date",
- *      "format": "epoch_millis"
- *    }:
- *    "lockedBy" : "hostname"
- * }
- * </pre>
- * <p>
- * lockedAt and lockedBy are just for troubleshooting and are not read by the code
- *
- * <ol>
- * <li>
- * Attempts to insert a new lock record. As an optimization, we keep in-memory track of created lock records. If the record
- * has been inserted, returns lock.
- * </li>
- * <li>
- * We will try to update lock record using filter _id == name AND lock_until &lt;= now
- * </li>
- * <li>
- * If the update succeeded (1 updated document), we have the lock. If the update failed (0 updated documents) somebody else holds the lock
- * </li>
- * <li>
- * When unlocking, lock_until is set to now.
- * </li>
- * </ol>
- */
 public class KubernetesLockProvider implements LockProvider {
     static final String CONFIGMAP_PREFIX = "shedlock";
-    static final String LOCK_UNTIL = "lockUntil";
-    static final String LOCK_AT_LEAST_FOR = "lockAtLeastFor";
-    static final String LOCKED_AT = "lockedAt";
-    static final String LOCKED_BY = "lockedBy";
-    static final String NAME = "name";
-    static final String KUBERNETES_LABEL = "shedlock.provider.kubernetes";
 
     private final NamespacedKubernetesClient client;
+    private final String hostname;
 
-    public KubernetesLockProvider(@NonNull NamespacedKubernetesClient client) {
+    public KubernetesLockProvider(@NonNull NamespacedKubernetesClient client, @NonNull String hostname) {
         this.client = client;
+        this.hostname = hostname;
     }
 
-    public static String getConfigmapName(String name) {
-        String configMapName = String.format("%s-%s", CONFIGMAP_PREFIX, name).toLowerCase();
+    public static String getConfigmapName(@NonNull LockConfiguration lockConfiguration) {
+        String configMapName = String.format("%s-%s", CONFIGMAP_PREFIX, lockConfiguration.getName()).toLowerCase();
         if (configMapName.length() > 63) {
             return configMapName.substring(0, 63);
         }
@@ -96,55 +57,45 @@ public class KubernetesLockProvider implements LockProvider {
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        // There are three possible situations:
-        // 1. The lock configMap does not exist yet - it is inserted - we have the lock
-        // 2. The lock configMap exists and lockUntil <= now - it is updated - we have the lock
-        // 3. The lock configMap exists and lockUntil > now - Duplicate key exception is thrown
+        try {
+            final CompletableFuture<Optional<SimpleLock>> completableFuture = new CompletableFuture<>();
 
-        ConfigMap existingConfigMap = client.configMaps()
-            .withName(getConfigmapName(lockConfiguration.getName()))
-            .get();
+            CompletableFuture.runAsync(() -> {
+                client.leaderElector()
+                    .withConfig(
+                        new LeaderElectionConfigBuilder()
+                            .withName(lockConfiguration.getName())
+                            .withLeaseDuration(Duration.of(15, ChronoUnit.SECONDS))
+                            .withRenewDeadline(Duration.of(10, ChronoUnit.SECONDS))
+                            .withRetryPeriod(Duration.of(2, ChronoUnit.SECONDS))
+                            .withLock(
+                                new ConfigMapLock(
+                                    client.getNamespace(),
+                                    getConfigmapName(lockConfiguration),
+                                    hostname)
+                            )
+                            .withLeaderCallbacks(new LeaderCallbacks(() -> {
+                                // This process has just become the new leader and now holds the lock.
+                                completableFuture.complete(Optional.of(new KubernetesSimpleLock(lockConfiguration)));
+                            }, () -> {
+                                // This process has stopped being leader and does not hold the lock.
+                                completableFuture.complete(Optional.empty());
+                            }, newLeaderId -> {
+                                // This process is the new leader and now holds the lock.
+                                completableFuture.complete(Optional.of(new KubernetesSimpleLock(lockConfiguration)));
+                            })).build()
+                    )
+                    .build()
+                    .run();
+            });
 
-        // 3. case
-        if (existingConfigMap != null) {
-            Map<String, String> lockData = existingConfigMap.getData();
-            if (lockData == null) {
-                throw new LockException("Lock information is not readable from configMap");
-            }
-
-            Instant lockUntil = Instant.ofEpochMilli(Long.parseLong(lockData.get(LOCK_UNTIL)));
-            Duration lockAtLeastFor = Duration.ofMillis(Long.parseLong(lockData.get(LOCK_AT_LEAST_FOR)));
-            Instant lockedAt = Instant.ofEpochMilli(Long.parseLong(lockData.get(LOCKED_AT)));
-            if (!now().isAfter(lockUntil) || !now().isAfter(lockedAt.plus(lockAtLeastFor))) {
-                return Optional.empty();
-            }
+            return completableFuture.get(1L, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            // No leader events happened, so the lock is held by another process.
+            return Optional.empty();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new LockException("Unexpected error occurred", e);
         }
-
-        // 1. & 2. case
-        ConfigMap configMap = lockObject(lockConfiguration.getName(),
-            lockConfiguration.getLockAtMostUntil(),
-            lockConfiguration.getLockAtLeastFor(),
-            now());
-        client.configMaps().createOrReplace(configMap);
-        return Optional.of(new KubernetesSimpleLock(lockConfiguration));
-    }
-
-    private ConfigMap lockObject(String name, Instant lockUntil, Duration lockAtLeastFor, Instant lockedAt) {
-        String hostname = System.getenv("HOSTNAME");
-        if (hostname == null || hostname.trim().length() == 0) {
-            hostname = KUBERNETES_LABEL;
-        }
-        return new ConfigMapBuilder()
-            .editOrNewMetadata()
-            .withName(getConfigmapName(name))
-            .addToLabels(KUBERNETES_LABEL, name)
-            .endMetadata()
-            .addToData(NAME, name)
-            .addToData(LOCKED_BY, hostname)
-            .addToData(LOCKED_AT, String.valueOf(lockedAt.toEpochMilli()))
-            .addToData(LOCK_UNTIL, String.valueOf(lockUntil.toEpochMilli()))
-            .addToData(LOCK_AT_LEAST_FOR, String.valueOf(lockAtLeastFor.toMillis()))
-            .build();
     }
 
     private final class KubernetesSimpleLock extends AbstractSimpleLock {
@@ -155,12 +106,8 @@ public class KubernetesLockProvider implements LockProvider {
 
         @Override
         public void doUnlock() {
-            ConfigMap configMap = client.configMaps()
-                .withName(getConfigmapName(lockConfiguration.getName()))
-                .get();
-            configMap.getData()
-                .put(LOCK_UNTIL, String.valueOf(now().toEpochMilli()));
-            client.configMaps().replace(configMap);
+            // Remove information about current leader. Force clients to acquire new lock.
+            client.configMaps().withName(getConfigmapName(lockConfiguration)).delete();
         }
     }
 }
