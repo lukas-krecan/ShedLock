@@ -839,7 +839,7 @@ In unit tests you can switch-off the assertion by calling `LockAssert.TestHelper
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
-annotation, everything should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
+annotation, everything should work since Kotlin Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
 have to open the method by yourself.
 
 ## Caveats
