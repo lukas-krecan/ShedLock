@@ -34,6 +34,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Cassandra](#cassandra)
   - [Consul](#consul)
   - [ArangoDB](#arangodb)
+  - [Neo4j](#neo4j)
   - [Etcd](#etcd)
   - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
@@ -626,6 +627,32 @@ public ArangoLockProvider lockProvider(final ArangoOperations arangoTemplate) {
 ```
 
 Please, note that ArangoDB lock provider uses ArangoDB driver v6.7, which is part of [arango-spring-data](https://github.com/arangodb/spring-data) in version 3.3.0.
+
+#### Neo4j
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-neo4j</artifactId>
+    <version>4.29.0</version>
+</dependency>
+```
+
+Configure:
+```java
+import net.javacrumbs.shedlock.core.LockConfiguration;
+
+...
+
+@Bean
+Neo4jLockProvider lockProvider(org.neo4j.driver.Driver driver) {
+    return new Neo4jLockProvider(driver);
+}
+```
+
+Please make sure that ```neo4j-java-driver``` version used by ```shedlock-provider-neo4j``` matches the driver version used in your
+project (if you use `spring-boot-starter-data-neo4j`, it is probably provided transitively).
 
 #### Etcd
 Import the project
