@@ -67,7 +67,7 @@
         <jdk.version>1.8</jdk.version>
         <spring-boot-old.version>2.4.11</spring-boot-old.version>
         <spring-boot-current.version>2.5.7</spring-boot-current.version>
-        <spring-boot-future.version>2.6.0</spring-boot-future.version>
+        <spring-boot-future.version>2.6.1</spring-boot-future.version>
         <junit.version>5.8.2</junit.version>
         <test-containers.version>1.16.2</test-containers.version>
         <kotlin.version>1.6.0</kotlin.version>
