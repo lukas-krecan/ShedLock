@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.support;
 
+import net.javacrumbs.shedlock.provider.inmemory.InMemoryLockProvider;
 import net.javacrumbs.shedlock.test.support.FuzzTester;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

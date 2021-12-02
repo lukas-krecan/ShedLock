@@ -38,6 +38,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Etcd](#etcd)
   - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
+  - [In-Memory](#In-Memory)
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
@@ -717,6 +718,29 @@ private static abstract class MultiTenancyLockProvider implements LockProvider {
     protected abstract LockProvider createLockProvider(String tenantName) ;
 
     protected abstract String getTenantName(LockConfiguration lockConfiguration);
+}
+```
+
+#### In-Memory
+If you want to use a lock provider locally or in tests there is In-Memory implementation.
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-inmemory</artifactId>
+    <version>4.29.0</version>
+</dependency>
+```
+
+```java
+import net.javacrumbs.shedlock.provider.inmemory.InMemoryLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider() {
+    return new InMemoryLockProvider();
 }
 ```
 

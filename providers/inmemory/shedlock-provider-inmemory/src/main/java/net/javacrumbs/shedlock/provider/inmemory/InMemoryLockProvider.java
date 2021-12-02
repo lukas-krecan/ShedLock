@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.support;
+package net.javacrumbs.shedlock.provider.inmemory;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
@@ -15,6 +15,9 @@ import java.util.Optional;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
+/**
+ * In memory lock that is suitable only for tests and running application locally.
+*/
 public class InMemoryLockProvider implements ExtensibleLockProvider {
     private final Map<String, LockRecord> locks = new HashMap<>();
 
@@ -36,7 +39,7 @@ public class InMemoryLockProvider implements ExtensibleLockProvider {
         }
     }
 
-    boolean isLocked(String lockName) {
+    public boolean isLocked(String lockName) {
         synchronized (locks) {
             LockRecord lockRecord = locks.get(lockName);
             return lockRecord != null && lockRecord.lockedUntil.isAfter(now());
