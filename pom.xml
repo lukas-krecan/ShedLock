@@ -59,6 +59,7 @@
         <module>providers/consul/shedlock-provider-consul</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
         <module>providers/ignite/shedlock-provider-ignite</module>
+        <module>providers/inmemory/shedlock-provider-inmemory</module>
     </modules>
 
     <properties>
