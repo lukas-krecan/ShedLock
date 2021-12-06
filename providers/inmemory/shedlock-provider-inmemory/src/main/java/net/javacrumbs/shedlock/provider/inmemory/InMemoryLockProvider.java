@@ -39,7 +39,7 @@ public class InMemoryLockProvider implements ExtensibleLockProvider {
         }
     }
 
-    public boolean isLocked(String lockName) {
+    boolean isLocked(String lockName) {
         synchronized (locks) {
             LockRecord lockRecord = locks.get(lockName);
             return lockRecord != null && lockRecord.lockedUntil.isAfter(now());
