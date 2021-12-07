@@ -63,14 +63,14 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot-current.version}</version>
+                <version>${spring-boot-future.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-sleuth</artifactId>
-                <version>3.0.4</version>
+                <version>3.1.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

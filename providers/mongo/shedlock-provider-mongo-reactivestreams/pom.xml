@@ -21,13 +21,13 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-reactivestreams</artifactId>
-            <version>4.3.3</version>
+            <version>4.4.0</version>
         </dependency>
 
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>3.0.0</version>
+            <version>3.2.2</version>
             <scope>test</scope>
         </dependency>
 

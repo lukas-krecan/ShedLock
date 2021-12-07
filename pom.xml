@@ -59,21 +59,22 @@
         <module>providers/consul/shedlock-provider-consul</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
         <module>providers/ignite/shedlock-provider-ignite</module>
+        <module>providers/inmemory/shedlock-provider-inmemory</module>
     </modules>
 
     <properties>
-        <spring.version>5.3.12</spring.version>
+        <spring.version>5.3.13</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot-old.version>2.4.11</spring-boot-old.version>
-        <spring-boot-current.version>2.5.6</spring-boot-current.version>
-        <spring-boot-future.version>2.6.0-M3</spring-boot-future.version>
-        <junit.version>5.8.1</junit.version>
-        <test-containers.version>1.16.1</test-containers.version>
-        <kotlin.version>1.5.31</kotlin.version>
+        <spring-boot-current.version>2.5.7</spring-boot-current.version>
+        <spring-boot-future.version>2.6.1</spring-boot-future.version>
+        <junit.version>5.8.2</junit.version>
+        <test-containers.version>1.16.2</test-containers.version>
+        <kotlin.version>1.6.0</kotlin.version>
         <micronaut.version>2.5.13</micronaut.version>
         <micronaut-data.version>2.5.0</micronaut-data.version>
-        <logback.version>1.2.6</logback.version>
+        <logback.version>1.2.7</logback.version>
     </properties>
 
     <dependencies>
@@ -124,14 +125,14 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.0.0</version>
+                <version>4.1.0</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
-                <version>4.1.0</version>
+                <version>4.1.1</version>
                 <scope>test</scope>
             </dependency>
 
@@ -172,6 +173,18 @@
                         <exclude>*.properties</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>6.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

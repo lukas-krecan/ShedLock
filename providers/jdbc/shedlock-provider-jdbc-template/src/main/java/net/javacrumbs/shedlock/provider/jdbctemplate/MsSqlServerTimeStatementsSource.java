@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class MsSqlServerTimeStatementsSource extends SqlStatementsSource {
-    private final String now = "SYSUTCDATETIME()";
-    private final String lockAtMostFor = "DATEADD(millisecond, :lockAtMostForMillis, " + now + ")";
+    private static final String now = "SYSUTCDATETIME()";
+    private static final String lockAtMostFor = "DATEADD(millisecond, :lockAtMostForMillis, " + now + ")";
 
     MsSqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);

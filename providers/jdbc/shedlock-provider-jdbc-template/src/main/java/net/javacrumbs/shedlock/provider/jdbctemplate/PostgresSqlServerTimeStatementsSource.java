@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
-    private final String now = "timezone('utc', CURRENT_TIMESTAMP)";
-    private final String lockAtMostFor = now + " + cast(:lockAtMostForInterval as interval)";
+    private static final String now = "timezone('utc', CURRENT_TIMESTAMP)";
+    private static final String lockAtMostFor = now + " + cast(:lockAtMostForInterval as interval)";
 
     PostgresSqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
         super(configuration);

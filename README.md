@@ -34,9 +34,11 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Cassandra](#cassandra)
   - [Consul](#consul)
   - [ArangoDB](#arangodb)
+  - [Neo4j](#neo4j)
   - [Etcd](#etcd)
   - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
+  - [In-Memory](#In-Memory)
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
@@ -627,6 +629,32 @@ public ArangoLockProvider lockProvider(final ArangoOperations arangoTemplate) {
 
 Please, note that ArangoDB lock provider uses ArangoDB driver v6.7, which is part of [arango-spring-data](https://github.com/arangodb/spring-data) in version 3.3.0.
 
+#### Neo4j
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-neo4j</artifactId>
+    <version>4.29.0</version>
+</dependency>
+```
+
+Configure:
+```java
+import net.javacrumbs.shedlock.core.LockConfiguration;
+
+...
+
+@Bean
+Neo4jLockProvider lockProvider(org.neo4j.driver.Driver driver) {
+    return new Neo4jLockProvider(driver);
+}
+```
+
+Please make sure that ```neo4j-java-driver``` version used by ```shedlock-provider-neo4j``` matches the driver version used in your
+project (if you use `spring-boot-starter-data-neo4j`, it is probably provided transitively).
+
 #### Etcd
 Import the project
 ```xml
@@ -690,6 +718,29 @@ private static abstract class MultiTenancyLockProvider implements LockProvider {
     protected abstract LockProvider createLockProvider(String tenantName) ;
 
     protected abstract String getTenantName(LockConfiguration lockConfiguration);
+}
+```
+
+#### In-Memory
+If you want to use a lock provider locally or in tests there is In-Memory implementation.
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-inmemory</artifactId>
+    <version>4.29.0</version>
+</dependency>
+```
+
+```java
+import net.javacrumbs.shedlock.provider.inmemory.InMemoryLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider() {
+    return new InMemoryLockProvider();
 }
 ```
 
@@ -839,7 +890,7 @@ In unit tests you can switch-off the assertion by calling `LockAssert.TestHelper
 
 ## Kotlin gotchas
 The library is tested with Kotlin and works fine. The only issue is Spring AOP which does not work on final method. If you use `@SchedulerLock` with `@Scheduled`
-annotation, everything should work since Kotling Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
+annotation, everything should work since Kotlin Spring compiler plugin will automatically 'open' the method for you. If `@Scheduled` annotation is not present, you
 have to open the method by yourself.
 
 ## Caveats
