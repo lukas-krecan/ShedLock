@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.21.1-SNAPSHOT</version>
+        <version>4.30.0</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-test-support-jdbc</artifactId>
-    <version>4.21.1-SNAPSHOT</version>
+    <version>4.30.0</version>
 
     <dependencies>
         <dependency>

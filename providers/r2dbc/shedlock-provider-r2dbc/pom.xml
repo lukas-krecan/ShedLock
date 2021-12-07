@@ -5,12 +5,12 @@
     <parent>
         <groupId>net.javacrumbs.shedlock</groupId>
         <artifactId>shedlock-parent</artifactId>
-        <version>4.21.1-SNAPSHOT</version>
+        <version>4.30.0</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>shedlock-provider-r2dbc</artifactId>
-    <version>4.21.1-SNAPSHOT</version>
+    <version>4.30.0</version>
 
     <dependencies>
         <dependency>
