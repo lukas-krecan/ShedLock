@@ -12,7 +12,7 @@
     <version>4.30.1-SNAPSHOT</version>
 
     <properties>
-        <elasticsearch.version>7.15.2</elasticsearch.version>
+        <elasticsearch.version>7.16.0</elasticsearch.version>
     </properties>
 
     <dependencies>
