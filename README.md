@@ -11,7 +11,8 @@ ShedLock uses an external store like Mongo, JDBC database, Redis, Hazelcast, Zoo
 Feedback and pull-requests welcome!
 
 #### ShedLock is not a distributed scheduler
-Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed scheduler, please use another project.
+Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed
+scheduler, please use another project. I can recommend [db-scheduler](https://github.com/kagkarlsson/db-scheduler).
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. Moreover, the locks are time-based and ShedLock assumes that clocks on the nodes are synchronized.
 
@@ -469,7 +470,7 @@ Import the project
     <groupId>net.javacrumbs.shedlock</groupId>
     <!-- Hazelcast < 4 -->
     <artifactId>shedlock-provider-hazelcast</artifactId>
-    <!-- Hazelcast 4 -->
+    <!-- Hazelcast >= 4 -->
     <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
     <version>4.30.0</version>
 </dependency>
