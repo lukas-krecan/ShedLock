@@ -51,6 +51,7 @@
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
         <module>providers/redis/shedlock-provider-redis-jedis</module>
+        <module>providers/redis/shedlock-provider-redis-jedis4</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/redis/shedlock-provider-redis-spring-1</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb</module>
