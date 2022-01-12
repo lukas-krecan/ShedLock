@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redis.jedis;
+package net.javacrumbs.shedlock.provider.redis.jedis4;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -26,8 +26,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 
-import static net.javacrumbs.shedlock.provider.redis.jedis.RedisContainer.ENV;
-import static net.javacrumbs.shedlock.provider.redis.jedis.RedisContainer.PORT;
+import static net.javacrumbs.shedlock.provider.redis.jedis4.RedisContainer.ENV;
+import static net.javacrumbs.shedlock.provider.redis.jedis4.RedisContainer.PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
