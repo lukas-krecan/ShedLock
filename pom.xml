@@ -64,7 +64,7 @@
     </modules>
 
     <properties>
-        <spring.version>5.3.14</spring.version>
+        <spring.version>5.3.15</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot-old.version>2.4.13</spring-boot-old.version>
