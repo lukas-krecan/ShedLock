@@ -40,12 +40,21 @@ class JdbcStorageAccessor extends AbstractJdbcStorageAccessor {
         SqlFunction<PreparedStatement, T> body,
         BiFunction<String, SQLException, T> exceptionHandler
     ) {
-        try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            connection.setAutoCommit(true); // just to be sure, should be set by default
-            return body.apply(statement);
+        try (Connection connection = dataSource.getConnection()) {
+            boolean originalAutocommit = connection.getAutoCommit();
+            if (!originalAutocommit) {
+                connection.setAutoCommit(true);
+            }
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                return body.apply(statement);
+            } catch (SQLException e) {
+                return exceptionHandler.apply(sql, e);
+            } finally {
+                // Cleanup
+                if (!originalAutocommit) {
+                    connection.setAutoCommit(false);
+                }
+            }
         } catch (SQLException e) {
             return exceptionHandler.apply(sql, e);
         }
