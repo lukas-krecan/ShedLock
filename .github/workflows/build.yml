@@ -11,9 +11,9 @@ jobs:
         # Kotlin needs access to java.util
         include:
           - java: '8'
-            maven-opts: ''
+            maven-opts: -pl '!spring/test/shedlock-springboot-future-test'
           - java: '11'
-            maven-opts: ''
+            maven-opts: -pl '!spring/test/shedlock-springboot-future-test'
           - java: '17'
             maven-opts: --add-opens java.base/java.util=ALL-UNNAMED
     steps:
