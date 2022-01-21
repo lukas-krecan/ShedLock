@@ -11,11 +11,14 @@ jobs:
         # Kotlin needs access to java.util
         include:
           - java: '8'
-            maven-opts: -pl '!spring/test/shedlock-springboot-future-test'
+            maven-opts: ''
+            maven-params: -pl '!spring/test/shedlock-springboot-future-test'
           - java: '11'
-            maven-opts: -pl '!spring/test/shedlock-springboot-future-test'
+            maven-opts: ''
+            maven-params: -pl '!spring/test/shedlock-springboot-future-test'
           - java: '17'
             maven-opts: --add-opens java.base/java.util=ALL-UNNAMED
+            maven-params: ''
     steps:
       - uses: actions/checkout@v2.4.0
       - name: Set up JDK ${{ matrix.java }}
@@ -27,4 +30,4 @@ jobs:
       - name: Build with Maven
         env:
           MAVEN_OPTS: ${{ matrix.maven-opts }}
-        run: mvn test javadoc:javadoc
+        run: mvn ${{ matrix.maven-params }} test javadoc:javadoc
