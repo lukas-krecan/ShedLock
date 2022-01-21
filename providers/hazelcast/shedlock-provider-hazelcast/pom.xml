@@ -12,7 +12,7 @@
     <version>4.31.1-SNAPSHOT</version>
 
     <properties>
-        <hazelcast.version>3.12.12</hazelcast.version>
+        <hazelcast.version>4.0.5</hazelcast.version>
     </properties>
 
     <dependencies>
