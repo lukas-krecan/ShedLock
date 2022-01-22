@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.31.1-SNAPSHOT</version>
+        <version>4.32.0</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-neo4j</artifactId>
-    <version>4.31.1-SNAPSHOT</version>
+    <version>4.32.0</version>
 
     <dependencies>
         <dependency>
