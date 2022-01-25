@@ -21,7 +21,7 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 /**
  * Lock Provider for Memcached
  *
- * @see https://memcached.org/
+ * @see <a href="https://memcached.org/">memcached</a>
  */
 public class MemcachedLockProvider implements LockProvider {
 
@@ -60,9 +60,11 @@ public class MemcachedLockProvider implements LockProvider {
 
     /**
      * set-add-replace
-     * @see https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#set-add-replace
+     *
      * @param lockConfiguration LockConfiguration
      * @return Optional<SimpleLock>
+     *
+     * @see <a href="https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#set-add-replace">Memcached Command</a>
      */
     @Override
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration){
