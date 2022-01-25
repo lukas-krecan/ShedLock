@@ -58,15 +58,8 @@ public class MemcachedLockProvider implements LockProvider {
         this.env = env;
     }
 
-    /**
-     * set-add-replace
-     *
-     * @param lockConfiguration LockConfiguration
-     * @return Optional<SimpleLock>
-     *
-     * @see <a href="https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#set-add-replace">Memcached Command</a>
-     */
     @Override
+    @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration){
         long expireTime = getSecondUntil(lockConfiguration.getLockAtLeastUntil());
         String key = buildKey(lockConfiguration.getName(), this.env);
