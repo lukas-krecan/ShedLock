@@ -773,6 +773,11 @@ public LockProvider lockProvider(net.spy.memcached.MemcachedClient client) {
 }
 ```
 
+ps:
+Memcached Standard Protocol:
+- A key (arbitrary string up to 250 bytes in length. No space or newlines for ASCII mode)
+- An expiration time, in `seconds`. '0' means never expire. Can be up to 30 days. After 30 days, is treated as a unix timestamp of an exact date.
+
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
