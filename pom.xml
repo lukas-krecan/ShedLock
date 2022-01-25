@@ -61,6 +61,7 @@
         <module>providers/arangodb/shedlock-provider-arangodb</module>
         <module>providers/ignite/shedlock-provider-ignite</module>
         <module>providers/inmemory/shedlock-provider-inmemory</module>
+        <module>providers/orientdb/shedlock-provider-orientdb</module>
     </modules>
 
     <properties>
