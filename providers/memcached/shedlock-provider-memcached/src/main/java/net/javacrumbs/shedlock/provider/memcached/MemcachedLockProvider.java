@@ -62,7 +62,7 @@ public class MemcachedLockProvider implements LockProvider {
      * set-add-replace
      * @see https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#set-add-replace
      * @param lockConfiguration LockConfiguration
-     * @return
+     * @return Optional<SimpleLock>
      */
     @Override
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration){
@@ -115,7 +115,10 @@ public class MemcachedLockProvider implements LockProvider {
                     throw new LockException("Can not remove node. " + status.getMessage());
                 }
             } else {
-                client.replace(key, (int) keepLockFor, buildValue());
+                OperationStatus status = client.replace(key, (int) keepLockFor, buildValue()).getStatus();
+                if (!status.isSuccess()) {
+                    throw new LockException("Can not replace node. " + status.getMessage());
+                }
             }
         }
     }
