@@ -40,6 +40,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
   - [In-Memory](#In-Memory)
+  - [Memcached](#Memcached)
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
@@ -748,6 +749,30 @@ public LockProvider lockProvider() {
     return new InMemoryLockProvider();
 }
 ```
+
+#### Memcached (using spymemcached)
+Import
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-memcached</artifactId>
+    <version>4.32.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.memcached.MemcachedLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(net.spy.memcached.MemcachedClient client) {
+    return new MemcachedLockProvider(client, ENV);
+}
+```
+
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
