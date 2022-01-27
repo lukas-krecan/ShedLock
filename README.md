@@ -40,6 +40,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Apache Ignite](#apache-ignite)
   - [Multi-tenancy](#Multi-tenancy)
   - [In-Memory](#In-Memory)
+  - [Memcached](#Memcached)
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
@@ -748,6 +749,40 @@ public LockProvider lockProvider() {
     return new InMemoryLockProvider();
 }
 ```
+
+#### Memcached (using spymemcached)
+Please, be aware that memcached is not a database but a cache. It means that if the cache is full,
+[the lock may be released prematurely](https://stackoverflow.com/questions/6868256/memcached-eviction-prior-to-key-expiry/10456364#10456364)
+**Use only if you know what you are doing.**.
+
+Import
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-memcached-spy</artifactId>
+    <version>4.32.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.memcached.spy.MemcachedLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(net.spy.memcached.MemcachedClient client) {
+    return new MemcachedLockProvider(client, ENV);
+}
+```
+
+P.S.:
+
+Memcached Standard Protocol:
+- A key (arbitrary string up to 250 bytes in length. No space or newlines for ASCII mode)
+- An expiration time, in `seconds`. '0' means never expire. Can be up to 30 days. After 30 days, is treated as a unix timestamp of an exact date. (support `seconds`、`minutes`、`days`, and less than `30` days)
+
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
