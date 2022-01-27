@@ -35,7 +35,7 @@ public class MemcachedLockProvider implements LockProvider {
      */
     private static final String ENV_DEFAULT = "default";
 
-    private MemcachedClient client;
+    private final MemcachedClient client;
 
     private final String env;
 
@@ -61,7 +61,7 @@ public class MemcachedLockProvider implements LockProvider {
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration){
-        long expireTime = getSecondUntil(lockConfiguration.getLockAtLeastUntil());
+        long expireTime = getSecondUntil(lockConfiguration.getLockAtMostUntil());
         String key = buildKey(lockConfiguration.getName(), this.env);
         OperationStatus status = client.add(key, (int) expireTime, buildValue()).getStatus();
         if (status.isSuccess()) {

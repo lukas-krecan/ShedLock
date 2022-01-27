@@ -755,7 +755,7 @@ Import
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-memcached</artifactId>
+    <artifactId>shedlock-provider-spymemcached</artifactId>
     <version>4.32.0</version>
 </dependency>
 ```
@@ -773,10 +773,12 @@ public LockProvider lockProvider(net.spy.memcached.MemcachedClient client) {
 }
 ```
 
-ps:
+P.S.:
+
 Memcached Standard Protocol:
 - A key (arbitrary string up to 250 bytes in length. No space or newlines for ASCII mode)
-- An expiration time, in `seconds`. '0' means never expire. Can be up to 30 days. After 30 days, is treated as a unix timestamp of an exact date.
+- An expiration time, in `seconds`. '0' means never expire. Can be up to 30 days. After 30 days, is treated as a unix timestamp of an exact date. (support `seconds`、`minutes`、`days`, and less than `30` days)
+- Memcached is a cache. if the cache gets full, [the lock would be released prematurely](https://stackoverflow.com/questions/6868256/memcached-eviction-prior-to-key-expiry/10456364#10456364). we should be using cluster of memcached to release it.
 
 
 ## Duration specification
