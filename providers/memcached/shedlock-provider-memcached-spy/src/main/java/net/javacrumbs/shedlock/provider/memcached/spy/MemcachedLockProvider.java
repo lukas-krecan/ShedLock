@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.memcached;
+package net.javacrumbs.shedlock.provider.memcached.spy;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;

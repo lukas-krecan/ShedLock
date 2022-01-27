@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.memcached;
+package net.javacrumbs.shedlock.provider.memcached.spy;
 
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static java.lang.Thread.sleep;
-import static net.javacrumbs.shedlock.provider.memcached.MemcachedContainer.PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -24,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     @Container
-    public static final MemcachedContainer container = new MemcachedContainer(PORT);
+    public static final MemcachedContainer container = new MemcachedContainer();
 
     static final String ENV = "test";
 
@@ -35,8 +34,8 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
     @BeforeEach
     public void createLockProvider() throws IOException {
         memcachedClient = new MemcachedClient(
-            AddrUtil.getAddresses(
-                container.getContainerIpAddress() + ":" + container.getFirstMappedPort()));
+            AddrUtil.getAddresses(container.getContainerIpAddress() + ":" + container.getFirstMappedPort())
+        );
 
         lockProvider = new MemcachedLockProvider(memcachedClient, ENV);
     }
@@ -63,7 +62,6 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
      */
     @Override
     protected void doTestTimeout(Duration lockAtMostFor) throws InterruptedException {
-        System.out.println(LOCK_NAME1);
         LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, lockAtMostFor, Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
