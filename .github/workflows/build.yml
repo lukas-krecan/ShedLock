@@ -12,7 +12,7 @@ jobs:
         include:
           - java: '8'
             maven-opts: ''
-            maven-params: -pl '!spring/test/shedlock-springboot-future-test'
+            maven-params: -pl '!spring/test/shedlock-springboot-future-test,!providers/etcd/shedlock-provider-etcd-jetcd'
           - java: '11'
             maven-opts: ''
             maven-params: -pl '!spring/test/shedlock-springboot-future-test'
