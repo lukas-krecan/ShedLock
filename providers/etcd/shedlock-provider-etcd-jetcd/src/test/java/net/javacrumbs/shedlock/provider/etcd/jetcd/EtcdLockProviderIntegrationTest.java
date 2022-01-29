@@ -18,13 +18,15 @@ package net.javacrumbs.shedlock.provider.etcd.jetcd;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KV;
-import io.etcd.jetcd.test.EtcdClusterExtension;
+import io.etcd.jetcd.launcher.Etcd;
+import io.etcd.jetcd.launcher.EtcdCluster;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,11 +35,20 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
-    @RegisterExtension
-    static final EtcdClusterExtension etcdCluster = new EtcdClusterExtension("it-cluster", 1);
+    private static final EtcdCluster cluster = new Etcd.Builder().withNodes(1).build();
 
     private EtcdLockProvider lockProvider;
     private KV kvClient;
+
+    @BeforeAll
+    static void startCluster() {
+        cluster.start();
+    }
+
+    @AfterAll
+    static void stopCluster() {
+        cluster.stop();
+    }
 
     @BeforeEach
     public void createLockProvider() {
@@ -108,7 +119,7 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     }
 
     private Client buildClient() {
-        return Client.builder().endpoints(etcdCluster.getClientEndpoints()).build();
+        return Client.builder().endpoints(cluster.clientEndpoints()).build();
     }
 
 }
