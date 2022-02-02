@@ -15,9 +15,13 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSqlServerConfig.MyMSSQLServerContainer> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MsSqlServerConfig.class);
+
     public MsSqlServerConfig() {
         super(new MyMSSQLServerContainer());
     }
@@ -33,5 +37,10 @@ public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSq
     }
 
     static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {
+        MyMSSQLServerContainer() {
+            super("mcr.microsoft.com/mssql/server:2019-latest");
+            withLogConsumer(it -> LOGGER.info(it.getUtf8String()));
+            acceptLicense();
+        }
     }
 }
