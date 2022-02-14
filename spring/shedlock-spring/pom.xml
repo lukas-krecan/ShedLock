@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.7</version>
+            <version>1.9.8</version>
             <optional>true</optional>
         </dependency>
         <dependency>
