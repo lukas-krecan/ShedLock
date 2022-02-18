@@ -12,7 +12,7 @@ Feedback and pull-requests welcome!
 
 #### ShedLock is not a distributed scheduler
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed
-scheduler, please use another project. I can recommend [db-scheduler](https://github.com/kagkarlsson/db-scheduler).
+scheduler, please use another project ([db-scheduler](https://github.com/kagkarlsson/db-scheduler), [JobRunr](https://www.jobrunr.io/en/)).
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. Moreover, the locks are time-based and ShedLock assumes that clocks on the nodes are synchronized.
 
