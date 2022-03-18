@@ -39,7 +39,7 @@
         </dependency>
 
         <dependency>
-            <groupId>io.r2dbc</groupId>
+            <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
@@ -53,6 +53,7 @@
         <dependency>
             <groupId>dev.miku</groupId>
             <artifactId>r2dbc-mysql</artifactId>
+            <version>0.8.2.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
@@ -99,7 +100,7 @@
             <dependency>
                 <groupId>io.r2dbc</groupId>
                 <artifactId>r2dbc-bom</artifactId>
-                <version>Arabba-SR12</version>
+                <version>Borca-SR1</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
