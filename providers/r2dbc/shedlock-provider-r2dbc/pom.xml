@@ -99,7 +99,7 @@
             <dependency>
                 <groupId>io.r2dbc</groupId>
                 <artifactId>r2dbc-bom</artifactId>
-                <version>Arabba-SR12</version>
+                <version>Borca-SR1</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
