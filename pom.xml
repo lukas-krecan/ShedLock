@@ -35,7 +35,6 @@
         <module>spring/test/shedlock-testng-test</module>
         <module>shedlock-test-support</module>
         <module>providers/etcd/shedlock-provider-etcd-jetcd</module>
-        <module>providers/hazelcast/shedlock-provider-hazelcast</module>
         <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-internal</module>
