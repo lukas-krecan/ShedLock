@@ -71,7 +71,7 @@
         <spring-boot-future.version>3.0.0-M2</spring-boot-future.version>
         <junit.version>5.8.2</junit.version>
         <test-containers.version>1.16.3</test-containers.version>
-        <kotlin.version>1.6.10</kotlin.version>
+        <kotlin.version>1.6.20</kotlin.version>
         <micronaut.version>2.5.13</micronaut.version>
         <micronaut-data.version>2.5.0</micronaut-data.version>
         <logback.version>1.2.11</logback.version>
