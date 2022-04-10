@@ -32,13 +32,13 @@ public @interface EnableSchedulerLock {
     enum InterceptMode {
         /**
          * Default mode when a TaskScheduler is wrapped in a proxy to ensure locking. Only applies lock
-         * if the {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated method is called using scheduler.
+         * if the {@link net.javacrumbs.shedlock.spring.annotation.SchedulerLock} annotated method is called using scheduler.
          */
         PROXY_SCHEDULER,
 
         /**
          * Scheduled method is proxied to ensure locking. Lock is created every time
-         * {@link net.javacrumbs.shedlock.core.SchedulerLock} annotated is called (even if it is NOT called using Spring scheduler)
+         * {@link net.javacrumbs.shedlock.spring.annotation.SchedulerLock} annotated is called (even if it is NOT called using Spring scheduler)
          */
         PROXY_METHOD
     }
