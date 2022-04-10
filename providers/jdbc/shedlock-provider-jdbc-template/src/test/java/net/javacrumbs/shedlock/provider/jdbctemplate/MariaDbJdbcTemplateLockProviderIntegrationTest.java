@@ -20,8 +20,6 @@ import net.javacrumbs.shedlock.test.support.jdbc.MariaDbConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-import java.io.IOException;
-
 public class MariaDbJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
     private static final DbConfig dbConfig = new MariaDbConfig();
 
@@ -30,7 +28,7 @@ public class MariaDbJdbcTemplateLockProviderIntegrationTest extends AbstractJdbc
     }
 
     @BeforeAll
-    public static void startDb() throws IOException {
+    public static void startDb() {
         dbConfig.startDb();
     }
 

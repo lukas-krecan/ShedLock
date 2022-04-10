@@ -45,7 +45,7 @@ public class DefaultLockManager implements LockManager {
     @Override
     public void executeWithLock(@NonNull Runnable task) {
         Optional<LockConfiguration> lockConfigOptional = lockConfigurationExtractor.getLockConfiguration(task);
-        if (!lockConfigOptional.isPresent()) {
+        if (lockConfigOptional.isEmpty()) {
             logger.debug("No lock configuration for {}. Executing without lock.", task);
             task.run();
         } else {
