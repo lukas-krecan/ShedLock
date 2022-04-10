@@ -33,8 +33,7 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
-    private final Pointcut pointcut = new ComposablePointcut(methodPointcutFor(net.javacrumbs.shedlock.core.SchedulerLock.class))
-        .union(methodPointcutFor(SchedulerLock.class));
+    private final Pointcut pointcut = new ComposablePointcut(methodPointcutFor(SchedulerLock.class));
 
     private final Advice advice;
 

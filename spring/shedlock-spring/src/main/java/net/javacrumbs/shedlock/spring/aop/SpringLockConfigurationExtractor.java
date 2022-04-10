@@ -152,13 +152,9 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     private AnnotationData findAnnotation(Method method) {
-        net.javacrumbs.shedlock.core.SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, net.javacrumbs.shedlock.core.SchedulerLock.class);
+        SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
         if (annotation != null) {
-            return new AnnotationData(annotation.name(), annotation.lockAtMostFor(), annotation.lockAtMostForString(), annotation.lockAtLeastFor(), annotation.lockAtLeastForString());
-        }
-        SchedulerLock annotation2 = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
-        if (annotation2 != null) {
-            return new AnnotationData(annotation2.name(), -1, annotation2.lockAtMostFor(), -1, annotation2.lockAtLeastFor());
+            return new AnnotationData(annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
         }
         return null;
     }
