@@ -1,2 +1,3 @@
 - Java 9 modules
 - New Micronaut
+- default nullable annotation
