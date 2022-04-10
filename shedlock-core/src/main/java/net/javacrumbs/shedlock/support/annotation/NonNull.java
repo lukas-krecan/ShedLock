@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A common Spring annotation to declare that annotated elements cannot be {@code null}.
+ * A common annotation to declare that annotated elements cannot be {@code null}.
  *
  * @see Nullable
  */

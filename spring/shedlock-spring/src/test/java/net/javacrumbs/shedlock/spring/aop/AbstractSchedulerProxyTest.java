@@ -78,14 +78,6 @@ public abstract class AbstractSchedulerProxyTest {
     }
 
     @Test
-    public void shouldCallLockProviderOnSchedulerCallDeprecatedAnnotation() throws NoSuchMethodException, ExecutionException, InterruptedException {
-        Runnable task = task("oldMethod");
-        taskScheduler.schedule(task, now()).get();
-        verify(lockProvider).lock(hasParams("lockName", 30_000, getDefaultLockAtLeastFor()));
-        verify(simpleLock).unlock();
-    }
-
-    @Test
     public void shouldUseCustomAnnotation() throws NoSuchMethodException, ExecutionException, InterruptedException {
         Runnable task = task("custom");
         taskScheduler.schedule(task, now()).get();
@@ -140,11 +132,6 @@ public abstract class AbstractSchedulerProxyTest {
     @Test
     public void extractorShouldBeDefined() {
         assertThat(extractor).isNotNull();
-    }
-
-    @net.javacrumbs.shedlock.core.SchedulerLock(name = "lockName")
-    public void oldMethod() {
-        assertRightSchedulerUsed();
     }
 
     @SchedulerLock(name = "lockName")

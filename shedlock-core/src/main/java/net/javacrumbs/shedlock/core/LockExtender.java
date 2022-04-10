@@ -1,7 +1,5 @@
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-
 import java.time.Duration;
 import java.util.Optional;
 
@@ -17,7 +15,7 @@ public final class LockExtender {
      * @throws NoActiveLockException         when there is no active lock in the thread local
      * @throws UnsupportedOperationException when the LockProvider does not support lock extension.
      */
-    public static void extendActiveLock(@NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
+    public static void extendActiveLock(Duration lockAtMostFor, Duration lockAtLeastFor) {
         SimpleLock lock = activeLock.get();
         if (lock == null) throw new NoActiveLockException();
         Optional<SimpleLock> newLock = lock.extend(lockAtMostFor, lockAtLeastFor);
@@ -28,7 +26,7 @@ public final class LockExtender {
         }
     }
 
-    static void startLock(@NonNull SimpleLock lock) {
+    static void startLock(SimpleLock lock) {
         activeLock.set(lock);
     }
 

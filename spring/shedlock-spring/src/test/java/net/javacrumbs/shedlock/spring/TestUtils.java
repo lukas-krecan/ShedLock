@@ -32,7 +32,7 @@ public class TestUtils {
     private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
 
     public static LockConfiguration hasParams(String name, long lockAtMostFor, long lockAtLeastFor) {
-        return argThat(new ArgumentMatcher<LockConfiguration>() {
+        return argThat(new ArgumentMatcher<>() {
             @Override
             public boolean matches(LockConfiguration c) {
                 return name.equals(c.getName())

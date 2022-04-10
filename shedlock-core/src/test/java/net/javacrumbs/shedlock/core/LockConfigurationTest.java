@@ -17,32 +17,32 @@ package net.javacrumbs.shedlock.core;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-
+import static java.time.Duration.ZERO;
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class LockConfigurationTest {
 
     @Test
-    void lockAtLeastUnitilShouldBeBeforeOrEqualsToLockAtMostUntil() {
-        Instant time = ClockProvider.now().plusSeconds(5);
-        new LockConfiguration("name", time, time);
-        new LockConfiguration("name", time.plusMillis(1), time);
+    void lockAtLeastUntilShouldBeBeforeOrEqualsToLockAtMostUntil() {
+        new LockConfiguration(now(), "name", ZERO, ZERO);
+        new LockConfiguration(now(),"name", ofMillis(1), ZERO);
 
-        assertThatThrownBy(() -> new LockConfiguration("name", time, time.plusMillis(1))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new LockConfiguration(now(),"name", ZERO, ofMillis(1))).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void lockAtMostUntilHasToBeInTheFuture() {
-        Instant now = ClockProvider.now();
-        assertThatThrownBy(() -> new LockConfiguration("name", now.minusSeconds(1))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new LockConfiguration(now(),"name", ofSeconds(-1), ZERO)).isInstanceOf(IllegalArgumentException.class);
     }
 
 
     @Test
     void nameShouldNotBeEmpty() {
-        assertThatThrownBy(() -> new LockConfiguration("", ClockProvider.now().plusSeconds(5))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new LockConfiguration(now(),"", ofSeconds(5), ofSeconds(5))).isInstanceOf(IllegalArgumentException.class);
     }
 
 }

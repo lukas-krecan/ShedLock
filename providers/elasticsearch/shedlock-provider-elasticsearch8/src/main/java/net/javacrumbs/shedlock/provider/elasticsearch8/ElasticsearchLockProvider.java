@@ -33,7 +33,6 @@ import org.elasticsearch.client.ResponseException;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -143,12 +142,12 @@ public class ElasticsearchLockProvider implements LockProvider {
     }
 
     private Map<String, JsonData> lockObject(String name, Instant lockUntil, Instant lockedAt) {
-        Map<String, JsonData> lock = new HashMap<>();
-        lock.put(NAME, JsonData.of(name));
-        lock.put(LOCKED_BY, JsonData.of(hostname));
-        lock.put(LOCKED_AT, JsonData.of(lockedAt.toEpochMilli()));
-        lock.put(LOCK_UNTIL, JsonData.of(lockUntil.toEpochMilli()));
-        return lock;
+        return Map.of(
+            NAME, JsonData.of(name),
+            LOCKED_BY, JsonData.of(hostname),
+            LOCKED_AT, JsonData.of(lockedAt.toEpochMilli()),
+            LOCK_UNTIL, JsonData.of(lockUntil.toEpochMilli())
+        );
     }
 
     private final class ElasticsearchSimpleLock extends AbstractSimpleLock {

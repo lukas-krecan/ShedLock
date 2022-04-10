@@ -67,7 +67,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
             TimeZone timezone = TimeZone.getTimeZone("America/Los_Angeles");
 
             Instant lockUntil = Instant.parse("2020-04-10T17:30:00Z");
-            ClockProvider.setClock(Clock.fixed(lockUntil.minusSeconds(10), timezone.toZoneId()));
+            Instant now = lockUntil.minusSeconds(10);
 
             TimeZone originalTimezone = TimeZone.getDefault();
 
@@ -88,7 +88,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
                     .build());
 
 
-                provider.lock(new LockConfiguration("timezone_test", lockUntil));
+                provider.lock(new LockConfiguration(now, "timezone_test",Duration.ofSeconds(10), Duration.ZERO));
                 new JdbcTemplate(datasource).query("SELECT * FROM shedlock_tz where name='timezone_test'", rs -> {
                     Timestamp timestamp = rs.getTimestamp("lock_until");
                     assertThat(timestamp.getTimezoneOffset()).isEqualTo(7 * 60);

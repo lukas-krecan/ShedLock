@@ -33,6 +33,7 @@ import org.testcontainers.couchbase.CouchbaseContainer;
 
 import java.time.Duration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -59,7 +60,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         container = new CouchbaseContainer().withBucket(new BucketDefinition(BUCKET_NAME));
         container.start();
 
-        Set<SeedNode> seedNodes = new HashSet<>(singletonList(
+        Set<SeedNode> seedNodes = new HashSet<>(List.of(
             SeedNode.create(container.getContainerIpAddress(),
                 Optional.of(container.getBootstrapCarrierDirectPort()),
                 Optional.of(container.getBootstrapHttpDirectPort()))));

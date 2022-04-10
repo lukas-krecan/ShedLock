@@ -269,7 +269,7 @@ ij_editorconfig_space_before_colon = false
 ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
-[{*.gradle.kts,*.kts,*.kt}]
+[{*.kts,*.kt}]
 ij_kotlin_align_in_columns_case_branch = false
 ij_kotlin_align_multiline_binary_operation = false
 ij_kotlin_align_multiline_extends_list = false
@@ -350,15 +350,6 @@ ij_kotlin_wrap_first_method_in_call_chain = false
 indent_size = 2
 ij_yaml_keep_indents_on_empty_lines = false
 ij_yaml_keep_line_breaks = true
-
-[{*.zsh,*.bash,*.sh}]
-indent_size = 2
-tab_width = 2
-ij_shell_binary_ops_start_line = false
-ij_shell_keep_column_alignment_padding = false
-ij_shell_minify_program = false
-ij_shell_redirect_followed_by_space = false
-ij_shell_switch_cases_indented = false
 
 [{.eslintrc,bowerrc,.babelrc,jest.config,.stylelintrc,*.jsb3,*.jsb2,*.json}]
 indent_size = 2

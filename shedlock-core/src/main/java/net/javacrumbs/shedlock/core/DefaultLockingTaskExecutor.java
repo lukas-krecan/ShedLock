@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +29,14 @@ import static net.javacrumbs.shedlock.core.LockAssert.alreadyLockedBy;
  */
 public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultLockingTaskExecutor.class);
-    @NonNull
     private final LockProvider lockProvider;
 
-    public DefaultLockingTaskExecutor(@NonNull LockProvider lockProvider) {
+    public DefaultLockingTaskExecutor(LockProvider lockProvider) {
         this.lockProvider = requireNonNull(lockProvider);
     }
 
     @Override
-    public void executeWithLock(@NonNull Runnable task, @NonNull LockConfiguration lockConfig) {
+    public void executeWithLock(Runnable task, LockConfiguration lockConfig) {
         try {
             executeWithLock((Task) task::run, lockConfig);
         } catch (RuntimeException | Error e) {
@@ -50,7 +48,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     }
 
     @Override
-    public void executeWithLock(@NonNull Task task, @NonNull LockConfiguration lockConfig) throws Throwable {
+    public void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable {
         executeWithLock(() -> {
             task.call();
             return null;
@@ -58,8 +56,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     }
 
     @Override
-    @NonNull
-    public <T> TaskResult<T> executeWithLock(@NonNull TaskWithResult<T> task, @NonNull LockConfiguration lockConfig) throws Throwable {
+    public <T> TaskResult<T> executeWithLock(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         String lockName = lockConfig.getName();
 

@@ -86,7 +86,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
-        if (!lock.isPresent() || lock.get().getLockUntil().isAfter(ClockProvider.now())) {
+        if (lock.isEmpty() || lock.get().getLockUntil().isAfter(ClockProvider.now())) {
             return false;
         }
 
@@ -106,7 +106,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean extend(@NonNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
-        if (!lock.isPresent() || lock.get().getLockUntil().isBefore(ClockProvider.now()) || !lock.get().getLockedBy().equals(hostname)) {
+        if (lock.isEmpty() || lock.get().getLockUntil().isBefore(ClockProvider.now()) || !lock.get().getLockedBy().equals(hostname)) {
             logger.trace("extend false");
             return false;
         }

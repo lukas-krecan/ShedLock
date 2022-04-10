@@ -19,12 +19,12 @@ import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.convert.ConversionService;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
-import javax.inject.Singleton;
 import java.time.Duration;
 import java.util.Optional;
 

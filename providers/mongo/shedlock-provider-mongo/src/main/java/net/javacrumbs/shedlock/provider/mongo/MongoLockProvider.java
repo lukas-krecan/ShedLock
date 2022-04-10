@@ -25,7 +25,6 @@ import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -83,7 +82,7 @@ public class MongoLockProvider implements ExtensibleLockProvider {
     /**
      * Uses Mongo to coordinate locks
      */
-    public MongoLockProvider(@NonNull MongoDatabase mongoDatabase) {
+    public MongoLockProvider(MongoDatabase mongoDatabase) {
         this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
@@ -92,15 +91,14 @@ public class MongoLockProvider implements ExtensibleLockProvider {
      *
      * @param collection Mongo collection to be used
      */
-    public MongoLockProvider(@NonNull MongoCollection<Document> collection) {
+    public MongoLockProvider(MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         Instant now = now();
         Bson update = combine(
             set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()),

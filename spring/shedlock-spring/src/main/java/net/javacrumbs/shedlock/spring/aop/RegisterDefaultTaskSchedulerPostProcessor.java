@@ -15,7 +15,6 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -44,7 +43,7 @@ class RegisterDefaultTaskSchedulerPostProcessor implements BeanDefinitionRegistr
     private static final Logger logger = LoggerFactory.getLogger(RegisterDefaultTaskSchedulerPostProcessor.class);
 
     @Override
-    public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws BeansException {
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         ListableBeanFactory listableBeanFactory = (ListableBeanFactory) this.beanFactory;
         if (BeanFactoryUtils.beanNamesForTypeIncludingAncestors(listableBeanFactory, TaskScheduler.class).length == 0) {
             String[] scheduledExecutorsBeanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(listableBeanFactory, ScheduledExecutorService.class);
@@ -66,7 +65,7 @@ class RegisterDefaultTaskSchedulerPostProcessor implements BeanDefinitionRegistr
     }
 
     @Override
-    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
     }
 
@@ -76,7 +75,7 @@ class RegisterDefaultTaskSchedulerPostProcessor implements BeanDefinitionRegistr
     }
 
     @Override
-    public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
     }
 }

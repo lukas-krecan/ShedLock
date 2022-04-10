@@ -6,12 +6,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 
-import java.io.IOException;
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractJdbcTest extends AbstractJdbcLockProviderIntegrationTest {
     @BeforeAll
-    public void startDb() throws IOException {
+    public void startDb() {
         getDbConfig().startDb();
     }
 

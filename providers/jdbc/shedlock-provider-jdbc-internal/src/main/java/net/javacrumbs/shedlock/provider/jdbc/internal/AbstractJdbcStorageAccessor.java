@@ -41,7 +41,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
 
     @Override
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
-        // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
+        // Try to insert if the record does not exist (not optimal, but the simplest platform agnostic way)
         String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(?, ?, ?, ?)";
         return executeCommand(sql, statement -> {
             statement.setString(1, lockConfiguration.getName());

@@ -25,7 +25,6 @@
         <module>shedlock-core</module>
         <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/test/micronaut-jdbc</module>
-        <module>micronaut/test/micronaut-jdbc-new</module>
         <module>micronaut/test/micronaut-jdbc-template</module>
         <module>spring/shedlock-spring</module>
         <module>spring/test/shedlock-springboot-old-test</module>
@@ -46,7 +45,6 @@
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/neo4j/shedlock-provider-neo4j</module>
-        <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch8</module>
         <module>providers/opensearch/shedlock-provider-opensearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
@@ -68,20 +66,20 @@
     <properties>
         <spring.version>5.3.22</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>1.8</jdk.version>
-        <spring-boot-old.version>2.6.10</spring-boot-old.version>
+        <jdk.version>11</jdk.version>
+        <spring-boot-old.version>2.7.3</spring-boot-old.version>
         <spring-boot-current.version>2.7.3</spring-boot-current.version>
         <spring-boot-future.version>3.0.0-M4</spring-boot-future.version>
         <junit.ver>5.8.2</junit.ver>
         <test-containers.ver>1.17.3</test-containers.ver>
         <kotlin.ver>1.7.10</kotlin.ver>
-        <micronaut.ver>2.5.13</micronaut.ver>
-        <micronaut-data.ver>2.5.0</micronaut-data.ver>
-        <logback.ver>1.2.11</logback.ver>
+        <micronaut.ver>3.5.1</micronaut.ver>
+        <micronaut-data.ver>3.4.2</micronaut-data.ver>
+        <logback.ver>1.4.1</logback.ver>
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.23.1</assertj.ver>
         <mockito.ver>4.8.0</mockito.ver>
-        <slf4j.ver>1.7.36</slf4j.ver>
+        <slf4j.ver>2.0.1</slf4j.ver>
     </properties>
 
     <build>
@@ -92,6 +90,7 @@
                 <configuration>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
+                    <release>${jdk.version}</release>
                 </configuration>
             </plugin>
             <plugin>

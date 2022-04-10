@@ -62,7 +62,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     public Publisher<Boolean> insertRecordReactive(@NonNull LockConfiguration lockConfiguration) {
-        // Try to insert if the record does not exists (not optimal, but the simplest platform agnostic way)
+        // Try to insert if the record does not exist (not optimal, but the simplest platform agnostic way)
         String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES(" + toParameter(1, "name") + ", " + toParameter(2, "lock_until") + ", " + toParameter(3, "locked_at") + ", " + toParameter(4, "locked_by") + ")";
         return executeCommand(sql, statement -> {
             bind(statement, 0, "name", lockConfiguration.getName());

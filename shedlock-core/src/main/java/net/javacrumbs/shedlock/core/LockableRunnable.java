@@ -15,8 +15,6 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -27,7 +25,7 @@ public class LockableRunnable implements Runnable {
 
     private final LockManager lockManager;
 
-    public LockableRunnable(@NonNull Runnable task, @NonNull LockManager lockManager) {
+    public LockableRunnable(Runnable task, LockManager lockManager) {
         this.task = requireNonNull(task);
         this.lockManager = requireNonNull(lockManager);
     }

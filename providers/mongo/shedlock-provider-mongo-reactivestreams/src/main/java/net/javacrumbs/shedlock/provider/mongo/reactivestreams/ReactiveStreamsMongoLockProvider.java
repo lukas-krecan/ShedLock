@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.reactivestreams.Publisher;
@@ -85,7 +84,7 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
     /**
      * Uses Mongo to coordinate locks
      */
-    public ReactiveStreamsMongoLockProvider(@NonNull MongoDatabase mongoDatabase) {
+    public ReactiveStreamsMongoLockProvider(MongoDatabase mongoDatabase) {
         this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
@@ -94,15 +93,14 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
      *
      * @param collection Mongo collection to be used
      */
-    public ReactiveStreamsMongoLockProvider(@NonNull MongoCollection<Document> collection) {
+    public ReactiveStreamsMongoLockProvider(MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         Instant now = now();
         Bson update = combine(
             set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()),
