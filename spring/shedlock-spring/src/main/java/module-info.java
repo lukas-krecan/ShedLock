@@ -1,5 +1,5 @@
 module net.javacrumbs.shedlock.spring {
-    requires net.javacrumbs.shedlock.core;
+    requires transitive net.javacrumbs.shedlock.core;
     requires spring.beans;
     requires spring.context;
     requires spring.core;
