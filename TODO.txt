@@ -1,3 +1,4 @@
 - Java 9 modules
 - New Micronaut
 - default nullable annotation
+- shedlock.spring it tests (create a module for them)
