@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.it;
+package net.javacrumbs.shedlock.spring.aop;
 
 
 import net.javacrumbs.shedlock.core.LockProvider;

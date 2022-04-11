@@ -7,4 +7,6 @@ module net.javacrumbs.shedlock.spring {
     requires org.slf4j;
     opens net.javacrumbs.shedlock.spring.aop to spring.beans, spring.core;
     exports net.javacrumbs.shedlock.spring.annotation;
+    exports net.javacrumbs.shedlock.spring;
+    exports net.javacrumbs.shedlock.spring.aop to spring.context;
 }

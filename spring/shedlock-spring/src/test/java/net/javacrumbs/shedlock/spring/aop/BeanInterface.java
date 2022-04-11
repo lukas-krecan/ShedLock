@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.proxytest;
+package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.scheduling.annotation.Async;
-
-public class BeanImpl implements BeanInterface {
-
-
-    @Override
-    @SchedulerLock(name = "test")
-    @Async // to generate proxy
-    public void method() {
-
-    }
+public interface BeanInterface {
+    void method();
 }

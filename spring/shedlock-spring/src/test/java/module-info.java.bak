@@ -10,4 +10,5 @@ open module net.javacrumbs.shedlock.spring.test {
     requires spring.beans;
     requires awaitility;
     requires org.assertj.core;
+    requires spring.core;
 }

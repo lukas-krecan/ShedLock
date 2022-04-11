@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.it;
+package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ContextConfiguration;
 
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER;
+import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_METHOD;
 
 
-@ContextConfiguration(classes = SchedulerIntegrationTest.AopSchedulerConfig.class)
-public class SchedulerIntegrationTest extends AbstractSchedulerTest {
+@ContextConfiguration(classes = ProxyIntegrationTest.AopSchedulerConfig.class)
+public class ProxyIntegrationTest extends AbstractSchedulerTest {
 
     @Configuration
     @EnableScheduling
-    @EnableSchedulerLock(interceptMode = PROXY_SCHEDULER, defaultLockAtMostFor = "PT30S")
+    @EnableSchedulerLock(interceptMode = PROXY_METHOD, defaultLockAtMostFor = "PT30S")
     public static class AopSchedulerConfig extends AbstractSchedulerConfig {
     }
 }
