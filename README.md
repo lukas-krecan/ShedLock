@@ -80,7 +80,7 @@ Now we need to integrate the library with Spring. In order to enable schedule lo
 ```java
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "10m")
+@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
 class MySpringConfiguration {
     ...
 }
