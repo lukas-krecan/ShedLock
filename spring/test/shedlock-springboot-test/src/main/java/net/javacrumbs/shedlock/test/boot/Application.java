@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
+@EnableSchedulerLock(defaultLockAtMostFor = "10m")
 public class Application {
 
     public static void main(String[] args) {
