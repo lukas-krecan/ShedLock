@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+import static org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT;
+
 public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSqlServerConfig.MyMSSQLServerContainer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MsSqlServerConfig.class);
 
@@ -29,6 +31,11 @@ public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSq
     @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until datetime2 NOT NULL, locked_at datetime2 NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+    }
+
+    @Override
+    public String getR2dbcUrl() {
+        return "r2dbc:sqlserver://" + container.getHost() + ":" + container.getMappedPort(MS_SQL_SERVER_PORT);
     }
 
     @Override
