@@ -33,16 +33,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * HazelcastLockProvider.
  * <p>
- * Implementation of {@link LockProvider} using Hazelcast for store and share locks informations and mechanisms between a cluster members
+ * Implementation of {@link LockProvider} using Hazelcast for storing and sharing lock information and mechanisms between a cluster's members
  * <p>
- * Below, the mechanims :
+ * Below, the mechanisms :
  * - The Lock, an instance of {@link HazelcastLock}, is obtained / created when :
- * -- the lock is not not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
+ * -- the lock is not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
  * -- the lock is expired : {@link Instant#now()} &gt; {@link HazelcastLock#timeToLive} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
  * and can have the value of {@link HazelcastLock#lockAtLeastUntil} if unlock action is used
  * --- expired object is removed
  * -- the lock is owned by not available member of Hazelcast cluster member
- * --- no owner objectis removed
+ * --- no owner object is removed
  * - Unlock action :
  * -- removes lock object when {@link HazelcastLock#lockAtLeastUntil} is not come
  * -- override value of {@link HazelcastLock#timeToLive} with {@link HazelcastLock#lockAtLeastUntil} (its default value is the same of {@link HazelcastLock#lockAtLeastUntil}
@@ -54,16 +54,11 @@ public class HazelcastLockProvider implements LockProvider {
     static final String LOCK_STORE_KEY_DEFAULT = "shedlock_storage";
     private static final Duration DEFAULT_LOCK_LEASE_TIME = Duration.ofSeconds(30);
 
-    /**
-     * Key used for get the lock container (an {@link IMap}) inside {@link #hazelcastInstance}.
-     * By default : {@link #LOCK_STORE_KEY_DEFAULT}
-     */
-    private final String lockStoreKey;
 
     /**
-     * Instance of the Hazelcast engine used by the application.
+     * Source of the HazelcastMap.
      */
-    private final HazelcastInstance hazelcastInstance;
+    private final HazelcastMapSource hazelcastMapSource;
 
     private final long lockLeaseTimeMs;
 
@@ -80,7 +75,7 @@ public class HazelcastLockProvider implements LockProvider {
      * Instantiate the provider.
      *
      * @param hazelcastInstance The Hazelcast engine used by the application
-     * @param lockStoreKey      The key where the locks store is associate {@link #hazelcastInstance} (by default {@link #LOCK_STORE_KEY_DEFAULT}).
+     * @param lockStoreKey      The key where the locks are stored (by default {@link #LOCK_STORE_KEY_DEFAULT}).
      */
     public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance, @NonNull String lockStoreKey) {
         this(hazelcastInstance, lockStoreKey, DEFAULT_LOCK_LEASE_TIME);
@@ -90,14 +85,25 @@ public class HazelcastLockProvider implements LockProvider {
      * Instantiate the provider.
      *
      * @param hazelcastInstance The Hazelcast engine used by the application
-     * @param lockStoreKey      The key where the locks store is associate {@link #hazelcastInstance} (by default {@link #LOCK_STORE_KEY_DEFAULT}).
+     * @param lockStoreKey      The key where the locks are stored (by default {@link #LOCK_STORE_KEY_DEFAULT}).
      * @param lockLeaseTime     When lock is being obtained there is a Hazelcast lock used to make it thread-safe.
      *                          This lock should be released quite fast but if the process dies while holding the lock, it is held forever.
      *                          lockLeaseTime is used as a safety-net for such situations.
      */
     public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance, @NonNull String lockStoreKey, @NonNull Duration lockLeaseTime) {
-        this.hazelcastInstance = hazelcastInstance;
-        this.lockStoreKey = lockStoreKey;
+        this(() -> hazelcastInstance.getMap(lockStoreKey), lockLeaseTime);
+    }
+
+    /**
+     * Instantiate the provider.
+     *
+     * @param hazelcastMapSource The Hazelcast engine used by the application
+     * @param lockLeaseTime     When lock is being obtained there is a Hazelcast lock used to make it thread-safe.
+     *                          This lock should be released quite fast but if the process dies while holding the lock, it is held forever.
+     *                          lockLeaseTime is used as a safety-net for such situations.
+     */
+    public HazelcastLockProvider(@NonNull HazelcastMapSource hazelcastMapSource, @NonNull Duration lockLeaseTime) {
+        this.hazelcastMapSource = hazelcastMapSource;
         this.lockLeaseTimeMs = lockLeaseTime.toMillis();
     }
 
@@ -147,7 +153,7 @@ public class HazelcastLockProvider implements LockProvider {
 
 
     private IMap<String, HazelcastLock> getStore() {
-        return hazelcastInstance.getMap(lockStoreKey);
+        return hazelcastMapSource.getMap();
     }
 
     HazelcastLock getLock(final String lockName) {
