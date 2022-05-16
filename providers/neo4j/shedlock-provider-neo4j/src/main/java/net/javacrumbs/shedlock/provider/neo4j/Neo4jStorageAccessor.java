@@ -26,7 +26,6 @@ import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Transaction;
-import org.neo4j.driver.internal.shaded.io.netty.util.internal.StringUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,12 +42,12 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         this.collectionName = requireNonNull(collectionName, "collectionName can not be null");
         this.driver = requireNonNull(driver, "driver can not be null");
         this.databaseName = databaseName;
-        createLockNameUniqueConstraint(driver);
+        createLockNameUniqueConstraint();
     }
 
-    private void createLockNameUniqueConstraint(Driver driver) {
+    private void createLockNameUniqueConstraint() {
         try (
-            Session session = getSession(driver);
+            Session session = getSession();
             Transaction transaction = session.beginTransaction()
         ) {
             transaction.run(String.format("CREATE CONSTRAINT UNIQUE_%s_name IF NOT EXISTS ON (lock:%s) ASSERT lock.name IS UNIQUE", collectionName, collectionName));
@@ -128,7 +127,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         BiFunction<String, Exception, T> exceptionHandler
     ) {
         try (
-            Session session = getSession(driver);
+            Session session = getSession();
             Transaction transaction = session.beginTransaction()
         ) {
             Result result = transaction.run(cypher, parameters);
@@ -140,10 +139,8 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private Session getSession(Driver driver) {
-        return StringUtil.isNullOrEmpty(databaseName)
-            ? driver.session()
-            : driver.session(SessionConfig.forDatabase(databaseName));
+    private Session getSession() {
+        return databaseName == null ? driver.session() : driver.session(SessionConfig.forDatabase(databaseName));
     }
 
     boolean handleInsertionException(String cypher, Exception e) {
