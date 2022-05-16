@@ -30,6 +30,7 @@ import org.neo4j.driver.Transaction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -122,7 +123,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
 
     private <T> T executeCommand(
         String cypher,
-        EvaluationFunction<Result, T> body,
+        Function<Result, T> body,
         Map<String, Object> parameters,
         BiFunction<String, Exception, T> exceptionHandler
     ) {
@@ -156,8 +157,4 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         throw new LockException("Unexpected exception when unlocking", e);
     }
 
-    @FunctionalInterface
-    interface EvaluationFunction<T, R> {
-        R apply(T t);
-    }
 }
