@@ -17,6 +17,7 @@ package net.javacrumbs.shedlock.provider.neo4j;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.neo4j.driver.Driver;
 
 /**
@@ -45,10 +46,10 @@ import org.neo4j.driver.Driver;
  */
 public class Neo4jLockProvider extends StorageBasedLockProvider {
     public Neo4jLockProvider(@NonNull Driver driver) {
-        this(driver, "shedlock");
+        this(driver, "shedlock", null);
     }
 
-    public Neo4jLockProvider(@NonNull Driver graphDatabaseService, @NonNull String collectionName) {
-        super(new Neo4jStorageAccessor(graphDatabaseService, collectionName));
+    public Neo4jLockProvider(@NonNull Driver graphDatabaseService, @NonNull String collectionName, @Nullable String databaseName) {
+        super(new Neo4jStorageAccessor(graphDatabaseService, collectionName, databaseName));
     }
 }
