@@ -20,10 +20,13 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
+import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Transaction;
+import org.neo4j.driver.internal.shaded.io.netty.util.internal.StringUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,16 +37,18 @@ import static java.util.Objects.requireNonNull;
 class Neo4jStorageAccessor extends AbstractStorageAccessor {
     private final String collectionName;
     private final Driver driver;
+    private final String databaseName;
 
-    public Neo4jStorageAccessor(@NonNull Driver driver, @NonNull String collectionName) {
-        this.collectionName = requireNonNull(collectionName, "collectioneName can not be null");
+    public Neo4jStorageAccessor(@NonNull Driver driver, @NonNull String collectionName, @Nullable String databaseName) {
+        this.collectionName = requireNonNull(collectionName, "collectionName can not be null");
         this.driver = requireNonNull(driver, "driver can not be null");
+        this.databaseName = databaseName;
         createLockNameUniqueConstraint(driver);
     }
 
     private void createLockNameUniqueConstraint(Driver driver) {
         try (
-            Session session = driver.session();
+            Session session = getSession(driver);
             Transaction transaction = session.beginTransaction()
         ) {
             transaction.run(String.format("CREATE CONSTRAINT UNIQUE_%s_name IF NOT EXISTS ON (lock:%s) ASSERT lock.name IS UNIQUE", collectionName, collectionName));
@@ -123,7 +128,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         BiFunction<String, Exception, T> exceptionHandler
     ) {
         try (
-            Session session = driver.session();
+            Session session = getSession(driver);
             Transaction transaction = session.beginTransaction()
         ) {
             Result result = transaction.run(cypher, parameters);
@@ -135,22 +140,27 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
+    private Session getSession(Driver driver) {
+        return StringUtil.isNullOrEmpty(databaseName)
+            ? driver.session()
+            : driver.session(SessionConfig.forDatabase(databaseName));
+    }
+
     boolean handleInsertionException(String cypher, Exception e) {
         // lock record already exists
         return false;
     }
 
-    boolean handleUpdateException(String sql, Exception e) {
+    boolean handleUpdateException(String cypher, Exception e) {
         throw new LockException("Unexpected exception when locking", e);
     }
 
-    boolean handleUnlockException(String sql, Exception e) {
+    boolean handleUnlockException(String cypher, Exception e) {
         throw new LockException("Unexpected exception when unlocking", e);
     }
 
     @FunctionalInterface
     interface EvaluationFunction<T, R> {
-        R apply(T t) throws RuntimeException;
+        R apply(T t);
     }
 }
-

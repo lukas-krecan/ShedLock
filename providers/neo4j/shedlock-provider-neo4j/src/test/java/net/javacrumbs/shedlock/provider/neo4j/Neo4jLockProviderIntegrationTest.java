@@ -202,7 +202,7 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
 
     @NonNull
     protected Neo4jStorageAccessor getAccessor() {
-        return new Neo4jStorageAccessor(this.testUtils.getDriver(), "shedlock");
+        return new Neo4jStorageAccessor(this.testUtils.getDriver(), "shedlock", null);
     }
 
     protected Neo4jTestUtils.LockInfo getLockInfo(String lockName) {
