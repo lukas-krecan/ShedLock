@@ -114,8 +114,10 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
         new FuzzTester(getLockProvider()) {
             @Override
             protected Void task(int iterations, Job job) {
-                try (Session session = testUtils.getDriver().session();
-                     Transaction transaction = session.beginTransaction()) {
+                try (
+                    Session session = testUtils.getDriver().session();
+                    Transaction transaction = session.beginTransaction()
+                ) {
                     super.task(iterations, job);
                     transaction.commit();
                     return null;
@@ -211,7 +213,7 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
 
     private static class MyNeo4jContainer extends Neo4jContainer<MyNeo4jContainer> {
         MyNeo4jContainer() {
-            super(DockerImageName.parse("neo4j").withTag("4.3.3"));
+            super(DockerImageName.parse("neo4j").withTag("4.4.6"));
             withoutAuthentication();
         }
     }
