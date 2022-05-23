@@ -88,7 +88,7 @@ class MySpringConfiguration {
 
 ### Annotate your scheduled tasks
 
- ```java
+```java
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 ...
@@ -122,7 +122,7 @@ All the annotations support Spring Expression Language (SpEL).
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
 Moreover, you want to execute it at most once per 15 minutes. In that case, you can configure it like this:
 
- ```java
+```java
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 
@@ -330,7 +330,7 @@ This depends on AWS SDK v1.
 
 Import the project
 
- ```xml
+```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
@@ -340,7 +340,7 @@ Import the project
 
 Configure:
 
- ```java
+```java
 import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 
 ...
@@ -360,7 +360,7 @@ This depends on AWS SDK v2.
 
 Import the project
 
- ```xml
+```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
@@ -370,7 +370,7 @@ Import the project
 
 Configure:
 
- ```java
+```java
 import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider;
 
 ...
