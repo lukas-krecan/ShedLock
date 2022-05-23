@@ -67,8 +67,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
         <spring-boot-old.version>2.5.12</spring-boot-old.version>
-        <spring-boot-current.version>2.6.7</spring-boot-current.version>
-        <spring-boot-future.version>3.0.0-M2</spring-boot-future.version>
+        <spring-boot-current.version>2.7.0</spring-boot-current.version>
+        <spring-boot-future.version>3.0.0-M3</spring-boot-future.version>
         <junit.version>5.8.2</junit.version>
         <test-containers.version>1.17.2</test-containers.version>
         <kotlin.version>1.6.21</kotlin.version>
