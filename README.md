@@ -501,7 +501,10 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
+    <!-- Couchbase < 3 -->
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
+    <!-- Couchbase >= 3 -->
+    <!-- <artifactId>shedlock-provider-couchbase-javaclient3</artifactId> -->
     <version>4.35.0</version>
 </dependency>
 ```
@@ -519,7 +522,7 @@ public CouchbaseLockProvider lockProvider(Bucket bucket) {
 }
 ```
 
-For Couchbase 3 use `shedlock-provider-couchbase3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
+For Couchbase 3 use `shedlock-provider-couchbase-javaclient3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
 
 #### Elasticsearch
 I am really not sure it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
