@@ -472,10 +472,9 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Hazelcast < 4 -->
-    <artifactId>shedlock-provider-hazelcast</artifactId>
+    <!-- Hazelcast < 4 support is dropped -->
     <!-- Hazelcast >= 4 -->
-    <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
+    <artifactId>shedlock-provider-hazelcast4</artifactId>
     <version>4.35.0</version>
 </dependency>
 ```
@@ -483,7 +482,7 @@ Import the project
 Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.hazelcast.HazelcastLockProvider;
+import net.javacrumbs.shedlock.provider.hazelcast4.HazelcastLockProvider;
 
 ...
 
@@ -492,8 +491,6 @@ public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
     return new HazelcastLockProvider(hazelcastInstance);
 }
 ```
-
-For Hazelcast 4 use `shedlock-provider-hazelcast4` module and `net.javacrumbs.shedlock.provider.hazelcast4` package.
 
 #### Couchbase
 Import the project
