@@ -88,7 +88,7 @@ class MySpringConfiguration {
 
 ### Annotate your scheduled tasks
 
- ```java
+```java
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 ...
@@ -122,7 +122,7 @@ All the annotations support Spring Expression Language (SpEL).
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
 Moreover, you want to execute it at most once per 15 minutes. In that case, you can configure it like this:
 
- ```java
+```java
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
 
@@ -330,7 +330,7 @@ This depends on AWS SDK v1.
 
 Import the project
 
- ```xml
+```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
@@ -340,7 +340,7 @@ Import the project
 
 Configure:
 
- ```java
+```java
 import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
 
 ...
@@ -360,7 +360,7 @@ This depends on AWS SDK v2.
 
 Import the project
 
- ```xml
+```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
@@ -370,7 +370,7 @@ Import the project
 
 Configure:
 
- ```java
+```java
 import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider;
 
 ...
@@ -472,10 +472,9 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Hazelcast < 4 -->
-    <artifactId>shedlock-provider-hazelcast</artifactId>
+    <!-- Hazelcast < 4 support is dropped -->
     <!-- Hazelcast >= 4 -->
-    <!-- <artifactId>shedlock-provider-hazelcast4</artifactId> -->
+    <artifactId>shedlock-provider-hazelcast4</artifactId>
     <version>4.35.0</version>
 </dependency>
 ```
@@ -483,7 +482,7 @@ Import the project
 Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.hazelcast.HazelcastLockProvider;
+import net.javacrumbs.shedlock.provider.hazelcast4.HazelcastLockProvider;
 
 ...
 
@@ -493,15 +492,16 @@ public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
 }
 ```
 
-For Hazelcast 4 use `shedlock-provider-hazelcast4` module and `net.javacrumbs.shedlock.provider.hazelcast4` package.
-
 #### Couchbase
 Import the project
 
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
+    <!-- Couchbase < 3 -->
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
+    <!-- Couchbase >= 3 -->
+    <!-- <artifactId>shedlock-provider-couchbase-javaclient3</artifactId> -->
     <version>4.35.0</version>
 </dependency>
 ```
@@ -519,7 +519,7 @@ public CouchbaseLockProvider lockProvider(Bucket bucket) {
 }
 ```
 
-For Couchbase 3 use `shedlock-provider-couchbase3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
+For Couchbase 3 use `shedlock-provider-couchbase-javaclient3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
 
 #### Elasticsearch
 I am really not sure it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
