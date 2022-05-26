@@ -10,6 +10,7 @@
     <description>BOM for ShedLock modules</description>
     <artifactId>shedlock-bom</artifactId>
     <version>4.35.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <dependencyManagement>
         <dependencies>
