@@ -61,7 +61,7 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-reactivestreams</artifactId>
+                <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
