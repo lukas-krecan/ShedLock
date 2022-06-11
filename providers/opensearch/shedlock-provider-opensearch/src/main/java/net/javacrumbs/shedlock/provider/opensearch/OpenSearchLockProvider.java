@@ -80,7 +80,7 @@ import static org.opensearch.action.support.WriteRequest.RefreshPolicy.IMMEDIATE
  * </li>
  * </ol>
  */
-public class OpenSarchLockProvider implements LockProvider {
+public class OpenSearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
     static final String SCHEDLOCK_DEFAULT_TYPE = "lock";
     static final String LOCK_UNTIL = "lockUntil";
@@ -103,18 +103,18 @@ public class OpenSarchLockProvider implements LockProvider {
     private final String index;
     private final String type;
 
-    private OpenSarchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index, @NonNull String type) {
+    private OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index, @NonNull String type) {
         this.highLevelClient = highLevelClient;
         this.hostname = getHostname();
         this.index = index;
         this.type = type;
     }
 
-    public OpenSarchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String documentType) {
+    public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String documentType) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
     }
 
-    public OpenSarchLockProvider(@NonNull RestHighLevelClient highLevelClient) {
+    public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
     }
 

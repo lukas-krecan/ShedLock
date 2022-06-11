@@ -34,17 +34,17 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSarchLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSarchLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSarchLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSarchLockProvider.NAME;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSarchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSarchLockProvider.SCHEDLOCK_DEFAULT_TYPE;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.NAME;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 @Testcontainers
-public class OpenSarchLockProviderTest extends AbstractLockProviderIntegrationTest {
+public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
     @Container
     private static final OpenSearchContainer container = new OpenSearchContainer("opensearchproject/opensearch:1.1.0")
@@ -52,14 +52,14 @@ public class OpenSarchLockProviderTest extends AbstractLockProviderIntegrationTe
         .withEnv("plugins.security.disabled", "true")
         .withStartupAttempts(2);
     private RestHighLevelClient highLevelClient;
-    private OpenSarchLockProvider lockProvider;
+    private OpenSearchLockProvider lockProvider;
 
     @BeforeEach
     public void setUp() {
         highLevelClient = new RestHighLevelClient(
             RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
         );
-        lockProvider = new OpenSarchLockProvider(highLevelClient);
+        lockProvider = new OpenSearchLockProvider(highLevelClient);
     }
 
     @AfterEach
