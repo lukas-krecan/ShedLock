@@ -21,6 +21,7 @@ import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.apache.http.HttpHost;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.opensearch.action.get.GetRequest;
 import org.opensearch.action.get.GetResponse;
 import org.opensearch.client.RequestOptions;
@@ -41,8 +42,10 @@ import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider
 import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 
 @Testcontainers
+@DisabledOnJre(JAVA_8)
 public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
     @Container
