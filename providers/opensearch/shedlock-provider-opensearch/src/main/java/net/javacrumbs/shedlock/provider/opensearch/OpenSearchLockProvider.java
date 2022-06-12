@@ -82,7 +82,6 @@ import static org.opensearch.action.support.WriteRequest.RefreshPolicy.IMMEDIATE
  */
 public class OpenSearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
-    static final String SCHEDLOCK_DEFAULT_TYPE = "lock";
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
@@ -101,21 +100,15 @@ public class OpenSearchLockProvider implements LockProvider {
     private final RestHighLevelClient highLevelClient;
     private final String hostname;
     private final String index;
-    private final String type;
 
-    private OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index, @NonNull String type) {
+    private OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index) {
         this.highLevelClient = highLevelClient;
         this.hostname = getHostname();
         this.index = index;
-        this.type = type;
-    }
-
-    public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String documentType) {
-        this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
     }
 
     public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient) {
-        this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
+        this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX);
     }
 
     @Override
@@ -150,7 +143,6 @@ public class OpenSearchLockProvider implements LockProvider {
     private UpdateRequest updateRequest(@NonNull LockConfiguration lockConfiguration) {
         return new UpdateRequest()
             .index(index)
-            .type(type)
             .id(lockConfiguration.getName())
             .setRefreshPolicy(IMMEDIATE);
     }

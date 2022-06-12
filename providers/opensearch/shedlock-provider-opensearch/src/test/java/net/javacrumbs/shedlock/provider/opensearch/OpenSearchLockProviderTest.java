@@ -39,7 +39,6 @@ import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider
 import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCK_UNTIL;
 import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -74,12 +73,12 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
     @Override
     protected void assertUnlocked(String lockName) {
-        GetRequest gr = new GetRequest(SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE, lockName);
+        GetRequest gr = new GetRequest(SCHEDLOCK_DEFAULT_INDEX, lockName);
         try {
             GetResponse res = highLevelClient.get(gr, RequestOptions.DEFAULT);
             Map<String, Object> m = res.getSourceAsMap();
-            assertThat(new Date((Long) m.get(LOCK_UNTIL))).isBeforeOrEqualsTo(now());
-            assertThat(new Date((Long) m.get(LOCKED_AT))).isBeforeOrEqualsTo(now());
+            assertThat(new Date((Long) m.get(LOCK_UNTIL))).isBeforeOrEqualTo(now());
+            assertThat(new Date((Long) m.get(LOCKED_AT))).isBeforeOrEqualTo(now());
             assertThat((String) m.get(LOCKED_BY)).isNotBlank();
             assertThat((String) m.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
@@ -89,12 +88,12 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
     @Override
     protected void assertLocked(String lockName) {
-        GetRequest gr = new GetRequest(SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE, lockName);
+        GetRequest gr = new GetRequest(SCHEDLOCK_DEFAULT_INDEX, lockName);
         try {
             GetResponse res = highLevelClient.get(gr, RequestOptions.DEFAULT);
             Map<String, Object> m = res.getSourceAsMap();
             assertThat(new Date((Long) m.get(LOCK_UNTIL))).isAfter(now());
-            assertThat(new Date((Long) m.get(LOCKED_AT))).isBeforeOrEqualsTo(now());
+            assertThat(new Date((Long) m.get(LOCKED_AT))).isBeforeOrEqualTo(now());
             assertThat((String) m.get(LOCKED_BY)).isNotBlank();
             assertThat((String) m.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
