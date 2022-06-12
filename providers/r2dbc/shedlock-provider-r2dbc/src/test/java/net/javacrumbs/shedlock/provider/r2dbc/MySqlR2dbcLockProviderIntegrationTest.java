@@ -17,10 +17,7 @@ package net.javacrumbs.shedlock.provider.r2dbc;
 
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
-import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.JRE;
 
-@DisabledOnJre(JRE.JAVA_8) // Not compatible
 public class MySqlR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     private static final DbConfig dbConfig = new MySqlConfig();
 

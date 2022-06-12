@@ -31,6 +31,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Hazelcast](#hazelcast)
   - [Couchbase](#couchbase)
   - [ElasticSearch](#elasticsearch)
+  - [OpenSearch](#opensearch)  
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
   - [Consul](#consul)
@@ -542,6 +543,30 @@ import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockPr
 @Bean
 public ElasticsearchLockProvider lockProvider(RestHighLevelClient highLevelClient) {
     return new ElasticsearchLockProvider(highLevelClient);
+}
+```
+
+#### OpenSearch
+Import the project 
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-opensearch</artifactId>
+    <version>4.36.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider;
+
+...
+
+@Bean
+public OpenSearchLockProvider lockProvider(RestHighLevelClient highLevelClient) {
+    return new OpenSearchLockProvider(highLevelClient);
 }
 ```
 
