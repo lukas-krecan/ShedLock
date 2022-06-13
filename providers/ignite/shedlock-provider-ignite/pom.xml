@@ -57,7 +57,7 @@
         <profile>
             <id>surefire-java16</id>
             <activation>
-                <jdk>17</jdk>
+                <jdk>[16,)</jdk>
             </activation>
             <build>
                 <plugins>
