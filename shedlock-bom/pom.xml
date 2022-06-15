@@ -76,6 +76,11 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-opensearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
                 <version>${project.version}</version>
             </dependency>
