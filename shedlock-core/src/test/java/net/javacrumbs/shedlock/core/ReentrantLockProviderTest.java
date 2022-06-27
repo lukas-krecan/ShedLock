@@ -38,7 +38,7 @@ class ReentrantLockProviderTest {
     private final LockProvider lockProvider = new ReentrantLockProvider();
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
-    private final LockConfiguration configuration = new LockConfiguration(now(),"test", Duration.ofSeconds(60), Duration.ZERO);
+    private final LockConfiguration configuration = new LockConfiguration(now(),"test", Duration.ofSeconds(60), Duration.ZERO, false);
 
     @BeforeEach
     void configureMocks() {

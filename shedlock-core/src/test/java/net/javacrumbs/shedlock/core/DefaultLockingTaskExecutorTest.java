@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class DefaultLockingTaskExecutorTest {
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final DefaultLockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
-    private final LockConfiguration lockConfig = new LockConfiguration(now(),"test", Duration.ofSeconds(100), Duration.ZERO);
+    private final LockConfiguration lockConfig = new LockConfiguration(now(),"test", Duration.ofSeconds(100), Duration.ZERO, false);
 
     @Test
     void lockShouldBeReentrant() {

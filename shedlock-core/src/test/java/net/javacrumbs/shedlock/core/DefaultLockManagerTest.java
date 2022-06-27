@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 class DefaultLockManagerTest {
 
-    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(now(),"name", Duration.ofSeconds(10), Duration.ZERO);
+    private static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(now(),"name", Duration.ofSeconds(10), Duration.ZERO, false);
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final Runnable task = mock(Runnable.class);

@@ -62,9 +62,13 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     public <T> TaskResult<T> executeWithLock(@NonNull TaskWithResult<T> task, @NonNull LockConfiguration lockConfig) throws Throwable {
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         String lockName = lockConfig.getName();
-
         if (alreadyLockedBy(lockName)) {
-            logger.debug("Already locked '{}'", lockName);
+            if (Boolean.TRUE.equals(lockConfig.getVerbose())) {
+                logger.info("Task '{}' skipped as it has locked at most until {}", lockConfig.getName(), lockConfig.getLockAtMostUntil());
+            }
+            else {
+                logger.debug("Already locked '{}'", lockName);
+            }
             return TaskResult.result(task.call());
         } else if (lock.isPresent()) {
             try {

@@ -34,7 +34,7 @@ class LockAssertTest {
 
     @Test
     void assertLockedShouldNotFailIfLockHeld() {
-        LockConfiguration lockConfiguration = new LockConfiguration(now(), "test", Duration.ofSeconds(10), Duration.ZERO);
+        LockConfiguration lockConfiguration = new LockConfiguration(now(), "test", Duration.ofSeconds(10), Duration.ZERO, false);
 
         LockProvider lockProvider = mock(LockProvider.class);
         when(lockProvider.lock(lockConfiguration)).thenReturn(Optional.of(mock(SimpleLock.class)));

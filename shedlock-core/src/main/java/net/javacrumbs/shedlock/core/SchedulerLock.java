@@ -58,9 +58,14 @@ public @interface SchedulerLock {
      */
     long lockAtLeastFor() default -1;
 
-
     /**
      * Lock at least for as string. Can be either number in ms or formatted as described in {@link java.time.Duration#parse(CharSequence)}
      */
     String lockAtLeastForString() default "";
+
+    /**
+     * Enable console output at INFO level when a schedulled task call is cancelled due to locked state
+     */
+    boolean verbose() default false;
+
 }

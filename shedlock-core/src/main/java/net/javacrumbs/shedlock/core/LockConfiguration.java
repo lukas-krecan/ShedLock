@@ -43,15 +43,20 @@ public class LockConfiguration {
     private final Duration lockAtLeastFor;
 
     /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
+     * Enable console output at INFO level when a schedulled task call is cancelled due to locked state
+     */
+    private final boolean verbose;
+
+    /**
+     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration, boolean)}
      */
     @Deprecated
-    public LockConfiguration(@NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
-        this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
+    public LockConfiguration(@NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor, boolean verbose) {
+        this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor, verbose);
     }
 
     /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
+     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration, boolean)}
      */
     @Deprecated
     public LockConfiguration(@NonNull String name, @NonNull Instant lockAtMostUntil) {
@@ -59,7 +64,7 @@ public class LockConfiguration {
     }
 
     /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
+     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration, boolean)}
      */
     @Deprecated
     public LockConfiguration(@NonNull String name, @NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
@@ -67,11 +72,11 @@ public class LockConfiguration {
     }
 
     /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
+     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration, boolean)}
      */
     @Deprecated
     private LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
-        this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil));
+        this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil), false);
     }
 
     /**
@@ -83,12 +88,14 @@ public class LockConfiguration {
      * @param name
      * @param lockAtMostFor
      * @param lockAtLeastFor
+     * @param verbose
      */
-    public LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
+    public LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor, boolean verbose) {
         this.createdAt = Objects.requireNonNull(createdAt);
         this.name = Objects.requireNonNull(name);
         this.lockAtMostFor = Objects.requireNonNull(lockAtMostFor);
         this.lockAtLeastFor = Objects.requireNonNull(lockAtLeastFor);
+        this.verbose = Objects.requireNonNull(verbose);
         if (lockAtLeastFor.compareTo(lockAtMostFor) > 0) {
             throw new IllegalArgumentException("lockAtLeastFor is longer than lockAtMostFor for lock '" + name + "'.");
         }
@@ -128,6 +135,10 @@ public class LockConfiguration {
 
     public Duration getLockAtMostFor() {
         return lockAtMostFor;
+    }
+
+    public Boolean getVerbose() {
+        return verbose;
     }
 
     @Override

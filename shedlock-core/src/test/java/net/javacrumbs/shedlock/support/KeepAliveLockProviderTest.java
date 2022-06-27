@@ -27,7 +27,7 @@ class KeepAliveLockProviderTest {
     private final ExtensibleLockProvider wrappedProvider = mock(ExtensibleLockProvider.class);
     private final DeterministicScheduler scheduler = new DeterministicScheduler();
     private final KeepAliveLockProvider provider = new KeepAliveLockProvider(wrappedProvider, scheduler, ofSeconds(1));
-    private final LockConfiguration lockConfiguration = new LockConfiguration(now(), "lock", ofSeconds(3), ofSeconds(2));
+    private final LockConfiguration lockConfiguration = new LockConfiguration(now(), "lock", ofSeconds(3), ofSeconds(2), false);
     private final SimpleLock originalLock = mock(SimpleLock.class);
 
     @BeforeEach
@@ -80,7 +80,7 @@ class KeepAliveLockProviderTest {
 
     @Test
     void shouldFailForShortLockAtMostFor() {
-        assertThatThrownBy(() -> provider.lock(new LockConfiguration(now(), "short", ofMillis(100), ZERO)))
+        assertThatThrownBy(() -> provider.lock(new LockConfiguration(now(), "short", ofMillis(100), ZERO, false)))
             .isInstanceOf(IllegalArgumentException.class);
     }
 

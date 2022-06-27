@@ -22,7 +22,7 @@ class LockExtenderTest {
     private final SimpleLock lock = mock(SimpleLock.class);
     private final  SimpleLock newLock = mock(SimpleLock.class);
     private final DefaultLockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
-    private final LockConfiguration configuration = new LockConfiguration(Instant.now(), "test", ofSeconds(1), ZERO);
+    private final LockConfiguration configuration = new LockConfiguration(Instant.now(), "test", ofSeconds(1), ZERO, false);
     private final Duration extendBy = ofSeconds(1);
 
     @BeforeEach
