@@ -29,33 +29,6 @@ public class ReactiveRedisLockProvider implements LockProvider {
     private final String environment;
     private final String keyPrefix;
 
-    public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn) {
-        this(redisConn, ENV_DEFAULT);
-    }
-
-    /**
-     * Creates ReactiveRedisLockProvider
-     *
-     * @param redisConn   ReactiveRedisConnectionFactory
-     * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances running on the same Redis
-     */
-    public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment) {
-        this(redisConn, environment, KEY_PREFIX_DEFAULT);
-    }
-
-    /**
-     * Creates ReactiveRedisLockProvider
-     *
-     * @param redisConn   ReactiveRedisConnectionFactory
-     * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances running on the same Redis
-     * @param keyPrefix   prefix of the key in Redis.
-     */
-    public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
-        this(new ReactiveStringRedisTemplate(redisConn), environment, keyPrefix);
-    }
-
     /**
      * Create ReactiveRedisLockProvider
      *
@@ -64,14 +37,15 @@ public class ReactiveRedisLockProvider implements LockProvider {
      *                      multiple ShedLock instances running on the same Redis
      * @param keyPrefix     prefix of the key in Redis.
      */
-    public ReactiveRedisLockProvider(@NonNull ReactiveStringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
+    private ReactiveRedisLockProvider(@NonNull ReactiveStringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
         this.redisTemplate = redisTemplate;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         Instant now = ClockProvider.now();
         String key = ReactiveRedisLock.createKey(keyPrefix, environment, lockConfiguration.getName());
         String value = ReactiveRedisLock.createValue(now);
