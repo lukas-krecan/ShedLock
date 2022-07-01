@@ -27,6 +27,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [DynamoDB 2](#dynamodb-2)
   - [ZooKeeper (using Curator)](#zookeeper-using-curator)
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
+  - [Redis (using Spring ReactiveRedisConnectionFactory)](#redis-using-spring-reactiveredisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
   - [Hazelcast](#hazelcast)
   - [Couchbase](#couchbase)
@@ -431,6 +432,30 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 @Bean
 public LockProvider lockProvider(RedisConnectionFactory connectionFactory) {
     return new RedisLockProvider(connectionFactory, ENV);
+}
+```
+
+#### Redis (using Spring ReactiveRedisConnectionFactory)
+Import
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-redis-spring</artifactId>
+    <version>4.37.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.redis.spring.ReactiveRedisLockProvider;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+
+...
+
+@Bean
+public LockProvider lockProvider(ReactiveRedisConnectionFactory connectionFactory) {
+    return new ReactiveRedisLockProvider(connectionFactory, ENV);
 }
 ```
 

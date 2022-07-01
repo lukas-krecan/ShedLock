@@ -68,7 +68,14 @@ public class SpringRedisLockProviderIntegrationTest {
         }
     }
 
-    private static RedisConnectionFactory createLettuceConnectionFactory() {
+    @Nested
+    class ReactiveLetucce extends AbstractReactiveRedisLockProviderIntegrationTest {
+        public ReactiveLetucce() {
+            super(createLettuceConnectionFactory());
+        }
+    }
+
+    private static LettuceConnectionFactory createLettuceConnectionFactory() {
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(HOST, PORT);
         lettuceConnectionFactory.afterPropertiesSet();
         return lettuceConnectionFactory;
