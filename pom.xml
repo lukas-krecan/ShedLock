@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.37.1-SNAPSHOT</version>
+    <version>4.38.0</version>
     <modules>
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
