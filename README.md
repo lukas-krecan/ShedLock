@@ -73,7 +73,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -177,7 +177,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -229,7 +229,7 @@ is in flux and may easily break.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-r2dbc</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -257,7 +257,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -280,7 +280,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -307,7 +307,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -336,7 +336,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -366,7 +366,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -393,7 +393,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -417,7 +417,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -441,7 +441,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -475,7 +475,7 @@ Import
     <!-- <artifactId>shedlock-provider-redis-jedis</artifactId> -->
     <!-- For Jedis >= 4 -->
     <artifactId>shedlock-provider-redis-jedis4</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -501,7 +501,7 @@ Import the project
     <!-- Hazelcast < 4 support is dropped -->
     <!-- Hazelcast >= 4 -->
     <artifactId>shedlock-provider-hazelcast4</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -528,7 +528,7 @@ Import the project
     <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
     <!-- Couchbase >= 3 -->
     <!-- <artifactId>shedlock-provider-couchbase-javaclient3</artifactId> -->
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -554,7 +554,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -606,7 +606,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -640,7 +640,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -665,7 +665,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -691,7 +691,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-neo4j</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -716,7 +716,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -740,7 +740,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-ignite</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -784,7 +784,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-inmemory</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -810,7 +810,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-memcached-spy</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -874,7 +874,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.37.0</version>
+    <version>4.38.0</version>
 </dependency>
 ```
 
@@ -1009,6 +1009,10 @@ after another, `lockAtLeastFor` can prevent it.
 * slf4j-api
 
 # Release notes
+## 4.38.0 (2022-07-02)
+* ReactiveRedisLockProvider added (thanks @ericwcc)
+* Dependency updates
+
 ## 4.37.0 (2022-06-14)
 * OpenSearch provider (thanks @Pinny3)
 * Fix wrong reference to reactive Mongo in BOM #1048
