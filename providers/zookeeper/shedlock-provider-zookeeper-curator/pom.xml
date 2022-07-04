@@ -12,7 +12,7 @@
     <version>4.38.1-SNAPSHOT</version>
 
     <properties>
-        <curator.version>5.2.1</curator.version>
+        <curator.version>5.3.0</curator.version>
     </properties>
 
     <dependencies>
