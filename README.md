@@ -455,9 +455,7 @@ import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 
 @Bean
 public LockProvider lockProvider(ReactiveRedisConnectionFactory connectionFactory) {
-    return new ReactiveRedisLockProvider.Builder(connectionFactory)
-        .environment(ENV)
-        .build();
+    return new ReactiveRedisLockProvider(connectionFactory, ENV);
 }
 ```
 
