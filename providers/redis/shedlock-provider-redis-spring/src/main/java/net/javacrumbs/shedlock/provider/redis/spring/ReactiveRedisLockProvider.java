@@ -71,7 +71,8 @@ public class ReactiveRedisLockProvider implements LockProvider {
     }
 
     @Override
-    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+    @NonNull
+    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         Instant now = ClockProvider.now();
         String key = ReactiveRedisLock.createKey(keyPrefix, environment, lockConfiguration.getName());
         String value = ReactiveRedisLock.createValue(now);
