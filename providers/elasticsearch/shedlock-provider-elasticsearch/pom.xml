@@ -12,7 +12,9 @@
     <version>4.38.1-SNAPSHOT</version>
 
     <properties>
-        <elasticsearch.version>7.17.5</elasticsearch.version>
+        <elasticsearch.version>8.2.1</elasticsearch.version>
+        <jakarta.json-api.version>2.1.0</jakarta.json-api.version>
+        <jackson.version>2.12.2</jackson.version>
     </properties>
 
     <dependencies>
@@ -23,9 +25,31 @@
         </dependency>
 
         <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
             <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <version>${jakarta.json-api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>

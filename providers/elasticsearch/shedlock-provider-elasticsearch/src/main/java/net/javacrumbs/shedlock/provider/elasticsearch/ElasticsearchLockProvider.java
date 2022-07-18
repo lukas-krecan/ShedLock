@@ -15,21 +15,21 @@
  */
 package net.javacrumbs.shedlock.provider.elasticsearch;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.Refresh;
+import co.elastic.clients.elasticsearch._types.Result;
+import co.elastic.clients.elasticsearch.core.UpdateRequest;
+import co.elastic.clients.elasticsearch.core.UpdateResponse;
+import co.elastic.clients.json.JsonData;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.provider.elasticsearch.model.LockPOJO;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.DocWriteResponse;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.client.ResponseException;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -40,7 +40,6 @@ import java.util.Optional;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static org.elasticsearch.action.support.WriteRequest.RefreshPolicy.IMMEDIATE;
 
 /**
  * Lock using ElasticSearch &gt;= 6.4.0.
@@ -94,52 +93,57 @@ public class ElasticsearchLockProvider implements LockProvider {
             "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " +
             "ctx._source." + LOCKED_AT + " = params." + LOCKED_AT + "; " +
             "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; " +
-            "} else { " +
+        "} else { " +
             "ctx.op = 'none' " +
-            "}";
+        "}";
 
-    private final RestHighLevelClient highLevelClient;
+    private final ElasticsearchClient client;
     private final String hostname;
     private final String index;
     private final String type;
 
-    private ElasticsearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index, @NonNull String type) {
-        this.highLevelClient = highLevelClient;
+    private ElasticsearchLockProvider(@NonNull ElasticsearchClient client, @NonNull String index, @NonNull String type) {
+        this.client = client;
         this.hostname = getHostname();
         this.index = index;
         this.type = type;
     }
 
-    public ElasticsearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String documentType) {
-        this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, documentType);
+    public ElasticsearchLockProvider(@NonNull ElasticsearchClient client, @NonNull String documentType) {
+        this(client, SCHEDLOCK_DEFAULT_INDEX, documentType);
     }
 
-    public ElasticsearchLockProvider(@NonNull RestHighLevelClient highLevelClient) {
-        this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
+    public ElasticsearchLockProvider(@NonNull ElasticsearchClient client) {
+        this(client, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
     }
 
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         try {
-            Map<String, Object> lockObject = lockObject(lockConfiguration.getName(),
-                lockConfiguration.getLockAtMostUntil(),
-                now());
-            UpdateRequest ur = updateRequest(lockConfiguration)
-                .script(new Script(ScriptType.INLINE,
-                    "painless",
-                    UPDATE_SCRIPT,
-                    lockObject)
-                )
-                .upsert(lockObject);
-            UpdateResponse res = highLevelClient.update(ur, RequestOptions.DEFAULT);
-            if (res.getResult() != DocWriteResponse.Result.NOOP) {
+            Instant now = now();
+            Instant lockAtMostUntil = lockConfiguration.getLockAtMostUntil();
+            Map<String, JsonData> lockObject =
+                lockObject(lockConfiguration.getName(), lockAtMostUntil, now);
+
+            LockPOJO pojo = new LockPOJO(lockConfiguration.getName(), hostname, now.toEpochMilli(), lockAtMostUntil.toEpochMilli());
+
+            UpdateRequest<LockPOJO, LockPOJO> updateRequest = UpdateRequest.of(ur -> ur
+                .index(index)
+                .id(lockConfiguration.getName())
+                .refresh(Refresh.True)
+                .script(sc -> sc.inline(in -> in.lang("painless").source(UPDATE_SCRIPT).params(lockObject)))
+                .upsert(pojo));
+
+            UpdateResponse<LockPOJO> res = client.update(updateRequest, LockPOJO.class);
+            if (res.result() != Result.NoOp) {
                 return Optional.of(new ElasticsearchSimpleLock(lockConfiguration));
-            } else {
+            } else { //nothing happened
                 return Optional.empty();
             }
         } catch (IOException | ElasticsearchException e) {
-            if (e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == RestStatus.CONFLICT) {
+            if ((e instanceof ElasticsearchException && ((ElasticsearchException)e).status() == 409) ||
+                (e instanceof ResponseException && ((ResponseException)e).getResponse().getStatusLine().getStatusCode() == 409)) {
                 return Optional.empty();
             } else {
                 throw new LockException("Unexpected exception occurred", e);
@@ -147,20 +151,12 @@ public class ElasticsearchLockProvider implements LockProvider {
         }
     }
 
-    private UpdateRequest updateRequest(@NonNull LockConfiguration lockConfiguration) {
-        return new UpdateRequest()
-            .index(index)
-            .type(type)
-            .id(lockConfiguration.getName())
-            .setRefreshPolicy(IMMEDIATE);
-    }
-
-    private Map<String, Object> lockObject(String name, Instant lockUntil, Instant lockedAt) {
-        Map<String, Object> lock = new HashMap<>();
-        lock.put(NAME, name);
-        lock.put(LOCKED_BY, hostname);
-        lock.put(LOCKED_AT, lockedAt.toEpochMilli());
-        lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
+    private Map<String, JsonData> lockObject(String name, Instant lockUntil, Instant lockedAt) {
+        Map<String, JsonData> lock = new HashMap<>();
+        lock.put(NAME, JsonData.of(name));
+        lock.put(LOCKED_BY, JsonData.of(hostname));
+        lock.put(LOCKED_AT, JsonData.of(lockedAt.toEpochMilli()));
+        lock.put(LOCK_UNTIL, JsonData.of(lockUntil.toEpochMilli()));
         return lock;
     }
 
@@ -174,12 +170,19 @@ public class ElasticsearchLockProvider implements LockProvider {
         public void doUnlock() {
             // Set lockUtil to now or lockAtLeastUntil whichever is later
             try {
-                UpdateRequest ur = updateRequest(lockConfiguration)
-                    .script(new Script(ScriptType.INLINE,
-                        "painless",
-                        "ctx._source.lockUntil = params.unlockTime",
-                        Collections.singletonMap("unlockTime", lockConfiguration.getUnlockTime().toEpochMilli())));
-                highLevelClient.update(ur, RequestOptions.DEFAULT);
+                Map<String, JsonData> lockObject = Collections.singletonMap("unlockTime", JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
+
+                UpdateRequest<LockPOJO, LockPOJO> updateRequest = UpdateRequest.of(ur -> ur
+                        .index(index)
+                        .id(lockConfiguration.getName())
+                        .refresh(Refresh.True)
+                        .script(sc -> sc.inline(in -> in.lang("painless").source("ctx._source.lockUntil = params.unlockTime")
+                            .params(lockObject))));
+
+                UpdateResponse<LockPOJO> res = client.update(updateRequest, LockPOJO.class);
+                if (res.result() == Result.NoOp) { //nothing happened
+                    //no unlock operation was done
+                }
             } catch (IOException | ElasticsearchException e) {
                 throw new LockException("Unexpected exception occurred", e);
             }
