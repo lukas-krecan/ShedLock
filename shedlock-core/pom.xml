@@ -11,7 +11,7 @@
     <version>4.38.1-SNAPSHOT</version>
 
     <properties>
-        <jackson.version>2.12.2</jackson.version>
+        <jackson.version>2.13.3</jackson.version>
     </properties>
 
     <dependencies>

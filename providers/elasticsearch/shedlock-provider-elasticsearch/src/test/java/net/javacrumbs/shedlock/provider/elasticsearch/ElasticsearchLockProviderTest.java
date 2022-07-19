@@ -15,33 +15,21 @@
  */
 package net.javacrumbs.shedlock.provider.elasticsearch;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.GetRequest;
-import co.elastic.clients.elasticsearch.core.GetResponse;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
@@ -50,40 +38,29 @@ import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockPr
 import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.LOCK_UNTIL;
 import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static net.javacrumbs.shedlock.provider.elasticsearch.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 @Testcontainers
 public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
-
     @Container
-    private static final ElasticsearchContainer container =
-        new ElasticsearchContainer(DEFAULT_IMAGE_NAME.withTag("7.17.5")).withPassword("elastic1234");
-    private ElasticsearchClient client;
+    private static final ElasticsearchContainer container = new ElasticsearchContainer();
+    private RestHighLevelClient highLevelClient;
     private ElasticsearchLockProvider lockProvider;
 
     @BeforeEach
     public void setUp() {
-        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("elastic", "elastic1234"));
-        RestClient restClient = RestClient.builder(
-            HttpHost.create(container.getHttpHostAddress()))
-            .setHttpClientConfigCallback(clientBuilder -> clientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-            .build();
-        ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(objectMapper()));
-        client = new ElasticsearchClient(transport);
-        lockProvider = new ElasticsearchLockProvider(client);
+        highLevelClient = new RestHighLevelClient(
+            RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
+        );
+        lockProvider = new ElasticsearchLockProvider(highLevelClient);
     }
 
-    private ObjectMapper objectMapper() {
-        JavaTimeModule module = new JavaTimeModule();
-        module.addSerializer(LocalDateTime.class,
-            new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .registerModule(module);
+    @AfterEach
+    public void tearDown() throws IOException {
+        highLevelClient.close();
     }
 
     @Override
@@ -93,16 +70,14 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
     @Override
     protected void assertUnlocked(String lockName) {
-        GetRequest request = GetRequest.of(gr -> gr
-            .index(SCHEDLOCK_DEFAULT_INDEX)
-            .id(lockName));
+        GetRequest gr = new GetRequest(SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE, lockName);
         try {
-            GetResponse<Map> response = client.get(request, Map.class);
-            Map source = response.source();
-            assertThat(new Date((Long)source.get(LOCK_UNTIL))).isBeforeOrEqualsTo(now());
-            assertThat(new Date((Long) source.get(LOCKED_AT))).isBeforeOrEqualsTo(now());
-            assertThat((String) source.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) source.get(NAME)).isEqualTo(lockName);
+            GetResponse res = highLevelClient.get(gr, RequestOptions.DEFAULT);
+            Map<String, Object> m = res.getSourceAsMap();
+            assertThat(new Date((Long) m.get(LOCK_UNTIL))).isBeforeOrEqualsTo(now());
+            assertThat(new Date((Long) m.get(LOCKED_AT))).isBeforeOrEqualsTo(now());
+            assertThat((String) m.get(LOCKED_BY)).isNotBlank();
+            assertThat((String) m.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded ES failed.");
         }
@@ -110,16 +85,14 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
     @Override
     protected void assertLocked(String lockName) {
-        GetRequest request = GetRequest.of(gr -> gr
-            .index(SCHEDLOCK_DEFAULT_INDEX)
-            .id(lockName));
+        GetRequest gr = new GetRequest(SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE, lockName);
         try {
-            GetResponse<Map> response = client.get(request, Map.class);
-            Map source = response.source();
-            assertThat(new Date((Long) source.get(LOCK_UNTIL))).isAfter(now());
-            assertThat(new Date((Long) source.get(LOCKED_AT))).isBeforeOrEqualsTo(now());
-            assertThat((String) source.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) source.get(NAME)).isEqualTo(lockName);
+            GetResponse res = highLevelClient.get(gr, RequestOptions.DEFAULT);
+            Map<String, Object> m = res.getSourceAsMap();
+            assertThat(new Date((Long) m.get(LOCK_UNTIL))).isAfter(now());
+            assertThat(new Date((Long) m.get(LOCKED_AT))).isBeforeOrEqualsTo(now());
+            assertThat((String) m.get(LOCKED_BY)).isNotBlank();
+            assertThat((String) m.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded ES failed.");
         }
@@ -128,5 +101,4 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     private Date now() {
         return new Date();
     }
-
 }
