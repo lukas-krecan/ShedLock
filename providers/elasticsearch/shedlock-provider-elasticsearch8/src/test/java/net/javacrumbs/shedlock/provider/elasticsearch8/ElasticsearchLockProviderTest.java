@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.elasticsearch;
+package net.javacrumbs.shedlock.provider.elasticsearch8;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetRequest;
@@ -45,16 +45,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
-import static net.javacrumbs.shedlock.provider.elasticsearch.Elasticsearch8LockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.elasticsearch.Elasticsearch8LockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.elasticsearch.Elasticsearch8LockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.elasticsearch.Elasticsearch8LockProvider.NAME;
-import static net.javacrumbs.shedlock.provider.elasticsearch.Elasticsearch8LockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static net.javacrumbs.shedlock.provider.elasticsearch8.ElasticsearchLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.elasticsearch8.ElasticsearchLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.elasticsearch8.ElasticsearchLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.elasticsearch8.ElasticsearchLockProvider.NAME;
+import static net.javacrumbs.shedlock.provider.elasticsearch8.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 @Testcontainers
-public class Elasticsearch8LockProviderTest extends AbstractLockProviderIntegrationTest {
+public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
 
@@ -62,7 +62,7 @@ public class Elasticsearch8LockProviderTest extends AbstractLockProviderIntegrat
     private static final ElasticsearchContainer container =
         new ElasticsearchContainer(DEFAULT_IMAGE_NAME.withTag("7.17.5")).withPassword("elastic1234");
     private ElasticsearchClient client;
-    private Elasticsearch8LockProvider lockProvider;
+    private ElasticsearchLockProvider lockProvider;
 
     @BeforeEach
     public void setUp() {
@@ -74,7 +74,7 @@ public class Elasticsearch8LockProviderTest extends AbstractLockProviderIntegrat
             .build();
         ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(objectMapper()));
         client = new ElasticsearchClient(transport);
-        lockProvider = new Elasticsearch8LockProvider(client);
+        lockProvider = new ElasticsearchLockProvider(client);
     }
 
     private ObjectMapper objectMapper() {

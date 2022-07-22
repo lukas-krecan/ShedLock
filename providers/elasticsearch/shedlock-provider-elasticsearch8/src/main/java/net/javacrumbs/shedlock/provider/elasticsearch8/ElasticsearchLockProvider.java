@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.elasticsearch;
+package net.javacrumbs.shedlock.provider.elasticsearch8;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.provider.elasticsearch.model.LockPOJO;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.elasticsearch.client.ResponseException;
@@ -77,9 +76,8 @@ import static net.javacrumbs.shedlock.support.Utils.getHostname;
  * </li>
  * </ol>
  */
-public class Elasticsearch8LockProvider implements LockProvider {
+public class ElasticsearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
-    static final String SCHEDLOCK_DEFAULT_TYPE = "lock";
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
@@ -98,21 +96,15 @@ public class Elasticsearch8LockProvider implements LockProvider {
     private final ElasticsearchClient client;
     private final String hostname;
     private final String index;
-    private final String type;
 
-    private Elasticsearch8LockProvider(@NonNull ElasticsearchClient client, @NonNull String index, @NonNull String type) {
+    private ElasticsearchLockProvider(@NonNull ElasticsearchClient client, @NonNull String index) {
         this.client = client;
         this.hostname = getHostname();
         this.index = index;
-        this.type = type;
     }
 
-    public Elasticsearch8LockProvider(@NonNull ElasticsearchClient client, @NonNull String documentType) {
-        this(client, SCHEDLOCK_DEFAULT_INDEX, documentType);
-    }
-
-    public Elasticsearch8LockProvider(@NonNull ElasticsearchClient client) {
-        this(client, SCHEDLOCK_DEFAULT_INDEX, SCHEDLOCK_DEFAULT_TYPE);
+    public ElasticsearchLockProvider(@NonNull ElasticsearchClient client) {
+        this(client, SCHEDLOCK_DEFAULT_INDEX);
     }
 
     @Override
@@ -124,16 +116,17 @@ public class Elasticsearch8LockProvider implements LockProvider {
             Map<String, JsonData> lockObject =
                 lockObject(lockConfiguration.getName(), lockAtMostUntil, now);
 
-            LockPOJO pojo = new LockPOJO(lockConfiguration.getName(), hostname, now.toEpochMilli(), lockAtMostUntil.toEpochMilli());
+            // The object exist only to have some type we can work with
+            Lock pojo = new Lock(lockConfiguration.getName(), hostname, now, lockAtMostUntil);
 
-            UpdateRequest<LockPOJO, LockPOJO> updateRequest = UpdateRequest.of(ur -> ur
+            UpdateRequest<Lock, Lock> updateRequest = UpdateRequest.of(ur -> ur
                 .index(index)
                 .id(lockConfiguration.getName())
                 .refresh(Refresh.True)
                 .script(sc -> sc.inline(in -> in.lang("painless").source(UPDATE_SCRIPT).params(lockObject)))
                 .upsert(pojo));
 
-            UpdateResponse<LockPOJO> res = client.update(updateRequest, LockPOJO.class);
+            UpdateResponse<Lock> res = client.update(updateRequest, Lock.class);
             if (res.result() != Result.NoOp) {
                 return Optional.of(new ElasticsearchSimpleLock(lockConfiguration));
             } else { //nothing happened
@@ -170,20 +163,47 @@ public class Elasticsearch8LockProvider implements LockProvider {
             try {
                 Map<String, JsonData> lockObject = Collections.singletonMap("unlockTime", JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
 
-                UpdateRequest<LockPOJO, LockPOJO> updateRequest = UpdateRequest.of(ur -> ur
+                UpdateRequest<Lock, Lock> updateRequest = UpdateRequest.of(ur -> ur
                         .index(index)
                         .id(lockConfiguration.getName())
                         .refresh(Refresh.True)
                         .script(sc -> sc.inline(in -> in.lang("painless").source("ctx._source.lockUntil = params.unlockTime")
                             .params(lockObject))));
-
-                UpdateResponse<LockPOJO> res = client.update(updateRequest, LockPOJO.class);
-                if (res.result() == Result.NoOp) { //nothing happened
-                    //no unlock operation was done
-                }
+                client.update(updateRequest, Lock.class);
             } catch (IOException | ElasticsearchException e) {
                 throw new LockException("Unexpected exception occurred", e);
             }
+        }
+    }
+
+    private static final class Lock {
+
+        private final String name;
+        private final String lockedBy;
+        private final long lockedAt;
+        private final long lockUntil;
+
+        public Lock(String name, String lockedBy, Instant lockedAt, Instant lockUntil) {
+            this.name = name;
+            this.lockedBy = lockedBy;
+            this.lockedAt = lockedAt.toEpochMilli();
+            this.lockUntil = lockUntil.toEpochMilli();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getLockedBy() {
+            return lockedBy;
+        }
+
+        public long getLockedAt() {
+            return lockedAt;
+        }
+
+        public long getLockUntil() {
+            return lockUntil;
         }
     }
 }

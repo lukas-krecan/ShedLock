@@ -25,18 +25,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>${elasticsearch.version}</version>
-        </dependency>
-        <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>${elasticsearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch.version}</version>
         </dependency>
 
@@ -89,7 +79,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.elasticsearch
+                                net.javacrumbs.shedlock.provider.elasticsearch8
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
