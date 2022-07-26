@@ -47,6 +47,7 @@
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
         <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch</module>
+        <module>providers/elasticsearch/shedlock-provider-elasticsearch8</module>
         <module>providers/opensearch/shedlock-provider-opensearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
