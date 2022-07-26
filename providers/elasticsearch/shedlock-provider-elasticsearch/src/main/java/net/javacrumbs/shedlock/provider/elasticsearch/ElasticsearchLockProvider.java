@@ -79,7 +79,10 @@ import static org.elasticsearch.action.support.WriteRequest.RefreshPolicy.IMMEDI
  * When unlocking, lock_until is set to now.
  * </li>
  * </ol>
+ *
+ * @deprecated Use net.javacrumbs.shedlock.provider.elasticsearch8 module
  */
+@Deprecated
 public class ElasticsearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
     static final String SCHEDLOCK_DEFAULT_TYPE = "lock";
