@@ -12,7 +12,7 @@
     <version>4.39.1-SNAPSHOT</version>
 
     <properties>
-        <elasticsearch.version>8.3.2</elasticsearch.version>
+        <elasticsearch.version>8.3.3</elasticsearch.version>
         <jakarta.json-api.version>2.1.1</jakarta.json-api.version>
         <jackson.version>2.13.3</jackson.version>
     </properties>
