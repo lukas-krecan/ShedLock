@@ -46,7 +46,7 @@ import java.util.Optional;
 public class StorageBasedLockProvider implements ExtensibleLockProvider {
     @NonNull
     private final StorageAccessor storageAccessor;
-    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
+    private final LockRecordRegistry lockRecordRegistry = new DefaultLockRecordRegistry();
 
     protected StorageBasedLockProvider(@NonNull StorageAccessor storageAccessor) {
         this.storageAccessor = storageAccessor;
@@ -76,19 +76,24 @@ public class StorageBasedLockProvider implements ExtensibleLockProvider {
     protected boolean doLock(LockConfiguration lockConfiguration) {
         String name = lockConfiguration.getName();
 
-        if (!lockRecordRegistry.lockRecordRecentlyCreated(name)) {
+        if (!lockRecordRegistry.lockRecordExists(name)) {
             // create record in case it does not exist yet
             if (storageAccessor.insertRecord(lockConfiguration)) {
-                lockRecordRegistry.addLockRecord(name);
+                lockRecordRegistry.recordInserted(name);
                 // we were able to create the record, we have the lock
                 return true;
             }
             // we were not able to create the record, it already exists, let's put it to the cache so we do not try again
-            lockRecordRegistry.addLockRecord(name);
+            lockRecordRegistry.recordNotInserted(name);
         }
 
         // let's try to update the record, if successful, we have the lock
-        return storageAccessor.updateRecord(lockConfiguration);
+        if (storageAccessor.updateRecord(lockConfiguration)) {
+            lockRecordRegistry.recordUpdated(name);
+            return true;
+        }
+        lockRecordRegistry.recordNotUpdated(name);
+        return false;
     }
 
     private static class StorageLock extends AbstractSimpleLock {

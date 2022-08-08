@@ -21,35 +21,35 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class LockRecordRegistryTest {
+class DefaultLockRecordRegistryTest {
     private static final String NAME = "name";
-    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
+    private final DefaultLockRecordRegistry lockRecordRegistry = new DefaultLockRecordRegistry();
 
     @Test
     void unusedKeysShouldBeGarbageCollected() {
         int records = 1_000_000;
         for (int i = 0; i < records; i++) {
-            lockRecordRegistry.addLockRecord(UUID.randomUUID().toString());
+            lockRecordRegistry.recordInserted(UUID.randomUUID().toString());
         }
         assertThat(lockRecordRegistry.getSize()).isLessThan(records);
     }
 
     @Test
     void shouldRememberKeys() {
-        lockRecordRegistry.addLockRecord(NAME);
-        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isTrue();
+        lockRecordRegistry.recordInserted(NAME);
+        assertThat(lockRecordRegistry.lockRecordExists(NAME)).isTrue();
     }
 
     @Test
     void shouldNotLie() {
-        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isFalse();
+        assertThat(lockRecordRegistry.lockRecordExists(NAME)).isFalse();
     }
 
     @Test
     void shouldClear() {
-        lockRecordRegistry.addLockRecord(NAME);
-        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isTrue();
+        lockRecordRegistry.recordInserted(NAME);
+        assertThat(lockRecordRegistry.lockRecordExists(NAME)).isTrue();
         lockRecordRegistry.clear();
-        assertThat(lockRecordRegistry.lockRecordRecentlyCreated(NAME)).isFalse();
+        assertThat(lockRecordRegistry.lockRecordExists(NAME)).isFalse();
     }
 }
