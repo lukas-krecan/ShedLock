@@ -105,7 +105,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             // lock record already exists
         } else {
             // can not throw exception here, some drivers (Postgres) do not throw SQLIntegrityConstraintViolationException on duplicate key
-            // we will try update in the next step, su if there is another problem, an exception will be thrown there
+            // we will try update in the next step, so if there is another problem, an exception will be thrown there
             logger.debug("Exception thrown when inserting record", e);
         }
         return false;
