@@ -83,12 +83,14 @@ public class StorageBasedLockProvider implements ExtensibleLockProvider {
                 // we were able to create the record, we have the lock
                 return true;
             }
-            // we were not able to create the record, it already exists, let's put it to the cache so we do not try again
-            lockRecordRegistry.addLockRecord(name);
         }
 
         // let's try to update the record, if successful, we have the lock
-        return storageAccessor.updateRecord(lockConfiguration);
+        if (storageAccessor.updateRecord(lockConfiguration)) {
+            lockRecordRegistry.addLockRecord(name);
+            return true;
+        }
+        return false;
     }
 
     private static class StorageLock extends AbstractSimpleLock {
