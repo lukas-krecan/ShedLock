@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,5 +86,14 @@ class StorageBasedLockProviderTest {
         when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
         when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
         assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+    }
+
+    @Test
+    void shouldNotCacheRecordIfUpdateFailed() {
+        when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
+        when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+        verify(storageAccessor, times(2)).insertRecord(LOCK_CONFIGURATION);
     }
 }

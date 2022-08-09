@@ -30,6 +30,11 @@ class LockRecordRegistry {
         lockRecords.add(lockName);
     }
 
+    void removeLockRecord(String lockName) {
+        lockRecords.remove(lockName);
+    }
+
+
     public boolean lockRecordRecentlyCreated(String lockName) {
         return lockRecords.contains(lockName);
     }
