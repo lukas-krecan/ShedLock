@@ -12,7 +12,7 @@
     <version>4.40.1-SNAPSHOT</version>
 
     <properties>
-        <opensearch.version>2.1.0</opensearch.version>
+        <opensearch.version>2.2.0</opensearch.version>
     </properties>
 
     <dependencies>
