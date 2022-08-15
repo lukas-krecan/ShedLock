@@ -19,6 +19,7 @@ import com.couchbase.client.core.env.SeedNode;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.ClusterOptions;
+import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.kv.GetResult;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -50,6 +51,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     private CouchbaseLockProvider lockProvider;
     private static Cluster cluster;
     private static Bucket bucket;
+    private static Collection collection;
     private static CouchbaseContainer container;
 
     @BeforeAll
@@ -66,6 +68,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         cluster = Cluster.connect(seedNodes, options);
         bucket = cluster.bucket(BUCKET_NAME);
         bucket.waitUntilReady(Duration.ofSeconds(30));
+        collection = bucket.defaultCollection();
     }
 
     @AfterAll
@@ -76,13 +79,13 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @BeforeEach
     public void createLockProvider()  {
-        lockProvider = new CouchbaseLockProvider(bucket);
+        lockProvider = new CouchbaseLockProvider(bucket.defaultCollection());
     }
 
     @AfterEach
     public void clear() {
         try {
-            bucket.defaultCollection().remove(LOCK_NAME1);
+            collection.remove(LOCK_NAME1);
         } catch (Exception e) {
             // ignore
         }
@@ -95,7 +98,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @Override
     public void assertUnlocked(String lockName) {
-        GetResult result = bucket.defaultCollection().get(lockName);
+        GetResult result = collection.get(lockName);
         JsonObject lockDocument = result.contentAsObject();
 
         assertThat(parse((String) lockDocument.get(LOCK_UNTIL))).isBeforeOrEqualTo(now());
@@ -105,7 +108,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @Override
     public void assertLocked(String lockName) {
-        GetResult result = bucket.defaultCollection().get(lockName);
+        GetResult result = collection.get(lockName);
         JsonObject lockDocument = result.contentAsObject();
 
         assertThat(parse((String) lockDocument.get(LOCK_UNTIL))).isAfter(now());
