@@ -32,12 +32,12 @@ import org.testcontainers.couchbase.BucketDefinition;
 import org.testcontainers.couchbase.CouchbaseContainer;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import static java.time.Instant.parse;
+import static java.util.Collections.singletonList;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_BY;
@@ -59,7 +59,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         container = new CouchbaseContainer().withBucket(new BucketDefinition(BUCKET_NAME));
         container.start();
 
-        Set<SeedNode> seedNodes = new HashSet<>(Arrays.asList(
+        Set<SeedNode> seedNodes = new HashSet<>(singletonList(
             SeedNode.create(container.getContainerIpAddress(),
                 Optional.of(container.getBootstrapCarrierDirectPort()),
                 Optional.of(container.getBootstrapHttpDirectPort()))));
