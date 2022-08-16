@@ -75,17 +75,38 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         this(new CouchbaseAccessor(bucket));
     }
 
+    public CouchbaseLockProvider(CouchbaseLockConfiguration couchbaseLockConfiguration) {
+        this(new CouchbaseAccessor(couchbaseLockConfiguration));
+    }
+
     CouchbaseLockProvider(CouchbaseAccessor couchbaseAccessor) {
         super(couchbaseAccessor);
     }
 
     private static class CouchbaseAccessor extends AbstractStorageAccessor {
 
-        private final Bucket bucket;
+        private final CouchbaseLockConfiguration couchbaseLockConfiguration;
 
         CouchbaseAccessor(Bucket bucket) {
-            this.bucket = bucket;
+            if (bucket == null) {
+                throw new IllegalArgumentException("Bucket can not be null.");
+            }
+
+            this.couchbaseLockConfiguration = new DefaultCouchbaseLockConfiguration(bucket);
         }
+
+        CouchbaseAccessor(CouchbaseLockConfiguration couchbaseLockConfiguration) {
+            if (couchbaseLockConfiguration == null) {
+                throw new IllegalArgumentException("CouchbaseLockConfiguration can not be null.");
+            }
+
+            if (couchbaseLockConfiguration.getBucket() == null) {
+                throw new IllegalArgumentException("Bucket can not be null.");
+            }
+
+            this.couchbaseLockConfiguration = couchbaseLockConfiguration;
+        }
+
         @Override
         public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
             JsonObject content = JsonObject.create()
@@ -95,7 +116,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
                 .put(LOCKED_BY, getHostname());
 
             try {
-                bucket.defaultCollection().insert(lockConfiguration.getName(), content);
+                couchbaseLockConfiguration.collection().insert(lockConfiguration.getName(), content);
             } catch (DocumentExistsException e) {
                 return false;
             }
@@ -108,7 +129,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         @Override
         public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
-            Collection collection = bucket.defaultCollection();
+            Collection collection = couchbaseLockConfiguration.collection();
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
@@ -133,7 +154,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         @Override
         public boolean extend(@NonNull LockConfiguration lockConfiguration) {
-            Collection collection = bucket.defaultCollection();
+            Collection collection = couchbaseLockConfiguration.collection();
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
@@ -156,7 +177,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         @Override
         public void unlock(@NonNull LockConfiguration lockConfiguration) {
-            Collection collection = bucket.defaultCollection();
+            Collection collection = couchbaseLockConfiguration.collection();
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 

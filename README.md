@@ -546,6 +546,42 @@ public CouchbaseLockProvider lockProvider(Bucket bucket) {
     return new CouchbaseLockProvider(bucket);
 }
 ```
+<hr>
+Or, to use Couchbase collections, you can create new class by implementing CouchbaseLockConfiguration
+and override methods.
+
+```java
+import net.javacrumbs.shedlock.provider.couchbase.javaclient.CouchbaseLockProvider;
+
+class ShedlockCouchbaseWithCollection implements CouchbaseLockConfiguration {
+
+    private final Bucket bucket;
+
+    private final Collection lockCollection;
+
+    public ShedlockCouchbaseWithCollection(Bucket bucket, Collection lockCollection) {
+        this.bucket = bucket;
+        this.lockCollection = collection;
+    }
+
+    @Override
+    public Bucket getBucket() {
+        return this.bucket;
+    }
+
+    @Override
+    public Collection getCollection() {
+        return this.lockCollection;
+    }
+}
+
+class ShedlockConfiguration {
+    @Bean
+    public CouchbaseLockProvider lockProvider(ShedlockCouchbaseWithCollection shedlockCouchbaseWithCollection) {
+        return new CouchbaseLockProvider(shedlockCouchbaseWithCollection);
+    }
+}
+```
 
 For Couchbase 3 use `shedlock-provider-couchbase-javaclient3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
 
