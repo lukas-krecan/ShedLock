@@ -72,7 +72,11 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
     static final String LOCKED_BY = "lockedBy";
 
     public CouchbaseLockProvider(Bucket bucket) {
-        this(new CouchbaseAccessor(bucket));
+        this(new CouchbaseAccessor(bucket.defaultCollection()));
+    }
+
+    public CouchbaseLockProvider(Collection collection) {
+        this(new CouchbaseAccessor(collection));
     }
 
     CouchbaseLockProvider(CouchbaseAccessor couchbaseAccessor) {
@@ -81,11 +85,12 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
     private static class CouchbaseAccessor extends AbstractStorageAccessor {
 
-        private final Bucket bucket;
+        private final Collection collection;
 
-        CouchbaseAccessor(Bucket bucket) {
-            this.bucket = bucket;
+        CouchbaseAccessor(Collection collection) {
+            this.collection = collection;
         }
+
         @Override
         public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
             JsonObject content = JsonObject.create()
@@ -95,7 +100,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
                 .put(LOCKED_BY, getHostname());
 
             try {
-                bucket.defaultCollection().insert(lockConfiguration.getName(), content);
+                collection.insert(lockConfiguration.getName(), content);
             } catch (DocumentExistsException e) {
                 return false;
             }
@@ -108,7 +113,6 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         @Override
         public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
-            Collection collection = bucket.defaultCollection();
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
@@ -133,7 +137,6 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         @Override
         public boolean extend(@NonNull LockConfiguration lockConfiguration) {
-            Collection collection = bucket.defaultCollection();
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
@@ -156,7 +159,6 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
 
         @Override
         public void unlock(@NonNull LockConfiguration lockConfiguration) {
-            Collection collection = bucket.defaultCollection();
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
