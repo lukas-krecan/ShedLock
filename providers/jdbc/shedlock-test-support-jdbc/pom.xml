@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
-            <version>21.6.0.0.1</version>
+            <version>21.7.0.0</version>
         </dependency>
 
         <dependency>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.4.2</version>
+            <version>42.5.0</version>
         </dependency>
 
         <dependency>
