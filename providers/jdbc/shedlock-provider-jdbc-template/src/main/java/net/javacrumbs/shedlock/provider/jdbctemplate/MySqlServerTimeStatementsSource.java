@@ -31,7 +31,13 @@ class MySqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     String getInsertStatement() {
-        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", " + now + ", :lockedBy)";
+        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, " + lockAtMostFor + ", " + now + ", :lockedBy)" + 
+		" ON DUPLICATE KEY UPDATE " + updateClause();
+    }
+	
+	@NonNull
+    private String updateClause() {
+        return lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy;
     }
 
     @Override
