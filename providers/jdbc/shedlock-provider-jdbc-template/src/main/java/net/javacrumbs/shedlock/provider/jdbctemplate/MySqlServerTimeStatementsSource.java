@@ -35,9 +35,9 @@ class MySqlServerTimeStatementsSource extends SqlStatementsSource {
 		" ON DUPLICATE KEY UPDATE " + updateClause();
     }
 	
-	@NonNull
+    @NonNull
     private String updateClause() {
-        return lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy;
+        return lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy ";
     }
 
     @Override
