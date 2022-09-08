@@ -36,9 +36,12 @@ class MySqlServerTimeStatementsSource extends SqlStatementsSource {
     }
 	
     @NonNull
-    private String updateClause() {
-        return lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy() + " = :lockedBy ";
-    }
+	private String updateClause() {
+		return lockUntil() + " = IF(" + lockUntil() + "<= " + now + ", VALUES(" + lockUntil() + ")," + lockUntil() + ")"
+				+ ", " + lockedAt() + " = IF(" + lockUntil() + "<= " + now + ", VALUES(" + lockedAt() + "),"
+				+ lockedAt() + ")" + ", " + lockedBy() + " = IF(" + lockUntil() + "<= " + now + ", VALUES(" + lockedBy()
+				+ ")," + lockedBy() + ")";
+	}
 
     @Override
     public String getUpdateStatement() {
