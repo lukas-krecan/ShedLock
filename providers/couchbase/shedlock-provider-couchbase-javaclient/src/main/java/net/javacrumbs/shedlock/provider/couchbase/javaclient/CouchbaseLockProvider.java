@@ -62,7 +62,9 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
  * When unlocking, lock_until is set to now.
  * </li>
  * </ol>
+ * @deprecated Please migrate to shedlock-provider-couchbase-javaclient3
  */
+@Deprecated
 public class CouchbaseLockProvider extends StorageBasedLockProvider {
     private static final String LOCK_NAME = "name";
     static final String LOCK_UNTIL = "lockedUntil";
