@@ -20,18 +20,22 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

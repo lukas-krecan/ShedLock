@@ -78,69 +78,11 @@
         <micronaut.version>2.5.13</micronaut.version>
         <micronaut-data.version>2.5.0</micronaut-data.version>
         <logback.version>1.2.11</logback.version>
+        <awaitility.version>4.2.0</awaitility.version>
+        <assertj.version>3.23.1</assertj.version>
+        <mockito.version>4.8.0</mockito.version>
+        <slf4j.version>1.7.36</slf4j.version>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-        </dependency>
-    </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>4.2.0</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>3.23.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <plugins>
