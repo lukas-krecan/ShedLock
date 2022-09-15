@@ -28,7 +28,7 @@
             <dependency>
                 <groupId>io.micronaut</groupId>
                 <artifactId>micronaut-bom</artifactId>
-                <version>${micronaut.version}</version>
+                <version>${micronaut.ver}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -57,12 +57,12 @@
         <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-jdbc</artifactId>
-            <version>${micronaut-data.version}</version>
+            <version>${micronaut-data.ver}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <version>${logback.ver}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -108,13 +108,13 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
+            <version>${assertj.ver}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>${awaitility.version}</version>
+            <version>${awaitility.ver}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -175,17 +175,17 @@
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
-                                <version>${micronaut.version}</version>
+                                <version>${micronaut.ver}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-validation</artifactId>
-                                <version>${micronaut.version}</version>
+                                <version>${micronaut.ver}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut.data</groupId>
                                 <artifactId>micronaut-data-processor</artifactId>
-                                <version>${micronaut-data.version}</version>
+                                <version>${micronaut-data.ver}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -203,12 +203,12 @@
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-inject-java</artifactId>
-                                        <version>${micronaut.version}</version>
+                                        <version>${micronaut.ver}</version>
                                     </path>
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-validation</artifactId>
-                                        <version>${micronaut.version}</version>
+                                        <version>${micronaut.ver}</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>

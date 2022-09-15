@@ -21,7 +21,7 @@
         <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-tx</artifactId>
-            <version>${micronaut-data.version}</version>
+            <version>${micronaut-data.ver}</version>
         </dependency>
 
         <dependency>

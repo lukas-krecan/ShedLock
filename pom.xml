@@ -72,16 +72,16 @@
         <spring-boot-old.version>2.6.10</spring-boot-old.version>
         <spring-boot-current.version>2.7.3</spring-boot-current.version>
         <spring-boot-future.version>3.0.0-M4</spring-boot-future.version>
-        <junit.version>5.8.2</junit.version>
-        <test-containers.version>1.17.3</test-containers.version>
-        <kotlin.version>1.7.10</kotlin.version>
-        <micronaut.version>2.5.13</micronaut.version>
-        <micronaut-data.version>2.5.0</micronaut-data.version>
-        <logback.version>1.2.11</logback.version>
-        <awaitility.version>4.2.0</awaitility.version>
-        <assertj.version>3.23.1</assertj.version>
-        <mockito.version>4.8.0</mockito.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <junit.ver>5.8.2</junit.ver>
+        <test-containers.ver>1.17.3</test-containers.ver>
+        <kotlin.ver>1.7.10</kotlin.ver>
+        <micronaut.ver>2.5.13</micronaut.ver>
+        <micronaut-data.ver>2.5.0</micronaut-data.ver>
+        <logback.ver>1.2.11</logback.ver>
+        <awaitility.ver>4.2.0</awaitility.ver>
+        <assertj.ver>3.23.1</assertj.ver>
+        <mockito.ver>4.8.0</mockito.ver>
+        <slf4j.ver>1.7.36</slf4j.ver>
     </properties>
 
     <build>
