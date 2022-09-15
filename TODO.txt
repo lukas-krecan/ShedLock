@@ -1,5 +1,0 @@
-[x] New Micronaut
-[ ] default nullable annotation
-[x] elasticsearch - drop type
-
-- Java 9 modules
