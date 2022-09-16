@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.42.1-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
