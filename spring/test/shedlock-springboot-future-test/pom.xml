@@ -63,7 +63,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot-future.version}</version>
+                <version>3.0.0-M4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
