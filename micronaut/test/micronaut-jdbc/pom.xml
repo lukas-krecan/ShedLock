@@ -5,12 +5,12 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>micronaut-jdbc</artifactId>
-    <version>4.42.1-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
