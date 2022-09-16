@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>4.42.0</version>
+        <version>4.42.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-memcached-spy</artifactId>
-    <version>4.42.0</version>
+    <version>4.42.1-SNAPSHOT</version>
 
     <properties>
         <spymemcached.version>2.12.3</spymemcached.version>
