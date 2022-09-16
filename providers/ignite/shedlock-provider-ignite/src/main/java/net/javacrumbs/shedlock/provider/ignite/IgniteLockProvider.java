@@ -19,7 +19,6 @@ import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 
@@ -79,22 +78,23 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
     /**
      * @param ignite Ignite instance.
      */
-    public IgniteLockProvider(@NonNull Ignite ignite) {
+    public IgniteLockProvider(Ignite ignite) {
         this(ignite, DEFAULT_SHEDLOCK_CACHE_NAME);
     }
 
     /**
-     * @param ignite Ignite instance.
+     * @param ignite            Ignite instance.
      * @param shedLockCacheName ShedLock cache name to use instead of default.
      */
-    public IgniteLockProvider(@NonNull Ignite ignite, @NonNull String shedLockCacheName) {
+    public IgniteLockProvider(Ignite ignite, String shedLockCacheName) {
         this.cache = ignite.getOrCreateCache(shedLockCacheName);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockCfg) {
+    public Optional<SimpleLock> lock(LockConfiguration lockCfg) {
         Instant now = Instant.now();
         String key = lockCfg.getName();
 

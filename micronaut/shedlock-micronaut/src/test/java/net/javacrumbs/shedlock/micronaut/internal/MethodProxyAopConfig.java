@@ -17,10 +17,10 @@ package net.javacrumbs.shedlock.micronaut.internal;
 
 
 import io.micronaut.context.annotation.Factory;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 
-import javax.inject.Singleton;
 import java.io.IOException;
 
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;

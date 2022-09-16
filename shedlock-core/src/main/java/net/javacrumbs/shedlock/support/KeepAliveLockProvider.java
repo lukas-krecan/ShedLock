@@ -5,7 +5,6 @@ import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +45,7 @@ public class KeepAliveLockProvider implements LockProvider {
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         if (lockConfiguration.getLockAtMostFor().compareTo(minimalLockAtMostFor) < 0) {
             throw new IllegalArgumentException("Can not use KeepAliveLockProvider with lockAtMostFor shorter than " + minimalLockAtMostFor);
         }

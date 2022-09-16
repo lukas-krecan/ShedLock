@@ -17,7 +17,6 @@ package net.javacrumbs.shedlock.spring;
 
 import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockableRunnable;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
@@ -36,7 +35,7 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     private final TaskScheduler taskScheduler;
     private final LockManager lockManager;
 
-    public LockableTaskScheduler(@NonNull TaskScheduler taskScheduler, @NonNull LockManager lockManager) {
+    public LockableTaskScheduler(TaskScheduler taskScheduler, LockManager lockManager) {
         this.taskScheduler = requireNonNull(taskScheduler);
         this.lockManager = requireNonNull(lockManager);
     }

@@ -28,7 +28,6 @@ public class ReentrantLockProvider implements LockProvider {
     private final ReentrantLock lock = new ReentrantLock();
 
     @Override
-    @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         if (lock.tryLock()) {
             return Optional.of(lock::unlock);

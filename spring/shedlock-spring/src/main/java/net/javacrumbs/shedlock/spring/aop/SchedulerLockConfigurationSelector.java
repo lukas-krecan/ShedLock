@@ -16,7 +16,6 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.context.annotation.AutoProxyRegistrar;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -29,8 +28,7 @@ import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.Inte
 public class SchedulerLockConfigurationSelector implements ImportSelector {
 
     @Override
-    @NonNull
-    public String[] selectImports(@NonNull AnnotationMetadata metadata) {
+    public String[] selectImports(AnnotationMetadata metadata) {
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
         InterceptMode mode = attributes.getEnum("interceptMode");
         if (mode == PROXY_METHOD) {

@@ -16,7 +16,6 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,7 +62,7 @@ class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration 
     }
 
     @Override
-    public void setEmbeddedValueResolver(@NonNull StringValueResolver resolver) {
+    public void setEmbeddedValueResolver(StringValueResolver resolver) {
         this.resolver = resolver;
     }
 }

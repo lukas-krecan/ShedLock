@@ -16,9 +16,9 @@
 package net.javacrumbs.micronaut.test;
 
 import io.micronaut.scheduling.annotation.Scheduled;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 
-import javax.inject.Singleton;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 

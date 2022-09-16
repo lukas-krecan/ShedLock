@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -28,8 +29,12 @@ import java.util.concurrent.TimeUnit;
  */
 class SingleLockableSubscriber<T> implements Subscriber<T> {
 
+    @Nullable
     private T value;
+
+    @Nullable
     private Throwable error;
+
     private final CountDownLatch latch = new CountDownLatch(1);
 
     @Override

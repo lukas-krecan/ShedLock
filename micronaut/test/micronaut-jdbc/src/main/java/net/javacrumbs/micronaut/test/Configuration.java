@@ -17,10 +17,10 @@ package net.javacrumbs.micronaut.test;
 
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.transaction.TransactionOperations;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider;
 
-import javax.inject.Singleton;
 import java.sql.Connection;
 
 @Factory

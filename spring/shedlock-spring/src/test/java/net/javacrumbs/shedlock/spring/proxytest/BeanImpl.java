@@ -15,7 +15,7 @@
  */
 package net.javacrumbs.shedlock.spring.proxytest;
 
-import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Async;
 
 public class BeanImpl implements BeanInterface {

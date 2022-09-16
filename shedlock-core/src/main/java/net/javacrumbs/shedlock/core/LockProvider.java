@@ -15,8 +15,6 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-
 import java.util.Optional;
 
 /**
@@ -28,6 +26,5 @@ public interface LockProvider {
      * @return If empty optional has been returned, lock could not be acquired. The lock
      * has to be released by the callee.
      */
-    @NonNull
-    Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration);
+    Optional<SimpleLock> lock(LockConfiguration lockConfiguration);
 }

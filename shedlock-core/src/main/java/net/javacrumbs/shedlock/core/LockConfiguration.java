@@ -15,8 +15,6 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -43,38 +41,6 @@ public class LockConfiguration {
     private final Duration lockAtLeastFor;
 
     /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
-     */
-    @Deprecated
-    public LockConfiguration(@NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
-        this(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
-    }
-
-    /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
-     */
-    @Deprecated
-    public LockConfiguration(@NonNull String name, @NonNull Instant lockAtMostUntil) {
-        this(name, lockAtMostUntil, now());
-    }
-
-    /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
-     */
-    @Deprecated
-    public LockConfiguration(@NonNull String name, @NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
-        this(ClockProvider.now(), name, lockAtMostUntil, lockAtLeastUntil);
-    }
-
-    /**
-     * @deprecated please use {@link #LockConfiguration(Instant, String, Duration, Duration)}
-     */
-    @Deprecated
-    private LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Instant lockAtMostUntil, @NonNull Instant lockAtLeastUntil) {
-        this(createdAt, name, Duration.between(createdAt, lockAtMostUntil), Duration.between(createdAt, lockAtLeastUntil));
-    }
-
-    /**
      * Creates LockConfiguration. There are two types of lock providers. One that uses "db time" which requires relative
      * values of lockAtMostFor and lockAtLeastFor (currently it's only JdbcTemplateLockProvider). Second type of
      * lock provider uses absolute time calculated from `createdAt`.
@@ -84,7 +50,7 @@ public class LockConfiguration {
      * @param lockAtMostFor
      * @param lockAtLeastFor
      */
-    public LockConfiguration(@NonNull Instant createdAt, @NonNull String name, @NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
+    public LockConfiguration(Instant createdAt, String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
         this.createdAt = Objects.requireNonNull(createdAt);
         this.name = Objects.requireNonNull(name);
         this.lockAtMostFor = Objects.requireNonNull(lockAtMostFor);

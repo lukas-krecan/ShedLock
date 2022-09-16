@@ -22,7 +22,6 @@ import io.micronaut.inject.ExecutableMethod;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -34,15 +33,14 @@ class MicronautLockConfigurationExtractor {
     private final Duration defaultLockAtLeastFor;
     private final ConversionService<?> conversionService;
 
-    MicronautLockConfigurationExtractor(@NonNull Duration defaultLockAtMostFor, @NonNull Duration defaultLockAtLeastFor, @NonNull ConversionService<?> conversionService) {
+    MicronautLockConfigurationExtractor(Duration defaultLockAtMostFor, Duration defaultLockAtLeastFor, ConversionService<?> conversionService) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
         this.conversionService = conversionService;
     }
 
 
-    @NonNull
-    Optional<LockConfiguration> getLockConfiguration(@NonNull ExecutableMethod<Object, Object> method) {
+    Optional<LockConfiguration> getLockConfiguration(ExecutableMethod<Object, Object> method) {
         Optional<AnnotationValue<SchedulerLock>> annotation = findAnnotation(method);
         return annotation.map(this::getLockConfiguration);
     }

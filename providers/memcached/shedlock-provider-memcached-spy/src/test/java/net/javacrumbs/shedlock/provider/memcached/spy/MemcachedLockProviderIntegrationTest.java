@@ -52,6 +52,7 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
     }
 
 
+    @Override
     @Test
     public void shouldTimeout() throws InterruptedException {
         this.doTestTimeout(Duration.ofSeconds(1));

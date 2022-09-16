@@ -19,7 +19,6 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +44,10 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     public SpringLockConfigurationExtractor(
-        @NonNull Duration defaultLockAtMostFor,
-        @NonNull Duration defaultLockAtLeastFor,
+        Duration defaultLockAtMostFor,
+        Duration defaultLockAtLeastFor,
         @Nullable StringValueResolver embeddedValueResolver,
-        @NonNull Converter<String, Duration> durationConverter
+        Converter<String, Duration> durationConverter
     ) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
@@ -58,8 +57,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
 
     @Override
-    @NonNull
-    public Optional<LockConfiguration> getLockConfiguration(@NonNull Runnable task) {
+    public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
         if (task instanceof ScheduledMethodRunnable) {
             ScheduledMethodRunnable scheduledMethodRunnable = (ScheduledMethodRunnable) task;
             return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod());
@@ -152,13 +150,9 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     private AnnotationData findAnnotation(Method method) {
-        net.javacrumbs.shedlock.core.SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, net.javacrumbs.shedlock.core.SchedulerLock.class);
+        SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
         if (annotation != null) {
-            return new AnnotationData(annotation.name(), annotation.lockAtMostFor(), annotation.lockAtMostForString(), annotation.lockAtLeastFor(), annotation.lockAtLeastForString());
-        }
-        SchedulerLock annotation2 = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
-        if (annotation2 != null) {
-            return new AnnotationData(annotation2.name(), -1, annotation2.lockAtMostFor(), -1, annotation2.lockAtLeastFor());
+            return new AnnotationData(annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
         }
         return null;
     }

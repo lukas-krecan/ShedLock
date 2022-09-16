@@ -15,22 +15,20 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 public interface LockingTaskExecutor {
     /**
      * Executes task if it's not already running.
      */
-    void executeWithLock(@NonNull Runnable task, @NonNull LockConfiguration lockConfig);
+    void executeWithLock(Runnable task, LockConfiguration lockConfig);
 
-    void executeWithLock(@NonNull Task task, @NonNull LockConfiguration lockConfig) throws Throwable;
+    void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable;
 
     /**
      * Executes task.
      */
-    @NonNull
-    default <T> TaskResult<T> executeWithLock(@NonNull TaskWithResult<T> task, @NonNull LockConfiguration lockConfig) throws Throwable {
+    default <T> TaskResult<T> executeWithLock(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
         throw new UnsupportedOperationException();
     }
 
@@ -41,11 +39,13 @@ public interface LockingTaskExecutor {
 
     @FunctionalInterface
     interface TaskWithResult<T> {
+        @Nullable
         T call() throws Throwable;
     }
 
     final class TaskResult<T> {
         private final boolean executed;
+        @Nullable
         private final T result;
 
         private TaskResult(boolean executed, @Nullable T result) {
