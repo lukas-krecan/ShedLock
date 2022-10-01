@@ -69,7 +69,7 @@
         <jdk.version>17</jdk.version>
         <spring-boot-current.version>2.7.4</spring-boot-current.version>
         <junit.ver>5.8.2</junit.ver>
-        <test-containers.ver>1.17.3</test-containers.ver>
+        <test-containers.ver>1.17.4</test-containers.ver>
         <kotlin.ver>1.7.10</kotlin.ver>
         <micronaut.ver>3.5.1</micronaut.ver>
         <micronaut-data.ver>3.4.2</micronaut-data.ver>
