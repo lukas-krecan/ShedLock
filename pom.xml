@@ -73,7 +73,7 @@
         <kotlin.ver>1.7.20</kotlin.ver>
         <micronaut.ver>3.5.1</micronaut.ver>
         <micronaut-data.ver>3.4.2</micronaut-data.ver>
-        <logback.ver>1.4.1</logback.ver>
+        <logback.ver>1.4.3</logback.ver>
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.23.1</assertj.ver>
         <mockito.ver>4.8.0</mockito.ver>
