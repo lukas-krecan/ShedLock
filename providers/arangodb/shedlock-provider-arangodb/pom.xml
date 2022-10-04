@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.arangodb</groupId>
             <artifactId>arangodb-java-driver</artifactId>
-            <version>6.18.0</version>
+            <version>6.19.0</version>
         </dependency>
 
         <dependency>
