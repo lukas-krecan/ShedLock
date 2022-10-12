@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
-            <version>2.7.3</version>
+            <version>3.0.0-M6</version>
         </dependency>
 
         <dependency>
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>3.8.0</version>
+            <version>4.3.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -91,5 +91,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>spring-milestone</id>
+            <name>Spring Maven MILESTONE Repository</name>
+            <url>https://repo.spring.io/libs-milestone</url>
+        </repository>
+    </repositories>
 
 </project>
