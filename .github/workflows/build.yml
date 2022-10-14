@@ -11,12 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '11', '17', '19']
+        java: [ '17', '19']
         # Kotlin needs access to java.util
         include:
-          - java: '11'
-            maven-opts: ''
-            maven-params: -pl '!spring/test/shedlock-springboot-future-test,!providers/neo4j/shedlock-provider-neo4j'
           - java: '17'
             maven-opts: --add-opens java.base/java.util=ALL-UNNAMED
             maven-params: ''
