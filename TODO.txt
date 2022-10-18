@@ -1,0 +1,6 @@
+[x] New Micronaut
+[ ] default nullable annotation
+[] javax package??
+[x] elasticsearch - drop type
+
+- Java 9 modules
