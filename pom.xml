@@ -73,7 +73,7 @@
         <logback.ver>1.4.4</logback.ver>
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.23.1</assertj.ver>
-        <mockito.ver>4.8.0</mockito.ver>
+        <mockito.ver>4.8.1</mockito.ver>
         <slf4j.ver>2.0.3</slf4j.ver>
     </properties>
 
