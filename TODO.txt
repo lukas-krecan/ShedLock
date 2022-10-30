@@ -1,6 +1,9 @@
 [x] New Micronaut
-[ ] default nullable annotation
-[] javax package??
+[x] default nullable annotation
+[x] javax package??
+[] io.micrometer.Observation
+[x] test AOT
 [x] elasticsearch - drop type
+[] Quarkus
 
 - Java 9 modules
