@@ -39,6 +39,7 @@ import static java.util.Objects.requireNonNull;
 class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtractor {
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
+    @Nullable
     private final StringValueResolver embeddedValueResolver;
     private final Converter<String, Duration> durationConverter;
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
@@ -132,6 +133,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         }
     }
 
+    @Nullable
     AnnotationData findAnnotation(Object target, Method method) {
         AnnotationData annotation = findAnnotation(method);
         if (annotation != null) {
@@ -149,6 +151,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         }
     }
 
+    @Nullable
     private AnnotationData findAnnotation(Method method) {
         SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
         if (annotation != null) {
@@ -157,7 +160,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         return null;
     }
 
-    private boolean shouldLock(AnnotationData annotation) {
+    private boolean shouldLock(@Nullable AnnotationData annotation) {
         return annotation != null;
     }
 
