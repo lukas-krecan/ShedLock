@@ -1,5 +1,7 @@
 package net.javacrumbs.shedlock.core;
 
+import net.javacrumbs.shedlock.support.annotation.Nullable;
+
 import java.time.Duration;
 import java.util.Optional;
 
@@ -30,6 +32,7 @@ public final class LockExtender {
         activeLock.set(lock);
     }
 
+    @Nullable
     static SimpleLock endLock() {
         SimpleLock lock = activeLock.get();
         activeLock.remove();
