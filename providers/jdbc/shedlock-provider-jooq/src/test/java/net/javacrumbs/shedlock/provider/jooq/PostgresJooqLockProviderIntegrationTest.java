@@ -18,6 +18,7 @@ package net.javacrumbs.shedlock.provider.jooq;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -30,7 +31,7 @@ public class PostgresJooqLockProviderIntegrationTest extends AbstractJooqLockPro
     };
 
     public PostgresJooqLockProviderIntegrationTest() {
-        super(dbConfig, SQLDialect.POSTGRES);
+        super(dbConfig, DSL.using(dbConfig.getDataSource(), SQLDialect.POSTGRES));
     }
 
     @BeforeAll

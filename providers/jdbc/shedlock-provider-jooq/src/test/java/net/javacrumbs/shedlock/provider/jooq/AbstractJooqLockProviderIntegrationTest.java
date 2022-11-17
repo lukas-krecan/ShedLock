@@ -15,21 +15,20 @@
  */
 package net.javacrumbs.shedlock.provider.jooq;
 
-import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
 
 public abstract class AbstractJooqLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private final DbConfig dbConfig;
 
     private final DSLContext dslContext;
 
-    public AbstractJooqLockProviderIntegrationTest(DbConfig dbConfig, SQLDialect dialect) {
+    public AbstractJooqLockProviderIntegrationTest(DbConfig dbConfig, @NotNull DSLContext dslContext) {
         this.dbConfig = dbConfig;
-        this.dslContext = DSL.using(dbConfig.getDataSource(), dialect);
+        this.dslContext = dslContext;
     }
 
     @Override
@@ -38,7 +37,7 @@ public abstract class AbstractJooqLockProviderIntegrationTest extends AbstractJd
     }
 
     @Override
-    protected ExtensibleLockProvider getLockProvider() {
+    protected StorageBasedLockProvider getLockProvider() {
         return new JooqLockProvider(dslContext);
     }
 

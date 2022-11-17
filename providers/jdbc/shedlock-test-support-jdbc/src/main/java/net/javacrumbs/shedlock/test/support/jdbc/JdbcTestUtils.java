@@ -79,5 +79,14 @@ public final class JdbcTestUtils {
         public Instant getDbTime() {
             return dbTime;
         }
+
+        @Override
+        public String toString() {
+            return "LockInfo{" +
+                "name='" + name + '\'' +
+                ", lockUntil=" + lockUntil +
+                ", dbTime=" + dbTime +
+                '}';
+        }
     }
 }
