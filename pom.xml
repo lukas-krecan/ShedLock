@@ -41,6 +41,7 @@
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jdbc-internal</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>
+        <module>providers/jdbc/shedlock-provider-jooq</module>
         <module>providers/jdbc/shedlock-provider-jdbc-template</module>
         <module>providers/jdbc/shedlock-provider-jdbc-micronaut</module>
         <module>providers/r2dbc/shedlock-provider-r2dbc</module>

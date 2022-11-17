@@ -43,7 +43,7 @@ import java.util.Optional;
  * </ol>
  */
 public class StorageBasedLockProvider implements ExtensibleLockProvider {
-        private final StorageAccessor storageAccessor;
+    private final StorageAccessor storageAccessor;
     private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
 
     protected StorageBasedLockProvider(StorageAccessor storageAccessor) {
