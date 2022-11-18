@@ -616,12 +616,13 @@ Configure:
 
 ```java
 import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider;
+import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
 
 ...
 
 @Bean
 public CassandraLockProvider lockProvider(CqlSession cqlSession) {
-    return new CassandraLockProvider(Configuration.builder().withCqlSession(session));
+    return new CassandraLockProvider(Configuration.builder().withCqlSession(cqlSession).build());
 }
 ```
 
