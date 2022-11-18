@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.jooq;
 
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 import org.jooq.SQLDialect;
 import org.jooq.conf.RenderNameCase;
@@ -24,7 +25,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
 public class HsqlJooqLockProviderIntegrationTest extends AbstractJooqLockProviderIntegrationTest {
-    private static final HsqlConfig dbConfig = new HsqlConfig();
+    private static final DbConfig dbConfig = new HsqlConfig();
 
     public HsqlJooqLockProviderIntegrationTest() {
         super(dbConfig, DSL.using(dbConfig.getDataSource(), SQLDialect.HSQLDB, new Settings().withRenderNameCase(RenderNameCase.UPPER)));

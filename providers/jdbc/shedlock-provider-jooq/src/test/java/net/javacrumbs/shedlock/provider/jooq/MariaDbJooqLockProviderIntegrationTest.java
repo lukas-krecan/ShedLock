@@ -16,21 +16,21 @@
 package net.javacrumbs.shedlock.provider.jooq;
 
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
-import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.MariaDbConfig;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
-public class MySqlJooqLockProviderIntegrationTest extends AbstractJooqLockProviderIntegrationTest {
-    private static final DbConfig dbConfig = new MySqlConfig() {
+public class MariaDbJooqLockProviderIntegrationTest extends AbstractJooqLockProviderIntegrationTest {
+    private static final DbConfig dbConfig = new MariaDbConfig() {
         @Override
         public String nowExpression() {
             return "current_timestamp(6)";
         }
     };
 
-    protected MySqlJooqLockProviderIntegrationTest() {
+    protected MariaDbJooqLockProviderIntegrationTest() {
         super(dbConfig, DSL.using(dbConfig.getDataSource(), SQLDialect.MYSQL));
     }
 

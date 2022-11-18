@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.testcontainers.containers.MariaDBContainer;
 
-public final class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDbConfig.MyMariaDbContainer> {
+public class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDbConfig.MyMariaDbContainer> {
     public MariaDbConfig() {
         super(new MyMariaDbContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
