@@ -106,7 +106,7 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
          * Convenience builder class to build Configuration
          */
         public static final class Builder {
-            private CqlIdentifier table;
+            private CqlIdentifier table = CqlIdentifier.fromCql(DEFAULT_TABLE);
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
             private CqlSession cqlSession;
             private ConsistencyLevel consistencyLevel = ConsistencyLevel.QUORUM;

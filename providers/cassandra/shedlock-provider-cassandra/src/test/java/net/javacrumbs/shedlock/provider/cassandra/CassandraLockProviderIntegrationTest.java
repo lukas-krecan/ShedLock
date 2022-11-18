@@ -73,7 +73,6 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
             Configuration.builder()
                 .withCqlSession(session)
                 .withKeyspace(KEYSPACE)
-                .withTableName("lock")
                 .build()
         );
     }
@@ -102,6 +101,8 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
     }
 
     private static class MyCassandraContainer extends CassandraContainer<MyCassandraContainer> {
-
+        public MyCassandraContainer() {
+            super("cassandra:4");
+        }
     }
 }
