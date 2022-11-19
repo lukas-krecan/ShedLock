@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public final class PostgresConfig extends AbstractContainerBasedDbConfig<PostgresConfig.MyPostgreSQLContainer> {
+public class PostgresConfig extends AbstractContainerBasedDbConfig<PostgresConfig.MyPostgreSQLContainer> {
     public PostgresConfig() {
         super(new MyPostgreSQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)

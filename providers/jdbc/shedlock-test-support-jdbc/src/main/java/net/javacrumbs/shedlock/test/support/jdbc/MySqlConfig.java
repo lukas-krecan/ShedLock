@@ -17,7 +17,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.testcontainers.containers.MySQLContainer;
 
-public final class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfig.MyMySQLContainer> {
+public class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfig.MyMySQLContainer> {
     public MySqlConfig() {
         super(new MyMySQLContainer()
             .withDatabaseName(TEST_SCHEMA_NAME)
