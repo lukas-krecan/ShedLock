@@ -19,8 +19,6 @@ import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 
 public class MySqlJooqLockProviderIntegrationTest extends AbstractJooqLockProviderIntegrationTest {
     private static final DbConfig dbConfig = new MySqlConfig() {
@@ -32,15 +30,5 @@ public class MySqlJooqLockProviderIntegrationTest extends AbstractJooqLockProvid
 
     protected MySqlJooqLockProviderIntegrationTest() {
         super(dbConfig, DSL.using(dbConfig.getDataSource(), SQLDialect.MYSQL));
-    }
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutdownDb() {
-        dbConfig.shutdownDb();
     }
 }

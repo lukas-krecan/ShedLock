@@ -16,23 +16,11 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import net.javacrumbs.shedlock.test.support.jdbc.Db2ServerConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 
 public class Db2JdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTemplateLockProviderIntegrationTest {
     private static final Db2ServerConfig dbConfig = new Db2ServerConfig();
 
     public Db2JdbcTemplateLockProviderIntegrationTest() {
         super(dbConfig);
-    }
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutDownDb() {
-        dbConfig.shutdownDb();
     }
 }

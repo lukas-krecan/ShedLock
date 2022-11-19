@@ -20,7 +20,13 @@ import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegra
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+
+@TestInstance(PER_CLASS)
 public abstract class AbstractJooqLockProviderIntegrationTest extends AbstractJdbcLockProviderIntegrationTest {
     private final DbConfig dbConfig;
 
@@ -44,6 +50,17 @@ public abstract class AbstractJooqLockProviderIntegrationTest extends AbstractJd
     @Override
     protected boolean useDbTime() {
         return true;
+    }
+
+
+    @BeforeAll
+    public void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public void shutdownDb() {
+        dbConfig.shutdownDb();
     }
 }
 

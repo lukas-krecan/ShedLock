@@ -18,9 +18,7 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,16 +41,6 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
 
     protected PostgresJdbcTemplateLockProviderIntegrationTest() {
         super(dbConfig);
-    }
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutdownDb() {
-        dbConfig.shutdownDb();
     }
 
     @Nested

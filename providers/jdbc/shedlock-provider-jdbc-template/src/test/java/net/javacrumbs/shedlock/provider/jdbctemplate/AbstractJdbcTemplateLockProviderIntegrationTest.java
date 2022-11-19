@@ -18,11 +18,16 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+@TestInstance(PER_CLASS)
 public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
     private final DbConfig dbConfig;
 
@@ -30,6 +35,16 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
         this.dbConfig = dbConfig;
     }
 
+
+    @BeforeAll
+    public void startDb() {
+        dbConfig.startDb();
+    }
+
+    @AfterAll
+    public void shutdownDb() {
+        dbConfig.shutdownDb();
+    }
     @Nested
     class ClientTime extends AbstractJdbcLockProviderIntegrationTest {
         @Override

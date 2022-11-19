@@ -21,23 +21,11 @@ import org.jooq.SQLDialect;
 import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 
 public class HsqlJooqLockProviderIntegrationTest extends AbstractJooqLockProviderIntegrationTest {
     private static final DbConfig dbConfig = new HsqlConfig();
 
     public HsqlJooqLockProviderIntegrationTest() {
         super(dbConfig, DSL.using(dbConfig.getDataSource(), SQLDialect.HSQLDB, new Settings().withRenderNameCase(RenderNameCase.UPPER)));
-    }
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutdownDb() {
-        dbConfig.shutdownDb();
     }
 }
