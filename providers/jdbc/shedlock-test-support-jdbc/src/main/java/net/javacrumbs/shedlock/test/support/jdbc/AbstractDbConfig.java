@@ -27,6 +27,9 @@ abstract class AbstractDbConfig implements DbConfig {
 
     @Override
     public DataSource getDataSource() {
+        if (dataSource == null) {
+            startDb();
+        }
         return dataSource;
     }
 

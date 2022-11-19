@@ -19,8 +19,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.ColumnNames;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -38,16 +36,6 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTem
 
     public HsqlJdbcTemplateLockProviderIntegrationTest() {
         super(dbConfig);
-    }
-
-    @BeforeAll
-    public static void startDb() {
-        dbConfig.startDb();
-    }
-
-    @AfterAll
-    public static void shutdownDb() {
-        dbConfig.shutdownDb();
     }
 
     @Test
