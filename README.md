@@ -622,7 +622,7 @@ import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configur
 
 @Bean
 public CassandraLockProvider lockProvider(CqlSession cqlSession) {
-    return new CassandraLockProvider(Configuration.builder().withCqlSession(cqlSession).build());
+    return new CassandraLockProvider(Configuration.builder().withCqlSession(cqlSession).withTableName("lock").build());
 }
 ```
 
