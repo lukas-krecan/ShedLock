@@ -77,7 +77,7 @@
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.23.1</assertj.ver>
         <mockito.ver>4.9.0</mockito.ver>
-        <slf4j.ver>2.0.3</slf4j.ver>
+        <slf4j.ver>2.0.4</slf4j.ver>
     </properties>
 
     <build>
