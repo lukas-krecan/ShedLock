@@ -6,4 +6,5 @@
 [x] elasticsearch - drop type
 [] Quarkus
 
-- Java 9 modules
+- CDI rudimentary - no expressions in annotations
+- jOOQ - transactions - no requires_new
