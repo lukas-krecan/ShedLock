@@ -99,7 +99,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
         try {
             doUnlock(lockConfiguration);
-        } catch (TransactionSystemException e) {
+        } catch (ConcurrencyFailureException e) {
             logger.info("Unlock failed due to TransactionSystemException - retrying");
             doUnlock(lockConfiguration);
         }
