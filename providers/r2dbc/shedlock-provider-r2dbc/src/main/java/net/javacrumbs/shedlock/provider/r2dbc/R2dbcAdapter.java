@@ -11,6 +11,7 @@ import java.util.function.Function;
 abstract class R2dbcAdapter {
     private static final String MSSQL_NAME = "Microsoft SQL Server";
     private static final String MYSQL_NAME = "MySQL";
+    private static final String JASYNC_MYSQL_NAME = "Jasync-MySQL";
     private static final String MARIA_NAME = "MariaDB";
     private static final String ORACLE_NAME = "Oracle Database";
 
@@ -23,6 +24,7 @@ abstract class R2dbcAdapter {
                     R2dbcAdapter::bindByName
                 );
             case MYSQL_NAME:
+            case JASYNC_MYSQL_NAME:
             case MARIA_NAME:
                 return new DefaultR2dbcAdapter(
                     (index, name) -> "?",
