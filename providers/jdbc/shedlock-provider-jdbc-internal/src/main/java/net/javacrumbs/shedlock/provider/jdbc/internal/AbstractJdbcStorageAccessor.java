@@ -112,6 +112,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     }
 
     boolean handleUpdateException(String sql, SQLException e) {
+        logger.debug("Unexpected exception when updating lock record", e);
         throw new LockException("Unexpected exception when locking", e);
     }
 
