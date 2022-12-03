@@ -67,6 +67,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             String sql = sqlStatementsSource().getInsertStatement();
             return execute(sql, lockConfiguration);
         } catch (DuplicateKeyException | ConcurrencyFailureException e) {
+            logger.debug("Duplicate key", e);
             return false;
         } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException | TransactionSystemException e) {
             logger.error("Unexpected exception", e);
@@ -80,6 +81,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         try {
             return execute(sql, lockConfiguration);
         } catch (ConcurrencyFailureException e) {
+            logger.debug("Serialization exception", e);
             return false;
         } catch (DataIntegrityViolationException | TransactionSystemException e) {
             logger.error("Unexpected exception", e);
