@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.quarkus.test;
 
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import net.javacrumbs.shedlock.cdi.SchedulerLock;
 import net.javacrumbs.shedlock.core.LockProvider;
 
@@ -31,6 +32,7 @@ public class QuarkusConfig {
 
     @Produces
     @Singleton
+    @IfBuildProfile("test")
     public LockProvider lockProvider() {
         return mock(LockProvider.class);
     }
