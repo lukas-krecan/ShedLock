@@ -78,7 +78,6 @@
         <assertj.ver>3.23.1</assertj.ver>
         <mockito.ver>4.9.0</mockito.ver>
         <slf4j.ver>2.0.5</slf4j.ver>
-        <r2dbc.version>1.0.0.RELEASE</r2dbc.version>
     </properties>
 
     <build>
