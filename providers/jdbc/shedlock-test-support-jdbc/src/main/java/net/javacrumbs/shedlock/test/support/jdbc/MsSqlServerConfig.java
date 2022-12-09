@@ -45,7 +45,7 @@ public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSq
 
     static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {
         MyMSSQLServerContainer() {
-            super("mcr.microsoft.com/mssql/server:2019-latest");
+            super("mcr.microsoft.com/mssql/server:2022-latest");
             withLogConsumer(it -> LOGGER.info(it.getUtf8String()));
             acceptLicense();
         }
