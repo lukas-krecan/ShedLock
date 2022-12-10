@@ -21,9 +21,4 @@ public class OracleR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     public OracleR2dbcLockProviderIntegrationTest() {
         super(new OracleServerConfig());
     }
-
-    @Override
-    protected boolean usePool() {
-        return false;
-    }
 }
