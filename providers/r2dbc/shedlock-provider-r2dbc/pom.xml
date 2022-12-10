@@ -74,7 +74,7 @@
 
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
+            <artifactId>ojdbc11</artifactId>
             <version>21.8.0.0</version>
             <scope>test</scope>
         </dependency>

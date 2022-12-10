@@ -21,7 +21,6 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -66,10 +65,10 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         try {
             String sql = sqlStatementsSource().getInsertStatement();
             return execute(sql, lockConfiguration);
-        } catch (DuplicateKeyException | ConcurrencyFailureException | TransactionSystemException e) {
+        } catch (DataIntegrityViolationException | ConcurrencyFailureException | TransactionSystemException  e) {
             logger.debug("Duplicate key", e);
             return false;
-        } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
+        } catch (BadSqlGrammarException | UncategorizedSQLException e) {
             logger.error("Unexpected exception", e);
             return false;
         }
