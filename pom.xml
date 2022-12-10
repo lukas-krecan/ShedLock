@@ -70,9 +70,9 @@
         <spring-boot-current.version>3.0.0</spring-boot-current.version>
         <junit.ver>5.9.1</junit.ver>
         <test-containers.ver>1.17.6</test-containers.ver>
-        <kotlin.ver>1.7.20</kotlin.ver>
-        <micronaut.ver>3.5.1</micronaut.ver>
-        <micronaut-data.ver>3.4.2</micronaut-data.ver>
+        <kotlin.ver>1.7.22</kotlin.ver>
+        <micronaut.ver>3.7.4</micronaut.ver>
+        <micronaut-data.ver>3.8.1</micronaut-data.ver>
         <logback.ver>1.4.5</logback.ver>
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.23.1</assertj.ver>

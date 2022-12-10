@@ -16,6 +16,7 @@ scheduler, please use another project ([db-scheduler](https://github.com/kagkarl
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. Moreover, the locks are time-based and ShedLock assumes that clocks on the nodes are synchronized.
 
++ [Versions](#versions)
 + [Components](#components)
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
@@ -53,6 +54,10 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [TaskScheduler proxy](#taskscheduler-proxy)
 + [Release notes](#release-notes)
 
+## Versions
+If you are using JDK >17 and up-to-date libraries like Spring 6, use version **5.0.0** ([Release Notes](#500-2022-12-10)). If you
+are on older JDK or library, use version **4.43.0** ([documentation](https://github.com/lukas-krecan/ShedLock/tree/version4)).
+
 ## Components
 Shedlock consists of three parts
 * Core - The locking mechanism
@@ -73,7 +78,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -177,7 +182,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -229,7 +234,7 @@ is in flux and may easily break.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-r2dbc</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -241,7 +246,7 @@ protected LockProvider getLockProvider() {
     return new R2dbcLockProvider(connectionFactory);
 }
 ```
-I recommend using [R2DBC connection pool](https://github.com/r2dbc/r2dbc-pool), unless you are connecting to Oracle that does not work with the pool.
+I recommend using [R2DBC connection pool](https://github.com/r2dbc/r2dbc-pool).
 
 
 #### Micronaut Data Jdbc
@@ -257,7 +262,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -280,7 +285,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -307,7 +312,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -327,38 +332,8 @@ public LockProvider lockProvider(MongoClient mongo) {
 Please note that MongoDB integration requires Mongo >= 4.x and mongodb-driver-reactivestreams 1.x
 
 
-#### DynamoDB
-This depends on AWS SDK v1.
-
-Import the project
-
-```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-dynamodb</artifactId>
-    <version>4.43.0</version>
-</dependency>
-```
-
-Configure:
-
-```java
-import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider;
-
-...
-
-@Bean
-public LockProvider lockProvider(com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB) {
-    return new DynamoDBLockProvider(dynamoDB.getTable("Shedlock"));
-}
-```
-
-> Please note that the lock table must be created externally with `_id` as a partition key.
-> `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
-> A table definition is available from `DynamoDBLockProvider`'s Javadoc.
-
 #### DynamoDB 2
-This depends on AWS SDK v2.
+Depends on AWS SDK v2.
 
 Import the project
 
@@ -366,7 +341,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -393,7 +368,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -417,7 +392,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -441,7 +416,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -464,20 +439,13 @@ public LockProvider lockProvider(ReactiveRedisConnectionFactory connectionFactor
 Redis lock provider uses classical lock mechanism as described [here](https://redis.io/commands/setnx#design-pattern-locking-with-codesetnxcode)
 which may not be reliable in case of Redis master failure.
 
-If you are still using Spring Data Redis 1, import special lock provider `shedlock-provider-redis-spring-1` which works around
-issue #105 or upgrade to Spring Data Redis 2 or higher.
-
-
 #### Redis (using Jedis)
 Import
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Jedis < 4 -->
-    <!-- <artifactId>shedlock-provider-redis-jedis</artifactId> -->
-    <!-- For Jedis >= 4 -->
     <artifactId>shedlock-provider-redis-jedis4</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -500,10 +468,8 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Hazelcast < 4 support is dropped -->
-    <!-- Hazelcast >= 4 -->
     <artifactId>shedlock-provider-hazelcast4</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -526,11 +492,8 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Couchbase < 3 -->
-    <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
-    <!-- Couchbase >= 3 -->
-    <!-- <artifactId>shedlock-provider-couchbase-javaclient3</artifactId> -->
-    <version>4.43.0</version>
+    <artifactId>shedlock-provider-couchbase-javaclient3</artifactId>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -556,7 +519,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch8</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -608,7 +571,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -643,7 +606,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -668,7 +631,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -694,7 +657,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-neo4j</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -719,7 +682,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -743,7 +706,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-ignite</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -787,7 +750,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-inmemory</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -813,7 +776,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-memcached-spy</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -877,7 +840,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>4.43.0</version>
+    <version>${shedlock.version}</version>
 </dependency>
 ```
 
@@ -1005,11 +968,18 @@ It should help you to see what's going on.
 after another, `lockAtLeastFor` can prevent it.
 
 
-## Requirements and dependencies
-* Java 8
-* slf4j-api
-
 # Release notes
+## 5.0.0 (2022-12-10)
+* Requires JDK 17
+* Tested with Spring 6 (Spring Boot 3)
+* Micronaut updated to 3.x.x
+* R2DBC 1.x.x (still sucks)
+* Spring Data 3.x.x
+* Rudimentary support for CDI (tested with quarkus)
+* New jOOQ lock provider
+* SLF4j 2
+* Deleted all deprecated code and support for old versions of libraries
+
 ## 4.43.0 (2022-12-04)
 * Better logging in JdbcTemplateProvider
 * Dependency updates
