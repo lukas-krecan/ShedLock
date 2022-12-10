@@ -15,14 +15,10 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 
 public class PostgresR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
-    private static final DbConfig dbConfig = new PostgresConfig();
-
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public PostgresR2dbcLockProviderIntegrationTest() {
+        super(new PostgresConfig());
     }
 }

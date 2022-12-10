@@ -15,14 +15,10 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
 
 public class MySqlR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
-    private static final DbConfig dbConfig = new MySqlConfig();
-
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public MySqlR2dbcLockProviderIntegrationTest() {
+        super(new MySqlConfig());
     }
 }

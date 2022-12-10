@@ -15,15 +15,11 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.OracleServerConfig;
 
 public class OracleR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
-    private static final DbConfig dbConfig = new OracleServerConfig();
-
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public OracleR2dbcLockProviderIntegrationTest() {
+        super(new OracleServerConfig());
     }
 
     @Override

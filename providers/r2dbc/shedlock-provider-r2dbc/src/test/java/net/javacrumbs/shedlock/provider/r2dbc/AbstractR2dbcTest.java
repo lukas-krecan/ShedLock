@@ -7,6 +7,7 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -18,8 +19,13 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest {
+    private final DbConfig dbConfig;
 
     private ConnectionFactory connectionFactory;
+
+    AbstractR2dbcTest(DbConfig dbConfig) {
+        this.dbConfig = dbConfig;
+    }
 
     @BeforeAll
     public void startDb() {
@@ -69,5 +75,10 @@ abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest
 
     protected boolean usePool() {
         return true;
+    }
+
+    @Override
+    public DbConfig getDbConfig() {
+        return dbConfig;
     }
 }
