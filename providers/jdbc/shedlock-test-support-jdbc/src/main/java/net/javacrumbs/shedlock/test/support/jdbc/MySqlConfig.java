@@ -23,6 +23,7 @@ public class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfig.MyMy
             .withDatabaseName(TEST_SCHEMA_NAME)
             .withUsername("SA")
             .withPassword("pass")
+            .withCommand("--default-authentication-plugin=mysql_native_password")
         );
     }
 
