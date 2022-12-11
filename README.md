@@ -22,6 +22,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Lock Providers](#configure-lockprovider)
   - [JdbcTemplate](#jdbctemplate)
   - [R2DBC](#r2dbc)
+  - [jOOQ](#jooq-lock-provider)
   - [Micronaut Data Jdbc](#micronaut-data-jdbc)
   - [Mongo](#mongo)
   - [DynamoDB](#dynamodb)
@@ -47,6 +48,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
++ [CDI integration](#cdi-integration)
 + [Locking without a framework](#locking-without-a-framework)
 + [Troubleshooting](#troubleshooting)
 + [Modes of Spring integration](#modes-of-spring-integration)
@@ -78,7 +80,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -182,7 +184,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -234,7 +236,7 @@ is in flux and may easily break.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-r2dbc</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -248,6 +250,38 @@ protected LockProvider getLockProvider() {
 ```
 I recommend using [R2DBC connection pool](https://github.com/r2dbc/r2dbc-pool).
 
+#### jOOQ lock provider
+First, create lock table as described in the [JdbcTemplate](#jdbctemplate) section above.
+
+Add dependency
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jooq</artifactId>
+    <version>5.0.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.jooq;
+
+...
+@Bean
+public LockProvider getLockProvider(DSLContext dslContext) {
+    return new JooqLockProvider(dslContext);
+}
+```
+
+jOOQ provider has a bit different transactional behavior. While the other JDBC lock providers
+create new transaction (with REQUIRES_NEW), jOOQ [does not support setting it](https://github.com/jOOQ/jOOQ/issues/4836).
+ShedLock tries to create a new transaction, but depending on your set-up, ShedLock DB operations may
+end-up being part of the enclosing transaction.
+
+jOOQ lock provider is not yet as flexible as its JdbcTemplate counterpart, but it can be. If you need some
+configuration option, please let me know.
 
 #### Micronaut Data Jdbc
 If you are using Micronaut data and you do not want to add dependency on Spring JDBC, you can use
@@ -262,7 +296,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -285,7 +319,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -312,7 +346,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -341,7 +375,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -368,7 +402,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -392,7 +426,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -416,7 +450,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -445,7 +479,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis4</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -469,7 +503,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast4</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -493,7 +527,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient3</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -519,7 +553,7 @@ I am really not sure it's a good idea to use Elasticsearch as a lock provider. B
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch8</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -571,7 +605,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -606,7 +640,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -631,7 +665,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -657,7 +691,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-neo4j</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -682,7 +716,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -706,7 +740,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-ignite</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -750,7 +784,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-inmemory</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -776,7 +810,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-memcached-spy</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -840,7 +874,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut</artifactId>
-    <version>${shedlock.version}</version>
+    <version>5.0.1</version>
 </dependency>
 ```
 
@@ -868,6 +902,49 @@ public void myTask() {
     ...
 }
 ```
+
+## CDI integration
+Since version 5.0.0, it's possible to use CDI for integration (tested only with Quarkus)
+
+Import the project:
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-cdi-vintage</artifactId>
+    <version>5.0.1</version>
+</dependency>
+```
+
+Configure default lockAtMostFor value (application.properties):
+```properties
+shedlock.defaults.lock-at-most-for=PT30S
+```
+
+Configure lock provider:
+```java
+@Produces
+@Singleton
+public LockProvider lockProvider() {
+        ...
+}
+```
+
+Configure the scheduled task:
+```java
+@Scheduled(every = "1s")
+@SchedulerLock(name = "myTask")
+public void myTask() {
+    assertLocked();
+    ...
+}
+```
+
+The implementation only depends on `jakarta.enterprise.cdi-api` and `microprofile-config-api` so it should be
+usable in other CDI compatible frameworks, but it has not been tested with anything else than Quarkus. It's
+built on top of javax annotation as Quarkus has not moved to Jakarta EE namespace yet.
+
+The support is minimalistic, for example there is no support for expressions in the annotation parameters yet,
+if you need it, feel free to send a PR.
 
 ## Locking without a framework
 It is possible to use ShedLock without a framework
@@ -970,7 +1047,7 @@ after another, `lockAtLeastFor` can prevent it.
 
 # Release notes
 ## 5.0.1 (2022-12-10)
-* Work around broken Spring 6 exception translation #1272
+* Work around broken Spring 6 exception translation https://github.com/lukas-krecan/ShedLock/issues/1272
 
 ## 5.0.0 (2022-12-10)
 * Requires JDK 17
