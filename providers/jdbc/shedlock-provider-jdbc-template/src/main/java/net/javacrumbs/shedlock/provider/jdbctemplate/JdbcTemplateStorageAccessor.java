@@ -65,7 +65,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         try {
             String sql = sqlStatementsSource().getInsertStatement();
             return execute(sql, lockConfiguration);
-        } catch (DataIntegrityViolationException | ConcurrencyFailureException | TransactionSystemException  e) {
+        } catch (DataIntegrityViolationException | ConcurrencyFailureException | TransactionSystemException e) {
             logger.debug("Duplicate key", e);
             return false;
         } catch (BadSqlGrammarException | UncategorizedSQLException e) {
@@ -98,11 +98,13 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
-        try {
-            doUnlock(lockConfiguration);
-        } catch (ConcurrencyFailureException | TransactionSystemException e) {
-            logger.info("Unlock failed due to TransactionSystemException - retrying");
-            doUnlock(lockConfiguration);
+        for (int i = 0; i < 10; i++) {
+            try {
+                doUnlock(lockConfiguration);
+                return;
+            } catch (ConcurrencyFailureException | TransactionSystemException e) {
+                logger.info("Unlock failed due to TransactionSystemException - retrying attempt {}", i + 1);
+            }
         }
     }
 
