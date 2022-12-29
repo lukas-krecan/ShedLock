@@ -58,7 +58,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 
 ## Versions
 If you are using JDK >17 and up-to-date libraries like Spring 6, use version **5.0.1** ([Release Notes](#500-2022-12-10)). If you
-are on older JDK or library, use version **4.43.0** ([documentation](https://github.com/lukas-krecan/ShedLock/tree/version4)).
+are on older JDK or library, use version **4.44.0** ([documentation](https://github.com/lukas-krecan/ShedLock/tree/version4)).
 
 ## Components
 Shedlock consists of three parts
@@ -1048,6 +1048,9 @@ after another, `lockAtLeastFor` can prevent it.
 # Release notes
 ## 5.0.1 (2022-12-10)
 * Work around broken Spring 6 exception translation https://github.com/lukas-krecan/ShedLock/issues/1272
+
+## 4.44.0 (2022-12-29)
+* Insert ignore for MySQL https://github.com/lukas-krecan/ShedLock/commit/8a4ae7ad8103bb47f55d43bccf043ca261c24d7a
 
 ## 5.0.0 (2022-12-10)
 * Requires JDK 17
