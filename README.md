@@ -1037,6 +1037,7 @@ Help, ShedLock does not do what it's supposed to do!
 
 1. Upgrade to the newest version
 2. Use [LockAssert](https://github.com/lukas-krecan/ShedLock#lock-assert) to ensure that AOP is correctly configured.
+   - If it does not work, please read about Spring AOP internals (for example [here](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#aop-understanding-aop-proxies))
 3. Check the storage. If you are using JDBC, check the ShedLock table. If it's empty, ShedLock is not properly configured.
 If there is more than one record with the same name, you are missing a primary key.
 4. Use ShedLock debug log. ShedLock logs interesting information on DEBUG level with logger name `net.javacrumbs.shedlock`.
