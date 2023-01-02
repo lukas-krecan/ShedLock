@@ -79,7 +79,7 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
                 throw new LockingNotSupportedException("Can not lock method returning primitive value");
             }
 
-            LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(invocation.getThis(), invocation.getMethod()).get();
+            LockConfiguration lockConfiguration = lockConfigurationExtractor.getLockConfiguration(invocation.getThis(), invocation.getMethod(), invocation.getArguments()).get();
             TaskResult<Object> result = lockingTaskExecutor.executeWithLock(invocation::proceed, lockConfiguration);
 
             if (Optional.class.equals(returnType)) {

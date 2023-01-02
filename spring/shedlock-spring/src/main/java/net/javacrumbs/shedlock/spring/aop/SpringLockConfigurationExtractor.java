@@ -25,11 +25,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.ParserContext;
+import org.springframework.expression.common.TemplateParserContext;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -37,6 +44,8 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
 class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtractor {
+    private static final ExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
+    private static final ParserContext PARSER_CONTEXT = new TemplateParserContext();
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
     @Nullable
@@ -61,7 +70,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
         if (task instanceof ScheduledMethodRunnable) {
             ScheduledMethodRunnable scheduledMethodRunnable = (ScheduledMethodRunnable) task;
-            return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod());
+            return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod(), new Object[] {});
         } else {
             logger.debug("Unknown task type " + task);
         }
@@ -69,28 +78,48 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     @Override
-    public Optional<LockConfiguration> getLockConfiguration(Object target, Method method) {
+    public Optional<LockConfiguration> getLockConfiguration(Object target, Method method, Object[] parameterValues) {
         AnnotationData annotation = findAnnotation(target, method);
         if (shouldLock(annotation)) {
-            return Optional.of(getLockConfiguration(annotation));
+            return Optional.of(getLockConfiguration(annotation, method, parameterValues));
         } else {
             return Optional.empty();
         }
     }
 
-    private LockConfiguration getLockConfiguration(AnnotationData annotation) {
+    private LockConfiguration getLockConfiguration(AnnotationData annotation, Method method, Object[] parameterValues) {
         return new LockConfiguration(
             ClockProvider.now(),
-            getName(annotation),
+            getName(annotation, method, parameterValues),
             getLockAtMostFor(annotation),
             getLockAtLeastFor(annotation));
     }
 
-    private String getName(AnnotationData annotation) {
+    private String getName(AnnotationData annotation, Method method, Object[] parameterValues) {
+        String name = parseSpEL(annotation.getName(), method, parameterValues);
         if (embeddedValueResolver != null) {
-            return embeddedValueResolver.resolveStringValue(annotation.getName());
+            return embeddedValueResolver.resolveStringValue(name);
         } else {
-            return annotation.getName();
+            return name;
+        }
+    }
+
+    private String parseSpEL(String name, Method method, Object[] parameterValues) {
+        return getEvaluationContext(method, parameterValues)
+            .map(evaluationContext -> EXPRESSION_PARSER.parseExpression(name, PARSER_CONTEXT).getValue(evaluationContext, String.class))
+            .orElse(name);
+    }
+
+    private Optional<EvaluationContext> getEvaluationContext(Method method, Object[] parameterValues) {
+        if (method.getParameters().length > 0 && method.getParameters().length == parameterValues.length) {
+            Parameter[] parameters = method.getParameters();
+            EvaluationContext evaluationContext = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
+            for (int i = 0; i < parameters.length; i++) {
+                evaluationContext.setVariable(parameters[i].getName(), parameterValues[i]);
+            }
+            return Optional.of(evaluationContext);
+        } else {
+            return Optional.empty();
         }
     }
 

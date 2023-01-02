@@ -25,5 +25,5 @@ public interface ExtendedLockConfigurationExtractor extends LockConfigurationExt
     /**
      * Extracts lock configuration for given method
      */
-    Optional<LockConfiguration> getLockConfiguration(Object object, Method method);
+    Optional<LockConfiguration> getLockConfiguration(Object object, Method method, Object[] parameterValues);
 }
