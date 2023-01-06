@@ -48,6 +48,16 @@ public class SpringLockConfigurationExtractorTest extends AbstractSpringLockConf
 
     }
 
+    @SchedulerLock(name = "lockName-#{#arg0 + '-' + #arg1 + '-' + (1 + 2) + '-' + 'abcde'.length()}")
+    public void annotatedMethodWithNameSpringExpression(String arg0, Integer arg1) {
+
+    }
+
+    @SchedulerLock(name = "${name}-#{#arg0}")
+    public void annotatedMethodWithNameSpringExpressionAndVariable(String arg0) {
+
+    }
+
     @SchedulerLock(name = "lockName")
     public void annotatedMethodWithoutLockAtMostFor() {
 

@@ -15,6 +15,8 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import java.lang.reflect.Method;
+
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.spring.aop.SpringLockConfigurationExtractor.AnnotationData;
 import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
@@ -151,6 +153,22 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethodWithNameVariable");
         LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockNameX");
+    }
+
+    @Test
+    public void shouldGetNameFromSpringExpression() throws NoSuchMethodException {
+        mockResolvedValue("lockName-value-1-3-5", "lockName-value-1-3-5");
+        Method method = this.getClass().getMethod("annotatedMethodWithNameSpringExpression", String.class, Integer.class);
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(this, method, new Object[] {"value", 1}).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("lockName-value-1-3-5");
+    }
+
+    @Test
+    public void shouldGetNameFromSpringExpressionAndSpringVariable() throws NoSuchMethodException {
+        mockResolvedValue("${name}-value", "lockName-value");
+        Method method = this.getClass().getMethod("annotatedMethodWithNameSpringExpressionAndVariable", String.class);
+        LockConfiguration lockConfiguration = extractor.getLockConfiguration(this, method, new Object[] {"value"}).get();
+        assertThat(lockConfiguration.getName()).isEqualTo("lockName-value");
     }
 
     private void mockResolvedValue(String expression, String resolved) {
