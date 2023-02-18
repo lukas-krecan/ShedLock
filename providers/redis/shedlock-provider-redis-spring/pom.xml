@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
         </dependency>
 
         <dependency>
@@ -48,21 +48,21 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>4.3.0</version>
+            <version>4.3.1</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.2.RELEASE</version>
+            <version>6.2.3.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-data-20</artifactId>
-            <version>3.19.1</version>
+            <version>3.19.3</version>
             <scope>test</scope>
         </dependency>
 
