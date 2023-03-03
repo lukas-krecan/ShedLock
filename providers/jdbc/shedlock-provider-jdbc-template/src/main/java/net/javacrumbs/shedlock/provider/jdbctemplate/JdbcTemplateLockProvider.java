@@ -152,7 +152,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         }
 
         public static Configuration.Builder builder() {
-            return new Builder();
+            return new Configuration.Builder();
         }
 
 
