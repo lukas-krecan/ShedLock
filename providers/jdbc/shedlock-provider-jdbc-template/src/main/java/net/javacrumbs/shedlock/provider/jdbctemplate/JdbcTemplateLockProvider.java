@@ -152,7 +152,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         }
 
         public static Configuration.Builder builder() {
-            return new Configuration.Builder();
+            return new Builder();
         }
 
 
@@ -163,6 +163,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private TimeZone timeZone;
             private String lockedByValue = Utils.getHostname();
             private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
+            private boolean dbUpperCase = false;
             private boolean useDbTime = false;
             private Integer isolationLevel;
 
@@ -191,6 +192,12 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            public Builder withDbUpperCase (final boolean dbUppercase) {
+                this.dbUpperCase = dbUppercase;
+                return this;
+            }
+
+
             /**
              * Value stored in 'locked_by' column. Please use only for debugging purposes.
              */
@@ -214,7 +221,33 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             }
 
             public JdbcTemplateLockProvider.Configuration build() {
-                return new JdbcTemplateLockProvider.Configuration(jdbcTemplate, transactionManager, tableName, timeZone, columnNames, lockedByValue, useDbTime, isolationLevel);
+                // react on uppercase
+                return new JdbcTemplateLockProvider.Configuration(
+                    jdbcTemplate,
+                    transactionManager,
+                    tableNameToUpperIfReq(),
+                    timeZone,
+                    columnNamesToUpperIfReq(),
+                    lockedByValue,
+                    useDbTime,
+                    isolationLevel
+                );
+            }
+
+            private String tableNameToUpperIfReq() {
+                return dbUpperCase ? tableName.toUpperCase() : tableName;
+            }
+
+            private ColumnNames columnNamesToUpperIfReq() {
+                if (dbUpperCase) {
+                    return new ColumnNames(
+                        columnNames.name.toUpperCase(),
+                        columnNames.lockUntil.toUpperCase(),
+                        columnNames.lockedAt.toUpperCase(),
+                        columnNames.lockedBy.toUpperCase()
+                    );
+                }
+                return columnNames;
             }
         }
 
