@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.TimeZone;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -34,5 +35,36 @@ class JdbcTemplateLockProviderTest {
                 .usingDbTime()
                 .build()
         ).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldTableAndColumNamesUpperCase() {
+        final var config = JdbcTemplateLockProvider
+            .Configuration
+            .builder()
+            .withJdbcTemplate(mock(JdbcTemplate.class))
+            .withDbUpperCase(true)
+            .build();
+
+        assertThat(config.getTableName()).isUpperCase();
+        assertThat(config.getColumnNames().getName()).isUpperCase();
+        assertThat(config.getColumnNames().getLockedBy()).isUpperCase();
+        assertThat(config.getColumnNames().getLockedAt()).isUpperCase();
+        assertThat(config.getColumnNames().getLockUntil()).isUpperCase();
+    }
+
+    @Test
+    void shouldTableAndColumNamesLowerCaseByDefault() {
+        final var config = JdbcTemplateLockProvider
+            .Configuration
+            .builder()
+            .withJdbcTemplate(mock(JdbcTemplate.class))
+            .build();
+
+        assertThat(config.getTableName()).isLowerCase();
+        assertThat(config.getColumnNames().getName()).isLowerCase();
+        assertThat(config.getColumnNames().getLockedBy()).isLowerCase();
+        assertThat(config.getColumnNames().getLockedAt()).isLowerCase();
+        assertThat(config.getColumnNames().getLockUntil()).isLowerCase();
     }
 }

@@ -216,11 +216,16 @@ new JdbcTemplateLockProvider(builder()
     .withColumnNames(new ColumnNames("n", "lck_untl", "lckd_at", "lckd_by"))
     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
     .withLockedByValue("my-value")
+    .withDbUpperCase(true)
     .build())
 ```
 
 If you need to specify a schema, you can set it in the table name using the usual dot notation
 `new JdbcTemplateLockProvider(datasource, "my_schema.shedlock")`
+
+To use a database with case-sensitive table and column names, the `.withDbUpperCase(true)` flag can be used.
+Default is `false` (lowercase).
+
 
 #### Warning
 **Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing lock rows
