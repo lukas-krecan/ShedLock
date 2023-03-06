@@ -221,36 +221,18 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             }
 
             public JdbcTemplateLockProvider.Configuration build() {
-                // react on uppercase
                 return new JdbcTemplateLockProvider.Configuration(
                     jdbcTemplate,
                     transactionManager,
-                    tableNameToUpperIfReq(),
+                    dbUpperCase ? tableName.toUpperCase() : tableName,
                     timeZone,
-                    columnNamesToUpperIfReq(),
+                    dbUpperCase ? columnNames.toUpperCase() : columnNames,
                     lockedByValue,
                     useDbTime,
                     isolationLevel
                 );
             }
-
-            private String tableNameToUpperIfReq() {
-                return dbUpperCase ? tableName.toUpperCase() : tableName;
-            }
-
-            private ColumnNames columnNamesToUpperIfReq() {
-                if (dbUpperCase) {
-                    return new ColumnNames(
-                        columnNames.name.toUpperCase(),
-                        columnNames.lockUntil.toUpperCase(),
-                        columnNames.lockedAt.toUpperCase(),
-                        columnNames.lockedBy.toUpperCase()
-                    );
-                }
-                return columnNames;
-            }
         }
-
     }
 
     public static final class ColumnNames {
@@ -280,6 +262,15 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         public String getLockedBy() {
             return lockedBy;
+        }
+
+        private ColumnNames toUpperCase() {
+            return new ColumnNames(
+                name.toUpperCase(),
+                lockUntil.toUpperCase(),
+                lockedAt.toUpperCase(),
+                lockedBy.toUpperCase()
+            );
         }
     }
 
