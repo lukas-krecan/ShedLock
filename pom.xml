@@ -71,8 +71,8 @@
         <junit.ver>5.9.1</junit.ver>
         <test-containers.ver>1.17.6</test-containers.ver>
         <kotlin.ver>1.7.22</kotlin.ver>
-        <micronaut.ver>3.7.4</micronaut.ver>
-        <micronaut-data.ver>3.8.1</micronaut-data.ver>
+        <micronaut.ver>3.8.7</micronaut.ver>
+        <micronaut-data.ver>3.9.6</micronaut-data.ver>
         <logback.ver>1.4.5</logback.ver>
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.24.2</assertj.ver>
