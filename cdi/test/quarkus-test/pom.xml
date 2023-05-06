@@ -14,7 +14,7 @@
     <properties>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>2.16.6.Final</quarkus.platform.version>
+        <quarkus.platform.version>3.0.1.Final</quarkus.platform.version>
         <skipITs>true</skipITs>
     </properties>
 
@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-cdi-vintage</artifactId>
+            <artifactId>shedlock-cdi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -46,7 +46,7 @@
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc</artifactId>
-            <version>4.42.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>

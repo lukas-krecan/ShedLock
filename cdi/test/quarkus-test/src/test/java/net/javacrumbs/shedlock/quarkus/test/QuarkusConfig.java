@@ -17,12 +17,12 @@ package net.javacrumbs.shedlock.quarkus.test;
 
 
 import io.quarkus.arc.profile.IfBuildProfile;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.cdi.SchedulerLock;
 import net.javacrumbs.shedlock.core.LockProvider;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 import java.io.IOException;
 
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
