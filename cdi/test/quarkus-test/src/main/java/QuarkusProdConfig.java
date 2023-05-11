@@ -1,10 +1,10 @@
 import io.quarkus.arc.DefaultBean;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 import java.util.Optional;
 
 /*

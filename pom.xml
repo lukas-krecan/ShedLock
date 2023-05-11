@@ -24,6 +24,7 @@
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
         <module>cdi/shedlock-cdi-vintage</module>
+        <module>cdi/shedlock-cdi</module>
         <module>cdi/test/quarkus-test</module>
         <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/test/micronaut-jdbc</module>

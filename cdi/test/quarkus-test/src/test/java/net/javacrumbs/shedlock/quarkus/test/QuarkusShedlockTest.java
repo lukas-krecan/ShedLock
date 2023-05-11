@@ -16,6 +16,7 @@
 package net.javacrumbs.shedlock.quarkus.test;
 
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.quarkus.test.QuarkusConfig.AnotherTestBean;
@@ -26,7 +27,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 
