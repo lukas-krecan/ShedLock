@@ -161,7 +161,7 @@
                         <configuration>
                             <keyname>C51E10BD96D06071</keyname>
                         </configuration>
-                        <version>3.0.1</version>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
