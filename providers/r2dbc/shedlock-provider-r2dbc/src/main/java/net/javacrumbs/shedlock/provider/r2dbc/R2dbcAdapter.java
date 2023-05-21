@@ -16,34 +16,28 @@ abstract class R2dbcAdapter {
     private static final String ORACLE_NAME = "Oracle Database";
 
     static R2dbcAdapter create(@NonNull String driver) {
-        switch (driver) {
-            case MSSQL_NAME:
-                return new DefaultR2dbcAdapter(
-                    (index, name) -> "@" + name,
-                    R2dbcAdapter::toLocalDate,
-                    R2dbcAdapter::bindByName
-                );
-            case MYSQL_NAME:
-            case JASYNC_MYSQL_NAME:
-            case MARIA_NAME:
-                return new DefaultR2dbcAdapter(
-                    (index, name) -> "?",
-                    R2dbcAdapter::toLocalDate,
-                    R2dbcAdapter::bindByIndex
-                );
-            case ORACLE_NAME:
-                return new DefaultR2dbcAdapter(
-                    (index, name) -> ":" + name,
-                    R2dbcAdapter::toLocalDate,
-                    R2dbcAdapter::bindByName
-                );
-            default:
-                return new DefaultR2dbcAdapter(
-                    (index, name) -> "$" + index,
-                    R2dbcAdapter::toInstant,
-                    R2dbcAdapter::bindByIndex
-                );
-        }
+        return switch (driver) {
+            case MSSQL_NAME -> new DefaultR2dbcAdapter(
+                (index, name) -> "@" + name,
+                R2dbcAdapter::toLocalDate,
+                R2dbcAdapter::bindByName
+            );
+            case MYSQL_NAME, JASYNC_MYSQL_NAME, MARIA_NAME -> new DefaultR2dbcAdapter(
+                (index, name) -> "?",
+                R2dbcAdapter::toLocalDate,
+                R2dbcAdapter::bindByIndex
+            );
+            case ORACLE_NAME -> new DefaultR2dbcAdapter(
+                (index, name) -> ":" + name,
+                R2dbcAdapter::toLocalDate,
+                R2dbcAdapter::bindByName
+            );
+            default -> new DefaultR2dbcAdapter(
+                (index, name) -> "$" + index,
+                R2dbcAdapter::toInstant,
+                R2dbcAdapter::bindByIndex
+            );
+        };
     }
 
     private static Instant toInstant(Instant date) {

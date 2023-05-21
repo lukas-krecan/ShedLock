@@ -45,33 +45,41 @@ class SqlStatementsSource {
 
         if (configuration.getUseDbTime()) {
             switch (databaseProductName) {
-                case "PostgreSQL":
+                case "PostgreSQL" -> {
                     logger.debug("Using PostgresSqlServerTimeStatementsSource");
                     return new PostgresSqlServerTimeStatementsSource(configuration);
-                case "Microsoft SQL Server":
+                }
+                case "Microsoft SQL Server" -> {
                     logger.debug("Using MsSqlServerTimeStatementsSource");
                     return new MsSqlServerTimeStatementsSource(configuration);
-                case "Oracle":
+                }
+                case "Oracle" -> {
                     logger.debug("Using OracleServerTimeStatementsSource");
                     return new OracleServerTimeStatementsSource(configuration);
-                case "MySQL":
+                }
+                case "MySQL" -> {
                     logger.debug("Using MySqlServerTimeStatementsSource");
                     return new MySqlServerTimeStatementsSource(configuration);
-                case "MariaDB":
+                }
+                case "MariaDB" -> {
                     logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
                     return new MySqlServerTimeStatementsSource(configuration);
-                case "HSQL Database Engine":
+                }
+                case "HSQL Database Engine" -> {
                     logger.debug("Using HsqlServerTimeStatementsSource");
                     return new HsqlServerTimeStatementsSource(configuration);
-                case "H2":
+                }
+                case "H2" -> {
                     logger.debug("Using H2ServerTimeStatementsSource");
                     return new H2ServerTimeStatementsSource(configuration);
-                default:
+                }
+                default -> {
                     if (databaseProductName.startsWith("DB2")) {
                         logger.debug("Using Db2ServerTimeStatementsSource");
                         return new Db2ServerTimeStatementsSource(configuration);
                     }
                     throw new UnsupportedOperationException("DB time is not supported for '" + databaseProductName + "'");
+                }
             }
         } else {
             if ("PostgreSQL".equals(databaseProductName)) {

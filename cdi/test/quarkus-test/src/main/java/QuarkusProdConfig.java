@@ -15,11 +15,6 @@ public class QuarkusProdConfig {
     @Singleton
     @DefaultBean
     public LockProvider lockProvider() {
-        return new LockProvider() {
-            @Override
-            public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-                return Optional.empty();
-            }
-        };
+        return lockConfiguration -> Optional.empty();
     }
 }
