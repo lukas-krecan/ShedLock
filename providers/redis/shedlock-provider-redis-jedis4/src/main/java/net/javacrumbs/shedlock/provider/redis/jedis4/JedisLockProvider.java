@@ -137,43 +137,33 @@ public class JedisLockProvider implements LockProvider {
         void del(String key);
     }
 
-    private static class JedisPoolTemplate implements JedisTemplate {
-        private final Pool<Jedis> jedisPool;
-
-        private JedisPoolTemplate(Pool<Jedis> jedisPool) {
-            this.jedisPool = jedisPool;
-        }
+    private record JedisPoolTemplate(Pool<Jedis> jedisPool) implements JedisTemplate {
 
         @Override
-        public String set(String key, String value, SetParams setParams) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                return jedis.set(key, value, setParams);
+            public String set(String key, String value, SetParams setParams) {
+                try (Jedis jedis = jedisPool.getResource()) {
+                    return jedis.set(key, value, setParams);
+                }
+            }
+
+            @Override
+            public void del(String key) {
+                try (Jedis jedis = jedisPool.getResource()) {
+                    jedis.del(key);
+                }
             }
         }
 
+    private record JedisCommandsTemplate(JedisCommands jedisCommands) implements JedisTemplate {
+
         @Override
-        public void del(String key) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                jedis.del(key);
+            public String set(String key, String value, SetParams setParams) {
+                return jedisCommands.set(key, value, setParams);
+            }
+
+            @Override
+            public void del(String key) {
+                jedisCommands.del(key);
             }
         }
-    }
-
-    private static class JedisCommandsTemplate implements JedisTemplate {
-        private final JedisCommands jedisCommands;
-
-        private JedisCommandsTemplate(JedisCommands jedisCommands) {
-            this.jedisCommands = jedisCommands;
-        }
-
-        @Override
-        public String set(String key, String value, SetParams setParams) {
-            return jedisCommands.set(key, value, setParams);
-        }
-
-        @Override
-        public void del(String key) {
-            jedisCommands.del(key);
-        }
-    }
 }

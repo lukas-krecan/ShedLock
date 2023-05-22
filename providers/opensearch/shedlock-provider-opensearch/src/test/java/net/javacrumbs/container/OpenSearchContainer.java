@@ -20,9 +20,7 @@ public class OpenSearchContainer extends GenericContainer<OpenSearchContainer> {
 
     private ImageFromDockerfile prepareImage(String imageName) {
         return new ImageFromDockerfile()
-            .withDockerfileFromBuilder(builder -> {
-                builder.from(imageName);
-            });
+            .withDockerfileFromBuilder(builder -> builder.from(imageName));
     }
 
     @Override

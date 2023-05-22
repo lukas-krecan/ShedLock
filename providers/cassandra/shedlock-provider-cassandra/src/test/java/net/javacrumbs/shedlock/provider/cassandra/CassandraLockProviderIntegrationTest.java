@@ -80,17 +80,17 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
     @Override
     protected void assertUnlocked(String lockName) {
         Lock lock = findLock(lockName);
-        assertThat(lock.getLockUntil()).isBefore(now());
-        assertThat(lock.getLockedAt()).isBefore(now());
-        assertThat(lock.getLockedBy()).isNotEmpty();
+        assertThat(lock.lockUntil()).isBefore(now());
+        assertThat(lock.lockedAt()).isBefore(now());
+        assertThat(lock.lockedBy()).isNotEmpty();
     }
 
     @Override
     protected void assertLocked(String lockName) {
         Lock lock = findLock(lockName);
-        assertThat(lock.getLockUntil()).isAfter(now());
-        assertThat(lock.getLockedAt()).isBefore(now());
-        assertThat(lock.getLockedBy()).isNotEmpty();
+        assertThat(lock.lockUntil()).isAfter(now());
+        assertThat(lock.lockedAt()).isBefore(now());
+        assertThat(lock.lockedBy()).isNotEmpty();
     }
 
     private Lock findLock(String lockName) {

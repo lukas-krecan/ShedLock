@@ -64,12 +64,7 @@ public class InMemoryLockProvider implements ExtensibleLockProvider {
         }
     }
 
-    private static class LockRecord {
-        private final Instant lockedUntil;
-
-        private LockRecord(Instant lockedUntil) {
-            this.lockedUntil = lockedUntil;
-        }
+    private record LockRecord(Instant lockedUntil) {
     }
 
     private class InMemoryLock extends AbstractSimpleLock {
