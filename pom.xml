@@ -124,7 +124,7 @@
                 <version>3.5.0</version>
                 <configuration>
                     <!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
-                    <source>8</source>
+                    <source>17</source>
                 </configuration>
             </plugin>
             <plugin>

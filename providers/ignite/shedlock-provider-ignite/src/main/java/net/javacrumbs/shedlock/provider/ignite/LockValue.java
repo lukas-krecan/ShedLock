@@ -19,18 +19,26 @@ import java.time.Instant;
 
 /**
  * Value object for ShedLock cache.
- *
- * @param lockedAt  Locked at time.
- * @param lockUntil Locked until time.
- * @param lockedBy  Locked by hostname.
  */
-record LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
+class LockValue {
+    /** Locked at time. */
+    private final Instant lockedAt;
+
+    /** Locked until time. */
+    private final Instant lockUntil;
+
+    /** Locked by hostname. */
+    private final String lockedBy;
+
     /**
-     * @param lockedAt  Locked at time.
+     * @param lockedAt Locked at time.
      * @param lockUntil Locked until time.
-     * @param lockedBy  Locked by hostname.
+     * @param lockedBy Locked by hostname.
      */
-    LockValue {
+    public LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
+        this.lockedAt = lockedAt;
+        this.lockUntil = lockUntil;
+        this.lockedBy = lockedBy;
     }
 
     LockValue withLockUntil(Instant lockUntil) {
@@ -40,24 +48,21 @@ record LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
     /**
      * @return Locked at time.
      */
-    @Override
-    public Instant lockedAt() {
+    public Instant getLockedAt() {
         return lockedAt;
     }
 
     /**
      * @return Locked until time.
      */
-    @Override
-    public Instant lockUntil() {
+    public Instant getLockUntil() {
         return lockUntil;
     }
 
     /**
      * @return Locked by hostname.
      */
-    @Override
-    public String lockedBy() {
+    public String getLockedBy() {
         return lockedBy;
     }
 }

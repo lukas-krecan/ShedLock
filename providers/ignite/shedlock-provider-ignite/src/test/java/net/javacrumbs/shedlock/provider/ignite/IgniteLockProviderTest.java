@@ -64,9 +64,9 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
         Instant now = Instant.now();
 
         assertThat(val).isNotNull();
-        assertThat(val.lockUntil()).isBeforeOrEqualTo(now);
-        assertThat(val.lockedAt()).isBeforeOrEqualTo(now);
-        assertThat(val.lockedBy()).isNotEmpty();
+        assertThat(val.getLockUntil()).isBeforeOrEqualTo(now);
+        assertThat(val.getLockedAt()).isBeforeOrEqualTo(now);
+        assertThat(val.getLockedBy()).isNotEmpty();
     }
 
     @Override
@@ -76,8 +76,8 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
         Instant now = Instant.now();
 
         assertThat(val).isNotNull();
-        assertThat(val.lockUntil()).isAfter(now);
-        assertThat(val.lockedAt()).isBeforeOrEqualTo(now);
-        assertThat(val.lockedBy()).isNotEmpty();
+        assertThat(val.getLockUntil()).isAfter(now);
+        assertThat(val.getLockedAt()).isBeforeOrEqualTo(now);
+        assertThat(val.getLockedBy()).isNotEmpty();
     }
 }

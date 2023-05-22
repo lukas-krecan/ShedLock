@@ -108,7 +108,7 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
             return Optional.empty();
         }
 
-        if (!now.isBefore(oldVal.lockUntil()) && cache.replace(key, oldVal, newVal))
+        if (!now.isBefore(oldVal.getLockUntil()) && cache.replace(key, oldVal, newVal))
             return Optional.of(new IgniteLock(lockCfg, this));
 
         return Optional.empty();
@@ -127,7 +127,7 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
         String key = lockCfg.getName();
         LockValue oldVal = cache.get(key);
 
-        if (oldVal == null || !oldVal.lockedBy().equals(getHostname()) || !oldVal.lockUntil().isAfter(now))
+        if (oldVal == null || !oldVal.getLockedBy().equals(getHostname()) || !oldVal.getLockUntil().isAfter(now))
             return Optional.empty();
 
         LockValue newVal = oldVal.withLockUntil(lockCfg.getLockAtMostUntil());
@@ -148,7 +148,7 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
         String key = lockCfg.getName();
         LockValue oldVal = cache.get(key);
 
-        if (oldVal != null && oldVal.lockedBy().equals(getHostname())) {
+        if (oldVal != null && oldVal.getLockedBy().equals(getHostname())) {
             LockValue newVal = oldVal.withLockUntil(lockCfg.getUnlockTime());
 
             cache.replace(key, oldVal, newVal);
