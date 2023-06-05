@@ -83,7 +83,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         } catch (ConcurrencyFailureException e) {
             logger.debug("Serialization exception", e);
             return false;
-        } catch (DataIntegrityViolationException | TransactionSystemException e) {
+        } catch (DataIntegrityViolationException | TransactionSystemException | UncategorizedSQLException e) {
             logger.error("Unexpected exception", e);
             return false;
         }
