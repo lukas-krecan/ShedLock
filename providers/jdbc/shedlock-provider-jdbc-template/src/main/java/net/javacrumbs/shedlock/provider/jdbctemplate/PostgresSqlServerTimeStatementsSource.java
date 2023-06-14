@@ -18,7 +18,6 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.util.HashMap;
 import java.util.Map;
 
 class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
@@ -58,11 +57,11 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     @NonNull Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", lockConfiguration.getName());
-        params.put("lockedBy", configuration.getLockedByValue());
-        params.put("lockAtMostForInterval", lockConfiguration.getLockAtMostFor().toMillis() + " milliseconds");
-        params.put("lockAtLeastForInterval", lockConfiguration.getLockAtLeastFor().toMillis() + " milliseconds");
-        return params;
+        return Map.of(
+            "name", lockConfiguration.getName(),
+            "lockedBy", configuration.getLockedByValue(),
+            "lockAtMostForInterval", lockConfiguration.getLockAtMostFor().toMillis() + " milliseconds",
+            "lockAtLeastForInterval", lockConfiguration.getLockAtLeastFor().toMillis() + " milliseconds"
+        );
     }
 }
