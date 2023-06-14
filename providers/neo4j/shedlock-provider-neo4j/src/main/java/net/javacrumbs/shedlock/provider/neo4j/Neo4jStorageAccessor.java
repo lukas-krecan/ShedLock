@@ -27,7 +27,6 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Transaction;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -68,12 +67,12 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     private Map<String, Object> createParameterMap(@NonNull LockConfiguration lockConfiguration) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("lockName", lockConfiguration.getName());
-        parameters.put("lockedBy", getHostname());
-        parameters.put("now", ClockProvider.now().toString());
-        parameters.put("lockUntil", lockConfiguration.getLockAtMostUntil().toString());
-        return parameters;
+        return Map.of(
+            "lockName", lockConfiguration.getName(),
+            "lockedBy", getHostname(),
+            "now", ClockProvider.now().toString(),
+            "lockUntil", lockConfiguration.getLockAtMostUntil().toString()
+        );
     }
 
     @Override
@@ -115,9 +114,10 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format("MATCH (lock:%s) WHERE lock.name = $lockName " +
             "SET lock.lock_until = $lockUntil ", collectionName);
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("lockName", lockConfiguration.getName());
-        parameters.put("lockUntil", lockConfiguration.getUnlockTime().toString());
+        Map<String, Object> parameters = Map.of(
+            "lockName", lockConfiguration.getName(),
+            "lockUntil", lockConfiguration.getUnlockTime().toString()
+        );
         executeCommand(cypher, statement -> null, parameters, this::handleUnlockException);
     }
 

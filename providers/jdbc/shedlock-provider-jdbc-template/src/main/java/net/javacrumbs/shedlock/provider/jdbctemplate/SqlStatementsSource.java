@@ -27,7 +27,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -103,13 +102,13 @@ class SqlStatementsSource {
 
     @NonNull
     Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", lockConfiguration.getName());
-        params.put("lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()));
-        params.put("now", timestamp(ClockProvider.now()));
-        params.put("lockedBy", configuration.getLockedByValue());
-        params.put("unlockTime", timestamp(lockConfiguration.getUnlockTime()));
-        return params;
+        return Map.of(
+            "name", lockConfiguration.getName(),
+            "lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()),
+            "now", timestamp(ClockProvider.now()),
+            "lockedBy", configuration.getLockedByValue(),
+            "unlockTime", timestamp(lockConfiguration.getUnlockTime())
+        );
     }
 
     @NonNull

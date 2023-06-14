@@ -29,7 +29,6 @@ import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -107,10 +106,11 @@ public class DynamoDBLockProvider implements LockProvider {
 
         Map<String, AttributeValue> key = singletonMap(ID, attr(lockConfiguration.getName()));
 
-        Map<String, AttributeValue> attributeUpdates = new HashMap<>(3);
-        attributeUpdates.put(":lockUntil", attr(lockUntilIso));
-        attributeUpdates.put(":lockedAt", attr(nowIso));
-        attributeUpdates.put(":lockedBy", attr(hostname));
+        Map<String, AttributeValue> attributeUpdates = Map.of(
+                ":lockUntil", attr(lockUntilIso),
+                ":lockedAt", attr(nowIso),
+                ":lockedBy", attr(hostname)
+        );
 
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName(tableName)

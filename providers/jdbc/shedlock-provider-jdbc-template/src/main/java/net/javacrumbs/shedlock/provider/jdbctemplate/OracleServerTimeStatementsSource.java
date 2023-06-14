@@ -18,7 +18,6 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.util.HashMap;
 import java.util.Map;
 
 class OracleServerTimeStatementsSource extends SqlStatementsSource {
@@ -55,11 +54,11 @@ class OracleServerTimeStatementsSource extends SqlStatementsSource {
     @Override
     @NonNull
     Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", lockConfiguration.getName());
-        params.put("lockedBy", configuration.getLockedByValue());
-        params.put("lockAtMostFor", ((double) lockConfiguration.getLockAtMostFor().toMillis()) / millisecondsInDay);
-        params.put("lockAtLeastFor", ((double) lockConfiguration.getLockAtLeastFor().toMillis()) / millisecondsInDay);
-        return params;
+        return Map.of(
+            "name", lockConfiguration.getName(),
+            "lockedBy", configuration.getLockedByValue(),
+            "lockAtMostFor", ((double) lockConfiguration.getLockAtMostFor().toMillis()) / millisecondsInDay
+            "lockAtLeastFor", ((double) lockConfiguration.getLockAtLeastFor().toMillis()) / millisecondsInDay
+        );
     }
 }
