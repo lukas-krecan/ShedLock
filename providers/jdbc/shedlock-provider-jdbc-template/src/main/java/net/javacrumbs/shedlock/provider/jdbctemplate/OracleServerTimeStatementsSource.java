@@ -57,7 +57,7 @@ class OracleServerTimeStatementsSource extends SqlStatementsSource {
         return Map.of(
             "name", lockConfiguration.getName(),
             "lockedBy", configuration.getLockedByValue(),
-            "lockAtMostFor", ((double) lockConfiguration.getLockAtMostFor().toMillis()) / millisecondsInDay
+            "lockAtMostFor", ((double) lockConfiguration.getLockAtMostFor().toMillis()) / millisecondsInDay,
             "lockAtLeastFor", ((double) lockConfiguration.getLockAtLeastFor().toMillis()) / millisecondsInDay
         );
     }
