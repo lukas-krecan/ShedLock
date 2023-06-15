@@ -34,7 +34,6 @@ import org.opensearch.script.ScriptType;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -148,12 +147,12 @@ public class OpenSearchLockProvider implements LockProvider {
     }
 
     private Map<String, Object> lockObject(String name, Instant lockUntil, Instant lockedAt) {
-        Map<String, Object> lock = new HashMap<>();
-        lock.put(NAME, name);
-        lock.put(LOCKED_BY, hostname);
-        lock.put(LOCKED_AT, lockedAt.toEpochMilli());
-        lock.put(LOCK_UNTIL, lockUntil.toEpochMilli());
-        return lock;
+        return Map.of(
+            NAME, name,
+            LOCKED_BY, hostname,
+            LOCKED_AT, lockedAt.toEpochMilli(),
+            LOCK_UNTIL, lockUntil.toEpochMilli()
+        );
     }
 
     private final class OpenSearchSimpleLock extends AbstractSimpleLock {
