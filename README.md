@@ -45,6 +45,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Multi-tenancy](#Multi-tenancy)
   - [In-Memory](#In-Memory)
   - [Memcached](#Memcached)
+  - [Datastore](#Datastore)
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
@@ -837,6 +838,31 @@ P.S.:
 Memcached Standard Protocol:
 - A key (arbitrary string up to 250 bytes in length. No space or newlines for ASCII mode)
 - An expiration time, in `seconds`. '0' means never expire. Can be up to 30 days. After 30 days, is treated as a unix timestamp of an exact date. (support `seconds`、`minutes`、`days`, and less than `30` days)
+
+
+#### Datastore
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-datastore</artifactId>
+    <version>5.4.0</version>
+</dependency>
+```
+
+and configure
+```java
+import net.javacrumbs.shedlock.provider.datastore.DatastoreLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.google.cloud.datastore.Datastore datastore) {
+    return new DatastoreLockProvider(datastore);
+}
+
+```
 
 
 ## Duration specification
