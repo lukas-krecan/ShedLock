@@ -27,14 +27,14 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
     private final Datastore datastore;
     private final String hostname;
     private final String entityName;
-    private final DatastoreLockProvider.Fields fields;
+    private final DatastoreLockProvider.FieldNames fieldNames;
 
     public DatastoreStorageAccessor(DatastoreLockProvider.Configuration configuration) {
         requireNonNull(configuration);
         this.datastore = configuration.getDatastore();
         this.hostname = Utils.getHostname();
         this.entityName = configuration.getEntityName();
-        this.fields = configuration.getFields();
+        this.fieldNames = configuration.getFieldNames();
     }
 
     @Override
@@ -62,12 +62,11 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
             KeyFactory keyFactory = this.datastore.newKeyFactory().setKind(this.entityName);
             Key key = keyFactory.newKey(name);
             Entity entity = Entity.newBuilder(key)
-                .set(this.fields.lockUntil(), fromInstant(until))
-                .set(this.fields.lockedAt(), fromInstant(ClockProvider.now()))
-                .set(this.fields.lockedBy(), this.hostname)
+                .set(this.fieldNames.lockUntil(), fromInstant(until))
+                .set(this.fieldNames.lockedAt(), fromInstant(ClockProvider.now()))
+                .set(this.fieldNames.lockedBy(), this.hostname)
                 .build();
             txn.add(entity);
-            txn.commit();
             return Optional.of(true);
         }).orElse(false);
     }
@@ -77,16 +76,15 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
             get(name, txn)
                 .filter(entity -> {
                     var now = ClockProvider.now();
-                    var lockUntilTs = nullableTimestamp(entity, this.fields.lockUntil());
+                    var lockUntilTs = nullableTimestamp(entity, this.fieldNames.lockUntil());
                     return lockUntilTs != null && lockUntilTs.isBefore(now);
                 })
                 .map(entity -> {
                     txn.put(Entity.newBuilder(entity)
-                        .set(this.fields.lockUntil(), fromInstant(until))
-                        .set(this.fields.lockedAt(), fromInstant(ClockProvider.now()))
-                        .set(this.fields.lockedBy(), this.hostname)
+                        .set(this.fieldNames.lockUntil(), fromInstant(until))
+                        .set(this.fieldNames.lockedAt(), fromInstant(ClockProvider.now()))
+                        .set(this.fieldNames.lockedBy(), this.hostname)
                         .build());
-                    txn.commit();
                     return true;
                 })
         ).orElse(false);
@@ -95,17 +93,16 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
     private boolean updateOwn(String name, Instant until) {
         return doInTxn(txn ->
             get(name, txn)
-                .filter(entity -> this.hostname.equals(nullableString(entity, this.fields.lockedBy())))
+                .filter(entity -> this.hostname.equals(nullableString(entity, this.fieldNames.lockedBy())))
                 .filter(entity -> {
                     var now = ClockProvider.now();
-                    var lockUntilTs = nullableTimestamp(entity, this.fields.lockUntil());
+                    var lockUntilTs = nullableTimestamp(entity, this.fieldNames.lockUntil());
                     return lockUntilTs != null && (lockUntilTs.isAfter(now) || lockUntilTs.equals(now));
                 })
                 .map(entity -> {
                     txn.put(Entity.newBuilder(entity)
-                        .set(this.fields.lockUntil(), fromInstant(until))
+                        .set(this.fieldNames.lockUntil(), fromInstant(until))
                         .build());
-                    txn.commit();
                     return true;
                 })
         ).orElse(false);
@@ -115,9 +112,9 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
         return get(name)
             .map(entity -> new Lock(
                 entity.getKey().getName(),
-                nullableTimestamp(entity, this.fields.lockedAt()),
-                nullableTimestamp(entity, this.fields.lockUntil()),
-                nullableString(entity, this.fields.lockedBy())
+                nullableTimestamp(entity, this.fieldNames.lockedAt()),
+                nullableTimestamp(entity, this.fieldNames.lockUntil()),
+                nullableString(entity, this.fieldNames.lockedBy())
             ));
     }
 
@@ -136,7 +133,9 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
     private <T> Optional<T> doInTxn(Function<Transaction, Optional<T>> work) {
         var txn = this.datastore.newTransaction();
         try {
-            return work.apply(txn);
+            var result = work.apply(txn);
+            txn.commit();
+            return result;
         } catch (DatastoreException ex) {
             log.debug("Unable to perform a transactional unit of work: {}", ex.getMessage());
             return Optional.empty();

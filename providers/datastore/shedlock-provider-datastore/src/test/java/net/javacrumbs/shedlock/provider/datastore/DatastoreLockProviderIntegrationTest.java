@@ -3,7 +3,6 @@ package net.javacrumbs.shedlock.provider.datastore;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
-import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -15,7 +14,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.google.cloud.datastore.Query.ResultType.ENTITY;
@@ -48,7 +46,7 @@ class DatastoreLockProviderIntegrationTest extends AbstractStorageBasedLockProvi
         this.configuration = DatastoreLockProvider.Configuration.builder()
             .withDatastore(datastore)
             .withEntityName("shedlock")
-            .withFields(new DatastoreLockProvider.Fields("until", "at", "by"))
+            .withFieldNames(new DatastoreLockProvider.FieldNames("until", "at", "by"))
             .build();
         this.accessor = new DatastoreStorageAccessor(this.configuration);
         this.provider = new DatastoreLockProvider(this.configuration);
@@ -58,9 +56,7 @@ class DatastoreLockProviderIntegrationTest extends AbstractStorageBasedLockProvi
     void tearDown() {
         var locks = String.format("select * from %s", this.configuration.getEntityName());
         var results = this.datastore.run(Query.newGqlQueryBuilder(ENTITY, locks).build());
-        var keys = new ArrayList<Key>();
-        results.forEachRemaining(entity -> keys.add(entity.getKey()));
-        this.datastore.delete(keys.toArray(Key[]::new));
+        results.forEachRemaining(entity -> this.datastore.delete(entity.getKey()));
     }
 
     @Override
