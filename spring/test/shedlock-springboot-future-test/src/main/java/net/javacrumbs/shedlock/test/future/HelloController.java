@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.test.boot;
+package net.javacrumbs.shedlock.test.future;
 
-import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootApplication
-@EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT10M")
-public class Application {
+@RestController
+public class HelloController {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class);
+    @RequestMapping("/")
+    public String index() {
+        return "Greetings from Spring Boot!";
     }
+
 }
