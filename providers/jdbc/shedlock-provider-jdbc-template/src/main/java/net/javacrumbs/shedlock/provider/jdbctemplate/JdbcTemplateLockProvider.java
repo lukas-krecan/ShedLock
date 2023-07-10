@@ -88,6 +88,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     public static final class Configuration {
         private final JdbcTemplate jdbcTemplate;
+        private final String databaseProductName;
         private final PlatformTransactionManager transactionManager;
         private final String tableName;
         private final TimeZone timeZone;
@@ -98,6 +99,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         Configuration(
             @NonNull JdbcTemplate jdbcTemplate,
+            @Nullable String databaseProductName,
             @Nullable PlatformTransactionManager transactionManager,
             @NonNull String tableName,
             @Nullable TimeZone timeZone,
@@ -107,6 +109,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             @Nullable Integer isolationLevel) {
 
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
+            this.databaseProductName = databaseProductName;
             this.transactionManager = transactionManager;
             this.tableName = requireNonNull(tableName, "tableName can not be null");
             this.timeZone = timeZone;
@@ -122,6 +125,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         public JdbcTemplate getJdbcTemplate() {
             return jdbcTemplate;
         }
+
+        public String getDatabaseProductName() { return databaseProductName; }
 
         public PlatformTransactionManager getTransactionManager() {
             return transactionManager;
@@ -158,6 +163,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         public static final class Builder {
             private JdbcTemplate jdbcTemplate;
+            private String databaseProductName;
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
             private TimeZone timeZone;
@@ -197,6 +203,11 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            public Builder withDatabaseProductName(final String databaseProductName){
+                this.databaseProductName = databaseProductName;
+                return this;
+            }
+
 
             /**
              * Value stored in 'locked_by' column. Please use only for debugging purposes.
@@ -223,6 +234,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             public JdbcTemplateLockProvider.Configuration build() {
                 return new JdbcTemplateLockProvider.Configuration(
                     jdbcTemplate,
+                    databaseProductName,
                     transactionManager,
                     dbUpperCase ? tableName.toUpperCase() : tableName,
                     timeZone,
