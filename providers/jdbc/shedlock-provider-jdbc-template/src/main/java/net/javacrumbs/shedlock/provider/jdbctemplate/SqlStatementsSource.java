@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 
 class SqlStatementsSource {
@@ -40,48 +41,47 @@ class SqlStatementsSource {
     }
 
     static SqlStatementsSource create(Configuration configuration) {
-        String databaseProductName = getDatabaseProductName(configuration);
+        DatabaseProduct databaseProduct = getDatabaseProductName(configuration);
 
         if (configuration.getUseDbTime()) {
-            switch (databaseProductName) {
-                case "PostgreSQL" -> {
+            switch (databaseProduct) {
+                case PostgresSQL -> {
                     logger.debug("Using PostgresSqlServerTimeStatementsSource");
                     return new PostgresSqlServerTimeStatementsSource(configuration);
                 }
-                case "Microsoft SQL Server" -> {
+                case SQLServer -> {
                     logger.debug("Using MsSqlServerTimeStatementsSource");
                     return new MsSqlServerTimeStatementsSource(configuration);
                 }
-                case "Oracle" -> {
+                case Oracle -> {
                     logger.debug("Using OracleServerTimeStatementsSource");
                     return new OracleServerTimeStatementsSource(configuration);
                 }
-                case "MySQL" -> {
+                case MySQL -> {
                     logger.debug("Using MySqlServerTimeStatementsSource");
                     return new MySqlServerTimeStatementsSource(configuration);
                 }
-                case "MariaDB" -> {
+                case MariaDB -> {
                     logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
                     return new MySqlServerTimeStatementsSource(configuration);
                 }
-                case "HSQL Database Engine" -> {
+                case HQL -> {
                     logger.debug("Using HsqlServerTimeStatementsSource");
                     return new HsqlServerTimeStatementsSource(configuration);
                 }
-                case "H2" -> {
+                case H2 -> {
                     logger.debug("Using H2ServerTimeStatementsSource");
                     return new H2ServerTimeStatementsSource(configuration);
                 }
-                default -> {
-                    if (databaseProductName.startsWith("DB2")) {
-                        logger.debug("Using Db2ServerTimeStatementsSource");
-                        return new Db2ServerTimeStatementsSource(configuration);
-                    }
-                    throw new UnsupportedOperationException("DB time is not supported for '" + databaseProductName + "'");
+                case DB2 -> {
+                    logger.debug("Using Db2ServerTimeStatementsSource");
+                    return new Db2ServerTimeStatementsSource(configuration);
                 }
+                default ->
+                    throw new UnsupportedOperationException("DB time is not supported for '" + databaseProduct + "'");
             }
         } else {
-            if ("PostgreSQL".equals(databaseProductName)) {
+            if (DatabaseProduct.PostgresSQL.equals(databaseProduct)) {
                 logger.debug("Using PostgresSqlServerTimeStatementsSource");
                 return new PostgresSqlStatementsSource(configuration);
             } else {
@@ -91,15 +91,16 @@ class SqlStatementsSource {
         }
     }
 
-    private static String getDatabaseProductName(Configuration configuration) {
+    private static DatabaseProduct getDatabaseProductName(final Configuration configuration) {
         if (configuration.getDatabaseProductName() != null) {
             return configuration.getDatabaseProductName();
         }
         try {
-            return configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
+            String jdbcProductName = configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
+            return Optional.ofNullable(DatabaseProduct.matchProductName(jdbcProductName)).orElse(DatabaseProduct.Unknown);
         } catch (Exception e) {
             logger.debug("Can not determine database product name " + e.getMessage());
-            return "Unknown";
+            return DatabaseProduct.Unknown;
         }
     }
 

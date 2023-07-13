@@ -1,12 +1,12 @@
 /**
  * Copyright 2009 the original author or authors.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -88,7 +88,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     public static final class Configuration {
         private final JdbcTemplate jdbcTemplate;
-        private final String databaseProductName;
+        private final DatabaseProduct databaseProductName;
         private final PlatformTransactionManager transactionManager;
         private final String tableName;
         private final TimeZone timeZone;
@@ -99,7 +99,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         Configuration(
             @NonNull JdbcTemplate jdbcTemplate,
-            @Nullable String databaseProductName,
+            @Nullable DatabaseProduct databaseProductName,
             @Nullable PlatformTransactionManager transactionManager,
             @NonNull String tableName,
             @Nullable TimeZone timeZone,
@@ -126,7 +126,9 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return jdbcTemplate;
         }
 
-        public String getDatabaseProductName() { return databaseProductName; }
+        public DatabaseProduct getDatabaseProductName() {
+            return databaseProductName;
+        }
 
         public PlatformTransactionManager getTransactionManager() {
             return transactionManager;
@@ -163,7 +165,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         public static final class Builder {
             private JdbcTemplate jdbcTemplate;
-            private String databaseProductName;
+            private DatabaseProduct databaseProductName;
             private PlatformTransactionManager transactionManager;
             private String tableName = DEFAULT_TABLE_NAME;
             private TimeZone timeZone;
@@ -198,13 +200,18 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withDbUpperCase (final boolean dbUppercase) {
+            public Builder withDbUpperCase(final boolean dbUppercase) {
                 this.dbUpperCase = dbUppercase;
                 return this;
             }
 
-            public Builder withDatabaseProductName(final String databaseProductName){
-                this.databaseProductName = databaseProductName;
+            /**
+             * This is only needed if your database product can't be automatically detected.
+             * @param databaseProduct Database product
+             * @return ConfigurationBuilder
+             */
+            public Builder withDatabaseProductName(final DatabaseProduct databaseProduct) {
+                this.databaseProductName = databaseProduct;
                 return this;
             }
 
