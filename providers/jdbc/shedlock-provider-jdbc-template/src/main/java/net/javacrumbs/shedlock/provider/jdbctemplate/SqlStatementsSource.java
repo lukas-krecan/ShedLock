@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -81,7 +82,7 @@ class SqlStatementsSource {
                     throw new UnsupportedOperationException("DB time is not supported for '" + databaseProduct + "'");
             }
         } else {
-            if (DatabaseProduct.PostgresSQL.equals(databaseProduct)) {
+            if (Objects.equals(databaseProduct, DatabaseProduct.PostgresSQL)) {
                 logger.debug("Using PostgresSqlServerTimeStatementsSource");
                 return new PostgresSqlStatementsSource(configuration);
             } else {

@@ -200,8 +200,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withDbUpperCase(final boolean dbUppercase) {
-                this.dbUpperCase = dbUppercase;
+            public Builder withDbUpperCase(final boolean dbUpperCase) {
+                this.dbUpperCase = dbUpperCase;
                 return this;
             }
 
