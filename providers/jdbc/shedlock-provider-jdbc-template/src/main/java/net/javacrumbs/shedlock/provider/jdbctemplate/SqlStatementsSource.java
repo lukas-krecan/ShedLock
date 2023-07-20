@@ -29,7 +29,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.TimeZone;
 
 class SqlStatementsSource {
@@ -42,48 +41,15 @@ class SqlStatementsSource {
     }
 
     static SqlStatementsSource create(Configuration configuration) {
-        DatabaseProduct databaseProduct = getDatabaseProductName(configuration);
+        DatabaseProduct databaseProduct = getDatabaseProduct(configuration);
 
         if (configuration.getUseDbTime()) {
-            switch (databaseProduct) {
-                case PostgresSQL -> {
-                    logger.debug("Using PostgresSqlServerTimeStatementsSource");
-                    return new PostgresSqlServerTimeStatementsSource(configuration);
-                }
-                case SQLServer -> {
-                    logger.debug("Using MsSqlServerTimeStatementsSource");
-                    return new MsSqlServerTimeStatementsSource(configuration);
-                }
-                case Oracle -> {
-                    logger.debug("Using OracleServerTimeStatementsSource");
-                    return new OracleServerTimeStatementsSource(configuration);
-                }
-                case MySQL -> {
-                    logger.debug("Using MySqlServerTimeStatementsSource");
-                    return new MySqlServerTimeStatementsSource(configuration);
-                }
-                case MariaDB -> {
-                    logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
-                    return new MySqlServerTimeStatementsSource(configuration);
-                }
-                case HQL -> {
-                    logger.debug("Using HsqlServerTimeStatementsSource");
-                    return new HsqlServerTimeStatementsSource(configuration);
-                }
-                case H2 -> {
-                    logger.debug("Using H2ServerTimeStatementsSource");
-                    return new H2ServerTimeStatementsSource(configuration);
-                }
-                case DB2 -> {
-                    logger.debug("Using Db2ServerTimeStatementsSource");
-                    return new Db2ServerTimeStatementsSource(configuration);
-                }
-                default ->
-                    throw new UnsupportedOperationException("DB time is not supported for '" + databaseProduct + "'");
-            }
+            var statementsSource = databaseProduct.getDbTimeStatementSource(configuration);
+            logger.debug("Using {}", statementsSource.getClass().getSimpleName());
+            return statementsSource;
         } else {
-            if (Objects.equals(databaseProduct, DatabaseProduct.PostgresSQL)) {
-                logger.debug("Using PostgresSqlServerTimeStatementsSource");
+            if (Objects.equals(databaseProduct, DatabaseProduct.POSTGRES_SQL)) {
+                logger.debug("Using PostgresSqlStatementsSource");
                 return new PostgresSqlStatementsSource(configuration);
             } else {
                 logger.debug("Using SqlStatementsSource");
@@ -92,16 +58,16 @@ class SqlStatementsSource {
         }
     }
 
-    private static DatabaseProduct getDatabaseProductName(final Configuration configuration) {
-        if (configuration.getDatabaseProductName() != null) {
-            return configuration.getDatabaseProductName();
+    private static DatabaseProduct getDatabaseProduct(final Configuration configuration) {
+        if (configuration.getDatabaseProduct() != null) {
+            return configuration.getDatabaseProduct();
         }
         try {
             String jdbcProductName = configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
-            return Optional.ofNullable(DatabaseProduct.matchProductName(jdbcProductName)).orElse(DatabaseProduct.Unknown);
+            return DatabaseProduct.matchProductName(jdbcProductName);
         } catch (Exception e) {
             logger.debug("Can not determine database product name " + e.getMessage());
-            return DatabaseProduct.Unknown;
+            return DatabaseProduct.UNKNOWN;
         }
     }
 
