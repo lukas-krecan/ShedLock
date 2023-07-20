@@ -71,17 +71,7 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-elasticsearch</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-opensearch</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-couchbase-javaclient</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -96,22 +86,12 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-redis-jedis</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-redis-jedis4</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-redis-spring</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-dynamodb</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
