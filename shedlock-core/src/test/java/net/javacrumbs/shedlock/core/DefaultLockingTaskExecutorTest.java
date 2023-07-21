@@ -31,11 +31,11 @@ class DefaultLockingTaskExecutorTest {
     private final LockProvider lockProvider = mock(LockProvider.class);
     private final DefaultLockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
     private final LockConfiguration lockConfig = new LockConfiguration(now(),"test", Duration.ofSeconds(100), Duration.ZERO);
+    private final LockConfiguration lockConfig2 = new LockConfiguration(now(),"test2", Duration.ofSeconds(100), Duration.ZERO);
 
     @Test
     void lockShouldBeReentrant() {
-        when(lockProvider.lock(lockConfig))
-            .thenReturn(Optional.of(mock(SimpleLock.class)));
+        mockLockFor(lockConfig);
 
         AtomicBoolean called = new AtomicBoolean(false);
 
@@ -45,9 +45,25 @@ class DefaultLockingTaskExecutorTest {
     }
 
     @Test
-    void shouldExecuteWithResult() throws Throwable {
-        when(lockProvider.lock(lockConfig))
+    void lockShouldBeReentrantForMultipleDifferentLocks() {
+        mockLockFor(lockConfig);
+        mockLockFor(lockConfig2);
+
+        AtomicBoolean called = new AtomicBoolean(false);
+
+        executor.executeWithLock((Runnable) () -> executor.executeWithLock((Runnable) () -> called.set(true), lockConfig2), lockConfig);
+
+        assertThat(called.get()).isTrue();
+    }
+
+    private void mockLockFor(LockConfiguration lockConfig2) {
+        when(lockProvider.lock(lockConfig2))
             .thenReturn(Optional.of(mock(SimpleLock.class)));
+    }
+
+    @Test
+    void shouldExecuteWithResult() throws Throwable {
+        mockLockFor(lockConfig);
 
         TaskResult<String> result = executor.executeWithLock(() -> "result", lockConfig);
         assertThat(result.wasExecuted()).isTrue();

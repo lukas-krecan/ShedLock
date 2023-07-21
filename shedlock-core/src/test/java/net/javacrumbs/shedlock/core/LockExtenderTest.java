@@ -12,7 +12,6 @@ import java.util.Optional;
 import static java.time.Duration.ZERO;
 import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,7 +26,7 @@ class LockExtenderTest {
 
     @BeforeEach
     void configureLockProvider() {
-        when(lockProvider.lock(any())).thenReturn(Optional.of(lock));
+        when(lockProvider.lock(configuration)).thenReturn(Optional.of(lock));
     }
 
     @Test
@@ -38,6 +37,20 @@ class LockExtenderTest {
         executor.executeWithLock(task, configuration);
 
         verify(lock).extend(extendBy, ZERO);
+    }
+
+    @Test
+    void shouldExtendNestedLock() {
+        LockConfiguration innerConfiguration = new LockConfiguration(Instant.now(), "test2", ofSeconds(1), ZERO);
+        SimpleLock innerLock = mock(SimpleLock.class);
+        when(lockProvider.lock(innerConfiguration)).thenReturn(Optional.of(innerLock));
+        when(innerLock.extend(extendBy, ZERO)).thenReturn(Optional.of(newLock));
+
+        Runnable innerTask = () -> LockExtender.extendActiveLock(extendBy, ZERO);
+        Runnable outerTask = () -> executor.executeWithLock(innerTask, innerConfiguration);
+        executor.executeWithLock(outerTask, configuration);
+
+        verify(innerLock).extend(extendBy, ZERO);
     }
 
     @Test
