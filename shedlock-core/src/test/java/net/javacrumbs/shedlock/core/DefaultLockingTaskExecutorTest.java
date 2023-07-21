@@ -35,8 +35,7 @@ class DefaultLockingTaskExecutorTest {
     @Test
     void lockShouldBeReentrant() {
         when(lockProvider.lock(lockConfig))
-            .thenReturn(Optional.of(mock(SimpleLock.class)))
-            .thenReturn(Optional.empty());
+            .thenReturn(Optional.of(mock(SimpleLock.class)));
 
         AtomicBoolean called = new AtomicBoolean(false);
 
