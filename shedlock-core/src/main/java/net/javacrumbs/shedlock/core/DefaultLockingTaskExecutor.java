@@ -57,13 +57,14 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
 
     @Override
     public <T> TaskResult<T> executeWithLock(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
-        Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         String lockName = lockConfig.getName();
-
         if (alreadyLockedBy(lockName)) {
             logger.debug("Already locked '{}'", lockName);
             return TaskResult.result(task.call());
-        } else if (lock.isPresent()) {
+        }
+
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
+        if (lock.isPresent()) {
             try {
                 LockAssert.startLock(lockName);
                 LockExtender.startLock(lock.get());
