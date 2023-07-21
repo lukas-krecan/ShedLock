@@ -49,6 +49,13 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
 
     private static final String DEFAULT_TABLE_NAME = "shedlock";
 
+    /**
+     *
+     * @deprecated Use {@link #MicronautJdbcLockProvider(TransactionOperations)} instead as
+     * transaction management has be refactored in Micronaut Data 4.0 and DataSourceTransactionManager
+     * is not easy to construct.
+     */
+    @Deprecated
     public MicronautJdbcLockProvider(@NonNull DataSource datasource) {
         this(new DataSourceTransactionManager(datasource), DEFAULT_TABLE_NAME);
     }
