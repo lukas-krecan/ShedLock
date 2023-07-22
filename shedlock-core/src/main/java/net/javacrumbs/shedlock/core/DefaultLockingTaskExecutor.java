@@ -71,7 +71,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
                 logger.debug("Locked '{}', lock will be held at most until {}", lockName, lockConfig.getLockAtMostUntil());
                 return TaskResult.result(task.call());
             } finally {
-                LockAssert.endLock();
+                LockAssert.endLock(lockName);
                 SimpleLock activeLock = LockExtender.endLock();
                 if (activeLock != null) {
                     activeLock.unlock();

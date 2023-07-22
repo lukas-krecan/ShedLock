@@ -15,6 +15,9 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Asserts lock presence. The Spring ecosystem is so complicated, so one can not be sure that the lock is applied. This class
  * makes sure that the task is indeed locked.
@@ -23,32 +26,42 @@ package net.javacrumbs.shedlock.core;
  * broken by Sleuth,.
  */
 public final class LockAssert {
-    private static final ThreadLocal<String> currentLockName = ThreadLocal.withInitial(() -> null);
+    private static final ThreadLocal<Set<String>> activeLockNames = ThreadLocal.withInitial(HashSet::new);
 
     private LockAssert() { }
 
     static void startLock(String name) {
-        currentLockName.set(name);
+        activeLockNames().add(name);
     }
 
     static boolean alreadyLockedBy(String name) {
-        return name.equals(currentLockName.get());
+        return activeLockNames().contains(name);
     }
 
-    static void endLock() {
-        currentLockName.remove();
+    static void endLock(String name) {
+        activeLockNames().remove(name);
+        if (activeLockNames().isEmpty()) {
+            activeLockNames.remove();
+        }
+    }
+
+    private static Set<String> activeLockNames() {
+        return activeLockNames.get();
     }
 
     /**
      * Throws an exception if the lock is not present.
      */
     public static void assertLocked() {
-        if (currentLockName.get() == null) {
+        if (activeLockNames().isEmpty()) {
             throw new IllegalStateException("The task is not locked.");
         }
     }
 
     public static class TestHelper {
+
+        private static final String TEST_LOCK_NAME = "net.javacrumbs.shedlock.core.test-lock";
+
         /**
          * If pass is set to true, all LockAssert.assertLocked calls in current thread will pass.
          * To be used in unit tests only
@@ -59,9 +72,9 @@ public final class LockAssert {
          */
         public static void makeAllAssertsPass(boolean pass) {
             if (pass) {
-                LockAssert.startLock("net.javacrumbs.shedlock.core.test-lock");
+                LockAssert.startLock(TEST_LOCK_NAME);
             } else {
-                LockAssert.endLock();
+                LockAssert.endLock(TEST_LOCK_NAME);
             }
         }
     }

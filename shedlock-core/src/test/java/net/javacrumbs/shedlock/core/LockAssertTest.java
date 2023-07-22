@@ -21,6 +21,8 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static net.javacrumbs.shedlock.core.LockAssert.alreadyLockedBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,6 +45,30 @@ class LockAssertTest {
             (Runnable) LockAssert::assertLocked,
             lockConfiguration
         );
+    }
+
+    @Test
+    void shouldWorkWithNestedLocks() {
+        LockAssert.startLock("outer");
+        assertThat(alreadyLockedBy("outer")).isTrue();
+        assertThat(alreadyLockedBy("inner")).isFalse();
+        LockAssert.assertLocked();
+
+        LockAssert.startLock("inner");
+        assertThat(alreadyLockedBy("inner")).isTrue();
+        assertThat(alreadyLockedBy("outer")).isTrue();
+        LockAssert.assertLocked();
+
+        LockAssert.endLock("inner");
+        assertThat(alreadyLockedBy("inner")).isFalse();
+        assertThat(alreadyLockedBy("outer")).isTrue();
+        LockAssert.assertLocked();
+
+        LockAssert.endLock("outer");
+        assertThat(alreadyLockedBy("inner")).isFalse();
+        assertThat(alreadyLockedBy("outer")).isFalse();
+
+        assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
