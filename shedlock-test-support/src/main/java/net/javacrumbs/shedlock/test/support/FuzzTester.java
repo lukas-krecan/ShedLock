@@ -16,21 +16,22 @@
 package net.javacrumbs.shedlock.test.support;
 
 import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
@@ -51,6 +52,8 @@ public class FuzzTester {
     private final Duration lockAtMostFor;
     private final int iterations;
 
+    private final LockingTaskExecutor lockingTaskExecutor;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public FuzzTester(LockProvider lockProvider) {
@@ -67,6 +70,7 @@ public class FuzzTester {
         this.sleepFor = sleepFor;
         this.lockAtMostFor = lockAtMostFor;
         this.iterations = iterations;
+        this.lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
     }
 
     public void doFuzzTest() throws InterruptedException, ExecutionException {
@@ -94,17 +98,16 @@ public class FuzzTester {
 
     protected Void task(int iterations, Job job) {
         try {
-            for (int i = 0; i < iterations;) {
-                Optional<SimpleLock> lock = lockProvider.lock(job.getLockConfiguration());
-                if (lock.isPresent()) {
+            for (AtomicInteger i = new AtomicInteger(0); i.get() < iterations;) {
+                lockingTaskExecutor.executeWithLock((Runnable) () -> {
                     int n = job.getCounter();
                     if (shouldLog()) logger.debug("action=getLock value={} i={}", n, i);
                     sleep();
                     if (shouldLog()) logger.debug("action=setCounter value={} i={}", n + 1, i);
+                    // counter is shared variable. If locking does not work, this overwrites the value set by another thread
                     job.setCounter(n + 1);
-                    lock.get().unlock();
-                    i++;
-                }
+                    i.incrementAndGet();
+                }, job.getLockConfiguration());
             }
             logger.debug("action=finished");
             return null;
