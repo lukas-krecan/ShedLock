@@ -15,8 +15,8 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Deque;
+import java.util.LinkedList;
 
 /**
  * Asserts lock presence. The Spring ecosystem is so complicated, so one can not be sure that the lock is applied. This class
@@ -26,7 +26,7 @@ import java.util.Set;
  * broken by Sleuth,.
  */
 public final class LockAssert {
-    private static final ThreadLocal<Set<String>> activeLockNames = ThreadLocal.withInitial(HashSet::new);
+    private static final ThreadLocal<Deque<String>> activeLockNames = ThreadLocal.withInitial(LinkedList::new);
 
     private LockAssert() { }
 
@@ -38,14 +38,14 @@ public final class LockAssert {
         return activeLockNames().contains(name);
     }
 
-    static void endLock(String name) {
-        activeLockNames().remove(name);
+    static void endLock() {
+        activeLockNames().removeLast();
         if (activeLockNames().isEmpty()) {
             activeLockNames.remove();
         }
     }
 
-    private static Set<String> activeLockNames() {
+    private static Deque<String> activeLockNames() {
         return activeLockNames.get();
     }
 
@@ -74,7 +74,7 @@ public final class LockAssert {
             if (pass) {
                 LockAssert.startLock(TEST_LOCK_NAME);
             } else {
-                LockAssert.endLock(TEST_LOCK_NAME);
+                LockAssert.endLock();
             }
         }
     }

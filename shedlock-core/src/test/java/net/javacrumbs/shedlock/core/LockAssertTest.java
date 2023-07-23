@@ -59,12 +59,12 @@ class LockAssertTest {
         assertThat(alreadyLockedBy("outer")).isTrue();
         LockAssert.assertLocked();
 
-        LockAssert.endLock("inner");
+        LockAssert.endLock();
         assertThat(alreadyLockedBy("inner")).isFalse();
         assertThat(alreadyLockedBy("outer")).isTrue();
         LockAssert.assertLocked();
 
-        LockAssert.endLock("outer");
+        LockAssert.endLock();
         assertThat(alreadyLockedBy("inner")).isFalse();
         assertThat(alreadyLockedBy("outer")).isFalse();
 
