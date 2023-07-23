@@ -26,34 +26,41 @@ import java.util.LinkedList;
  * broken by Sleuth,.
  */
 public final class LockAssert {
-    private static final ThreadLocal<Deque<String>> activeLockNames = ThreadLocal.withInitial(LinkedList::new);
+    // using null initial value so new LinkedList is not created every time we call alreadyLockedBy
+    private static final ThreadLocal<Deque<String>> activeLocksTL = ThreadLocal.withInitial(() -> null);
 
     private LockAssert() { }
 
     static void startLock(String name) {
-        activeLockNames().add(name);
+        activeLocks().add(name);
     }
 
     static boolean alreadyLockedBy(String name) {
-        return activeLockNames().contains(name);
+        Deque<String> activeLocks = activeLocksTL.get();
+        return activeLocks != null && activeLocks.contains(name);
     }
 
     static void endLock() {
-        activeLockNames().removeLast();
-        if (activeLockNames().isEmpty()) {
-            activeLockNames.remove();
+        Deque<String> activeLocks = activeLocks();
+        activeLocks.removeLast();
+        if (activeLocks.isEmpty()) {
+            activeLocksTL.remove();
         }
     }
 
-    private static Deque<String> activeLockNames() {
-        return activeLockNames.get();
+    private static Deque<String> activeLocks() {
+        if (activeLocksTL.get() == null) {
+            activeLocksTL.set(new LinkedList<>());
+        }
+        return activeLocksTL.get();
     }
 
     /**
      * Throws an exception if the lock is not present.
      */
     public static void assertLocked() {
-        if (activeLockNames().isEmpty()) {
+        Deque<String> activeLocks = activeLocksTL.get();
+        if (activeLocks == null || activeLocks.isEmpty()) {
             throw new IllegalStateException("The task is not locked.");
         }
     }
