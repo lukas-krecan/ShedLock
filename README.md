@@ -42,10 +42,11 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Neo4j](#neo4j)
   - [Etcd](#etcd)
   - [Apache Ignite](#apache-ignite)
-  - [Multi-tenancy](#Multi-tenancy)
   - [In-Memory](#In-Memory)
   - [Memcached](#Memcached)
   - [Datastore](#Datastore)
++ [Multi-tenancy](#Multi-tenancy)
++ [Customization](#Customization)
 + [Duration specification](#duration-specification)
 + [Extending the lock](#extending-the-lock)
 + [Micronaut integration](#micronaut-integration)
@@ -208,6 +209,9 @@ public LockProvider lockProvider(DataSource dataSource) {
 By specifying `usingDbTime()` the lock provider will use UTC time based on the DB server clock.
 If you do not specify this option, clock from the app server will be used (the clocks on app servers may not be
 synchronized thus leading to various locking issues).
+
+It's strongly recommended to use `usingDbTime()` option as it uses DB engine specific SQL that prevents INSERT conflicts.
+See more details [here](https://stackoverflow.com/a/76774461/277042).
 
 For more fine-grained configuration use other options of the `Configuration` object
 
@@ -763,25 +767,6 @@ public LockProvider lockProvider(Ignite ignite) {
 }
 ```
 
-#### Multi-tenancy
-If you have multi-tenancy use-case you can use a lock provider similar to this one
-(see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultiTenancyLockProviderIntegrationTest.java#L87))
-```java
-private static abstract class MultiTenancyLockProvider implements LockProvider {
-    private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
-
-    @Override
-    public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        String tenantName = getTenantName(lockConfiguration);
-        return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
-    }
-
-    protected abstract LockProvider createLockProvider(String tenantName) ;
-
-    protected abstract String getTenantName(LockConfiguration lockConfiguration);
-}
-```
-
 #### In-Memory
 If you want to use a lock provider in tests there is an in-Memory implementation.
 
@@ -864,6 +849,47 @@ public LockProvider lockProvider(com.google.cloud.datastore.Datastore datastore)
 
 ```
 
+## Multi-tenancy
+If you have multi-tenancy use-case you can use a lock provider similar to this one
+(see the full [example](https://github.com/lukas-krecan/ShedLock/blob/master/providers/jdbc/shedlock-provider-jdbc-template/src/test/java/net/javacrumbs/shedlock/provider/jdbctemplate/MultiTenancyLockProviderIntegrationTest.java#L87))
+```java
+private static abstract class MultiTenancyLockProvider implements LockProvider {
+    private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
+
+    @Override
+    public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+        String tenantName = getTenantName(lockConfiguration);
+        return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
+    }
+
+    protected abstract LockProvider createLockProvider(String tenantName) ;
+
+    protected abstract String getTenantName(LockConfiguration lockConfiguration);
+}
+```
+
+## Customization
+You can customize the behavior of the library by implementing `LockProvider` interface. Let's say you want to implement
+a special behavior after a lock is obtained. You can do it like this:
+
+```java
+public class MyLockProvider implements LockProvider {
+    private final LockProvider delegate;
+
+    public MyLockProvider(LockProvider delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+        Optional<SimpleLock> lock = delegate.lock(lockConfiguration);
+        if (lock.isPresent()) {
+            // do something
+        }
+        return lock;
+    }
+}
+```
 
 ## Duration specification
 All the annotations where you need to specify a duration support the following formats
