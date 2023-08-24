@@ -38,7 +38,7 @@ import static redis.clients.jedis.params.SetParams.setParams;
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
  * <p>
- * See https://redis.io/commands/set
+ * See <a href="https://redis.io/commands/set">Set command</a>
  */
 public class JedisLockProvider implements ExtensibleLockProvider {
 
@@ -143,7 +143,8 @@ public class JedisLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
-        protected Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
+        @NonNull
+        protected Optional<SimpleLock> doExtend(@NonNull LockConfiguration newConfiguration) {
             return jedisLockProvider.extend(newConfiguration);
         }
     }
