@@ -17,8 +17,8 @@ package net.javacrumbs.shedlock.provider.redis.jedis4;
 
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -40,7 +40,7 @@ import static redis.clients.jedis.params.SetParams.setParams;
  * <p>
  * See https://redis.io/commands/set
  */
-public class JedisLockProvider implements LockProvider {
+public class JedisLockProvider implements ExtensibleLockProvider {
 
     private static final String KEY_PREFIX = "job-lock";
     private static final String ENV_DEFAULT = "default";
@@ -86,20 +86,44 @@ public class JedisLockProvider implements LockProvider {
         String rez = jedisTemplate.set(key, buildValue(), setParams().nx().px(expireTime));
 
         if ("OK".equals(rez)) {
-            return Optional.of(new RedisLock(key, jedisTemplate, lockConfiguration));
+            return Optional.of(new RedisLock(key, this, lockConfiguration));
         }
 
         return Optional.empty();
     }
 
+    private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
+        long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
+
+        String key = buildKey(lockConfiguration.getName(), this.environment);
+
+        String rez = extendKeyExpiration(key, expireTime);
+
+        if ("OK".equals(rez)) {
+            return Optional.of(new RedisLock(key, this, lockConfiguration));
+        }
+
+        return Optional.empty();
+    }
+
+
+    private String extendKeyExpiration(String key, long expiration) {
+        return jedisTemplate.set(key, buildValue(), setParams().xx().px(expiration));
+    }
+
+    private void deleteKey(String key) {
+        jedisTemplate.del(key);
+    }
+
+
     private static final class RedisLock extends AbstractSimpleLock {
         private final String key;
-        private final JedisTemplate jedisTemplate;
+        private final JedisLockProvider jedisLockProvider;
 
-        private RedisLock(String key, JedisTemplate jedisTemplate, LockConfiguration lockConfiguration) {
+        private RedisLock(String key, JedisLockProvider jedisLockProvider, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
-            this.jedisTemplate = jedisTemplate;
+            this.jedisLockProvider = jedisLockProvider;
         }
 
         @Override
@@ -109,13 +133,18 @@ public class JedisLockProvider implements LockProvider {
             // lock at least until is in the past
             if (keepLockFor <= 0) {
                 try {
-                    jedisTemplate.del(key);
+                    jedisLockProvider.deleteKey(key);
                 } catch (Exception e) {
                     throw new LockException("Can not remove node", e);
                 }
             } else {
-                jedisTemplate.set(key, buildValue(), setParams().xx().px(keepLockFor));
+                jedisLockProvider.extendKeyExpiration(key, keepLockFor);
             }
+        }
+
+        @Override
+        protected Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
+            return jedisLockProvider.extend(newConfiguration);
         }
     }
 
