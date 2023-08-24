@@ -15,8 +15,8 @@
  */
 package net.javacrumbs.shedlock.provider.redis.jedis4;
 
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.testcontainers.junit.jupiter.Container;
@@ -37,8 +37,8 @@ public class JedisLockProviderIntegrationTest  {
     public static final RedisContainer redis = new RedisContainer(PORT);
 
     @Nested
-    class Cluster extends AbstractLockProviderIntegrationTest {
-        private LockProvider lockProvider;
+    class Cluster extends AbstractExtensibleLockProviderIntegrationTest {
+        private ExtensibleLockProvider lockProvider;
 
         private JedisCluster jedisCluster;
 
@@ -62,14 +62,14 @@ public class JedisLockProviderIntegrationTest  {
         }
 
         @Override
-        protected LockProvider getLockProvider() {
+        protected ExtensibleLockProvider getLockProvider() {
             return lockProvider;
         }
     }
 
     @Nested
-    class Pool extends AbstractLockProviderIntegrationTest {
-        private LockProvider lockProvider;
+    class Pool extends AbstractExtensibleLockProviderIntegrationTest {
+        private ExtensibleLockProvider lockProvider;
 
         private JedisPool jedisPool;
 
@@ -98,8 +98,9 @@ public class JedisLockProviderIntegrationTest  {
         }
 
         @Override
-        protected LockProvider getLockProvider() {
+        protected ExtensibleLockProvider getLockProvider() {
             return lockProvider;
         }
     }
+
 }
