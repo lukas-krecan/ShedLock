@@ -1105,9 +1105,15 @@ after another, `lockAtLeastFor` can prevent it.
 
 
 # Release notes
-## 5.7.0
+## 5.7.0 (2023-08-25)
 * JedisLockProvider supports extending (thanks @shotmk)
 * Better behavior when locks are nested #1493
+
+## 4.46.0 (2023-09-05)
+* JedisLockProvider (version 3) supports extending (thanks @shotmk)
+
+## 4.45.0 (2023-09-04)
+* JedisLockProvider supports extending (thanks @shotmk)
 
 ## 5.6.0
 * Ability to explicitly set database product in JdbTemplateLockProvider (thanks @metron2)
