@@ -12,7 +12,7 @@
     <version>5.7.1-SNAPSHOT</version>
 
     <properties>
-        <opensearch.version>2.8.0</opensearch.version>
+        <opensearch.version>2.9.0</opensearch.version>
     </properties>
 
     <dependencies>
