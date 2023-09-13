@@ -33,18 +33,27 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
     private final LockingTaskExecutor lockingTaskExecutor;
     private final MicronautLockConfigurationExtractor micronautLockConfigurationExtractor;
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public SchedulerLockInterceptor(
         LockProvider lockProvider,
-        Optional<ConversionService<?>> conversionService,
+        Optional<ConversionService> conversionService,
         @Value("${shedlock.defaults.lock-at-most-for}") String defaultLockAtMostFor,
         @Value("${shedlock.defaults.lock-at-least-for:PT0S}") String defaultLockAtLeastFor
     ) {
-        ConversionService<?> resolvedConversionService = conversionService.orElse(ConversionService.SHARED);
+        /*
+         * From Micronaut 3 to 4, ConversionService changes from a parameterized type to a
+         * non-parameterized one, so some raw type usage and unchecked casts are done to support
+         * both Micronaut versions.
+         */
+        ConversionService resolvedConversionService = conversionService.orElse(ConversionService.SHARED);
 
         lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
+
         micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(
-            resolvedConversionService.convert(defaultLockAtMostFor, Duration.class).orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtMostFor' value")),
-            resolvedConversionService.convert(defaultLockAtLeastFor, Duration.class).orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtLeastFor' value")),
+            ((Optional<Duration>) resolvedConversionService.convert(defaultLockAtMostFor, Duration.class))
+                .orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtMostFor' value")),
+            ((Optional<Duration>) resolvedConversionService.convert(defaultLockAtLeastFor, Duration.class))
+                .orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtLeastFor' value")),
             resolvedConversionService);
     }
 
