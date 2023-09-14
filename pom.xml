@@ -29,6 +29,7 @@
         <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/test/micronaut-jdbc</module>
         <module>micronaut/test/micronaut-jdbc-template</module>
+        <module>micronaut/test/micronaut4-jdbc-template</module>
         <module>spring/shedlock-spring</module>
         <module>spring/test/shedlock-springboot-old-test</module>
         <module>spring/test/shedlock-springboot-test</module>
