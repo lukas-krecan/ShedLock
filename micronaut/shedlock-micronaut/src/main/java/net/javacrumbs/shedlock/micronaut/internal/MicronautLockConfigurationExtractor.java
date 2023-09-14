@@ -31,9 +31,10 @@ import static java.util.Objects.requireNonNull;
 class MicronautLockConfigurationExtractor {
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
-    private final ConversionService<?> conversionService;
+    @SuppressWarnings("rawtypes") // Micronaut 4 dropped the param type
+    private final ConversionService conversionService;
 
-    MicronautLockConfigurationExtractor(Duration defaultLockAtMostFor, Duration defaultLockAtLeastFor, ConversionService<?> conversionService) {
+    MicronautLockConfigurationExtractor(Duration defaultLockAtMostFor, Duration defaultLockAtLeastFor, @SuppressWarnings("rawtypes") ConversionService conversionService) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
         this.conversionService = conversionService;
@@ -74,10 +75,11 @@ class MicronautLockConfigurationExtractor {
         );
     }
 
+    @SuppressWarnings("unchecked")
     private Duration getValue(AnnotationValue<SchedulerLock> annotation, Duration defaultValue, String paramName) {
         String stringValueFromAnnotation = annotation.get(paramName, String.class).orElse("");
         if (StringUtils.hasText(stringValueFromAnnotation)) {
-            return conversionService.convert(stringValueFromAnnotation, Duration.class)
+            return ((Optional<Duration>) conversionService.convert(stringValueFromAnnotation, Duration.class))
                 .orElseThrow(() -> new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into duration"));
         } else {
             return defaultValue;
