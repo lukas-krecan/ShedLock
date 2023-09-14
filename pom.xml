@@ -27,6 +27,7 @@
         <module>cdi/shedlock-cdi</module>
         <module>cdi/test/quarkus-test</module>
         <module>micronaut/shedlock-micronaut</module>
+        <module>micronaut/shedlock-micronaut4</module>
         <module>micronaut/test/micronaut-jdbc</module>
         <module>micronaut/test/micronaut-jdbc-template</module>
         <module>micronaut/test/micronaut4-jdbc-template</module>
