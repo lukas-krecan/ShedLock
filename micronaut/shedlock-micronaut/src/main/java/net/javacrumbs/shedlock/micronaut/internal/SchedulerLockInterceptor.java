@@ -33,7 +33,7 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
     private final LockingTaskExecutor lockingTaskExecutor;
     private final MicronautLockConfigurationExtractor micronautLockConfigurationExtractor;
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     public SchedulerLockInterceptor(
         LockProvider lockProvider,
         Optional<ConversionService> conversionService,
@@ -50,11 +50,15 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
         lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
 
         micronautLockConfigurationExtractor = new MicronautLockConfigurationExtractor(
-            ((Optional<Duration>) resolvedConversionService.convert(defaultLockAtMostFor, Duration.class))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtMostFor' value")),
-            ((Optional<Duration>) resolvedConversionService.convert(defaultLockAtLeastFor, Duration.class))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid 'defaultLockAtLeastFor' value")),
+            convert(resolvedConversionService, defaultLockAtMostFor, "defaultLockAtMostFor"),
+            convert(resolvedConversionService, defaultLockAtLeastFor, "defaultLockAtLeastFor"),
             resolvedConversionService);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static Duration convert(ConversionService resolvedConversionService, String defaultLockAtMostFor, String label) {
+        return ((Optional<Duration>) resolvedConversionService.convert(defaultLockAtMostFor, Duration.class))
+            .orElseThrow(() -> new IllegalArgumentException("Invalid '" + label + "' value"));
     }
 
     @Override
