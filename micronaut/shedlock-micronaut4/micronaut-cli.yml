@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: net.javacrumbs.shedlock.micronaut.internal
+---
+testFramework: junit
+sourceLanguage: java

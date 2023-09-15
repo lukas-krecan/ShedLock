@@ -9,7 +9,7 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>micronaut-jdbc</artifactId>
+    <artifactId>micronaut4-jdbc-template</artifactId>
     <version>5.7.1-SNAPSHOT</version>
 
     <properties>
@@ -25,9 +25,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.micronaut</groupId>
-                <artifactId>micronaut-bom</artifactId>
-                <version>${micronaut3.version}</version>
+                <groupId>io.micronaut.platform</groupId>
+                <artifactId>micronaut-platform</artifactId>
+                <version>${micronaut4.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -40,7 +40,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io.micronaut</groupId>
+            <groupId>io.micronaut.validation</groupId>
             <artifactId>micronaut-validation</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -55,14 +55,11 @@
         </dependency>
         <dependency>
             <groupId>io.micronaut.data</groupId>
-            <artifactId>micronaut-data-jdbc</artifactId>
-            <version>${micronaut3-data.version}</version>
+            <artifactId>micronaut-data-spring-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.ver}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -81,14 +78,14 @@
         </dependency>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-micronaut</artifactId>
+            <artifactId>shedlock-micronaut4</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -174,17 +171,17 @@
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
-                                <version>${micronaut3.version}</version>
+                                <version>${micronaut4.version}</version>
                             </path>
                             <path>
-                                <groupId>io.micronaut</groupId>
+                                <groupId>io.micronaut.validation</groupId>
                                 <artifactId>micronaut-validation</artifactId>
-                                <version>${micronaut3.version}</version>
+                                <version>${micronaut4.validation.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut.data</groupId>
                                 <artifactId>micronaut-data-processor</artifactId>
-                                <version>${micronaut3-data.version}</version>
+                                <version>${micronaut4-data.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -202,12 +199,12 @@
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-inject-java</artifactId>
-                                        <version>${micronaut3.version}</version>
+                                        <version>${micronaut4.version}</version>
                                     </path>
                                     <path>
-                                        <groupId>io.micronaut</groupId>
+                                        <groupId>io.micronaut.validation</groupId>
                                         <artifactId>micronaut-validation</artifactId>
-                                        <version>${micronaut3.version}</version>
+                                        <version>${micronaut4.validation.version}</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>
