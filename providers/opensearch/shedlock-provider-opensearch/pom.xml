@@ -3,13 +3,13 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>5.7.1-SNAPSHOT</version>
+        <version>5.8.0</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-opensearch</artifactId>
-    <version>5.7.1-SNAPSHOT</version>
+    <version>5.8.0</version>
 
     <properties>
         <opensearch.version>2.9.0</opensearch.version>
