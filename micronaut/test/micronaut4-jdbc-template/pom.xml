@@ -55,8 +55,7 @@
         </dependency>
         <dependency>
             <groupId>io.micronaut.data</groupId>
-            <artifactId>micronaut-data-jdbc</artifactId>
-            <version>${micronaut4-data.version}</version>
+            <artifactId>micronaut-data-spring-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
