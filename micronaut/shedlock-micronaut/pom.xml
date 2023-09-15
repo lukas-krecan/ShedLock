@@ -17,7 +17,7 @@
             <dependency>
                 <groupId>io.micronaut</groupId>
                 <artifactId>micronaut-bom</artifactId>
-                <version>${micronaut.ver}</version>
+                <version>${micronaut3.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -104,12 +104,12 @@
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
-                                <version>${micronaut.ver}</version>
+                                <version>${micronaut3.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-validation</artifactId>
-                                <version>${micronaut.ver}</version>
+                                <version>${micronaut3.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -127,12 +127,12 @@
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-inject-java</artifactId>
-                                        <version>${micronaut.ver}</version>
+                                        <version>${micronaut3.version}</version>
                                     </path>
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-validation</artifactId>
-                                        <version>${micronaut.ver}</version>
+                                        <version>${micronaut3.version}</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>

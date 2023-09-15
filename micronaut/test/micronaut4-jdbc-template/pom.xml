@@ -15,8 +15,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>net.javacrumbs.micronaut.test.Application</exec.mainClass>
-        <micronaut.ver>4.0.6</micronaut.ver>
-        <micronaut.validation.version>4.0.3</micronaut.validation.version>
     </properties>
     <repositories>
         <repository>
@@ -29,7 +27,7 @@
             <dependency>
                 <groupId>io.micronaut.platform</groupId>
                 <artifactId>micronaut-platform</artifactId>
-                <version>${micronaut.ver}</version>
+                <version>${micronaut4.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -58,7 +56,7 @@
         <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-jdbc</artifactId>
-            <version>${micronaut-data.ver}</version>
+            <version>${micronaut4-data.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -174,17 +172,17 @@
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
-                                <version>${micronaut.ver}</version>
+                                <version>${micronaut4.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut.validation</groupId>
                                 <artifactId>micronaut-validation</artifactId>
-                                <version>${micronaut.validation.version}</version>
+                                <version>${micronaut4.validation.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut.data</groupId>
                                 <artifactId>micronaut-data-processor</artifactId>
-                                <version>${micronaut-data.ver}</version>
+                                <version>${micronaut4-data.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -202,12 +200,12 @@
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-inject-java</artifactId>
-                                        <version>${micronaut.ver}</version>
+                                        <version>${micronaut4.version}</version>
                                     </path>
                                     <path>
                                         <groupId>io.micronaut.validation</groupId>
                                         <artifactId>micronaut-validation</artifactId>
-                                        <version>${micronaut.validation.version}</version>
+                                        <version>${micronaut4.validation.version}</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>

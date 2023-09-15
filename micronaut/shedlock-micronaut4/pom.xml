@@ -12,17 +12,12 @@
     <artifactId>shedlock-micronaut4</artifactId>
     <version>5.7.1-SNAPSHOT</version>
 
-    <properties>
-        <micronaut.ver>4.0.6</micronaut.ver>
-        <micronaut.validation.version>4.0.3</micronaut.validation.version>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.micronaut.platform</groupId>
                 <artifactId>micronaut-platform</artifactId>
-                <version>${micronaut.ver}</version>
+                <version>${micronaut4.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -114,12 +109,12 @@
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
-                                <version>${micronaut.ver}</version>
+                                <version>${micronaut4.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut.validation</groupId>
                                 <artifactId>micronaut-validation</artifactId>
-                                <version>${micronaut.validation.version}</version>
+                                <version>${micronaut4.validation.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -137,12 +132,12 @@
                                     <path>
                                         <groupId>io.micronaut</groupId>
                                         <artifactId>micronaut-inject-java</artifactId>
-                                        <version>${micronaut.ver}</version>
+                                        <version>${micronaut4.version}</version>
                                     </path>
                                     <path>
                                         <groupId>io.micronaut.validation</groupId>
                                         <artifactId>micronaut-validation</artifactId>
-                                        <version>${micronaut.validation.version}</version>
+                                        <version>${micronaut4.validation.version}</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>
