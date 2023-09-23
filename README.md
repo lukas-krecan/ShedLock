@@ -118,7 +118,8 @@ all other scheduled tasks. You also have to specify the name for the lock. Only 
 at the same time.
 
 You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
-executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes.
+executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes
+(unless `lockAtLeastFor` is specified, see below)
 **You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
 `lockAtMostFor` the resulting behavior may be unpredictable (more than one process will effectively hold the lock).
 
@@ -144,7 +145,7 @@ public void scheduledTask() {
 }
 
 ```
-By setting `lockAtMostFor` we make sure that the lock is released even if the node dies and by setting `lockAtLeastFor`
+By setting `lockAtMostFor` we make sure that the lock is released even if the node dies. By setting `lockAtLeastFor`
 we make sure it's not executed more than once in fifteen minutes.
 Please note that **`lockAtMostFor` is just a safety net in case that the node executing the task dies, so set it to
 a time that is significantly larger than maximum estimated execution time.**  If the task takes longer than `lockAtMostFor`,
