@@ -55,9 +55,9 @@
     </build>
     <profiles>
         <profile>
-            <id>surefire-java16</id>
+            <id>surefire-java17</id>
             <activation>
-                <jdk>[16,)</jdk>
+                <jdk>[17,)</jdk>
             </activation>
             <build>
                 <plugins>
@@ -66,6 +66,24 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>--add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- https://github.com/apache/ignite/issues/10720 -->
+            <id>skip-tests-in-java21</id>
+            <activation>
+                <jdk>21</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
                         </configuration>
                     </plugin>
                 </plugins>
