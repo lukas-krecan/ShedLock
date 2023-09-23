@@ -15,22 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '17', '20']
-        # Kotlin needs access to java.util
-        include:
-          - java: '17'
-            maven-opts: --add-opens java.base/java.util=ALL-UNNAMED
-            maven-params: ''
-          - java: '20'
-            maven-opts: --add-opens java.base/java.util=ALL-UNNAMED
-            maven-params: ''
+        java: [ '17', '21']
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'temurin'
+          distribution: 'zulu'
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -40,8 +32,9 @@ jobs:
             maven-
       - name: Build with Maven
         env:
-          MAVEN_OPTS: ${{ matrix.maven-opts }}
-        run: mvn ${{ matrix.maven-params }} test javadoc:javadoc
+          # Kotlin needs access to java.util
+          MAVEN_OPTS: --add-opens java.base/java.util=ALL-UNNAMED
+        run: mvn test javadoc:javadoc
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
