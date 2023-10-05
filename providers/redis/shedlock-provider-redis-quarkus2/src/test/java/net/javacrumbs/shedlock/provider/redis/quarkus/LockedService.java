@@ -5,12 +5,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import io.quarkus.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.smallrye.common.annotation.Blocking;
 import net.javacrumbs.shedlock.cdi.SchedulerLock;
 
 @ApplicationScoped
 public class LockedService{
+    
+    private static final Logger LOG = LoggerFactory.getLogger(LockedService.class);
     
     private AtomicInteger count = new AtomicInteger(0);
     
@@ -19,13 +23,13 @@ public class LockedService{
         
         execute(time);
         
-        Log.info("Executing [DONE]");
+        LOG.info("Executing [DONE]");
         
     }
     
     public void execute(int time) {
         count.incrementAndGet();
-        Log.info("Executing ....");
+        LOG.info("Executing ....(c="+count.get()+")");
         
         try {
             TimeUnit.MILLISECONDS.sleep(time);
@@ -51,6 +55,7 @@ public class LockedService{
     }
     
     public int count() {
+        LOG.info("getc=("+count.get()+")");
         return count.get();
     }
 
