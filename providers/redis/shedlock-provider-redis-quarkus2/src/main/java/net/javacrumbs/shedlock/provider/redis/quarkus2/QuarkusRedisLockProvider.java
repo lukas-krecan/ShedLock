@@ -7,7 +7,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
-import io.quarkus.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.value.SetArgs;
@@ -27,6 +29,8 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
  * See <a href="https://redis.io/commands/set">Set command</a>
  */
 public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(QuarkusRedisLockProvider.class);
 
     private static final String KEY_PREFIX = "lock";
 
@@ -35,8 +39,11 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     private final KeyCommands<String> keyCommands;
     private final String environment;
 
-    public QuarkusRedisLockProvider(RedisDataSource dataSource, String appNameOrPrefix) {
+    private boolean throwsException;
+
+    public QuarkusRedisLockProvider(RedisDataSource dataSource, String appNameOrPrefix, boolean throwsException) {
         this.redisDataSource = dataSource;
+        this.throwsException = throwsException;
         this.environment = appNameOrPrefix + ":"+ String.join(":", ConfigUtils.getProfiles());
         this.valueCommands = redisDataSource.value(String.class);
         this.keyCommands = redisDataSource.key(String.class);
@@ -53,10 +60,11 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
         
         String value = valueCommands.setGet(key, buildValue(),  new SetArgs().nx().ex(expireTime));
         if(value != null) {
-            Log.info("Adquire lock [fail/skip]");
+            LOG.info("Adquire lock [fail/skip]");
+            if(throwsException) throw new LockException("Already locked !");
             return Optional.empty();
         }else {
-            Log.info("Adquire lock [success]");
+            LOG.info("Adquire lock [success]");
             return Optional.of(new RedisLock(key, this, lockConfiguration));
         }
         
@@ -90,7 +98,7 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     }
 
     private void deleteKey(String key) {
-        Log.info("release lock");
+        LOG.info("release lock");
         keyCommands.del(key);
     }
 

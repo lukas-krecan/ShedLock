@@ -16,10 +16,13 @@ public class SchedulerLockFactory {
     @ConfigProperty(name = "quarkus.application.name")
     String app;
     
+    @ConfigProperty(name = "shedlock.quarkus.throws-exception-if-locked", defaultValue = "false")
+    boolean throwsException;
+    
     @Produces
     @Singleton
     public LockProvider lockProvider(RedisDataSource redisDataSource) {
         
-        return new QuarkusRedisLockProvider(redisDataSource, app);
+        return new QuarkusRedisLockProvider(redisDataSource, app, throwsException);
     }
 }
