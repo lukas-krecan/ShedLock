@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -46,12 +44,6 @@ public class QuarkusRedisLockProviderExceptionsTest {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(5);
     
-    static {
-        Awaitility.setDefaultPollInterval(10, TimeUnit.MILLISECONDS);
-        Awaitility.setDefaultPollDelay(Duration.ZERO);
-        Awaitility.setDefaultTimeout(Duration.ofSeconds(10));
-    }
-
     @AfterEach
     public void afterEach() {
         lockedService.countReset();
