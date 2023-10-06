@@ -60,11 +60,9 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
         
         String value = valueCommands.setGet(key, buildValue(),  new SetArgs().nx().px(expireTime));
         if(value != null) {
-            LOG.debug("Acquire lock [fail/skip]");
             if(throwsException) throw new LockException("Already locked !");
             return Optional.empty();
         }else {
-            LOG.debug("Acquire lock [success]");
             return Optional.of(new RedisLock(key, this, lockConfiguration));
         }
         
@@ -93,7 +91,6 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     }
 
     private void deleteKey(String key) {
-        LOG.debug("release lock");
         keyCommands.del(key);
     }
 
