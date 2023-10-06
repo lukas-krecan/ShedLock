@@ -13,8 +13,6 @@
     <artifactId>shedlock-provider-redis-quarkus2</artifactId>
 
     <properties>
-        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>2.16.11.Final</quarkus.platform.version>
         <skipITs>true</skipITs>
     </properties>
@@ -22,8 +20,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
+                <groupId>io.quarkus.platform</groupId>
+                <artifactId>quarkus-bom</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -36,6 +34,13 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-test-support</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -62,17 +67,11 @@
             <scope>test</scope>
         </dependency>
         
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
     <build>
         <plugins>
             <plugin>
-                <groupId>${quarkus.platform.group-id}</groupId>
+                <groupId>io.quarkus.platform</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <extensions>true</extensions>
@@ -93,7 +92,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                ${project.artifactId}
+                                net.javacrumbs.shedlock.provider.redis.quarkus
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
