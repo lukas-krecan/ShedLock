@@ -54,17 +54,17 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
        
-        long expireTime = getSecsUntil(lockConfiguration.getLockAtMostUntil());
+        long expireTime = getMillisUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), this.environment);
         
-        String value = valueCommands.setGet(key, buildValue(),  new SetArgs().nx().ex(expireTime));
+        String value = valueCommands.setGet(key, buildValue(),  new SetArgs().nx().px(expireTime));
         if(value != null) {
-            LOG.info("Adquire lock [fail/skip]");
+            LOG.debug("Acquire lock [fail/skip]");
             if(throwsException) throw new LockException("Already locked !");
             return Optional.empty();
         }else {
-            LOG.info("Adquire lock [success]");
+            LOG.debug("Acquire lock [success]");
             return Optional.of(new RedisLock(key, this, lockConfiguration));
         }
         
@@ -72,13 +72,13 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
     private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
         
-        long expireTime = getSecsUntil(lockConfiguration.getLockAtMostUntil());
+        long expireTime = getMillisUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), this.environment);
 
-        boolean rez = extendKeyExpiration(key, expireTime);
+        boolean success = extendKeyExpiration(key, expireTime);
 
-        if (rez) {
+        if (success) {
             return Optional.of(new RedisLock(key, this, lockConfiguration));
         }
 
@@ -87,18 +87,13 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
 
     private boolean extendKeyExpiration(String key, long expiration) {
-        
-        String value = valueCommands.setGet(key, buildValue(),  new SetArgs().xx().ex(expiration));
-        if(value != null) {
-            return true;
-        }else {
-            return false;
-        }
+        String value = valueCommands.setGet(key, buildValue(),  new SetArgs().xx().px(expiration));
+        return value != null;
         
     }
 
     private void deleteKey(String key) {
-        LOG.info("release lock");
+        LOG.debug("release lock");
         keyCommands.del(key);
     }
 
@@ -115,14 +110,14 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
         
         @Override
         public void doUnlock() {
-            long keepLockFor = getSecsUntil(lockConfiguration.getLockAtLeastUntil());
+            long keepLockFor = getMillisUntil(lockConfiguration.getLockAtLeastUntil());
 
             // lock at least until is in the past
             if (keepLockFor <= 0) {
                 try {
                     quarkusLockProvider.deleteKey(key);
                 } catch (Exception e) {
-                    throw new LockException("Can not remove node", e);
+                    throw new LockException("Can not remove key", e);
                 }
             } else {
                 quarkusLockProvider.extendKeyExpiration(key, keepLockFor);
@@ -136,8 +131,8 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
         }
     }
 
-    private static long getSecsUntil(Instant instant) {
-        return Duration.between(ClockProvider.now(), instant).toSeconds();
+    private static long getMillisUntil(Instant instant) {
+        return Duration.between(ClockProvider.now(), instant).toMillis();
     }
 
     static String buildKey(String lockName, String env) {
