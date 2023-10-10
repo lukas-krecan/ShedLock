@@ -1,61 +1,38 @@
 package net.javacrumbs.shedlock.provider.redis.quarkus;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.enterprise.context.ApplicationScoped;
-
+import net.javacrumbs.shedlock.cdi.SchedulerLock;
+import net.javacrumbs.shedlock.core.LockAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.smallrye.common.annotation.Blocking;
-import net.javacrumbs.shedlock.cdi.SchedulerLock;
+import javax.enterprise.context.ApplicationScoped;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ApplicationScoped
-public class LockedService{
-    
+public class LockedService {
+
     private static final Logger LOG = LoggerFactory.getLogger(LockedService.class);
-    
-    private AtomicInteger count = new AtomicInteger(0);
-    
+
+    private final AtomicInteger count = new AtomicInteger(0);
+
     @SchedulerLock(name = "test")
-    public void test(int time) {
-        
-        execute(time);
-        
+    public void test() {
+        LockAssert.assertLocked();
+
+        execute();
+
         LOG.info("Executing [DONE]");
-        
+
     }
-    
-    public void execute(int time) {
+
+    public void execute() {
         count.incrementAndGet();
-        LOG.info("Executing ....(c="+count.get()+")");
-        
-        try {
-            TimeUnit.MILLISECONDS.sleep(time);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        LOG.info("Executing ....(c=" + count.get() + ")");
     }
-  
-    
-    @SchedulerLock(name = "testException")
-    @Blocking
-    public void testException() {
-        
-        try {
-            TimeUnit.MILLISECONDS.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        
-        throw new RuntimeException("test");
-        
-    }
-    
+
+
     public int count() {
-        LOG.info("getc=("+count.get()+")");
+        LOG.info("getc=(" + count.get() + ")");
         return count.get();
     }
 
