@@ -40,7 +40,7 @@ public class QuarkusRedisLockProviderIntegrationTest extends AbstractExtensibleL
     }
 
     private String getLock(String lockName) {
-        return values.get("job-lock:default:" + lockName);
+        return values.get("job-lock:my-app:" + lockName);
     }
 
     @Override

@@ -27,25 +27,21 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
     private static final String KEY_PREFIX_DEFAULT = "job-lock";
-    private static final String ENV_DEFAULT = "default";
 
     private final ValueCommands<String, String> valueCommands;
     private final KeyCommands<String> keyCommands;
 
-    private final String environment;
     private final String keyPrefix;
 
     public QuarkusRedisLockProvider(RedisDataSource dataSource) {
-        this(dataSource, KEY_PREFIX_DEFAULT, ENV_DEFAULT);
+        this(dataSource, KEY_PREFIX_DEFAULT);
     }
 
-    public QuarkusRedisLockProvider(@NonNull RedisDataSource dataSource, @NonNull String keyPrefix, @NonNull String environment) {
+    public QuarkusRedisLockProvider(@NonNull RedisDataSource dataSource, @NonNull String keyPrefix) {
         this.keyPrefix = keyPrefix;
-        this.environment = environment;
         this.valueCommands = dataSource.value(String.class);
         this.keyCommands = dataSource.key(String.class);
     }
-
 
     @Override
     @NonNull
@@ -80,7 +76,7 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     }
 
     String buildKey(String lockName) {
-        return String.format("%s:%s:%s", keyPrefix, environment, lockName);
+        return keyPrefix + ":" + lockName;
     }
 
     private boolean extendKeyExpiration(String key, long expiration) {
