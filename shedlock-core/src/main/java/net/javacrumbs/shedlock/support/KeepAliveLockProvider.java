@@ -113,6 +113,7 @@ public class KeepAliveLockProvider implements LockProvider {
         @Override
         protected void doUnlock() {
             synchronized (this) {
+                logger.trace("Unlocking lock {}", lockConfiguration.getName());
                 stop();
                 lock.unlock();
             }

@@ -21,6 +21,7 @@ import org.reactivestreams.Subscription;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Subscriber that expects a single result and allows locking until complete or error
@@ -70,7 +71,10 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
 
     void await() {
         try {
-            latch.await(10, TimeUnit.SECONDS);
+            int timeout = 20;
+            if (!latch.await(timeout, TimeUnit.SECONDS)) {
+                this.error = new TimeoutException("Did not get response in " + timeout + " seconds.");
+            }
         } catch (InterruptedException e) {
             this.error = e;
         }
