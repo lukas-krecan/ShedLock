@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
+import static io.vertx.mutiny.redis.client.Command.SET;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
@@ -51,7 +52,7 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
         String key = buildKey(lockConfiguration.getName());
 
-        Response response = redisDataSource.execute("set", key, buildValue(), "NX", "PX",  Long.toString(expireTime));
+        Response response = redisDataSource.execute(SET, key, buildValue(), "NX", "PX",  Long.toString(expireTime));
         if (response != null && "OK".equals(response.toString())) {
             return Optional.of(new RedisLock(key, this, lockConfiguration));
         } else {
