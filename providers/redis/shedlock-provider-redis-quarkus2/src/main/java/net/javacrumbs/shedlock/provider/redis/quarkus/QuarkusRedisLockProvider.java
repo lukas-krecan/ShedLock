@@ -2,8 +2,7 @@ package net.javacrumbs.shedlock.provider.redis.quarkus;
 
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
-import io.quarkus.redis.datasource.value.SetArgs;
-import io.quarkus.redis.datasource.value.ValueCommands;
+import io.vertx.mutiny.redis.client.Response;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
@@ -28,10 +27,11 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
     private static final String KEY_PREFIX_DEFAULT = "job-lock";
 
-    private final ValueCommands<String, String> valueCommands;
+    private final RedisDataSource redisDataSource;
     private final KeyCommands<String> keyCommands;
 
     private final String keyPrefix;
+
 
     public QuarkusRedisLockProvider(RedisDataSource dataSource) {
         this(dataSource, KEY_PREFIX_DEFAULT);
@@ -39,7 +39,7 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
     public QuarkusRedisLockProvider(@NonNull RedisDataSource dataSource, @NonNull String keyPrefix) {
         this.keyPrefix = keyPrefix;
-        this.valueCommands = dataSource.value(String.class);
+        this.redisDataSource = dataSource;
         this.keyCommands = dataSource.key(String.class);
     }
 
@@ -51,11 +51,11 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
         String key = buildKey(lockConfiguration.getName());
 
-        String value = valueCommands.setGet(key, buildValue(), new SetArgs().nx().px(expireTime));
-        if (value != null) {
-            return Optional.empty();
-        } else {
+        Response response = redisDataSource.execute("set", key, buildValue(), "NX", "PX",  Long.toString(expireTime));
+        if (response != null && "OK".equals(response.toString())) {
             return Optional.of(new RedisLock(key, this, lockConfiguration));
+        } else {
+            return Optional.empty();
         }
 
     }
@@ -80,8 +80,7 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     }
 
     private boolean extendKeyExpiration(String key, long expiration) {
-        String value = valueCommands.setGet(key, buildValue(), new SetArgs().xx().px(expiration));
-        return value != null;
+        return keyCommands.pexpire(key,expiration);
 
     }
 
