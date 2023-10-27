@@ -934,7 +934,7 @@ Import the project:
     <!-- Micronaut 3 -->
     <artifactId>shedlock-micronaut</artifactId>
     <!-- For Micronaut 4 use -->
-    <!-- <artifactId>shedlock-micronaut</artifactId> -->
+    <!-- <artifactId>shedlock-micronaut4</artifactId> -->
     <version>5.9.1</version>
 </dependency>
 ```
