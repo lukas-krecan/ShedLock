@@ -101,6 +101,12 @@
                         <palantirJavaFormat><version>2.38.0</version></palantirJavaFormat>
                         <removeUnusedImports/>
                     </java>
+                    <kotlin>
+                        <ktfmt>
+                            <maxWidth>120</maxWidth>
+                            <style>KOTLINLANG</style>
+                        </ktfmt>
+                    </kotlin>
                 </configuration>
             </plugin>
             <plugin>
