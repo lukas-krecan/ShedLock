@@ -20,25 +20,20 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
- * Lock provided by plain R2DBC SPI. It uses a table that contains lock_name and locked_until.
+ * Lock provided by plain R2DBC SPI. It uses a table that contains lock_name and
+ * locked_until.
+ *
  * <ol>
- * <li>
- * Attempts to insert a new lock record. Since lock name is a primary key, it fails if the record already exists. As an optimization,
- * we keep in-memory track of created  lock records.
- * </li>
- * <li>
- * If the insert succeeds (1 inserted row) we have the lock.
- * </li>
- * <li>
- * If the insert failed due to duplicate key or we have skipped the insertion, we will try to update lock record using
- * UPDATE tableName SET lock_until = :lockUntil WHERE name = :lockName AND lock_until &lt;= :now
- * </li>
- * <li>
- * If the update succeeded (1 updated row), we have the lock. If the update failed (0 updated rows) somebody else holds the lock
- * </li>
- * <li>
- * When unlocking, lock_until is set to now.
- * </li>
+ * <li>Attempts to insert a new lock record. Since lock name is a primary key,
+ * it fails if the record already exists. As an optimization, we keep in-memory
+ * track of created lock records.
+ * <li>If the insert succeeds (1 inserted row) we have the lock.
+ * <li>If the insert failed due to duplicate key or we have skipped the
+ * insertion, we will try to update lock record using UPDATE tableName SET
+ * lock_until = :lockUntil WHERE name = :lockName AND lock_until &lt;= :now
+ * <li>If the update succeeded (1 updated row), we have the lock. If the update
+ * failed (0 updated rows) somebody else holds the lock
+ * <li>When unlocking, lock_until is set to now.
  * </ol>
  */
 public class R2dbcLockProvider extends StorageBasedLockProvider {

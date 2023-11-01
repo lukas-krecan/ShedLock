@@ -1,20 +1,25 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.redis.jedis4;
 
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+import static redis.clients.jedis.params.SetParams.setParams;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
@@ -27,16 +32,10 @@ import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
-import static redis.clients.jedis.params.SetParams.setParams;
-
 /**
- * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
+ * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking
+ * mechanism.
+ *
  * <p>
  * See <a href="https://redis.io/commands/set">Set command</a>
  */
@@ -55,9 +54,12 @@ public class JedisLockProvider implements ExtensibleLockProvider {
     /**
      * Creates JedisLockProvider
      *
-     * @param jedisPool   Jedis connection pool
-     * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances running on the same Redis
+     * @param jedisPool
+     *            Jedis connection pool
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
      */
     public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment) {
         this.jedisTemplate = new JedisPoolTemplate(jedisPool);
@@ -67,9 +69,12 @@ public class JedisLockProvider implements ExtensibleLockProvider {
     /**
      * Creates JedisLockProvider
      *
-     * @param jedisCommands implementation of JedisCommands.
-     * @param environment  environment is part of the key and thus makes sure there is not key conflict between
-     *                     multiple ShedLock instances running on the same Redis
+     * @param jedisCommands
+     *            implementation of JedisCommands.
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
      */
     public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment) {
         this.jedisTemplate = new JedisCommandsTemplate(jedisCommands);
@@ -106,7 +111,6 @@ public class JedisLockProvider implements ExtensibleLockProvider {
         return Optional.empty();
     }
 
-
     private String extendKeyExpiration(String key, long expiration) {
         return jedisTemplate.set(key, buildValue(), setParams().xx().px(expiration));
     }
@@ -114,7 +118,6 @@ public class JedisLockProvider implements ExtensibleLockProvider {
     private void deleteKey(String key) {
         jedisTemplate.del(key);
     }
-
 
     private static final class RedisLock extends AbstractSimpleLock {
         private final String key;
@@ -170,30 +173,30 @@ public class JedisLockProvider implements ExtensibleLockProvider {
     private record JedisPoolTemplate(Pool<Jedis> jedisPool) implements JedisTemplate {
 
         @Override
-            public String set(String key, String value, SetParams setParams) {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    return jedis.set(key, value, setParams);
-                }
-            }
-
-            @Override
-            public void del(String key) {
-                try (Jedis jedis = jedisPool.getResource()) {
-                    jedis.del(key);
-                }
+        public String set(String key, String value, SetParams setParams) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.set(key, value, setParams);
             }
         }
+
+        @Override
+        public void del(String key) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.del(key);
+            }
+        }
+    }
 
     private record JedisCommandsTemplate(JedisCommands jedisCommands) implements JedisTemplate {
 
         @Override
-            public String set(String key, String value, SetParams setParams) {
-                return jedisCommands.set(key, value, setParams);
-            }
-
-            @Override
-            public void del(String key) {
-                jedisCommands.del(key);
-            }
+        public String set(String key, String value, SetParams setParams) {
+            return jedisCommands.set(key, value, setParams);
         }
+
+        @Override
+        public void del(String key) {
+            jedisCommands.del(key);
+        }
+    }
 }

@@ -1,23 +1,21 @@
 package net.javacrumbs.shedlock.cdi.internal;
 
+import static net.javacrumbs.shedlock.cdi.internal.Utils.parseDuration;
+
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.Optional;
 import net.javacrumbs.shedlock.cdi.SchedulerLock;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.eclipse.microprofile.config.ConfigProvider;
-
-import java.time.Duration;
-import java.util.Objects;
-import java.util.Optional;
-
-import static net.javacrumbs.shedlock.cdi.internal.Utils.parseDuration;
-
 
 @SchedulerLock(name = "?")
 @Priority(3001)
@@ -33,9 +31,7 @@ public class SchedulerLockInterceptor {
         String lockAtLeastFor = getConfigValue("shedlock.defaults.lock-at-least-for");
         Objects.requireNonNull(lockAtMostFor, "shedlock.defaults.lock-at-most-for parameter is mandatory");
         this.lockConfigurationExtractor = new CdiLockConfigurationExtractor(
-            parseDuration(lockAtMostFor),
-            lockAtLeastFor != null ? parseDuration(lockAtLeastFor) : Duration.ZERO
-        );
+                parseDuration(lockAtMostFor), lockAtLeastFor != null ? parseDuration(lockAtLeastFor) : Duration.ZERO);
     }
 
     private static String getConfigValue(String propertyName) {
@@ -49,7 +45,8 @@ public class SchedulerLockInterceptor {
             throw new LockingNotSupportedException();
         }
 
-        Optional<LockConfiguration> lockConfiguration = lockConfigurationExtractor.getLockConfiguration(context.getMethod());
+        Optional<LockConfiguration> lockConfiguration =
+                lockConfigurationExtractor.getLockConfiguration(context.getMethod());
         if (lockConfiguration.isPresent()) {
             lockingTaskExecutor.executeWithLock((LockingTaskExecutor.Task) context::proceed, lockConfiguration.get());
             return null;

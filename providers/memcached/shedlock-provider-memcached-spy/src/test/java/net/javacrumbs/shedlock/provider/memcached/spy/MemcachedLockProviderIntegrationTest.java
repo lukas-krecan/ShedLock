@@ -1,5 +1,11 @@
 package net.javacrumbs.shedlock.provider.memcached.spy;
 
+import static java.lang.Thread.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -10,14 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Optional;
-
-import static java.lang.Thread.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 @Testcontainers
 public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
@@ -34,12 +32,10 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
     @BeforeEach
     public void createLockProvider() throws IOException {
         memcachedClient = new MemcachedClient(
-            AddrUtil.getAddresses(container.getContainerIpAddress() + ":" + container.getFirstMappedPort())
-        );
+                AddrUtil.getAddresses(container.getContainerIpAddress() + ":" + container.getFirstMappedPort()));
 
         lockProvider = new MemcachedLockProvider(memcachedClient, ENV);
     }
-
 
     @Override
     protected void assertUnlocked(String lockName) {
@@ -51,16 +47,13 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
         assertThat(getLock(lockName)).isNotNull();
     }
 
-
     @Override
     @Test
     public void shouldTimeout() throws InterruptedException {
         this.doTestTimeout(Duration.ofSeconds(1));
     }
 
-    /**
-     * memcached smallest unit is second.
-     */
+    /** memcached smallest unit is second. */
     @Override
     protected void doTestTimeout(Duration lockAtMostFor) throws InterruptedException {
         LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, lockAtMostFor, Duration.ZERO);
@@ -70,11 +63,11 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
         sleep(lockAtMostFor.toMillis() * 2);
         assertUnlocked(LOCK_NAME1);
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(1), Duration.ZERO));
+        Optional<SimpleLock> lock2 =
+                getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofSeconds(1), Duration.ZERO));
         assertThat(lock2).isNotEmpty();
         lock2.get().unlock();
     }
-
 
     @Override
     protected LockProvider getLockProvider() {
@@ -84,5 +77,4 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
     private String getLock(String lockName) {
         return (String) memcachedClient.get(MemcachedLockProvider.buildKey(lockName, ENV));
     }
-
 }

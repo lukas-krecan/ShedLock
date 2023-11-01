@@ -1,15 +1,5 @@
 package net.javacrumbs.shedlock.support;
 
-import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import org.jmock.lib.concurrent.DeterministicScheduler;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.Optional;
-
 import static java.time.Duration.ZERO;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
@@ -23,11 +13,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.util.Optional;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import org.jmock.lib.concurrent.DeterministicScheduler;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 class KeepAliveLockProviderTest {
     private final ExtensibleLockProvider wrappedProvider = mock(ExtensibleLockProvider.class);
     private final DeterministicScheduler scheduler = new DeterministicScheduler();
     private final KeepAliveLockProvider provider = new KeepAliveLockProvider(wrappedProvider, scheduler, ofSeconds(1));
-    private final LockConfiguration lockConfiguration = new LockConfiguration(now(), "lock", ofSeconds(3), ofSeconds(2));
+    private final LockConfiguration lockConfiguration =
+            new LockConfiguration(now(), "lock", ofSeconds(3), ofSeconds(2));
     private final SimpleLock originalLock = mock(SimpleLock.class);
 
     @BeforeEach
@@ -81,7 +81,7 @@ class KeepAliveLockProviderTest {
     @Test
     void shouldFailForShortLockAtMostFor() {
         assertThatThrownBy(() -> provider.lock(new LockConfiguration(now(), "short", ofMillis(100), ZERO)))
-            .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     private void tickMs(int i) {

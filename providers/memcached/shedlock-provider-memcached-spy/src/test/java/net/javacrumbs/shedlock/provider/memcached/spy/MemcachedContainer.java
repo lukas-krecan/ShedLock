@@ -13,8 +13,6 @@ public class MemcachedContainer extends GenericContainer<MemcachedContainer> {
 
     public MemcachedContainer() {
         super(MEMCACHED_IMAGE.asCanonicalNameString());
-        this.withExposedPorts(11211)
-            .withLogConsumer(frame -> LOGGER.info(frame.getUtf8String()));
+        this.withExposedPorts(11211).withLogConsumer(frame -> LOGGER.info(frame.getUtf8String()));
     }
-
 }

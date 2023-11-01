@@ -1,20 +1,28 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.neo4j;
 
+import static java.lang.Thread.sleep;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -35,17 +43,6 @@ import org.neo4j.driver.Transaction;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import static java.lang.Thread.sleep;
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
@@ -87,7 +84,9 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
     protected void assertUnlocked(String lockName) {
         Neo4jTestUtils.LockInfo lockInfo = getLockInfo(lockName);
         Instant now = ClockProvider.now();
-        assertThat(lockInfo.getLockUntil()).describedAs("is unlocked").isBeforeOrEqualTo(now.truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
+        assertThat(lockInfo.getLockUntil())
+                .describedAs("is unlocked")
+                .isBeforeOrEqualTo(now.truncatedTo(ChronoUnit.MILLIS).plusMillis(1));
     }
 
     @Override
@@ -95,16 +94,22 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
         Neo4jTestUtils.LockInfo lockInfo = getLockInfo(lockName);
         Instant now = ClockProvider.now();
 
-        assertThat(lockInfo.getLockUntil()).describedAs(getClass().getName() + " is locked").isAfter(now);
+        assertThat(lockInfo.getLockUntil())
+                .describedAs(getClass().getName() + " is locked")
+                .isAfter(now);
     }
 
     @Test
     public void shouldCreateLockIfRecordAlreadyExists() {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("name", LOCK_NAME1);
-        parameters.put("previousLockTime", Instant.now().minus(1, ChronoUnit.DAYS).toString());
+        parameters.put(
+                "previousLockTime", Instant.now().minus(1, ChronoUnit.DAYS).toString());
         parameters.put("lockedBy", "me");
-        testUtils.executeTransactionally("CREATE (lock:shedlock { name: $name, lock_until: $previousLockTime, locked_at: $previousLockTime, locked_by: $lockedBy })", parameters, null);
+        testUtils.executeTransactionally(
+                "CREATE (lock:shedlock { name: $name, lock_until: $previousLockTime, locked_at: $previousLockTime, locked_by: $lockedBy })",
+                parameters,
+                null);
         assertUnlocked(LOCK_NAME1);
         shouldCreateLock();
     }
@@ -114,16 +119,13 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
         new FuzzTester(getLockProvider()) {
             @Override
             protected Void task(int iterations, Job job) {
-                try (
-                    Session session = testUtils.getDriver().session();
-                    Transaction transaction = session.beginTransaction()
-                ) {
+                try (Session session = testUtils.getDriver().session();
+                        Transaction transaction = session.beginTransaction()) {
                     super.task(iterations, job);
                     transaction.commit();
                     return null;
                 } catch (Throwable e) {
-                    LoggerFactory.getLogger(getClass())
-                        .error("Exception caught:", e);
+                    LoggerFactory.getLogger(getClass()).error("Exception caught:", e);
                     return null;
                 }
             }
@@ -134,7 +136,6 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
             }
         }.doFuzzTest();
     }
-
 
     @Test
     void shouldNotUpdateOnInsertIfPreviousDidNotEndWhenNotUsingDbTime() {
@@ -149,15 +150,13 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
     private void shouldNotUpdateOnInsertIfPreviousDidNotEnd() {
         Neo4jStorageAccessor accessor = getAccessor();
 
-        assertThat(
-            accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10)))
-        ).isEqualTo(true);
+        assertThat(accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10))))
+                .isEqualTo(true);
 
         Instant originalLockValidity = testUtils.getLockedUntil(MY_LOCK);
 
-        assertThat(
-            accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10)))
-        ).isEqualTo(false);
+        assertThat(accessor.insertRecord(lockConfig(MY_LOCK, Duration.ofSeconds(10))))
+                .isEqualTo(false);
 
         assertThat(testUtils.getLockedUntil(MY_LOCK)).isEqualTo(originalLockValidity);
     }
@@ -183,13 +182,14 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
         Instant otherLockLockedUntil = testUtils.getLockedUntil(OTHER_LOCK);
 
         // wait for a while so there will be a difference in the timestamp
-        // when system time is used seems there is no milliseconds in the timestamp so to make a difference we have to wait for at least a second
+        // when system time is used seems there is no milliseconds in the timestamp so
+        // to make a
+        // difference we have to wait for at least a second
         sleep(1000);
 
-
         // act
-        assertThat(accessor.updateRecord(new LockConfiguration(now(), MY_LOCK, lockAtMostFor, Duration.ZERO))).isEqualTo(true);
-
+        assertThat(accessor.updateRecord(new LockConfiguration(now(), MY_LOCK, lockAtMostFor, Duration.ZERO)))
+                .isEqualTo(true);
 
         // assert
         assertThat(testUtils.getLockedUntil(MY_LOCK)).isAfter(myLockLockedUntil);

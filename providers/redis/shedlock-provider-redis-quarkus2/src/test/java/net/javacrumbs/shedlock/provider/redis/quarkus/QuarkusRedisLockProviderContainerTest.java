@@ -1,14 +1,13 @@
 package net.javacrumbs.shedlock.provider.redis.quarkus;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.test.junit.QuarkusTest;
+import javax.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import javax.inject.Inject;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

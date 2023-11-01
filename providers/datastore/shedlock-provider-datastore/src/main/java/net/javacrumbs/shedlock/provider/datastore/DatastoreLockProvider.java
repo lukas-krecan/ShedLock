@@ -1,14 +1,15 @@
 package net.javacrumbs.shedlock.provider.datastore;
 
+import static java.util.Objects.requireNonNull;
+
 import com.google.cloud.datastore.Datastore;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-
-import static java.util.Objects.requireNonNull;
 
 public class DatastoreLockProvider extends StorageBasedLockProvider {
 
     public DatastoreLockProvider(Datastore datastore) {
-        super(new DatastoreStorageAccessor(Configuration.builder().withDatastore(datastore).build()));
+        super(new DatastoreStorageAccessor(
+                Configuration.builder().withDatastore(datastore).build()));
     }
 
     public DatastoreLockProvider(Configuration configuration) {

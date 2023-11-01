@@ -1,96 +1,67 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.spring.aop;
 
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.core.annotation.AliasFor;
-import org.springframework.scheduling.annotation.Scheduled;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.scheduling.annotation.Scheduled;
 
 public class SpringLockConfigurationExtractorTest extends AbstractSpringLockConfigurationExtractorTest {
 
     @SchedulerLock(name = "lockName", lockAtMostFor = "100")
-    public void annotatedMethod() {
-
-    }
+    public void annotatedMethod() {}
 
     @SchedulerLock(name = "lockName", lockAtMostFor = "${placeholder}")
-    public void annotatedMethodWithString() {
-
-    }
+    public void annotatedMethodWithString() {}
 
     @SchedulerLock(name = "lockName", lockAtMostFor = "PT1S")
-    public void annotatedMethodWithDurationString() {
-
-    }
+    public void annotatedMethodWithDurationString() {}
 
     @SchedulerLock(name = "${name}")
-    public void annotatedMethodWithNameVariable() {
-
-    }
+    public void annotatedMethodWithNameVariable() {}
 
     @SchedulerLock(name = "lockName-#{#arg0 + '-' + #arg1 + '-' + (1 + 2) + '-' + 'abcde'.length()}")
-    public void annotatedMethodWithNameSpringExpression(String arg0, Integer arg1) {
-
-    }
+    public void annotatedMethodWithNameSpringExpression(String arg0, Integer arg1) {}
 
     @SchedulerLock(name = "${name}-#{#arg0}")
-    public void annotatedMethodWithNameSpringExpressionAndVariable(String arg0) {
-
-    }
+    public void annotatedMethodWithNameSpringExpressionAndVariable(String arg0) {}
 
     @SchedulerLock(name = "lockName")
-    public void annotatedMethodWithoutLockAtMostFor() {
-
-    }
+    public void annotatedMethodWithoutLockAtMostFor() {}
 
     @SchedulerLock(name = "lockName", lockAtLeastFor = "0")
-    public void annotatedMethodWithZeroGracePeriod() {
-
-    }
+    public void annotatedMethodWithZeroGracePeriod() {}
 
     @SchedulerLock(name = "lockName", lockAtLeastFor = "10")
-    public void annotatedMethodWithPositiveGracePeriod() {
-
-    }
+    public void annotatedMethodWithPositiveGracePeriod() {}
 
     @SchedulerLock(name = "lockName", lockAtLeastFor = "10ms")
-    public void annotatedMethodWithPositiveGracePeriodWithString() {
-
-    }
+    public void annotatedMethodWithPositiveGracePeriodWithString() {}
 
     @SchedulerLock(name = "lockName", lockAtLeastFor = "-1s")
-    public void annotatedMethodWithNegativeGracePeriod() {
-
-    }
+    public void annotatedMethodWithNegativeGracePeriod() {}
 
     @ScheduledLocked(name = "lockName1")
-    public void composedAnnotation() {
+    public void composedAnnotation() {}
 
-    }
-
-    public void methodWithoutAnnotation() {
-
-    }
+    public void methodWithoutAnnotation() {}
 
     @Target(METHOD)
     @Retention(RUNTIME)

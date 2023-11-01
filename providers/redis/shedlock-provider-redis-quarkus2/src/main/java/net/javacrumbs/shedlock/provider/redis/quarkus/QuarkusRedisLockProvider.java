@@ -1,8 +1,15 @@
 package net.javacrumbs.shedlock.provider.redis.quarkus;
 
+import static io.vertx.mutiny.redis.client.Command.SET;
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.vertx.mutiny.redis.client.Response;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
@@ -11,16 +18,10 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
-import static io.vertx.mutiny.redis.client.Command.SET;
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
-
 /**
- * Uses Redis's `SET resource-name anystring NX EX max-lock-ms-time` as locking mechanism.
+ * Uses Redis's `SET resource-name anystring NX EX max-lock-ms-time` as locking
+ * mechanism.
+ *
  * <p>
  * See <a href="https://redis.io/commands/set">Set command</a>
  */
@@ -32,7 +33,6 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     private final KeyCommands<String> keyCommands;
 
     private final String keyPrefix;
-
 
     public QuarkusRedisLockProvider(RedisDataSource dataSource) {
         this(dataSource, KEY_PREFIX_DEFAULT);
@@ -52,13 +52,12 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
 
         String key = buildKey(lockConfiguration.getName());
 
-        Response response = redisDataSource.execute(SET, key, buildValue(), "NX", "PX",  Long.toString(expireTime));
+        Response response = redisDataSource.execute(SET, key, buildValue(), "NX", "PX", Long.toString(expireTime));
         if (response != null && "OK".equals(response.toString())) {
             return Optional.of(new RedisLock(key, this, lockConfiguration));
         } else {
             return Optional.empty();
         }
-
     }
 
     private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
@@ -81,14 +80,12 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     }
 
     private boolean extendKeyExpiration(String key, long expiration) {
-        return keyCommands.pexpire(key,expiration);
-
+        return keyCommands.pexpire(key, expiration);
     }
 
     private void deleteKey(String key) {
         keyCommands.del(key);
     }
-
 
     private static final class RedisLock extends AbstractSimpleLock {
         private final String key;
@@ -130,6 +127,4 @@ public class QuarkusRedisLockProvider implements ExtensibleLockProvider {
     private static String buildValue() {
         return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
     }
-
-
 }

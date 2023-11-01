@@ -1,20 +1,25 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.util.Objects.requireNonNull;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.time.Duration;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
@@ -35,41 +40,34 @@ import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.time.Duration;
-import java.util.Optional;
-
-import static java.time.temporal.ChronoUnit.MILLIS;
-import static java.util.Objects.requireNonNull;
-
 class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtractor {
     private static final ExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
     private static final ParserContext PARSER_CONTEXT = new TemplateParserContext();
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
+
     @Nullable
     private final StringValueResolver embeddedValueResolver;
+
     private final Converter<String, Duration> durationConverter;
     private final Logger logger = LoggerFactory.getLogger(SpringLockConfigurationExtractor.class);
 
     public SpringLockConfigurationExtractor(
-        Duration defaultLockAtMostFor,
-        Duration defaultLockAtLeastFor,
-        @Nullable StringValueResolver embeddedValueResolver,
-        Converter<String, Duration> durationConverter
-    ) {
+            Duration defaultLockAtMostFor,
+            Duration defaultLockAtLeastFor,
+            @Nullable StringValueResolver embeddedValueResolver,
+            Converter<String, Duration> durationConverter) {
         this.defaultLockAtMostFor = requireNonNull(defaultLockAtMostFor);
         this.defaultLockAtLeastFor = requireNonNull(defaultLockAtLeastFor);
         this.durationConverter = requireNonNull(durationConverter);
         this.embeddedValueResolver = embeddedValueResolver;
     }
 
-
     @Override
     public Optional<LockConfiguration> getLockConfiguration(Runnable task) {
         if (task instanceof ScheduledMethodRunnable scheduledMethodRunnable) {
-            return getLockConfiguration(scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod(), new Object[] {});
+            return getLockConfiguration(
+                    scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod(), new Object[] {});
         } else {
             logger.debug("Unknown task type " + task);
         }
@@ -88,10 +86,10 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
     private LockConfiguration getLockConfiguration(AnnotationData annotation, Method method, Object[] parameterValues) {
         return new LockConfiguration(
-            ClockProvider.now(),
-            getName(annotation, method, parameterValues),
-            getLockAtMostFor(annotation),
-            getLockAtLeastFor(annotation));
+                ClockProvider.now(),
+                getName(annotation, method, parameterValues),
+                getLockAtMostFor(annotation),
+                getLockAtLeastFor(annotation));
     }
 
     private String getName(AnnotationData annotation, Method method, Object[] parameterValues) {
@@ -105,14 +103,18 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
     private String parseSpEL(String name, Method method, Object[] parameterValues) {
         return getEvaluationContext(method, parameterValues)
-            .map(evaluationContext -> EXPRESSION_PARSER.parseExpression(name, PARSER_CONTEXT).getValue(evaluationContext, String.class))
-            .orElse(name);
+                .map(evaluationContext -> EXPRESSION_PARSER
+                        .parseExpression(name, PARSER_CONTEXT)
+                        .getValue(evaluationContext, String.class))
+                .orElse(name);
     }
 
     private Optional<EvaluationContext> getEvaluationContext(Method method, Object[] parameterValues) {
         if (method.getParameters().length > 0 && method.getParameters().length == parameterValues.length) {
             Parameter[] parameters = method.getParameters();
-            EvaluationContext evaluationContext = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
+            EvaluationContext evaluationContext = SimpleEvaluationContext.forReadOnlyDataBinding()
+                    .withInstanceMethods()
+                    .build();
             for (int i = 0; i < parameters.length; i++) {
                 evaluationContext.setVariable(parameters[i].getName(), parameterValues[i]);
             }
@@ -124,23 +126,22 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
     Duration getLockAtMostFor(AnnotationData annotation) {
         return getValue(
-            annotation.getLockAtMostFor(),
-            annotation.getLockAtMostForString(),
-            this.defaultLockAtMostFor,
-            "lockAtMostForString"
-        );
+                annotation.getLockAtMostFor(),
+                annotation.getLockAtMostForString(),
+                this.defaultLockAtMostFor,
+                "lockAtMostForString");
     }
 
     Duration getLockAtLeastFor(AnnotationData annotation) {
         return getValue(
-            annotation.getLockAtLeastFor(),
-            annotation.getLockAtLeastForString(),
-            this.defaultLockAtLeastFor,
-            "lockAtLeastForString"
-        );
+                annotation.getLockAtLeastFor(),
+                annotation.getLockAtLeastForString(),
+                this.defaultLockAtLeastFor,
+                "lockAtLeastForString");
     }
 
-    private Duration getValue(long valueFromAnnotation, String stringValueFromAnnotation, Duration defaultValue, final String paramName) {
+    private Duration getValue(
+            long valueFromAnnotation, String stringValueFromAnnotation, Duration defaultValue, final String paramName) {
         if (valueFromAnnotation >= 0) {
             return Duration.of(valueFromAnnotation, MILLIS);
         } else if (StringUtils.hasText(stringValueFromAnnotation)) {
@@ -150,11 +151,13 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
             try {
                 Duration result = durationConverter.convert(stringValueFromAnnotation);
                 if (result.isNegative()) {
-                    throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot set negative duration");
+                    throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation
+                            + "\" - cannot set negative duration");
                 }
                 return result;
             } catch (IllegalStateException nfe) {
-                throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation + "\" - cannot parse into long nor duration");
+                throw new IllegalArgumentException("Invalid " + paramName + " value \"" + stringValueFromAnnotation
+                        + "\" - cannot parse into long nor duration");
             }
         } else {
             return defaultValue;
@@ -170,8 +173,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
             // Try to find annotation on proxied class
             Class<?> targetClass = AopUtils.getTargetClass(target);
             try {
-                Method methodOnTarget = targetClass
-                    .getMethod(method.getName(), method.getParameterTypes());
+                Method methodOnTarget = targetClass.getMethod(method.getName(), method.getParameterTypes());
                 return findAnnotation(methodOnTarget);
             } catch (NoSuchMethodException e) {
                 return null;
@@ -183,7 +185,8 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     private AnnotationData findAnnotation(Method method) {
         SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
         if (annotation != null) {
-            return new AnnotationData(annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
+            return new AnnotationData(
+                    annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
         }
         return null;
     }
@@ -199,7 +202,12 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         private final long lockAtLeastFor;
         private final String lockAtLeastForString;
 
-        private AnnotationData(String name, long lockAtMostFor, String lockAtMostForString, long lockAtLeastFor, String lockAtLeastForString) {
+        private AnnotationData(
+                String name,
+                long lockAtMostFor,
+                String lockAtMostForString,
+                long lockAtLeastFor,
+                String lockAtLeastForString) {
             this.name = name;
             this.lockAtMostFor = lockAtMostFor;
             this.lockAtMostForString = lockAtMostForString;
@@ -228,5 +236,3 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         }
     }
 }
-
-

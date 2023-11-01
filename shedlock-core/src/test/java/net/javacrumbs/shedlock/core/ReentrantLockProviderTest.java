@@ -1,22 +1,23 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.core;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -26,23 +27,21 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ReentrantLockProviderTest {
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
     private final LockProvider lockProvider = new ReentrantLockProvider();
     private final LockConfigurationExtractor lockConfigurationExtractor = mock(LockConfigurationExtractor.class);
     private final LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
-    private final LockConfiguration configuration = new LockConfiguration(now(),"test", Duration.ofSeconds(60), Duration.ZERO);
+    private final LockConfiguration configuration =
+            new LockConfiguration(now(), "test", Duration.ofSeconds(60), Duration.ZERO);
 
     @BeforeEach
     void configureMocks() {
-        when(lockConfigurationExtractor.getLockConfiguration(any(Runnable.class))).thenReturn(Optional.of(configuration));
+        when(lockConfigurationExtractor.getLockConfiguration(any(Runnable.class)))
+                .thenReturn(Optional.of(configuration));
     }
 
     @Test
@@ -65,8 +64,10 @@ class ReentrantLockProviderTest {
             assertThat(runningTasks.decrementAndGet()).isEqualTo(0);
             executedTasks.incrementAndGet();
         };
-        ScheduledFuture<?> scheduledFuture1 = executor.schedule(new LockableRunnable(task, lockManager), 1, TimeUnit.MILLISECONDS);
-        ScheduledFuture<?> scheduledFuture2 = executor.schedule(new LockableRunnable(task, lockManager), 1, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> scheduledFuture1 =
+                executor.schedule(new LockableRunnable(task, lockManager), 1, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> scheduledFuture2 =
+                executor.schedule(new LockableRunnable(task, lockManager), 1, TimeUnit.MILLISECONDS);
         scheduledFuture1.get();
         scheduledFuture2.get();
 
@@ -81,5 +82,4 @@ class ReentrantLockProviderTest {
             throw new RuntimeException(e);
         }
     }
-
 }

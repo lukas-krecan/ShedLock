@@ -1,9 +1,13 @@
 package net.javacrumbs.shedlock.provider.datastore;
 
+import static com.google.cloud.datastore.Query.ResultType.ENTITY;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Query;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
@@ -14,20 +18,18 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Optional;
-
-import static com.google.cloud.datastore.Query.ResultType.ENTITY;
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Testcontainers
 class DatastoreLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     @Container
     public static final DatastoreEmulatorContainer datastoreEmulator;
+
     static {
-        DockerImageName googleCloudCliImage = DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:425.0.0-emulators");
+        DockerImageName googleCloudCliImage =
+                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:425.0.0-emulators");
         datastoreEmulator = new DatastoreEmulatorContainer(googleCloudCliImage)
-            .withFlags("--project shedlock-provider-datastore-test --host-port 0.0.0.0:8081 --use-firestore-in-datastore-mode")
-            .withReuse(true);
+                .withFlags(
+                        "--project shedlock-provider-datastore-test --host-port 0.0.0.0:8081 --use-firestore-in-datastore-mode")
+                .withReuse(true);
     }
 
     private Datastore datastore;
@@ -38,16 +40,16 @@ class DatastoreLockProviderIntegrationTest extends AbstractStorageBasedLockProvi
     @BeforeEach
     void init() {
         this.datastore = DatastoreOptions.newBuilder()
-            .setCredentials(NoCredentials.getInstance())
-            .setProjectId("shedlock-provider-datastore-test")
-            .setHost("http://" + datastoreEmulator.getEmulatorEndpoint())
-            .build()
-            .getService();
+                .setCredentials(NoCredentials.getInstance())
+                .setProjectId("shedlock-provider-datastore-test")
+                .setHost("http://" + datastoreEmulator.getEmulatorEndpoint())
+                .build()
+                .getService();
         this.configuration = DatastoreLockProvider.Configuration.builder()
-            .withDatastore(datastore)
-            .withEntityName("shedlock")
-            .withFieldNames(new DatastoreLockProvider.FieldNames("until", "at", "by"))
-            .build();
+                .withDatastore(datastore)
+                .withEntityName("shedlock")
+                .withFieldNames(new DatastoreLockProvider.FieldNames("until", "at", "by"))
+                .build();
         this.accessor = new DatastoreStorageAccessor(this.configuration);
         this.provider = new DatastoreLockProvider(this.configuration);
     }

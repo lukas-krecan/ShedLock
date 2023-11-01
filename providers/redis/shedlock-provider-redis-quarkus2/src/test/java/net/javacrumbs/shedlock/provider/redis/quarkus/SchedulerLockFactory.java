@@ -1,13 +1,11 @@
 package net.javacrumbs.shedlock.provider.redis.quarkus;
 
 import io.quarkus.redis.datasource.RedisDataSource;
-import net.javacrumbs.shedlock.core.LockProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
-
+import net.javacrumbs.shedlock.core.LockProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class SchedulerLockFactory {

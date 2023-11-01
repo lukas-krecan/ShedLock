@@ -1,17 +1,15 @@
 package net.javacrumbs.shedlock.provider.redis.quarkus;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.value.ValueCommands;
 import io.quarkus.test.junit.QuarkusTest;
+import javax.inject.Inject;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
-
-import javax.inject.Inject;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 @QuarkusTest
 public class QuarkusRedisLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
@@ -47,6 +45,4 @@ public class QuarkusRedisLockProviderIntegrationTest extends AbstractExtensibleL
     protected ExtensibleLockProvider getLockProvider() {
         return (ExtensibleLockProvider) lockProvider;
     }
-
-
 }

@@ -1,20 +1,17 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.spring.aop;
-
 
 /*
  * Copyright 2012-2017 the original author or authors.
@@ -32,9 +29,6 @@ package net.javacrumbs.shedlock.spring.aop;
  * limitations under the License.
  */
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.Assert;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -42,14 +36,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.util.Assert;
 
 /**
  * {@link Converter} for {@link String} to {@link Duration}. Support
- * {@link Duration#parse(CharSequence)} as well a more readable {@code 10s} form.
+ * {@link Duration#parse(CharSequence)} as well a more readable {@code 10s}
+ * form.
  *
  * @author Phillip Webb
- * <p>
- * Copied from org.springframework.boot.context.properties.bind.convert
+ *         <p>
+ *         Copied from org.springframework.boot.context.properties.bind.convert
  */
 class StringToDurationConverter implements Converter<String, Duration> {
 
@@ -96,4 +93,3 @@ class StringToDurationConverter implements Converter<String, Duration> {
         return unit;
     }
 }
-

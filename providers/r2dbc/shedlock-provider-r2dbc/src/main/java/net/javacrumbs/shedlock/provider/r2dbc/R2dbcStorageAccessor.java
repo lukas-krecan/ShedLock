@@ -15,16 +15,15 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import static java.util.Objects.requireNonNull;
+
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Statement;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-import reactor.core.publisher.Mono;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import static java.util.Objects.requireNonNull;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
+import reactor.core.publisher.Mono;
 
 class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
 
@@ -38,22 +37,19 @@ class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
 
     @Override
     protected <T> Mono<T> executeCommand(
-        String sql,
-        Function<Statement, Mono<T>> body,
-        BiFunction<String, Throwable, Mono<T>> exceptionHandler
-    ) {
+            String sql, Function<Statement, Mono<T>> body, BiFunction<String, Throwable, Mono<T>> exceptionHandler) {
         return Mono.usingWhen(
-            Mono.from(connectionFactory.create()).doOnNext(it -> it.setAutoCommit(true)),
-            conn -> body.apply(conn.createStatement(sql)).onErrorResume(throwable -> exceptionHandler.apply(sql, throwable)),
-            Connection::close,
-            (connection, throwable) -> Mono.from(connection.close()).then(exceptionHandler.apply(sql, throwable)),
-            connection -> Mono.from(connection.close()).then()
-        );
+                Mono.from(connectionFactory.create()).doOnNext(it -> it.setAutoCommit(true)),
+                conn -> body.apply(conn.createStatement(sql))
+                        .onErrorResume(throwable -> exceptionHandler.apply(sql, throwable)),
+                Connection::close,
+                (connection, throwable) -> Mono.from(connection.close()).then(exceptionHandler.apply(sql, throwable)),
+                connection -> Mono.from(connection.close()).then());
     }
 
     @Override
     protected String toParameter(int index, String name) {
-       return getAdapter().toParameter(index, name);
+        return getAdapter().toParameter(index, name);
     }
 
     @Override

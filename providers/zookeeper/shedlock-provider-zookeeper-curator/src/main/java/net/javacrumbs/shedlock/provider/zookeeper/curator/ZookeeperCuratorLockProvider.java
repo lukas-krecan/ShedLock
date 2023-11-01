@@ -1,20 +1,25 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.zookeeper.curator;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -30,17 +35,10 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.util.Optional;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
-
 /**
- * Locks kept using ZooKeeper. When locking, creates a PERSISTENT  node with node name = lock_name and value containing lock data,
- * when unlocking, keeps the node and changes node data to release the lock.
+ * Locks kept using ZooKeeper. When locking, creates a PERSISTENT node with node
+ * name = lock_name and value containing lock data, when unlocking, keeps the
+ * node and changes node data to release the lock.
  */
 public class ZookeeperCuratorLockProvider implements LockProvider {
     public static final String DEFAULT_PATH = "/shedlock";
@@ -84,9 +82,12 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         }
     }
 
-    private Optional<SimpleLock> tryLock(LockConfiguration lockConfiguration, String nodePath, Stat stat) throws Exception {
+    private Optional<SimpleLock> tryLock(LockConfiguration lockConfiguration, String nodePath, Stat stat)
+            throws Exception {
         try {
-            client.setData().withVersion(stat.getVersion()).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+            client.setData()
+                    .withVersion(stat.getVersion())
+                    .forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
             return Optional.of(new CuratorLock(nodePath, client, lockConfiguration));
         } catch (KeeperException.BadVersionException e) {
             logger.trace("Node value can not be set, must have been set by a parallel process");
@@ -96,7 +97,10 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     private boolean createNode(LockConfiguration lockConfiguration, String nodePath) {
         try {
-            client.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
+            client.create()
+                    .creatingParentsIfNeeded()
+                    .withMode(CreateMode.PERSISTENT)
+                    .forPath(nodePath, serialize(lockConfiguration.getLockAtMostUntil()));
             return true;
         } catch (KeeperException.NodeExistsException e) {
             return false;

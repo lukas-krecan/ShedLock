@@ -1,11 +1,10 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 public enum DatabaseProduct {
     POSTGRES_SQL("PostgreSQL"::equals, PostgresSqlServerTimeStatementsSource::new),
@@ -24,7 +23,8 @@ public enum DatabaseProduct {
 
     private final Function<Configuration, SqlStatementsSource> serverTimeStatementsSource;
 
-    DatabaseProduct(Predicate<String> productMatcher, Function<Configuration, SqlStatementsSource> serverTimeStatementsSource) {
+    DatabaseProduct(
+            Predicate<String> productMatcher, Function<Configuration, SqlStatementsSource> serverTimeStatementsSource) {
         this.productMatcher = productMatcher;
         this.serverTimeStatementsSource = serverTimeStatementsSource;
     }
@@ -34,16 +34,19 @@ public enum DatabaseProduct {
     }
 
     /**
-     * Searches for the right DatabaseProduct based on the ProductName returned from JDBC Connection Metadata
+     * Searches for the right DatabaseProduct based on the ProductName returned from
+     * JDBC Connection Metadata
      *
-     * @param productName Obtained from the JDBC connection. See java.sql.connection.getMetaData().getProductName().
+     * @param productName
+     *            Obtained from the JDBC connection. See
+     *            java.sql.connection.getMetaData().getProductName().
      * @return The matching ProductName enum
      */
     @NonNull
     static DatabaseProduct matchProductName(final String productName) {
         return Arrays.stream(DatabaseProduct.values())
-            .filter(databaseProduct -> databaseProduct.productMatcher.test(productName))
-            .findFirst().orElse(UNKNOWN);
+                .filter(databaseProduct -> databaseProduct.productMatcher.test(productName))
+                .findFirst()
+                .orElse(UNKNOWN);
     }
 }
-

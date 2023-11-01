@@ -1,5 +1,11 @@
 package net.javacrumbs.shedlock.provider.inmemory;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -7,16 +13,10 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-
 /**
- * In memory lock that is suitable only for tests and running application locally.
-*/
+ * In memory lock that is suitable only for tests and running application
+ * locally.
+ */
 public class InMemoryLockProvider implements ExtensibleLockProvider {
     private final Map<String, LockRecord> locks = new HashMap<>();
 
@@ -31,7 +31,7 @@ public class InMemoryLockProvider implements ExtensibleLockProvider {
             } else {
                 LockRecord lockRecord = new LockRecord(lockConfiguration.getLockAtMostUntil());
                 locks.put(lockName, lockRecord);
-                logger.debug("Locked {}",  lockConfiguration);
+                logger.debug("Locked {}", lockConfiguration);
                 return Optional.of(new InMemoryLock(lockConfiguration));
             }
         }
@@ -46,7 +46,7 @@ public class InMemoryLockProvider implements ExtensibleLockProvider {
 
     private void doUnlock(LockConfiguration lockConfiguration) {
         synchronized (locks) {
-           locks.put(lockConfiguration.getName(), new LockRecord(lockConfiguration.getLockAtLeastUntil()));
+            locks.put(lockConfiguration.getName(), new LockRecord(lockConfiguration.getLockAtLeastUntil()));
             logger.debug("Unlocked {}", lockConfiguration);
         }
     }
@@ -64,8 +64,7 @@ public class InMemoryLockProvider implements ExtensibleLockProvider {
         }
     }
 
-    private record LockRecord(Instant lockedUntil) {
-    }
+    private record LockRecord(Instant lockedUntil) {}
 
     private class InMemoryLock extends AbstractSimpleLock {
 

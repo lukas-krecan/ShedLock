@@ -1,33 +1,17 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.consul;
-
-import com.ecwid.consul.v1.ConsulClient;
-import com.ecwid.consul.v1.QueryParams;
-import com.ecwid.consul.v1.Response;
-import com.ecwid.consul.v1.kv.model.PutParams;
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,15 +23,31 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.QueryParams;
+import com.ecwid.consul.v1.Response;
+import com.ecwid.consul.v1.kv.model.PutParams;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.UUID;
+import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 class ConsulLockProviderTest {
-    // lower values may produce false negatives because scheduler may not complete necessary tasks in time
+    // lower values may produce false negatives because scheduler may not complete
+    // necessary tasks in
+    // time
     private static final Duration SMALL_MIN_TTL = Duration.ofMillis(200);
     private final ConsulClient mockConsulClient = mock(ConsulClient.class);
     private final ConsulLockProvider lockProvider = new ConsulLockProvider(mockConsulClient, SMALL_MIN_TTL);
 
     @BeforeEach
     void setUp() {
-        when(mockConsulClient.sessionCreate(any(), any(), any())).thenReturn(new Response<>(UUID.randomUUID().toString(), null, null, null));
+        when(mockConsulClient.sessionCreate(any(), any(), any()))
+                .thenReturn(new Response<>(UUID.randomUUID().toString(), null, null, null));
         mockLock(any(), true);
     }
 
@@ -90,15 +90,18 @@ class ConsulLockProviderTest {
     @Test
     void doesNotBlockSchedulerInCaseOfFailure() {
         when(mockConsulClient.sessionDestroy(any(), any(), any()))
-            .thenThrow(new RuntimeException("Sasuke is not in Konoha, Naruto alone is unable to destroy session :("))
-            .thenReturn(new Response<>(null, null, null, null));
+                .thenThrow(
+                        new RuntimeException("Sasuke is not in Konoha, Naruto alone is unable to destroy session :("))
+                .thenReturn(new Response<>(null, null, null, null));
 
-        Optional<SimpleLock> lock = lockProvider.lock(lockConfig("sasuke", SMALL_MIN_TTL.multipliedBy(10), SMALL_MIN_TTL));
+        Optional<SimpleLock> lock =
+                lockProvider.lock(lockConfig("sasuke", SMALL_MIN_TTL.multipliedBy(10), SMALL_MIN_TTL));
         assertThat(lock).isNotEmpty();
         lock.get().unlock();
         sleep(SMALL_MIN_TTL.toMillis() + 10);
 
-        Optional<SimpleLock> lock2 = lockProvider.lock(lockConfig("sakura", SMALL_MIN_TTL.multipliedBy(10), SMALL_MIN_TTL));
+        Optional<SimpleLock> lock2 =
+                lockProvider.lock(lockConfig("sakura", SMALL_MIN_TTL.multipliedBy(10), SMALL_MIN_TTL));
         assertThat(lock2).isNotEmpty();
         lock2.get().unlock();
         sleep(SMALL_MIN_TTL.toMillis() + 10);
@@ -108,7 +111,7 @@ class ConsulLockProviderTest {
 
     private void mockLock(String eq, boolean b) {
         when(mockConsulClient.setKVValue(eq, any(), any(), any(PutParams.class)))
-            .thenReturn(new Response<>(b, null, null, null));
+                .thenReturn(new Response<>(b, null, null, null));
     }
 
     private LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {

@@ -1,27 +1,22 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.test.support;
 
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -32,14 +27,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.IntStream.range;
-import static org.assertj.core.api.Assertions.assertThat;
+import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Increments counter from several threads coordinating using lock provided under test.
+ * Increments counter from several threads coordinating using lock provided
+ * under test.
  */
 public class FuzzTester {
 
@@ -60,12 +58,7 @@ public class FuzzTester {
         this(lockProvider, Duration.ofMillis(1), Duration.of(5, MINUTES), 100);
     }
 
-    public FuzzTester(
-        LockProvider lockProvider,
-        Duration sleepFor,
-        Duration lockAtMostFor,
-        int iterations
-    ) {
+    public FuzzTester(LockProvider lockProvider, Duration sleepFor, Duration lockAtMostFor, int iterations) {
         this.lockProvider = lockProvider;
         this.sleepFor = sleepFor;
         this.lockAtMostFor = lockAtMostFor;
@@ -80,9 +73,9 @@ public class FuzzTester {
         Job job1 = new Job("lock1", lockAtMostFor);
         Job job2 = new Job("lock2", lockAtMostFor);
 
-        List<Callable<Void>> tasks = range(0, THREADS).mapToObj(i -> (Callable<Void>) () ->
-            task(iters[i], i % 2 == 0 ? job1 : job2)).collect(toList()
-        );
+        List<Callable<Void>> tasks = range(0, THREADS)
+                .mapToObj(i -> (Callable<Void>) () -> task(iters[i], i % 2 == 0 ? job1 : job2))
+                .collect(toList());
         waitForIt(executor.invokeAll(tasks));
 
         assertThat(job2.getCounter()).isEqualTo(THREADS / 2 * iterations);
@@ -98,16 +91,20 @@ public class FuzzTester {
 
     protected Void task(int iterations, Job job) {
         try {
-            for (AtomicInteger i = new AtomicInteger(0); i.get() < iterations;) {
-                lockingTaskExecutor.executeWithLock((Runnable) () -> {
-                    int n = job.getCounter();
-                    if (shouldLog()) logger.debug("action=getLock value={} i={}", n, i);
-                    sleep();
-                    if (shouldLog()) logger.debug("action=setCounter value={} i={}", n + 1, i);
-                    // counter is shared variable. If locking does not work, this overwrites the value set by another thread
-                    job.setCounter(n + 1);
-                    i.incrementAndGet();
-                }, job.getLockConfiguration());
+            for (AtomicInteger i = new AtomicInteger(0); i.get() < iterations; ) {
+                lockingTaskExecutor.executeWithLock(
+                        (Runnable) () -> {
+                            int n = job.getCounter();
+                            if (shouldLog()) logger.debug("action=getLock value={} i={}", n, i);
+                            sleep();
+                            if (shouldLog()) logger.debug("action=setCounter value={} i={}", n + 1, i);
+                            // counter is shared variable. If locking does not work, this overwrites the
+                            // value
+                            // set by another thread
+                            job.setCounter(n + 1);
+                            i.incrementAndGet();
+                        },
+                        job.getLockConfiguration());
             }
             logger.debug("action=finished");
             return null;
@@ -145,11 +142,7 @@ public class FuzzTester {
 
         public LockConfiguration getLockConfiguration() {
             return new LockConfiguration(
-                ClockProvider.now(),
-                lockName,
-                lockAtMostFor,
-                Duration.of(5, ChronoUnit.MILLIS)
-            );
+                    ClockProvider.now(), lockName, lockAtMostFor, Duration.of(5, ChronoUnit.MILLIS));
         }
 
         public int getCounter() {
@@ -161,5 +154,3 @@ public class FuzzTester {
         }
     }
 }
-
-

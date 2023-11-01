@@ -1,12 +1,11 @@
 package net.javacrumbs.shedlock.provider.r2dbc;
 
 import io.r2dbc.spi.Statement;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.function.Function;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 abstract class R2dbcAdapter {
     private static final String MSSQL_NAME = "Microsoft SQL Server";
@@ -18,25 +17,13 @@ abstract class R2dbcAdapter {
     static R2dbcAdapter create(@NonNull String driver) {
         return switch (driver) {
             case MSSQL_NAME -> new DefaultR2dbcAdapter(
-                (index, name) -> "@" + name,
-                R2dbcAdapter::toLocalDate,
-                R2dbcAdapter::bindByName
-            );
+                    (index, name) -> "@" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
             case MYSQL_NAME, JASYNC_MYSQL_NAME, MARIA_NAME -> new DefaultR2dbcAdapter(
-                (index, name) -> "?",
-                R2dbcAdapter::toLocalDate,
-                R2dbcAdapter::bindByIndex
-            );
+                    (index, name) -> "?", R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByIndex);
             case ORACLE_NAME -> new DefaultR2dbcAdapter(
-                (index, name) -> ":" + name,
-                R2dbcAdapter::toLocalDate,
-                R2dbcAdapter::bindByName
-            );
+                    (index, name) -> ":" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
             default -> new DefaultR2dbcAdapter(
-                (index, name) -> "$" + index,
-                R2dbcAdapter::toInstant,
-                R2dbcAdapter::bindByIndex
-            );
+                    (index, name) -> "$" + index, R2dbcAdapter::toInstant, R2dbcAdapter::bindByIndex);
         };
     }
 
@@ -51,10 +38,10 @@ abstract class R2dbcAdapter {
     private static void bindByName(Statement statement, int index, String name, Object value) {
         statement.bind(name, value);
     }
+
     private static void bindByIndex(Statement statement, int index, String name, Object value) {
         statement.bind(index, value);
     }
-
 
     protected abstract String toParameter(int index, String name);
 
@@ -66,10 +53,9 @@ abstract class R2dbcAdapter {
         private final ValueBinder binder;
 
         private DefaultR2dbcAdapter(
-            @NonNull ParameterResolver parameterResolver,
-            @NonNull Function<Instant, Object> dateConverter,
-            @NonNull ValueBinder binder
-        ) {
+                @NonNull ParameterResolver parameterResolver,
+                @NonNull Function<Instant, Object> dateConverter,
+                @NonNull ValueBinder binder) {
             this.parameterResolver = parameterResolver;
             this.dateConverter = dateConverter;
             this.binder = binder;

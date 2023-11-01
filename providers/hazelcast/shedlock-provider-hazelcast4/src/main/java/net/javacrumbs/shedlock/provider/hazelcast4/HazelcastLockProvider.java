@@ -1,22 +1,24 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.hazelcast4;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -25,27 +27,27 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 /**
  * HazelcastLockProvider.
+ *
  * <p>
- * Implementation of {@link LockProvider} using Hazelcast for storing and sharing lock information and mechanisms between a cluster's members
+ * Implementation of {@link LockProvider} using Hazelcast for storing and
+ * sharing lock information and mechanisms between a cluster's members
+ *
  * <p>
- * Below, the mechanisms :
- * - The Lock, an instance of {@link HazelcastLock}, is obtained / created when :
- * -- the lock is not already locked by other process (lock - referenced by its name - is not present in the Hazelcast locks store OR unlockable)
- * -- the lock is expired : {@link Instant#now()} &gt; {@link HazelcastLock#timeToLive} where unlockTime have by default the same value of {@link HazelcastLock#lockAtMostUntil}
- * and can have the value of {@link HazelcastLock#lockAtLeastUntil} if unlock action is used
- * --- expired object is removed
- * -- the lock is owned by not available member of Hazelcast cluster member
- * --- no owner object is removed
- * - Unlock action :
- * -- removes lock object when {@link HazelcastLock#lockAtLeastUntil} is not come
- * -- override value of {@link HazelcastLock#timeToLive} with {@link HazelcastLock#lockAtLeastUntil} (its default value is the same of {@link HazelcastLock#lockAtLeastUntil}
+ * Below, the mechanisms : - The Lock, an instance of {@link HazelcastLock}, is
+ * obtained / created when : -- the lock is not already locked by other process
+ * (lock - referenced by its name - is not present in the Hazelcast locks store
+ * OR unlockable) -- the lock is expired : {@link Instant#now()} &gt;
+ * {@link HazelcastLock#timeToLive} where unlockTime have by default the same
+ * value of {@link HazelcastLock#lockAtMostUntil} and can have the value of
+ * {@link HazelcastLock#lockAtLeastUntil} if unlock action is used --- expired
+ * object is removed -- the lock is owned by not available member of Hazelcast
+ * cluster member --- no owner object is removed - Unlock action : -- removes
+ * lock object when {@link HazelcastLock#lockAtLeastUntil} is not come --
+ * override value of {@link HazelcastLock#timeToLive} with
+ * {@link HazelcastLock#lockAtLeastUntil} (its default value is the same of
+ * {@link HazelcastLock#lockAtLeastUntil}
  */
 public class HazelcastLockProvider implements LockProvider {
 
@@ -55,14 +57,12 @@ public class HazelcastLockProvider implements LockProvider {
     private static final Duration DEFAULT_LOCK_LEASE_TIME = Duration.ofSeconds(30);
 
     /**
-     * Key used for get the lock container (an {@link IMap}) inside {@link #hazelcastInstance}.
-     * By default : {@link #LOCK_STORE_KEY_DEFAULT}
+     * Key used for get the lock container (an {@link IMap}) inside
+     * {@link #hazelcastInstance}. By default : {@link #LOCK_STORE_KEY_DEFAULT}
      */
     private final String lockStoreKey;
 
-    /**
-     * Instance of the Hazelcast engine used by the application.
-     */
+    /** Instance of the Hazelcast engine used by the application. */
     private final HazelcastInstance hazelcastInstance;
 
     private final long lockLeaseTimeMs;
@@ -70,7 +70,8 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Instantiate the provider.
      *
-     * @param hazelcastInstance The Hazelcast engine used by the application.
+     * @param hazelcastInstance
+     *            The Hazelcast engine used by the application.
      */
     public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance) {
         this(hazelcastInstance, LOCK_STORE_KEY_DEFAULT);
@@ -79,8 +80,11 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Instantiate the provider.
      *
-     * @param hazelcastInstance The Hazelcast engine used by the application
-     * @param lockStoreKey      The key where the locks are stored (by default {@link #LOCK_STORE_KEY_DEFAULT}).
+     * @param hazelcastInstance
+     *            The Hazelcast engine used by the application
+     * @param lockStoreKey
+     *            The key where the locks are stored (by default
+     *            {@link #LOCK_STORE_KEY_DEFAULT}).
      */
     public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance, @NonNull String lockStoreKey) {
         this(hazelcastInstance, lockStoreKey, DEFAULT_LOCK_LEASE_TIME);
@@ -89,13 +93,21 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Instantiate the provider.
      *
-     * @param hazelcastInstance The com.hazelcast.core.Hazelcast engine used by the application
-     * @param lockStoreKey      The key where the locks are stored (by default {@link #LOCK_STORE_KEY_DEFAULT}).
-     * @param lockLeaseTime     When lock is being obtained there is a Hazelcast lock used to make it thread-safe.
-     *                          This lock should be released quite fast but if the process dies while holding the lock, it is held forever.
-     *                          lockLeaseTime is used as a safety-net for such situations.
+     * @param hazelcastInstance
+     *            The com.hazelcast.core.Hazelcast engine used by the application
+     * @param lockStoreKey
+     *            The key where the locks are stored (by default
+     *            {@link #LOCK_STORE_KEY_DEFAULT}).
+     * @param lockLeaseTime
+     *            When lock is being obtained there is a Hazelcast lock used to make
+     *            it thread-safe. This lock should be released quite fast but if the
+     *            process dies while holding the lock, it is held forever.
+     *            lockLeaseTime is used as a safety-net for such situations.
      */
-    public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance, @NonNull String lockStoreKey, @NonNull Duration lockLeaseTime) {
+    public HazelcastLockProvider(
+            @NonNull HazelcastInstance hazelcastInstance,
+            @NonNull String lockStoreKey,
+            @NonNull Duration lockLeaseTime) {
         this.hazelcastInstance = hazelcastInstance;
         this.lockStoreKey = lockStoreKey;
         this.lockLeaseTimeMs = lockLeaseTime.toMillis();
@@ -136,7 +148,8 @@ public class HazelcastLockProvider implements LockProvider {
             addNewLock(lockConfiguration);
             return true;
         } else if (lock.isExpired(now)) {
-            log.debug("lock - lock obtained, it was locked but expired : oldLock={};  conf={}", lock, lockConfiguration);
+            log.debug(
+                    "lock - lock obtained, it was locked but expired : oldLock={};  conf={}", lock, lockConfiguration);
             replaceLock(lockName, lockConfiguration);
             return true;
         } else {
@@ -144,7 +157,6 @@ public class HazelcastLockProvider implements LockProvider {
             return false;
         }
     }
-
 
     private IMap<String, HazelcastLock> getStore() {
         return hazelcastInstance.getMap(lockStoreKey);
@@ -180,7 +192,8 @@ public class HazelcastLockProvider implements LockProvider {
     /**
      * Unlock the lock with its name.
      *
-     * @param lockConfiguration the name of the lock to unlock.
+     * @param lockConfiguration
+     *            the name of the lock to unlock.
      */
     /* package */ void unlock(LockConfiguration lockConfiguration) {
         String lockName = lockConfiguration.getName();
@@ -211,6 +224,5 @@ public class HazelcastLockProvider implements LockProvider {
             final HazelcastLock newLock = HazelcastLock.fromLockWhereTtlIsReduceToLeastTime(lock);
             getStore().put(lockName, newLock);
         }
-
     }
 }
