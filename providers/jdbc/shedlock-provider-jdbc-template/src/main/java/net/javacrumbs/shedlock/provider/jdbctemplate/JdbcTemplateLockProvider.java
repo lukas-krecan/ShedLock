@@ -1,20 +1,22 @@
 /**
  * Copyright 2009 the original author or authors.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ *
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.TimeZone;
+import javax.sql.DataSource;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -22,31 +24,21 @@ import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
-import java.util.TimeZone;
-
-import static java.util.Objects.requireNonNull;
-
 /**
- * Lock provided by JdbcTemplate. It uses a table that contains lock_name and locked_until.
+ * Lock provided by JdbcTemplate. It uses a table that contains lock_name and
+ * locked_until.
+ *
  * <ol>
- * <li>
- * Attempts to insert a new lock record. Since lock name is a primary key, it fails if the record already exists. As an optimization,
- * we keep in-memory track of created  lock records.
- * </li>
- * <li>
- * If the insert succeeds (1 inserted row) we have the lock.
- * </li>
- * <li>
- * If the insert failed due to duplicate key or we have skipped the insertion, we will try to update lock record using
- * UPDATE tableName SET lock_until = :lockUntil WHERE name = :lockName AND lock_until &lt;= :now
- * </li>
- * <li>
- * If the update succeeded (1 updated row), we have the lock. If the update failed (0 updated rows) somebody else holds the lock
- * </li>
- * <li>
- * When unlocking, lock_until is set to now.
- * </li>
+ * <li>Attempts to insert a new lock record. Since lock name is a primary key,
+ * it fails if the record already exists. As an optimization, we keep in-memory
+ * track of created lock records.
+ * <li>If the insert succeeds (1 inserted row) we have the lock.
+ * <li>If the insert failed due to duplicate key or we have skipped the
+ * insertion, we will try to update lock record using UPDATE tableName SET
+ * lock_until = :lockUntil WHERE name = :lockName AND lock_until &lt;= :now
+ * <li>If the update succeeded (1 updated row), we have the lock. If the update
+ * failed (0 updated rows) somebody else holds the lock
+ * <li>When unlocking, lock_until is set to now.
  * </ol>
  */
 public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
@@ -57,7 +49,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         this(jdbcTemplate, (PlatformTransactionManager) null);
     }
 
-    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager) {
+    public JdbcTemplateLockProvider(
+            @NonNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager) {
         this(jdbcTemplate, transactionManager, DEFAULT_TABLE_NAME);
     }
 
@@ -73,13 +66,15 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         this(new JdbcTemplate(dataSource), tableName);
     }
 
-    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager, @NonNull String tableName) {
+    public JdbcTemplateLockProvider(
+            @NonNull JdbcTemplate jdbcTemplate,
+            @Nullable PlatformTransactionManager transactionManager,
+            @NonNull String tableName) {
         this(Configuration.builder()
-            .withJdbcTemplate(jdbcTemplate)
-            .withTransactionManager(transactionManager)
-            .withTableName(tableName)
-            .build()
-        );
+                .withJdbcTemplate(jdbcTemplate)
+                .withTransactionManager(transactionManager)
+                .withTableName(tableName)
+                .build());
     }
 
     public JdbcTemplateLockProvider(@NonNull Configuration configuration) {
@@ -98,15 +93,15 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final Integer isolationLevel;
 
         Configuration(
-            @NonNull JdbcTemplate jdbcTemplate,
-            @Nullable DatabaseProduct databaseProduct,
-            @Nullable PlatformTransactionManager transactionManager,
-            @NonNull String tableName,
-            @Nullable TimeZone timeZone,
-            @NonNull ColumnNames columnNames,
-            @NonNull String lockedByValue,
-            boolean useDbTime,
-            @Nullable Integer isolationLevel) {
+                @NonNull JdbcTemplate jdbcTemplate,
+                @Nullable DatabaseProduct databaseProduct,
+                @Nullable PlatformTransactionManager transactionManager,
+                @NonNull String tableName,
+                @Nullable TimeZone timeZone,
+                @NonNull ColumnNames columnNames,
+                @NonNull String lockedByValue,
+                boolean useDbTime,
+                @Nullable Integer isolationLevel) {
 
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.databaseProduct = databaseProduct;
@@ -162,7 +157,6 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return new Configuration.Builder();
         }
 
-
         public static final class Builder {
             private JdbcTemplate jdbcTemplate;
             private DatabaseProduct databaseProduct;
@@ -207,14 +201,15 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
             /**
              * This is only needed if your database product can't be automatically detected.
-             * @param databaseProduct Database product
+             *
+             * @param databaseProduct
+             *            Database product
              * @return ConfigurationBuilder
              */
             public Builder withDatabaseProduct(final DatabaseProduct databaseProduct) {
                 this.databaseProduct = databaseProduct;
                 return this;
             }
-
 
             /**
              * Value stored in 'locked_by' column. Please use only for debugging purposes.
@@ -230,8 +225,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             }
 
             /**
-             * Sets the isolation level for ShedLock. See {@link java.sql.Connection} for constant definitions.
-             * for constant definitions
+             * Sets the isolation level for ShedLock. See {@link java.sql.Connection} for
+             * constant definitions. for constant definitions
              */
             public Builder withIsolationLevel(int isolationLevel) {
                 this.isolationLevel = isolationLevel;
@@ -240,16 +235,15 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
             public JdbcTemplateLockProvider.Configuration build() {
                 return new JdbcTemplateLockProvider.Configuration(
-                    jdbcTemplate,
-                    databaseProduct,
-                    transactionManager,
-                    dbUpperCase ? tableName.toUpperCase() : tableName,
-                    timeZone,
-                    dbUpperCase ? columnNames.toUpperCase() : columnNames,
-                    lockedByValue,
-                    useDbTime,
-                    isolationLevel
-                );
+                        jdbcTemplate,
+                        databaseProduct,
+                        transactionManager,
+                        dbUpperCase ? tableName.toUpperCase() : tableName,
+                        timeZone,
+                        dbUpperCase ? columnNames.toUpperCase() : columnNames,
+                        lockedByValue,
+                        useDbTime,
+                        isolationLevel);
             }
         }
     }
@@ -285,12 +279,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         private ColumnNames toUpperCase() {
             return new ColumnNames(
-                name.toUpperCase(),
-                lockUntil.toUpperCase(),
-                lockedAt.toUpperCase(),
-                lockedBy.toUpperCase()
-            );
+                    name.toUpperCase(), lockUntil.toUpperCase(), lockedAt.toUpperCase(), lockedBy.toUpperCase());
         }
     }
-
 }

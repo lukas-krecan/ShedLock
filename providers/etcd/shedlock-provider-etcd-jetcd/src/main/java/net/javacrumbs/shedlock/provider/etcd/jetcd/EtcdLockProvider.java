@@ -1,19 +1,22 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.etcd.jetcd;
+
+import static io.etcd.jetcd.options.GetOption.DEFAULT;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -25,6 +28,9 @@ import io.etcd.jetcd.op.Cmp;
 import io.etcd.jetcd.op.CmpTarget;
 import io.etcd.jetcd.op.Op;
 import io.etcd.jetcd.options.PutOption;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -33,21 +39,15 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
-import static io.etcd.jetcd.options.GetOption.DEFAULT;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
-
 /**
  * Uses etcd keys and the version of the key value pairs as locking mechanism.
+ *
  * <p>
  * https://etcd.io/docs/v3.4.0/learning/api/#key-value-pair
  *
- * The timeout is implemented with the lease concept of etcd, which grants a TTL for key value pairs.
+ * <p>
+ * The timeout is implemented with the lease concept of etcd, which grants a TTL
+ * for key value pairs.
  */
 public class EtcdLockProvider implements LockProvider {
     private static final double MILLIS_IN_SECOND = 1000;
@@ -77,7 +77,6 @@ public class EtcdLockProvider implements LockProvider {
 
         Optional<Long> leaseIdOpt = etcdTemplate.tryToLock(key, value, lockConfiguration.getLockAtMostUntil());
         return leaseIdOpt.map(leaseId -> new EtcdLock(key, value, leaseId, etcdTemplate, lockConfiguration));
-
     }
 
     private static long getSecondsUntil(Instant instant) {
@@ -102,7 +101,12 @@ public class EtcdLockProvider implements LockProvider {
         private final Long successLeaseId;
         private final EtcdTemplate etcdTemplate;
 
-        private EtcdLock(String key, String value, Long successLeaseId, EtcdTemplate etcdTemplate, LockConfiguration lockConfiguration) {
+        private EtcdLock(
+                String key,
+                String value,
+                Long successLeaseId,
+                EtcdTemplate etcdTemplate,
+                LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
             this.value = value;
@@ -157,11 +161,13 @@ public class EtcdLockProvider implements LockProvider {
                 PutOption putOption = putOptionWithLeaseId(leaseId);
 
                 // Version is the version of the key.
-                // A deletion resets the version to zero and any modification of the key increases its version.
+                // A deletion resets the version to zero and any modification of the key
+                // increases its
+                // version.
                 Txn txn = kvClient.txn()
-                    .If(new Cmp(lockKey, Cmp.Op.EQUAL, CmpTarget.version(0)))
-                    .Then(Op.put(lockKey, toByteSequence(value), putOption))
-                    .Else(Op.get(lockKey, DEFAULT));
+                        .If(new Cmp(lockKey, Cmp.Op.EQUAL, CmpTarget.version(0)))
+                        .Then(Op.put(lockKey, toByteSequence(value), putOption))
+                        .Else(Op.get(lockKey, DEFAULT));
 
                 TxnResponse tr = txn.commit().get();
                 if (tr.isSucceeded()) {
@@ -174,7 +180,6 @@ public class EtcdLockProvider implements LockProvider {
                 revoke(leaseId);
                 throw new LockException("Failed to set lock " + key, e);
             }
-
         }
 
         public void revoke(Long leaseId) {
@@ -186,12 +191,15 @@ public class EtcdLockProvider implements LockProvider {
         }
 
         /**
-         * Set the provided leaseId lease for the key-value pair similar to the CLI command
+         * Set the provided leaseId lease for the key-value pair similar to the CLI
+         * command
+         *
          * <p>
          * etcdctl put key value --lease <leaseId>
+         *
          * <p>
-         * If the key has already been put with an other leaseId earlier, the old leaseId
-         * will be timed out and then removed, eventually.
+         * If the key has already been put with an other leaseId earlier, the old
+         * leaseId will be timed out and then removed, eventually.
          */
         public void putWithLeaseId(String key, String value, Long leaseId) {
             ByteSequence lockKey = toByteSequence(key);
@@ -209,5 +217,4 @@ public class EtcdLockProvider implements LockProvider {
             return PutOption.newBuilder().withLeaseId(leaseId).build();
         }
     }
-
 }

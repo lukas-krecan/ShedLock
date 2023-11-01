@@ -1,32 +1,28 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.quarkus.test;
 
+import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
+import static org.mockito.Mockito.mock;
 
 import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
+import java.io.IOException;
 import net.javacrumbs.shedlock.cdi.SchedulerLock;
 import net.javacrumbs.shedlock.core.LockProvider;
-
-import java.io.IOException;
-
-import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
-import static org.mockito.Mockito.mock;
 
 public class QuarkusConfig {
 
@@ -36,7 +32,6 @@ public class QuarkusConfig {
     public LockProvider lockProvider() {
         return mock(LockProvider.class);
     }
-
 
     @ApplicationScoped
     static class TestBean {
@@ -66,11 +61,8 @@ public class QuarkusConfig {
         }
 
         @SchedulerLock(name = "${property.value}", lockAtLeastFor = "${property.lock-at-least-for}")
-        public void property() {
-
-        }
+        public void property() {}
     }
-
 
     interface AnotherTestBean {
         void runManually();
@@ -81,8 +73,6 @@ public class QuarkusConfig {
 
         @Override
         @SchedulerLock(name = "classAnnotation")
-        public void runManually() {
-
-        }
+        public void runManually() {}
     }
 }

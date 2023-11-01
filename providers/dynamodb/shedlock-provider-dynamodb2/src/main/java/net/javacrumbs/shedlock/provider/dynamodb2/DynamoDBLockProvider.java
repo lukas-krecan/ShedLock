@@ -1,20 +1,25 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.dynamodb2;
 
+import static java.util.Collections.singletonMap;
+import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -28,19 +33,13 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-
-import static java.util.Collections.singletonMap;
-import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
-
 /**
- * Distributed lock using DynamoDB.
- * Depends on <code>software.amazon.awssdk:dynamodb</code>.
+ * Distributed lock using DynamoDB. Depends on
+ * <code>software.amazon.awssdk:dynamodb</code>.
+ *
  * <p>
  * It uses a table with the following structure:
+ *
  * <pre>
  * {
  *    "_id" : "lock name",
@@ -54,19 +53,14 @@ import static net.javacrumbs.shedlock.support.Utils.toIsoString;
  * and are not read by the code.
  *
  * <ol>
- * <li>
- * Attempts to insert a new lock record.
- * </li>
- * <li>
- * We will try to update lock record using <code>filter _id == :name AND lock_until &lt;= :now</code>.
- * </li>
- * <li>
- * If the update succeeded, we have the lock. If the update failed (condition check exception)
- * somebody else holds the lock.
- * </li>
- * <li>
- * When unlocking, <code>lock_until</code> is set to <i>now</i> or <i>lockAtLeastUntil</i> whichever is later.
- * </li>
+ * <li>Attempts to insert a new lock record.
+ * <li>We will try to update lock record using
+ * <code>filter _id == :name AND lock_until &lt;= :now
+ *       </code>.
+ * <li>If the update succeeded, we have the lock. If the update failed
+ * (condition check exception) somebody else holds the lock.
+ * <li>When unlocking, <code>lock_until</code> is set to <i>now</i> or
+ * <i>lockAtLeastUntil</i> whichever is later.
  * </ol>
  */
 public class DynamoDBLockProvider implements LockProvider {
@@ -79,8 +73,7 @@ public class DynamoDBLockProvider implements LockProvider {
             "set " + LOCK_UNTIL + " = :lockUntil, " + LOCKED_AT + " = :lockedAt, " + LOCKED_BY + " = :lockedBy";
     private static final String OBTAIN_LOCK_CONDITION =
             LOCK_UNTIL + " <= :lockedAt or attribute_not_exists(" + LOCK_UNTIL + ")";
-    private static final String RELEASE_LOCK_QUERY =
-            "set " + LOCK_UNTIL + " = :lockUntil";
+    private static final String RELEASE_LOCK_QUERY = "set " + LOCK_UNTIL + " = :lockUntil";
 
     private final String hostname;
     private final DynamoDbClient dynamoDbClient;
@@ -89,8 +82,10 @@ public class DynamoDBLockProvider implements LockProvider {
     /**
      * Uses DynamoDB to coordinate locks
      *
-     * @param dynamoDbClient v2 of DynamoDB client
-     * @param tableName the lock table name
+     * @param dynamoDbClient
+     *            v2 of DynamoDB client
+     * @param tableName
+     *            the lock table name
      */
     public DynamoDBLockProvider(@NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName) {
         this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
@@ -106,11 +101,8 @@ public class DynamoDBLockProvider implements LockProvider {
 
         Map<String, AttributeValue> key = singletonMap(ID, attr(lockConfiguration.getName()));
 
-        Map<String, AttributeValue> attributeUpdates = Map.of(
-                ":lockUntil", attr(lockUntilIso),
-                ":lockedAt", attr(nowIso),
-                ":lockedBy", attr(hostname)
-        );
+        Map<String, AttributeValue> attributeUpdates =
+                Map.of(":lockUntil", attr(lockUntilIso), ":lockedAt", attr(nowIso), ":lockedBy", attr(hostname));
 
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName(tableName)
@@ -124,8 +116,10 @@ public class DynamoDBLockProvider implements LockProvider {
         try {
             // There are three possible situations:
             // 1. The lock document does not exist yet - it is inserted - we have the lock
-            // 2. The lock document exists and lockUtil <= now - it is updated - we have the lock
-            // 3. The lock document exists and lockUtil > now - ConditionalCheckFailedException is thrown
+            // 2. The lock document exists and lockUtil <= now - it is updated - we have the
+            // lock
+            // 3. The lock document exists and lockUtil > now -
+            // ConditionalCheckFailedException is thrown
             dynamoDbClient.updateItem(request);
             return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, lockConfiguration));
         } catch (ConditionalCheckFailedException e) {
@@ -135,9 +129,7 @@ public class DynamoDBLockProvider implements LockProvider {
     }
 
     private static AttributeValue attr(String lockUntilIso) {
-        return AttributeValue.builder()
-            .s(lockUntilIso)
-            .build();
+        return AttributeValue.builder().s(lockUntilIso).build();
     }
 
     private Instant now() {
@@ -148,11 +140,7 @@ public class DynamoDBLockProvider implements LockProvider {
         private final DynamoDbClient dynamoDbClient;
         private final String tableName;
 
-        private DynamoDBLock(
-            DynamoDbClient dynamoDbClient,
-            String tableName,
-            LockConfiguration lockConfiguration
-        ) {
+        private DynamoDBLock(DynamoDbClient dynamoDbClient, String tableName, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.dynamoDbClient = dynamoDbClient;
             this.tableName = tableName;

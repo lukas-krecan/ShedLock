@@ -1,36 +1,17 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.spring.aop;
-
-import java.lang.reflect.Method;
-
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.spring.aop.SpringLockConfigurationExtractor.AnnotationData;
-import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
-import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
-import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.scheduling.support.ScheduledMethodRunnable;
-import org.springframework.util.StringValueResolver;
-
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -41,12 +22,27 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.util.Optional;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.spring.aop.SpringLockConfigurationExtractor.AnnotationData;
+import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
+import net.javacrumbs.shedlock.spring.proxytest.DynamicProxyConfig;
+import net.javacrumbs.shedlock.spring.proxytest.SubclassProxyConfig;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.util.StringValueResolver;
+
 public abstract class AbstractSpringLockConfigurationExtractorTest {
     private static final Duration DEFAULT_LOCK_TIME = Duration.of(30, ChronoUnit.MINUTES);
     private static final Duration DEFAULT_LOCK_AT_LEAST_FOR = Duration.of(5, ChronoUnit.MILLIS);
     private final StringValueResolver embeddedValueResolver = mock(StringValueResolver.class);
-    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver, new StringToDurationConverter());
-
+    private final SpringLockConfigurationExtractor extractor = new SpringLockConfigurationExtractor(
+            DEFAULT_LOCK_TIME, DEFAULT_LOCK_AT_LEAST_FOR, embeddedValueResolver, new StringToDurationConverter());
 
     @Test
     public void shouldLockForDefaultTimeIfNoAnnotation() throws NoSuchMethodException {
@@ -141,25 +137,31 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
         mockResolvedValue("lockName", "lockName");
         mockResolvedValue("100", "100");
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethod");
-        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        LockConfiguration lockConfiguration =
+                extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName");
         assertThat(lockConfiguration.getLockAtMostUntil()).isBeforeOrEqualTo(now().plus(100, MILLIS));
-        assertThat(lockConfiguration.getLockAtLeastUntil()).isAfter(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
+        assertThat(lockConfiguration.getLockAtLeastUntil())
+                .isAfter(now().plus(DEFAULT_LOCK_AT_LEAST_FOR).minus(1, SECONDS));
     }
 
     @Test
     public void shouldGetNameFromSpringVariable() throws NoSuchMethodException {
         mockResolvedValue("${name}", "lockNameX");
         ScheduledMethodRunnable runnable = new ScheduledMethodRunnable(this, "annotatedMethodWithNameVariable");
-        LockConfiguration lockConfiguration = extractor.getLockConfiguration(runnable).get();
+        LockConfiguration lockConfiguration =
+                extractor.getLockConfiguration(runnable).get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockNameX");
     }
 
     @Test
     public void shouldGetNameFromSpringExpression() throws NoSuchMethodException {
         mockResolvedValue("lockName-value-1-3-5", "lockName-value-1-3-5");
-        Method method = this.getClass().getMethod("annotatedMethodWithNameSpringExpression", String.class, Integer.class);
-        LockConfiguration lockConfiguration = extractor.getLockConfiguration(this, method, new Object[] {"value", 1}).get();
+        Method method =
+                this.getClass().getMethod("annotatedMethodWithNameSpringExpression", String.class, Integer.class);
+        LockConfiguration lockConfiguration = extractor
+                .getLockConfiguration(this, method, new Object[] {"value", 1})
+                .get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName-value-1-3-5");
     }
 
@@ -167,7 +169,9 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
     public void shouldGetNameFromSpringExpressionAndSpringVariable() throws NoSuchMethodException {
         mockResolvedValue("${name}-value", "lockName-value");
         Method method = this.getClass().getMethod("annotatedMethodWithNameSpringExpressionAndVariable", String.class);
-        LockConfiguration lockConfiguration = extractor.getLockConfiguration(this, method, new Object[] {"value"}).get();
+        LockConfiguration lockConfiguration = extractor
+                .getLockConfiguration(this, method, new Object[] {"value"})
+                .get();
         assertThat(lockConfiguration.getName()).isEqualTo("lockName-value");
     }
 
@@ -182,7 +186,8 @@ public abstract class AbstractSpringLockConfigurationExtractorTest {
     private void doTestFindAnnotationOnProxy(Class<?> config) throws NoSuchMethodException {
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(config)) {
             BeanInterface bean = context.getBean(BeanInterface.class);
-            assertThat(extractor.findAnnotation(bean, bean.getClass().getMethod("method"))).isNotNull();
+            assertThat(extractor.findAnnotation(bean, bean.getClass().getMethod("method")))
+                    .isNotNull();
         }
     }
 

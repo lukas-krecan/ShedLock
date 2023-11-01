@@ -1,19 +1,24 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.couchbase.javaclient3;
+
+import static java.time.Instant.parse;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCK_UNTIL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.couchbase.client.core.env.SeedNode;
 import com.couchbase.client.java.Bucket;
@@ -22,6 +27,11 @@ import com.couchbase.client.java.ClusterOptions;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.kv.GetResult;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
@@ -30,20 +40,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.couchbase.BucketDefinition;
 import org.testcontainers.couchbase.CouchbaseContainer;
-
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static java.time.Instant.parse;
-import static java.util.Collections.singletonList;
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCK_UNTIL;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
@@ -56,12 +52,12 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     private static CouchbaseContainer container;
 
     @BeforeAll
-    public static void startCouchbase () {
+    public static void startCouchbase() {
         container = new CouchbaseContainer().withBucket(new BucketDefinition(BUCKET_NAME));
         container.start();
 
-        Set<SeedNode> seedNodes = new HashSet<>(List.of(
-            SeedNode.create(container.getContainerIpAddress(),
+        Set<SeedNode> seedNodes = new HashSet<>(List.of(SeedNode.create(
+                container.getContainerIpAddress(),
                 Optional.of(container.getBootstrapCarrierDirectPort()),
                 Optional.of(container.getBootstrapHttpDirectPort()))));
         ClusterOptions options = ClusterOptions.clusterOptions(container.getUsername(), container.getPassword());
@@ -73,13 +69,13 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     }
 
     @AfterAll
-    public static void stopCouchbase () {
+    public static void stopCouchbase() {
         cluster.disconnect();
         container.stop();
     }
 
     @BeforeEach
-    public void createLockProvider()  {
+    public void createLockProvider() {
         lockProvider = new CouchbaseLockProvider(bucket.defaultCollection());
     }
 

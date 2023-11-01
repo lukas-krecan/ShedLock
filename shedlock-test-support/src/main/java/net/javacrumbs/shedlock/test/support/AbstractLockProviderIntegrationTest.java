@@ -1,35 +1,32 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.test.support;
-
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractLockProviderIntegrationTest {
     protected final String LOCK_NAME1 = UUID.randomUUID().toString();
@@ -97,11 +94,11 @@ public abstract class AbstractLockProviderIntegrationTest {
         sleep(lockAtMostFor.toMillis() * 2);
         assertUnlocked(LOCK_NAME1);
 
-        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO));
+        Optional<SimpleLock> lock2 =
+                getLockProvider().lock(lockConfig(LOCK_NAME1, Duration.ofMillis(50), Duration.ZERO));
         assertThat(lock2).isNotEmpty();
         lock2.get().unlock();
     }
-
 
     @Test
     public void shouldBeAbleToLockRightAfterUnlock() {
@@ -126,20 +123,26 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     protected void doTestShouldLockAtLeastFor(int sleepForMs) throws InterruptedException {
-        // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before this time
-        Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
+        // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before
+        // this time
+        Optional<SimpleLock> lock1 =
+                getLockProvider().lock(lockConfig(LOCK_NAME1, LOCK_AT_LEAST_FOR.multipliedBy(2), LOCK_AT_LEAST_FOR));
         assertThat(lock1).describedAs("Should be locked").isNotEmpty();
         lock1.get().unlock();
 
         // Even though we have unlocked the lock, it will be held for some time
-        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1))).describedAs(getClass().getName() + "Can not acquire lock, grace period did not pass yet").isEmpty();
+        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1)))
+                .describedAs(getClass().getName() + "Can not acquire lock, grace period did not pass yet")
+                .isEmpty();
 
         // Let's wait for the lock to be automatically released
         sleep(LOCK_AT_LEAST_FOR.toMillis() + sleepForMs);
 
         // Should be able to acquire now
         Optional<SimpleLock> lock3 = getLockProvider().lock(lockConfig(LOCK_NAME1));
-        assertThat(lock3).describedAs(getClass().getName() + "Can acquire the lock after grace period").isNotEmpty();
+        assertThat(lock3)
+                .describedAs(getClass().getName() + "Can acquire the lock after grace period")
+                .isNotEmpty();
         lock3.get().unlock();
     }
 
@@ -157,5 +160,5 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     protected static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
         return new LockConfiguration(ClockProvider.now(), name, lockAtMostFor, lockAtLeastFor);
-   }
+    }
 }

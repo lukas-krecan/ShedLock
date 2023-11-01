@@ -1,20 +1,27 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -28,19 +35,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 public class MultiTenancyLockProviderIntegrationTest {
     public static final String LOCK_NAME = "lock_name";
-    public static final LockConfiguration LOCK_CONFIGURATION = new LockConfiguration(now(), LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO);
+    public static final LockConfiguration LOCK_CONFIGURATION =
+            new LockConfiguration(now(), LOCK_NAME, Duration.ofSeconds(60), Duration.ZERO);
     private static final JdbcTestUtils h2TestUtils;
     private static final JdbcTestUtils hsqlTestUtils;
 
@@ -61,7 +59,8 @@ public class MultiTenancyLockProviderIntegrationTest {
         Optional<SimpleLock> lock1 = lockProvider.lock(LOCK_CONFIGURATION);
         assertThat(lock1).isNotEmpty();
         assertThat(h2TestUtils.getLockInfo(LOCK_NAME).getLockUntil()).isAfter(ClockProvider.now());
-        assertThatThrownBy(() -> hsqlTestUtils.getLockedUntil(LOCK_NAME)).isInstanceOf(EmptyResultDataAccessException.class);
+        assertThatThrownBy(() -> hsqlTestUtils.getLockedUntil(LOCK_NAME))
+                .isInstanceOf(EmptyResultDataAccessException.class);
 
         lock1.get().unlock();
 
@@ -81,16 +80,18 @@ public class MultiTenancyLockProviderIntegrationTest {
         return new SampleLockProvider(h2TestUtils.getJdbcTemplate(), hsqlTestUtils.getJdbcTemplate());
     }
 
-    private static abstract class MultiTenancyLockProvider implements LockProvider {
+    private abstract static class MultiTenancyLockProvider implements LockProvider {
         private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
 
         @Override
         public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
             String tenantName = getTenantName(lockConfiguration);
-            return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
+            return providers
+                    .computeIfAbsent(tenantName, this::createLockProvider)
+                    .lock(lockConfiguration);
         }
 
-        protected abstract LockProvider createLockProvider(String tenantName) ;
+        protected abstract LockProvider createLockProvider(String tenantName);
 
         protected abstract String getTenantName(LockConfiguration lockConfiguration);
     }
@@ -107,19 +108,14 @@ public class MultiTenancyLockProviderIntegrationTest {
             this.jdbcTemplate2 = jdbcTemplate2;
         }
 
-
         @Override
         protected LockProvider createLockProvider(String tenantName) {
             if (TENANT_1.equals(tenantName)) {
-                return new JdbcTemplateLockProvider(builder()
-                    .withJdbcTemplate(jdbcTemplate1)
-                    .build()
-                );
+                return new JdbcTemplateLockProvider(
+                        builder().withJdbcTemplate(jdbcTemplate1).build());
             } else {
-                return new JdbcTemplateLockProvider(builder()
-                    .withJdbcTemplate(jdbcTemplate2)
-                    .build()
-                );
+                return new JdbcTemplateLockProvider(
+                        builder().withJdbcTemplate(jdbcTemplate2).build());
             }
         }
 
@@ -135,5 +131,3 @@ public class MultiTenancyLockProviderIntegrationTest {
         }
     }
 }
-
-

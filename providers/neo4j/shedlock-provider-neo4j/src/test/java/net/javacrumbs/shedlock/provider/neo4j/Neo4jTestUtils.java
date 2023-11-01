@@ -1,31 +1,28 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.neo4j;
 
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.Transaction;
+import static java.util.Collections.singletonMap;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
-import static java.util.Collections.singletonMap;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Transaction;
 
 public final class Neo4jTestUtils {
 
@@ -39,7 +36,8 @@ public final class Neo4jTestUtils {
         executeTransactionally(query, new HashMap<>(), null);
     }
 
-    public <T> T executeTransactionally(String query, Map<String, Object> parameters, Function<Result, T> resultTransformer) {
+    public <T> T executeTransactionally(
+            String query, Map<String, Object> parameters, Function<Result, T> resultTransformer) {
         T transformedResult = null;
         try (Session session = driver.session()) {
             Transaction transaction = session.beginTransaction();
@@ -54,24 +52,26 @@ public final class Neo4jTestUtils {
 
     public Instant getLockedUntil(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
-        return executeTransactionally("MATCH (lock:shedlock) WHERE lock.name = $lockName return lock.lock_until",
-            parameters, result -> result.stream()
-                .findFirst()
-                .map(it -> Instant.parse(it.get("lock.lock_until").asString()))
-                .orElse(null));
+        return executeTransactionally(
+                "MATCH (lock:shedlock) WHERE lock.name = $lockName return lock.lock_until",
+                parameters,
+                result -> result.stream()
+                        .findFirst()
+                        .map(it -> Instant.parse(it.get("lock.lock_until").asString()))
+                        .orElse(null));
     }
 
     public LockInfo getLockInfo(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
-        return executeTransactionally("MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ", parameters, result ->
-            result.stream()
-                .findFirst()
-                .map(it -> new LockInfo(
-                        it.get("lock.name").asString(),
-                        Instant.parse(it.get("lock.lock_until").asString())
-                    )
-                )
-        ).orElse(null);
+        return executeTransactionally(
+                        "MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ",
+                        parameters,
+                        result -> result.stream()
+                                .findFirst()
+                                .map(it -> new LockInfo(
+                                        it.get("lock.name").asString(),
+                                        Instant.parse(it.get("lock.lock_until").asString()))))
+                .orElse(null);
     }
 
     public void clean() {

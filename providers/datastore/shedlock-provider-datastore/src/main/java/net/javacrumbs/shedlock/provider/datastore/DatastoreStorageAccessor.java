@@ -1,5 +1,8 @@
 package net.javacrumbs.shedlock.provider.datastore;
 
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreException;
@@ -7,19 +10,15 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Transaction;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.function.Function;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.function.Function;
-
-import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
 
 public class DatastoreStorageAccessor extends AbstractStorageAccessor {
     private static final Logger log = LoggerFactory.getLogger(DatastoreStorageAccessor.class);
@@ -59,63 +58,61 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
 
     private boolean insert(String name, Instant until) {
         return doInTxn(txn -> {
-            KeyFactory keyFactory = this.datastore.newKeyFactory().setKind(this.entityName);
-            Key key = keyFactory.newKey(name);
-            Entity entity = Entity.newBuilder(key)
-                .set(this.fieldNames.lockUntil(), fromInstant(until))
-                .set(this.fieldNames.lockedAt(), fromInstant(ClockProvider.now()))
-                .set(this.fieldNames.lockedBy(), this.hostname)
-                .build();
-            txn.add(entity);
-            return Optional.of(true);
-        }).orElse(false);
+                    KeyFactory keyFactory = this.datastore.newKeyFactory().setKind(this.entityName);
+                    Key key = keyFactory.newKey(name);
+                    Entity entity = Entity.newBuilder(key)
+                            .set(this.fieldNames.lockUntil(), fromInstant(until))
+                            .set(this.fieldNames.lockedAt(), fromInstant(ClockProvider.now()))
+                            .set(this.fieldNames.lockedBy(), this.hostname)
+                            .build();
+                    txn.add(entity);
+                    return Optional.of(true);
+                })
+                .orElse(false);
     }
 
     private boolean updateExisting(String name, Instant until) {
-        return doInTxn(txn ->
-            get(name, txn)
-                .filter(entity -> {
-                    var now = ClockProvider.now();
-                    var lockUntilTs = nullableTimestamp(entity, this.fieldNames.lockUntil());
-                    return lockUntilTs != null && lockUntilTs.isBefore(now);
-                })
-                .map(entity -> {
-                    txn.put(Entity.newBuilder(entity)
-                        .set(this.fieldNames.lockUntil(), fromInstant(until))
-                        .set(this.fieldNames.lockedAt(), fromInstant(ClockProvider.now()))
-                        .set(this.fieldNames.lockedBy(), this.hostname)
-                        .build());
-                    return true;
-                })
-        ).orElse(false);
+        return doInTxn(txn -> get(name, txn)
+                        .filter(entity -> {
+                            var now = ClockProvider.now();
+                            var lockUntilTs = nullableTimestamp(entity, this.fieldNames.lockUntil());
+                            return lockUntilTs != null && lockUntilTs.isBefore(now);
+                        })
+                        .map(entity -> {
+                            txn.put(Entity.newBuilder(entity)
+                                    .set(this.fieldNames.lockUntil(), fromInstant(until))
+                                    .set(this.fieldNames.lockedAt(), fromInstant(ClockProvider.now()))
+                                    .set(this.fieldNames.lockedBy(), this.hostname)
+                                    .build());
+                            return true;
+                        }))
+                .orElse(false);
     }
 
     private boolean updateOwn(String name, Instant until) {
-        return doInTxn(txn ->
-            get(name, txn)
-                .filter(entity -> this.hostname.equals(nullableString(entity, this.fieldNames.lockedBy())))
-                .filter(entity -> {
-                    var now = ClockProvider.now();
-                    var lockUntilTs = nullableTimestamp(entity, this.fieldNames.lockUntil());
-                    return lockUntilTs != null && (lockUntilTs.isAfter(now) || lockUntilTs.equals(now));
-                })
-                .map(entity -> {
-                    txn.put(Entity.newBuilder(entity)
-                        .set(this.fieldNames.lockUntil(), fromInstant(until))
-                        .build());
-                    return true;
-                })
-        ).orElse(false);
+        return doInTxn(txn -> get(name, txn)
+                        .filter(entity -> this.hostname.equals(nullableString(entity, this.fieldNames.lockedBy())))
+                        .filter(entity -> {
+                            var now = ClockProvider.now();
+                            var lockUntilTs = nullableTimestamp(entity, this.fieldNames.lockUntil());
+                            return lockUntilTs != null && (lockUntilTs.isAfter(now) || lockUntilTs.equals(now));
+                        })
+                        .map(entity -> {
+                            txn.put(Entity.newBuilder(entity)
+                                    .set(this.fieldNames.lockUntil(), fromInstant(until))
+                                    .build());
+                            return true;
+                        }))
+                .orElse(false);
     }
 
     public Optional<Lock> findLock(String name) {
         return get(name)
-            .map(entity -> new Lock(
-                entity.getKey().getName(),
-                nullableTimestamp(entity, this.fieldNames.lockedAt()),
-                nullableTimestamp(entity, this.fieldNames.lockUntil()),
-                nullableString(entity, this.fieldNames.lockedBy())
-            ));
+                .map(entity -> new Lock(
+                        entity.getKey().getName(),
+                        nullableTimestamp(entity, this.fieldNames.lockedAt()),
+                        nullableTimestamp(entity, this.fieldNames.lockUntil()),
+                        nullableString(entity, this.fieldNames.lockedBy())));
     }
 
     private Optional<Entity> get(String name) {
@@ -162,6 +159,5 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
         return requireNonNull(timestamp).toSqlTimestamp().toInstant();
     }
 
-    public record Lock(String name, Instant lockedAt, Instant lockedUntil, String lockedBy) {
-    }
+    public record Lock(String name, Instant lockedAt, Instant lockedUntil, String lockedBy) {}
 }

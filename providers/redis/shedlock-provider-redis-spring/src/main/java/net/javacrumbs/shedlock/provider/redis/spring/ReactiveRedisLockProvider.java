@@ -1,5 +1,11 @@
 package net.javacrumbs.shedlock.provider.redis.spring;
 
+import static net.javacrumbs.shedlock.support.Utils.getHostname;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -10,16 +16,9 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
-
 /**
- * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking mechanism.
- * See https://redis.io/commands/set
+ * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking
+ * mechanism. See https://redis.io/commands/set
  */
 public class ReactiveRedisLockProvider implements LockProvider {
     private static final String KEY_PREFIX_DEFAULT = "job-lock";
@@ -36,9 +35,12 @@ public class ReactiveRedisLockProvider implements LockProvider {
     /**
      * Creates ReactiveRedisLockProvider
      *
-     * @param redisConn   ReactiveRedisConnectionFactory
-     * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances running on the same Redis
+     * @param redisConn
+     *            ReactiveRedisConnectionFactory
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
      */
     public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment) {
         this(redisConn, environment, KEY_PREFIX_DEFAULT);
@@ -47,24 +49,36 @@ public class ReactiveRedisLockProvider implements LockProvider {
     /**
      * Creates ReactiveRedisLockProvider
      *
-     * @param redisConn   ReactiveRedisConnectionFactory
-     * @param environment environment is part of the key and thus makes sure there is not key conflict between
-     *                    multiple ShedLock instances running on the same Redis
-     * @param keyPrefix   prefix of the key in Redis.
+     * @param redisConn
+     *            ReactiveRedisConnectionFactory
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
+     * @param keyPrefix
+     *            prefix of the key in Redis.
      */
-    public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
+    public ReactiveRedisLockProvider(
+            @NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
         this(new ReactiveStringRedisTemplate(redisConn), environment, keyPrefix);
     }
 
     /**
      * Create ReactiveRedisLockProvider
      *
-     * @param redisTemplate ReactiveStringRedisTemplate
-     * @param environment   environment is part of the key and thus makes sure there is not key conflict between
-     *                      multiple ShedLock instances running on the same Redis
-     * @param keyPrefix     prefix of the key in Redis.
+     * @param redisTemplate
+     *            ReactiveStringRedisTemplate
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
+     * @param keyPrefix
+     *            prefix of the key in Redis.
      */
-    public ReactiveRedisLockProvider(@NonNull ReactiveStringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
+    public ReactiveRedisLockProvider(
+            @NonNull ReactiveStringRedisTemplate redisTemplate,
+            @NonNull String environment,
+            @NonNull String keyPrefix) {
         this.redisTemplate = redisTemplate;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
@@ -77,7 +91,10 @@ public class ReactiveRedisLockProvider implements LockProvider {
         String key = ReactiveRedisLock.createKey(keyPrefix, environment, lockConfiguration.getName());
         String value = ReactiveRedisLock.createValue(now);
         Duration expirationTime = Duration.between(now, lockConfiguration.getLockAtMostUntil());
-        Boolean lockResult = redisTemplate.opsForValue().setIfAbsent(key, value, expirationTime).block();
+        Boolean lockResult = redisTemplate
+                .opsForValue()
+                .setIfAbsent(key, value, expirationTime)
+                .block();
         if (Boolean.TRUE.equals(lockResult)) {
             return Optional.of(new ReactiveRedisLock(key, redisTemplate, lockConfiguration));
         }
@@ -96,7 +113,8 @@ public class ReactiveRedisLockProvider implements LockProvider {
             return String.format("ADDED:%s@%s", toIsoString(now), getHostname());
         }
 
-        private ReactiveRedisLock(String key, ReactiveStringRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
+        private ReactiveRedisLock(
+                String key, ReactiveStringRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
             this.redisTemplate = redisTemplate;
@@ -114,7 +132,10 @@ public class ReactiveRedisLockProvider implements LockProvider {
                 }
             } else {
                 String value = createValue(now);
-                redisTemplate.opsForValue().setIfPresent(key, value, expirationTime).block();
+                redisTemplate
+                        .opsForValue()
+                        .setIfPresent(key, value, expirationTime)
+                        .block();
             }
         }
     }

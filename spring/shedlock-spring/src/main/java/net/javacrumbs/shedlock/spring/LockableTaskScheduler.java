@@ -1,35 +1,33 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.spring;
 
+import static java.util.Objects.requireNonNull;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.concurrent.ScheduledFuture;
 import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockableRunnable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.concurrent.ScheduledFuture;
-
-import static java.util.Objects.requireNonNull;
-
 /**
- * Wraps a all tasks to {@link LockableRunnable} and delegates all calls to a {@link TaskScheduler}.
+ * Wraps a all tasks to {@link LockableRunnable} and delegates all calls to a
+ * {@link TaskScheduler}.
  */
 public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     private final TaskScheduler taskScheduler;

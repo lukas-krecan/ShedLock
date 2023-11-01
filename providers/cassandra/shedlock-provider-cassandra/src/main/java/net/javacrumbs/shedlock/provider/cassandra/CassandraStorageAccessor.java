@@ -1,19 +1,20 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.cassandra;
+
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static java.util.Objects.requireNonNull;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -23,6 +24,8 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.servererrors.QueryExecutionException;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import java.time.Instant;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
@@ -30,18 +33,11 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
-import java.time.Instant;
-import java.util.Optional;
-
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
-import static java.util.Objects.requireNonNull;
-
-/**
- * StorageAccessor for cassandra.
- **/
+/** StorageAccessor for cassandra. */
 /*
- * In theory, all the reads (find() method calls) in update methods are not necessary,
- * but it's a performance optimization. Moreover, the fuzzTest sometimes fails without them.
+ * In theory, all the reads (find() method calls) in update methods are not
+ * necessary, but it's a performance optimization. Moreover, the fuzzTest
+ * sometimes fails without them.
  */
 class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String hostname;
@@ -106,7 +102,9 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean extend(@NonNull LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
-        if (lock.isEmpty() || lock.get().lockUntil().isBefore(ClockProvider.now()) || !lock.get().lockedBy().equals(hostname)) {
+        if (lock.isEmpty()
+                || lock.get().lockUntil().isBefore(ClockProvider.now())
+                || !lock.get().lockedBy().equals(hostname)) {
             logger.trace("extend false");
             return false;
         }
@@ -117,18 +115,20 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     /**
      * Find existing row by primary key lock.name
      *
-     * @param name lock name
+     * @param name
+     *            lock name
      * @return optional lock row or empty
      */
     Optional<Lock> find(String name) {
         SimpleStatement selectStatement = QueryBuilder.selectFrom(keyspace, table)
-            .column(lockUntil)
-            .column(lockedAt)
-            .column(lockedBy)
-            .whereColumn(lockName).isEqualTo(literal(name))
-            .build()
-            .setConsistencyLevel(consistencyLevel)
-            .setSerialConsistencyLevel(serialConsistencyLevel);
+                .column(lockUntil)
+                .column(lockedAt)
+                .column(lockedBy)
+                .whereColumn(lockName)
+                .isEqualTo(literal(name))
+                .build()
+                .setConsistencyLevel(consistencyLevel)
+                .setSerialConsistencyLevel(serialConsistencyLevel);
 
         ResultSet resultSet = cqlSession.execute(selectStatement);
         Row row = resultSet.one();
@@ -142,52 +142,66 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     /**
      * Insert new lock row
      *
-     * @param name  lock name
-     * @param until new until instant value
+     * @param name
+     *            lock name
+     * @param until
+     *            new until instant value
      */
     private boolean insert(String name, Instant until) {
         return execute(QueryBuilder.insertInto(keyspace, table)
-            .value(lockName, literal(name))
-            .value(lockUntil, literal(until))
-            .value(lockedAt, literal(ClockProvider.now()))
-            .value(lockedBy, literal(hostname))
-            .ifNotExists()
-            .build());
+                .value(lockName, literal(name))
+                .value(lockUntil, literal(until))
+                .value(lockedAt, literal(ClockProvider.now()))
+                .value(lockedBy, literal(hostname))
+                .ifNotExists()
+                .build());
     }
 
     /**
      * Update existing lock row
      *
-     * @param name  lock name
-     * @param until new until instant value
+     * @param name
+     *            lock name
+     * @param until
+     *            new until instant value
      */
     private boolean update(String name, Instant until) {
         return execute(QueryBuilder.update(keyspace, table)
-            .setColumn(lockUntil, literal(until))
-            .setColumn(lockedAt, literal(ClockProvider.now()))
-            .setColumn(lockedBy, literal(hostname))
-            .whereColumn(lockName).isEqualTo(literal(name))
-            .ifColumn(lockUntil).isLessThan(literal(ClockProvider.now()))
-            .build());
+                .setColumn(lockUntil, literal(until))
+                .setColumn(lockedAt, literal(ClockProvider.now()))
+                .setColumn(lockedBy, literal(hostname))
+                .whereColumn(lockName)
+                .isEqualTo(literal(name))
+                .ifColumn(lockUntil)
+                .isLessThan(literal(ClockProvider.now()))
+                .build());
     }
 
     /**
      * Updates lock.until field where lockConfiguration.name
      *
-     * @param name  lock name
-     * @param until new until instant value
+     * @param name
+     *            lock name
+     * @param until
+     *            new until instant value
      */
     private boolean updateUntil(String name, Instant until) {
         return execute(QueryBuilder.update(keyspace, table)
-            .setColumn(lockUntil, literal(until))
-            .whereColumn(lockName).isEqualTo(literal(name))
-            .ifColumn(lockUntil).isGreaterThanOrEqualTo(literal(ClockProvider.now()))
-            .ifColumn(lockedBy).isEqualTo(literal(hostname))
-            .build());
+                .setColumn(lockUntil, literal(until))
+                .whereColumn(lockName)
+                .isEqualTo(literal(name))
+                .ifColumn(lockUntil)
+                .isGreaterThanOrEqualTo(literal(ClockProvider.now()))
+                .ifColumn(lockedBy)
+                .isEqualTo(literal(hostname))
+                .build());
     }
 
-
     private boolean execute(SimpleStatement statement) {
-        return cqlSession.execute(statement.setConsistencyLevel(consistencyLevel).setSerialConsistencyLevel(serialConsistencyLevel)).wasApplied();
+        return cqlSession
+                .execute(statement
+                        .setConsistencyLevel(consistencyLevel)
+                        .setSerialConsistencyLevel(serialConsistencyLevel))
+                .wasApplied();
     }
 }

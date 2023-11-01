@@ -1,20 +1,30 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.opensearch;
 
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.NAME;
+import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Date;
+import java.util.Map;
 import net.javacrumbs.container.OpenSearchContainer;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -29,35 +39,21 @@ import org.opensearch.client.RestHighLevelClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Date;
-import java.util.Map;
-
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.NAME;
-import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
 @Testcontainers
 public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
     @Container
     private static final OpenSearchContainer container = new OpenSearchContainer("opensearchproject/opensearch:1.1.0")
-        .withStartupTimeout(Duration.ofMinutes(2))
-        .withEnv("plugins.security.disabled", "true")
-        .withStartupAttempts(2);
+            .withStartupTimeout(Duration.ofMinutes(2))
+            .withEnv("plugins.security.disabled", "true")
+            .withStartupAttempts(2);
+
     private RestHighLevelClient highLevelClient;
     private OpenSearchLockProvider lockProvider;
 
     @BeforeEach
     public void setUp() {
-        highLevelClient = new RestHighLevelClient(
-            RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
-        );
+        highLevelClient = new RestHighLevelClient(RestClient.builder(HttpHost.create(container.getHttpHostAddress())));
         lockProvider = new OpenSearchLockProvider(highLevelClient);
     }
 

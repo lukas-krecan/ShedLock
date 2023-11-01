@@ -1,40 +1,17 @@
 /**
  * Copyright 2009 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
-
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.MongoCollection;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
-import org.bson.Document;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
 import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
@@ -45,6 +22,26 @@ import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStr
 import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.execute;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
+
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
+import com.mongodb.reactivestreams.client.MongoCollection;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodProcess;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import java.io.IOException;
+import java.util.Date;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
+import org.bson.Document;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
     private static final MongodStarter starter = MongodStarter.getDefaultInstance();
@@ -58,12 +55,12 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
 
     @BeforeAll
     public static void startMongo() throws IOException {
-        mongodExe = starter.prepare(MongodConfig.builder()
-            .version(Version.Main.V3_6)
-            .build());
+        mongodExe = starter.prepare(
+                MongodConfig.builder().version(Version.Main.V3_6).build());
         mongod = mongodExe.start();
 
-        mongo = MongoClients.create("mongodb://localhost:" + mongod.getConfig().net().getPort());
+        mongo = MongoClients.create(
+                "mongodb://localhost:" + mongod.getConfig().net().getPort());
     }
 
     @AfterAll
@@ -72,7 +69,6 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
         mongod.stop();
         mongodExe.stop();
     }
-
 
     @BeforeEach
     public void cleanDb() {

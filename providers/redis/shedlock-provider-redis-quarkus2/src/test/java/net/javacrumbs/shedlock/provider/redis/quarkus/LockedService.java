@@ -1,12 +1,11 @@
 package net.javacrumbs.shedlock.provider.redis.quarkus;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.enterprise.context.ApplicationScoped;
 import net.javacrumbs.shedlock.cdi.SchedulerLock;
 import net.javacrumbs.shedlock.core.LockAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @ApplicationScoped
 public class LockedService {
@@ -22,14 +21,12 @@ public class LockedService {
         execute();
 
         LOG.info("Executing [DONE]");
-
     }
 
     public void execute() {
         count.incrementAndGet();
         LOG.info("Executing ....(c=" + count.get() + ")");
     }
-
 
     public int count() {
         LOG.info("getc=(" + count.get() + ")");
@@ -39,5 +36,4 @@ public class LockedService {
     public void countReset() {
         count.set(0);
     }
-
 }

@@ -1,27 +1,17 @@
 /**
  * Copyright 2009 the original author or authors.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ *
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package net.javacrumbs.shedlock.provider.jdbctemplate;
-
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.ConnectionCallback;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -30,6 +20,13 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
+import net.javacrumbs.shedlock.support.annotation.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.ConnectionCallback;
 
 class SqlStatementsSource {
     protected final Configuration configuration;
@@ -63,7 +60,8 @@ class SqlStatementsSource {
             return configuration.getDatabaseProduct();
         }
         try {
-            String jdbcProductName = configuration.getJdbcTemplate().execute((ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
+            String jdbcProductName = configuration.getJdbcTemplate().execute((ConnectionCallback<String>)
+                    connection -> connection.getMetaData().getDatabaseProductName());
             return DatabaseProduct.matchProductName(jdbcProductName);
         } catch (Exception e) {
             logger.debug("Can not determine database product name " + e.getMessage());
@@ -74,12 +72,16 @@ class SqlStatementsSource {
     @NonNull
     Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
         return Map.of(
-            "name", lockConfiguration.getName(),
-            "lockUntil", timestamp(lockConfiguration.getLockAtMostUntil()),
-            "now", timestamp(ClockProvider.now()),
-            "lockedBy", configuration.getLockedByValue(),
-            "unlockTime", timestamp(lockConfiguration.getUnlockTime())
-        );
+                "name",
+                lockConfiguration.getName(),
+                "lockUntil",
+                timestamp(lockConfiguration.getLockAtMostUntil()),
+                "now",
+                timestamp(ClockProvider.now()),
+                "lockedBy",
+                configuration.getLockedByValue(),
+                "unlockTime",
+                timestamp(lockConfiguration.getUnlockTime()));
     }
 
     @NonNull
@@ -95,18 +97,19 @@ class SqlStatementsSource {
         }
     }
 
-
     String getInsertStatement() {
-        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy() + ") VALUES(:name, :lockUntil, :now, :lockedBy)";
+        return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy()
+                + ") VALUES(:name, :lockUntil, :now, :lockedBy)";
     }
 
-
     public String getUpdateStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = :lockUntil, " + lockedAt() + " = :now, " + lockedBy() + " = :lockedBy WHERE " + name() + " = :name AND " + lockUntil() + " <= :now";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = :lockUntil, " + lockedAt() + " = :now, "
+                + lockedBy() + " = :lockedBy WHERE " + name() + " = :name AND " + lockUntil() + " <= :now";
     }
 
     public String getExtendStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = :lockUntil WHERE " + name() + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > :now";
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = :lockUntil WHERE " + name() + " = :name AND "
+                + lockedBy() + " = :lockedBy AND " + lockUntil() + " > :now";
     }
 
     public String getUnlockStatement() {
