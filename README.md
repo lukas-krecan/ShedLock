@@ -922,7 +922,8 @@ public LockProvider lockProvider(...) {
 ```
 KeepAliveLockProvider extends the lock in the middle of the lockAtMostFor interval. For example, if the lockAtMostFor
 is 10 minutes the lock is extended every 5 minutes for 10 minutes until the lock is released. Please note that the minimal
-lockAtMostFor time supported by this provider is 30s.
+lockAtMostFor time supported by this provider is 30s. The scheduler is used only for the lock extension, single thread
+should be enough.
 
 ## Micronaut integration
 Since version 4.0.0, it's possible to use Micronaut framework for integration
