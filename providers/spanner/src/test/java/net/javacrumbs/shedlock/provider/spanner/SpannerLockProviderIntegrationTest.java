@@ -1,35 +1,32 @@
 package net.javacrumbs.shedlock.provider.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseClient;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 class SpannerLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
-    private SpannerStorageAccessor accessor;
-    private SpannerLockProvider provider;
+    private static DatabaseClient databaseClient;
 
+    private static SpannerStorageAccessor accessor;
 
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
+    @BeforeAll
+    static void setUp() {
+        SpannerEmulator spannerEmulator = new SpannerEmulator();
+        databaseClient = spannerEmulator.getDatabaseClient();
+        accessor = new SpannerStorageAccessor(databaseClient);
     }
 
     @Override
     protected StorageBasedLockProvider getLockProvider() {
-        return null;
+        return new SpannerLockProvider(databaseClient);
     }
 
     @Override
@@ -53,7 +50,8 @@ class SpannerLockProviderIntegrationTest extends AbstractStorageBasedLockProvide
     }
 
     private SpannerStorageAccessor.SpannerLock findLock(String lockName) {
-        return this.accessor.findLock(lockName).get();
+        return databaseClient.readWriteTransaction().run(transactionContext ->
+            accessor.findLock(transactionContext, lockName)).get();
     }
 
     private Instant toInstant(Timestamp timestamp) {
