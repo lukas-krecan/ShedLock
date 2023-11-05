@@ -12,32 +12,40 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
+import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.SpannerEmulatorContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class SpannerEmulator {
+@Testcontainers
+public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
+    private static final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
     private static final String PROJECT_NAME = "test-project";
     private static final String INSTANCE_NAME = "test-instance";
     private static final String DATABASE_NAME = "test-db";
 
-    private final DatabaseClient databaseClient;
+    private static DatabaseClient databaseClient;
 
-    private static final SpannerEmulatorContainer emulator =
-        new SpannerEmulatorContainer(DockerImageName.parse("gcr.io/cloud-spanner-emulator/emulator:latest"));
+    @Container
+    public static final SpannerEmulatorContainer emulator =
+        new SpannerEmulatorContainer(DockerImageName.parse(SPANNER_EMULATOR_IMAGE));
 
-    protected SpannerEmulator() {
-        emulator.start();
+
+    @BeforeAll
+    public static void setUpSpanner() {
         Spanner spanner = createSpannerService();
         InstanceId instanceId = createInstance(spanner);
         DatabaseId databaseId = createDatabase(spanner);
         databaseClient = spanner.getDatabaseClient(databaseId);
     }
 
-    protected DatabaseClient getDatabaseClient() {
+    static DatabaseClient getDatabaseClient() {
         return databaseClient;
     }
 
