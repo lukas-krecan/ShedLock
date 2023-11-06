@@ -1,11 +1,15 @@
 package net.javacrumbs.shedlock.provider.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +23,11 @@ class SpannerLockProviderIntegrationTest extends AbstractSpannerStorageBasedLock
             .withDatabaseClient(getDatabaseClient())
             .build();
         accessor = new SpannerStorageAccessor(configuration);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        cleanLockTable();
     }
 
     @Override
@@ -51,8 +60,13 @@ class SpannerLockProviderIntegrationTest extends AbstractSpannerStorageBasedLock
             accessor.findLock(transactionContext, lockName)).get();
     }
 
+    private void cleanLockTable() {
+        List<Mutation> mutations = List.of(Mutation.delete("shedlock", KeySet.all()));
+        getDatabaseClient().write(mutations);
+    }
+
     private Instant toInstant(Timestamp timestamp) {
-        return timestamp.toSqlTimestamp().toInstant();
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
 }
