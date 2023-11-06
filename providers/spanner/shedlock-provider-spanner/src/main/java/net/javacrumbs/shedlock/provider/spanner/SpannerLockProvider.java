@@ -1,11 +1,11 @@
 package net.javacrumbs.shedlock.provider.spanner;
 
+import static java.util.Objects.requireNonNull;
+
 import com.google.cloud.spanner.DatabaseClient;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.Utils;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * A lock provider for Google Cloud Spanner.
@@ -19,10 +19,8 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
      * @param databaseClient the client for interacting with Google Cloud Spanner.
      */
     public SpannerLockProvider(@NonNull DatabaseClient databaseClient) {
-        this(new SpannerStorageAccessor(Configuration.builder()
-            .withDatabaseClient(databaseClient)
-            .build()
-        ));
+        this(new SpannerStorageAccessor(
+                Configuration.builder().withDatabaseClient(databaseClient).build()));
     }
 
     /**
@@ -100,15 +98,14 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
 
             // Default table configuration if not specified by the user of the builder.
             private TableConfiguration tableConfiguration = TableConfiguration.builder()
-                .withTableName("shedlock")
-                .withLockName("name")
-                .withLockedBy("locked_by")
-                .withLockedAt("locked_at")
-                .withLockUntil("lock_until")
-                .build();
+                    .withTableName("shedlock")
+                    .withLockName("name")
+                    .withLockedBy("locked_by")
+                    .withLockedAt("locked_at")
+                    .withLockUntil("lock_until")
+                    .build();
 
-            private Builder() {
-            }
+            private Builder() {}
 
             public Builder withDatabaseClient(DatabaseClient databaseClient) {
                 this.databaseClient = databaseClient;
@@ -186,7 +183,6 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
             return lockedBy;
         }
 
-
         /**
          * Builder for creating {@code TableConfiguration} instances.
          */
@@ -197,8 +193,7 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
             private String lockedAt;
             private String lockedBy;
 
-            private Builder() {
-            }
+            private Builder() {}
 
             public Builder withTableName(String tableName) {
                 this.tableName = tableName;
@@ -233,7 +228,6 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
             public TableConfiguration build() {
                 return new TableConfiguration(this);
             }
-
         }
     }
 }

@@ -12,6 +12,8 @@ import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.SpannerEmulatorContainer;
@@ -19,11 +21,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 @Testcontainers
-public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
+public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
+        extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
     private static final String PROJECT_NAME = "test-project";
@@ -34,8 +34,7 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest ext
 
     @Container
     public static final SpannerEmulatorContainer emulator =
-        new SpannerEmulatorContainer(DockerImageName.parse(SPANNER_EMULATOR_IMAGE));
-
+            new SpannerEmulatorContainer(DockerImageName.parse(SPANNER_EMULATOR_IMAGE));
 
     @BeforeAll
     public static void setUpSpanner() {
@@ -50,12 +49,11 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest ext
     }
 
     private static Spanner createSpannerService() {
-        SpannerOptions options = SpannerOptions
-            .newBuilder()
-            .setEmulatorHost(emulator.getEmulatorGrpcEndpoint())
-            .setCredentials(NoCredentials.getInstance())
-            .setProjectId(PROJECT_NAME)
-            .build();
+        SpannerOptions options = SpannerOptions.newBuilder()
+                .setEmulatorHost(emulator.getEmulatorGrpcEndpoint())
+                .setCredentials(NoCredentials.getInstance())
+                .setProjectId(PROJECT_NAME)
+                .build();
 
         return options.getService();
     }
@@ -66,15 +64,12 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest ext
         InstanceAdminClient insAdminClient = spanner.getInstanceAdminClient();
         try {
             Instance instance = insAdminClient
-                .createInstance(
-                    InstanceInfo
-                        .newBuilder(instanceId)
-                        .setNodeCount(1)
-                        .setDisplayName("Test instance")
-                        .setInstanceConfigId(instanceConfig)
-                        .build()
-                )
-                .get();
+                    .createInstance(InstanceInfo.newBuilder(instanceId)
+                            .setNodeCount(1)
+                            .setDisplayName("Test instance")
+                            .setInstanceConfigId(instanceConfig)
+                            .build())
+                    .get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException("Failed creating Spanner instance.", e);
         }
@@ -85,12 +80,8 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest ext
         DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
         try {
             Database database = dbAdminClient
-                .createDatabase(
-                    INSTANCE_NAME,
-                    DATABASE_NAME,
-                    List.of(getShedlockDdl())
-                )
-                .get();
+                    .createDatabase(INSTANCE_NAME, DATABASE_NAME, List.of(getShedlockDdl()))
+                    .get();
             return database.getId();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Failed creating Spanner database.", e);
@@ -98,8 +89,7 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest ext
     }
 
     private static String getShedlockDdl() {
-        return
-            """
+        return """
                 CREATE TABLE shedlock (
                     name STRING(64) NOT NULL,
                     lock_until TIMESTAMP NOT NULL,
@@ -108,5 +98,4 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest ext
                     ) PRIMARY KEY (name)
                 """;
     }
-
 }
