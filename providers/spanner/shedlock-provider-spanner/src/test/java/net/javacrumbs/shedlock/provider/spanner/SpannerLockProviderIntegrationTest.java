@@ -10,19 +10,8 @@ import java.util.List;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 
 class SpannerLockProviderIntegrationTest extends AbstractSpannerStorageBasedLockProviderIntegrationTest {
-
-    private static SpannerStorageAccessor accessor;
-
-    @BeforeAll
-    static void setUp() {
-        SpannerLockProvider.Configuration configuration = SpannerLockProvider.Configuration.builder()
-                .withDatabaseClient(getDatabaseClient())
-                .build();
-        accessor = new SpannerStorageAccessor(configuration);
-    }
 
     @AfterEach
     void cleanUp() {
@@ -38,22 +27,22 @@ class SpannerLockProviderIntegrationTest extends AbstractSpannerStorageBasedLock
     protected void assertUnlocked(String lockName) {
         SpannerStorageAccessor.Lock lock = findLock(lockName);
 
-        assertThat(toInstant(lock.getLockedUntil())).isBefore(ClockProvider.now());
-        assertThat(toInstant(lock.getLockedAt())).isBefore(ClockProvider.now());
-        assertThat(lock.getLockedBy()).isNotEmpty();
+        assertThat(toInstant(lock.lockedUntil())).isBefore(ClockProvider.now());
+        assertThat(toInstant(lock.lockedAt())).isBefore(ClockProvider.now());
+        assertThat(lock.lockedBy()).isNotEmpty();
     }
 
     @Override
     protected void assertLocked(String lockName) {
         SpannerStorageAccessor.Lock lock = findLock(lockName);
 
-        assertThat(toInstant(lock.getLockedUntil())).isAfter(ClockProvider.now());
-        assertThat(toInstant(lock.getLockedAt())).isBefore(ClockProvider.now());
-        assertThat(lock.getLockedBy()).isNotEmpty();
+        assertThat(toInstant(lock.lockedUntil())).isAfter(ClockProvider.now());
+        assertThat(toInstant(lock.lockedAt())).isBefore(ClockProvider.now());
+        assertThat(lock.lockedBy()).isNotEmpty();
     }
 
     private SpannerStorageAccessor.Lock findLock(String lockName) {
-        return accessor.nonTransactionFindLock(lockName).get();
+        return nonTransactionFindLock(lockName).get();
     }
 
     private void cleanLockTable() {

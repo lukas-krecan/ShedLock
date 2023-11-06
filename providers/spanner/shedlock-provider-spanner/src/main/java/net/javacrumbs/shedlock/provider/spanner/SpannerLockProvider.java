@@ -19,8 +19,7 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
      * @param databaseClient the client for interacting with Google Cloud Spanner.
      */
     public SpannerLockProvider(@NonNull DatabaseClient databaseClient) {
-        this(new SpannerStorageAccessor(
-                Configuration.builder().withDatabaseClient(databaseClient).build()));
+        this(Configuration.builder().withDatabaseClient(databaseClient).build());
     }
 
     /**
@@ -29,16 +28,7 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
      * @param configuration configuration for the provider.
      */
     public SpannerLockProvider(@NonNull Configuration configuration) {
-        this(new SpannerStorageAccessor(configuration));
-    }
-
-    /**
-     * Private constructor to create a {@code SpannerLockProvider} with a pre-configured {@link SpannerStorageAccessor}.
-     *
-     * @param spannerStorageAccessor the accessor for Spanner storage operations.
-     */
-    private SpannerLockProvider(SpannerStorageAccessor spannerStorageAccessor) {
-        super(spannerStorageAccessor);
+        super(new SpannerStorageAccessor(configuration));
     }
 
     /**
@@ -49,15 +39,6 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
         private final DatabaseClient databaseClient;
         private final String hostname;
         private final TableConfiguration tableConfiguration;
-
-        /**
-         * Constructs a {@code Configuration} object using the provided {@link DatabaseClient}.
-         *
-         * @param databaseClient the client for interacting with Google Cloud Spanner.
-         */
-        private Configuration(@NonNull DatabaseClient databaseClient) {
-            this(builder().withDatabaseClient(databaseClient));
-        }
 
         /**
          * Constructs a {@code Configuration} with the builder pattern.

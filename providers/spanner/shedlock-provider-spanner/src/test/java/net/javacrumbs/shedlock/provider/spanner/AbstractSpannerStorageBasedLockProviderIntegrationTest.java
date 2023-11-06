@@ -10,10 +10,14 @@ import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.InstanceInfo;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.Statement;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import net.javacrumbs.shedlock.provider.spanner.SpannerLockProvider.Configuration;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.SpannerEmulatorContainer;
@@ -36,12 +40,17 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
     public static final SpannerEmulatorContainer emulator =
             new SpannerEmulatorContainer(DockerImageName.parse(SPANNER_EMULATOR_IMAGE));
 
+    protected static SpannerStorageAccessor accessor;
+
     @BeforeAll
     public static void setUpSpanner() {
         Spanner spanner = createSpannerService();
         InstanceId instanceId = createInstance(spanner);
         DatabaseId databaseId = createDatabase(spanner);
         databaseClient = spanner.getDatabaseClient(databaseId);
+        Configuration configuration =
+                Configuration.builder().withDatabaseClient(databaseClient).build();
+        accessor = new SpannerStorageAccessor(configuration);
     }
 
     static DatabaseClient getDatabaseClient() {
@@ -86,6 +95,18 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Failed creating Spanner database.", e);
         }
+    }
+
+    Optional<SpannerStorageAccessor.Lock> nonTransactionFindLock(String lockName) {
+        return Optional.ofNullable(databaseClient
+                        .singleUse()
+                        .executeQuery(Statement.newBuilder("SELECT * FROM shedlock WHERE name = @name")
+                                .bind("name")
+                                .to(lockName)
+                                .build()))
+                .filter(ResultSet::next)
+                .map(ResultSet::getCurrentRowAsStruct)
+                .map(accessor::newLock);
     }
 
     private static String getShedlockDdl() {
