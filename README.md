@@ -850,7 +850,41 @@ public LockProvider lockProvider(com.google.cloud.datastore.Datastore datastore)
 
 ```
 #### Spanner
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-spanner</artifactId>
+    <version>5.9.1</version>
+</dependency>
+```
+Configure
+```java
+import net.javacrumbs.shedlock.provider.datastore.DatastoreLockProvider;
 
+...
+
+// Basic
+@Bean
+public LockProvider lockProvider(Supplier<DatabaseClient> databaseClientSupplier) {
+        return new SpannerLockProvider(databaseClientSupplier.get());
+        }
+
+// Custom host, table and column names
+@Bean
+public LockProvider lockProvider(Supplier<DatabaseClient> databaseClientSupplier) {
+
+        SpannerLockProvider.Configuration.builder()
+        .withDatabaseClient(databaseClientSupplier.get())
+        .withTableConfiguration(SpannerLockProvider.TableConfiguration.builder()
+            ...
+            // Custom table and column names
+            .build())
+        .withHostName("customHostName")
+        .build();
+
+        return new SpannerLockProvider(databaseClientSupplier.get());
+```
 
 
 ## Multi-tenancy
