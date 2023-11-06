@@ -14,6 +14,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Accessor for managing lock records within a Google Spanner database.
+ * This class is responsible for inserting, updating, extending, and unlocking
+ * lock records using Spanner's transactions.
+ */
 public class SpannerStorageAccessor extends AbstractStorageAccessor {
 
     private final String table;
@@ -24,7 +29,11 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
     private final String hostname;
     private final DatabaseClient databaseClient;
 
-
+    /**
+     * Constructs a {@code SpannerStorageAccessor} using the specified configuration.
+     *
+     * @param configuration The lock provider configuration.
+     */
     public SpannerStorageAccessor(SpannerLockProvider.Configuration configuration) {
         this.lockUntil = configuration.getTableConfiguration().getLockUntil();
         this.lockedAt = configuration.getTableConfiguration().getLockedAt();
@@ -35,6 +44,12 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
         this.hostname = configuration.getHostname();
     }
 
+    /**
+     * Attempts to insert a lock record into the Spanner table.
+     *
+     * @param lockConfiguration The lock configuration.
+     * @return {@code true} if the lock was successfully inserted, otherwise {@code false}.
+     */
     @Override
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(databaseClient.readWriteTransaction().run(transaction ->
@@ -53,6 +68,12 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
     }
 
 
+    /**
+     * Attempts to update an existing lock record in the Spanner table.
+     *
+     * @param lockConfiguration The lock configuration.
+     * @return {@code true} if the lock was successfully updated, otherwise {@code false}.
+     */
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(databaseClient.readWriteTransaction().run(transaction ->
@@ -70,6 +91,12 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
         ));
     }
 
+    /**
+     * Extends the lock until time of an existing lock record if the current host holds the lock.
+     *
+     * @param lockConfiguration The lock configuration.
+     * @return {@code true} if the lock was successfully extended, otherwise {@code false}.
+     */
     @Override
     public boolean extend(@NonNull LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(databaseClient.readWriteTransaction().run(transaction ->
@@ -86,6 +113,11 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
                 }).orElse(false)));
     }
 
+    /**
+     * Unlocks the lock by updating the lock record's lock until time to the unlock time.
+     *
+     * @param lockConfiguration The lock configuration to unlock.
+     */
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
         databaseClient.readWriteTransaction().run(transaction -> {
@@ -101,6 +133,13 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
         });
     }
 
+    /**
+     * Finds the lock in the Spanner table.
+     *
+     * @param transaction The transaction context to use for the read.
+     * @param lockName    The name of the lock to find.
+     * @return An {@code Optional<Lock>} containing the lock if found, otherwise empty.
+     */
     protected Optional<Lock> findLock(TransactionContext transaction, String lockName) {
         return Optional.ofNullable(transaction.readRow(
                 table,
@@ -109,16 +148,30 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
             .map(Lock::new);
     }
 
+    /**
+     * Converts {@code Instant} to {@code Timestamp}.
+     *
+     * @param instant The instant to convert.
+     * @return The corresponding {@code Timestamp}.
+     */
     private Timestamp toTimestamp(Instant instant) {
         return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
     }
 
+    /**
+     * Inner class representing a lock record from Spanner.
+     */
     protected class Lock {
         private final String lockName;
         private final String lockedBy;
         private final Timestamp lockedAt;
         private final Timestamp lockedUntil;
 
+        /**
+         * Constructs a {@code Lock} instance based on the Spanner row structure.
+         *
+         * @param row The Spanner row containing lock information.
+         */
         protected Lock(@NonNull Struct row) {
             this.lockName = row.getString(name);
             this.lockedBy = row.getString(SpannerStorageAccessor.this.lockedBy);

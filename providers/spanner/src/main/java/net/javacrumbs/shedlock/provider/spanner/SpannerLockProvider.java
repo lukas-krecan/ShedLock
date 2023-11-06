@@ -7,9 +7,17 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * A lock provider for Google Cloud Spanner.
+ * This provider uses Spanner as the backend storage for the locks.
+ */
 public class SpannerLockProvider extends StorageBasedLockProvider {
 
-
+    /**
+     * Constructs a new {@code SpannerLockProvider} with the provided {@link DatabaseClient}.
+     *
+     * @param databaseClient the client for interacting with Google Cloud Spanner.
+     */
     public SpannerLockProvider(@NonNull DatabaseClient databaseClient) {
         this(new SpannerStorageAccessor(Configuration.builder()
             .withDatabaseClient(databaseClient)
@@ -17,24 +25,47 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
         ));
     }
 
+    /**
+     * Constructs a new {@code SpannerLockProvider} using the specified configuration.
+     *
+     * @param configuration configuration for the provider.
+     */
     public SpannerLockProvider(@NonNull Configuration configuration) {
         this(new SpannerStorageAccessor(configuration));
     }
 
+    /**
+     * Private constructor to create a {@code SpannerLockProvider} with a pre-configured {@link SpannerStorageAccessor}.
+     *
+     * @param spannerStorageAccessor the accessor for Spanner storage operations.
+     */
     private SpannerLockProvider(SpannerStorageAccessor spannerStorageAccessor) {
         super(spannerStorageAccessor);
     }
 
-
+    /**
+     * Configuration class for {@code SpannerLockProvider}.
+     * It holds configuration details required to create an instance of {@code SpannerLockProvider}.
+     */
     public static final class Configuration {
         private final DatabaseClient databaseClient;
         private final String hostname;
         private final TableConfiguration tableConfiguration;
 
+        /**
+         * Constructs a {@code Configuration} object using the provided {@link DatabaseClient}.
+         *
+         * @param databaseClient the client for interacting with Google Cloud Spanner.
+         */
         private Configuration(@NonNull DatabaseClient databaseClient) {
             this(builder().withDatabaseClient(databaseClient));
         }
 
+        /**
+         * Constructs a {@code Configuration} with the builder pattern.
+         *
+         * @param builder the {@code Builder} object.
+         */
         private Configuration(@NonNull Builder builder) {
             databaseClient = requireNonNull(builder.databaseClient, "databaseClient must be set");
             tableConfiguration = builder.tableConfiguration;
@@ -57,9 +88,17 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
             return tableConfiguration;
         }
 
+        /**
+         * Builder for {@link Configuration}. It provides defaults for table configuration and hostname.
+         * A default {@link TableConfiguration} and host name are used if not explicitly specified.
+         */
         public static final class Builder {
             private DatabaseClient databaseClient;
+
+            // Default host name is obtained from the Utils class if not specified.
             private String hostName = Utils.getHostname();
+
+            // Default table configuration if not specified by the user of the builder.
             private TableConfiguration tableConfiguration = TableConfiguration.builder()
                 .withTableName("shedlock")
                 .withLockName("name")
@@ -86,12 +125,22 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            /**
+             * Builds the {@link Configuration} with the provided parameters. If the table configuration or
+             * hostname are not set, it will default to a pre-defined table configuration for ShedLock and
+             * the local hostname.
+             *
+             * @return A new instance of {@link Configuration} with the set parameters.
+             */
             public Configuration build() {
                 return new Configuration(this);
             }
         }
     }
 
+    /**
+     * Class representing the table configuration for the lock provider.
+     */
     public static final class TableConfiguration {
 
         private final String tableName;
@@ -100,6 +149,11 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
         private final String lockedAt;
         private final String lockedBy;
 
+        /**
+         * Constructs a {@code TableConfiguration} using the builder pattern.
+         *
+         * @param builder the {@code Builder} for the table configuration.
+         */
         private TableConfiguration(@NonNull Builder builder) {
             tableName = requireNonNull(builder.tableName, "tableName must be set");
             lockName = requireNonNull(builder.lockName, "lockName must be set");
@@ -133,6 +187,9 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
         }
 
 
+        /**
+         * Builder for creating {@code TableConfiguration} instances.
+         */
         public static final class Builder {
             private String tableName;
             private String lockName;
@@ -168,6 +225,11 @@ public class SpannerLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            /**
+             * Builds the {@code TableConfiguration} object.
+             *
+             * @return a new {@code TableConfiguration} instance.
+             */
             public TableConfiguration build() {
                 return new TableConfiguration(this);
             }

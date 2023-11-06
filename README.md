@@ -849,6 +849,9 @@ public LockProvider lockProvider(com.google.cloud.datastore.Datastore datastore)
 }
 
 ```
+#### Spanner
+
+
 
 ## Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one

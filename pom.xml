@@ -67,6 +67,7 @@
         <module>providers/inmemory/shedlock-provider-inmemory</module>
         <module>providers/memcached/shedlock-provider-memcached-spy</module>
         <module>providers/datastore/shedlock-provider-datastore</module>
+        <module>providers/spanner/shedlock-provider-spanner</module>
     </modules>
 
     <properties>
