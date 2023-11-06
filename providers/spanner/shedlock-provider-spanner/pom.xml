@@ -64,7 +64,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.mongo
+                                net.javacrumbs.shedlock.provider.spanner
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
