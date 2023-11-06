@@ -4,6 +4,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -145,6 +147,15 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
                 table,
                 Key.of(lockName),
                 List.of(name, lockUntil, lockedBy, lockedAt)))
+            .map(Lock::new);
+    }
+
+    protected Optional<Lock> nonTransactionFindLock(String lockName) {
+        return Optional.ofNullable(databaseClient.singleUse().executeQuery(Statement.newBuilder("SELECT * FROM " + table + " WHERE " + name + " = @name")
+                .bind(name).to(lockName)
+                .build()))
+            .filter(ResultSet::next)
+            .map(ResultSet::getCurrentRowAsStruct)
             .map(Lock::new);
     }
 

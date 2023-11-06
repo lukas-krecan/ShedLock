@@ -37,27 +37,24 @@ class SpannerLockProviderIntegrationTest extends AbstractSpannerStorageBasedLock
 
     @Override
     protected void assertUnlocked(String lockName) {
-        Instant now = ClockProvider.now();
         SpannerStorageAccessor.Lock lock = findLock(lockName);
 
-        assertThat(toInstant(lock.getLockedUntil())).isBefore(now);
-        assertThat(toInstant(lock.getLockedAt())).isBefore(now);
+        assertThat(toInstant(lock.getLockedUntil())).isBefore(ClockProvider.now());
+        assertThat(toInstant(lock.getLockedAt())).isBefore(ClockProvider.now());
         assertThat(lock.getLockedBy()).isNotEmpty();
     }
 
     @Override
     protected void assertLocked(String lockName) {
-        Instant now = ClockProvider.now();
         SpannerStorageAccessor.Lock lock = findLock(lockName);
 
-        assertThat(toInstant(lock.getLockedUntil())).isAfter(now);
-        assertThat(toInstant(lock.getLockedAt())).isBefore(now);
+        assertThat(toInstant(lock.getLockedUntil())).isAfter(ClockProvider.now());
+        assertThat(toInstant(lock.getLockedAt())).isBefore(ClockProvider.now());
         assertThat(lock.getLockedBy()).isNotEmpty();
     }
 
     private SpannerStorageAccessor.Lock findLock(String lockName) {
-        return getDatabaseClient().readWriteTransaction().run(transactionContext ->
-            accessor.findLock(transactionContext, lockName)).get();
+        return accessor.nonTransactionFindLock(lockName).get();
     }
 
     private void cleanLockTable() {
