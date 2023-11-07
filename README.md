@@ -873,8 +873,7 @@ public LockProvider lockProvider(DatabaseClient databaseClient) {
 // Custom host, table and column names
 @Bean
 public LockProvider lockProvider(DatabaseClient databaseClient) {
-
-        var config = SpannerLockProvider.Configuration.builder()
+    var config = SpannerLockProvider.Configuration.builder()
         .withDatabaseClient(databaseClientSupplier)
         .withTableConfiguration(SpannerLockProvider.TableConfiguration.builder()
             ...
@@ -883,7 +882,8 @@ public LockProvider lockProvider(DatabaseClient databaseClient) {
         .withHostName("customHostName")
         .build();
 
-        return new SpannerLockProvider(config);
+    return new SpannerLockProvider(config);
+}
 ```
 
 
