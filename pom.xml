@@ -19,7 +19,7 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <packaging>pom</packaging>
-    <version>5.9.2-SNAPSHOT</version>
+    <version>5.10.0</version>
     <modules>
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
@@ -100,7 +100,7 @@
                 <configuration>
                     <java>
                         <palantirJavaFormat><version>2.38.0</version></palantirJavaFormat>
-                        <removeUnusedImports/>
+                        <removeUnusedImports />
                     </java>
                     <kotlin>
                         <ktfmt>
