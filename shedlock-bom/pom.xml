@@ -26,6 +26,11 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-micronaut4</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-spring</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -42,6 +47,11 @@
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-jdbc-template</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-jooq</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -96,6 +106,11 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-redis-quarkus2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-dynamodb2</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -127,6 +142,11 @@
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-memcached-spy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-spanner</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
