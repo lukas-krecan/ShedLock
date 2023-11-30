@@ -78,12 +78,12 @@
         <junit.ver>5.10.0</junit.ver>
         <test-containers.ver>1.19.3</test-containers.ver>
         <kotlin.ver>1.9.10</kotlin.ver>
-        <micronaut3.version>3.8.7</micronaut3.version>
-        <micronaut3-data.version>3.9.6</micronaut3-data.version>
-        <micronaut4.version>4.0.6</micronaut4.version>
+        <micronaut3.version>3.10.3</micronaut3.version>
+        <micronaut3-data.version>3.9.7</micronaut3-data.version>
+        <micronaut4.version>4.2.0</micronaut4.version>
         <micronaut4.validation.version>4.2.0</micronaut4.validation.version>
-        <micronaut4-data.version>4.1.2</micronaut4-data.version>
-        <logback.ver>1.4.11</logback.ver>
+        <micronaut4-data.version>4.3.1</micronaut4-data.version>
+        <logback.ver>1.4.13</logback.ver>
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.24.2</assertj.ver>
         <mockito.ver>5.7.0</mockito.ver>
