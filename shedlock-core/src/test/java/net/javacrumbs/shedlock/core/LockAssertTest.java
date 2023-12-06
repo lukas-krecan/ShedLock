@@ -75,4 +75,9 @@ class LockAssertTest {
         LockAssert.TestHelper.makeAllAssertsPass(false);
         assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void makeAllAssertsPassShouldNotFail() {
+        LockAssert.TestHelper.makeAllAssertsPass(false);
+    }
 }
