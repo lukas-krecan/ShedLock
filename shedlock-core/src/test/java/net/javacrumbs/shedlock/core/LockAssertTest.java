@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.Optional;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class LockAssertTest {
@@ -67,17 +68,31 @@ class LockAssertTest {
         assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
     }
 
-    @Test
-    void assertShouldNotFailIfConfiguredForTests() {
-        LockAssert.TestHelper.makeAllAssertsPass(true);
-        LockAssert.assertLocked();
+    @Nested
+    class TestHelper {
+        @Test
+        void assertShouldNotFailIfConfiguredForTests() {
+            LockAssert.TestHelper.makeAllAssertsPass(true);
+            LockAssert.assertLocked();
 
-        LockAssert.TestHelper.makeAllAssertsPass(false);
-        assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
-    }
+            LockAssert.TestHelper.makeAllAssertsPass(false);
+            assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
+        }
 
-    @Test
-    void makeAllAssertsPassShouldNotFail() {
-        LockAssert.TestHelper.makeAllAssertsPass(false);
+        @Test
+        void makeAllAssertsPassShouldNotFail() {
+            LockAssert.TestHelper.makeAllAssertsPass(false);
+        }
+
+        @Test
+        void shouldNotStartMoreThanOneTestLock() {
+            assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
+            LockAssert.TestHelper.makeAllAssertsPass(true);
+            LockAssert.TestHelper.makeAllAssertsPass(true);
+
+            LockAssert.TestHelper.makeAllAssertsPass(false);
+
+            assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
+        }
     }
 }

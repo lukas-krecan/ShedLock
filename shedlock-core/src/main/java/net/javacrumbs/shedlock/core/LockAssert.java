@@ -76,7 +76,9 @@ public final class LockAssert {
          */
         public static void makeAllAssertsPass(boolean pass) {
             if (pass) {
-                LockAssert.startLock(TEST_LOCK_NAME);
+                if (!LockAssert.alreadyLockedBy(TEST_LOCK_NAME)) {
+                    LockAssert.startLock(TEST_LOCK_NAME);
+                }
             } else {
                 if (LockAssert.alreadyLockedBy(TEST_LOCK_NAME)) {
                     LockAssert.endLock();
