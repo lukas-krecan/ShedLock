@@ -80,4 +80,15 @@ class LockAssertTest {
     void makeAllAssertsPassShouldNotFail() {
         LockAssert.TestHelper.makeAllAssertsPass(false);
     }
+
+    @Test
+    void shouldNotStartMoreThanOneTestLock() {
+        assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
+        LockAssert.TestHelper.makeAllAssertsPass(true);
+        LockAssert.TestHelper.makeAllAssertsPass(true);
+
+        LockAssert.TestHelper.makeAllAssertsPass(false);
+
+        assertThatThrownBy(LockAssert::assertLocked).isInstanceOf(IllegalStateException.class);
+    }
 }
