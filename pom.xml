@@ -96,7 +96,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.40.0</version>
+                <version>2.41.1</version>
                 <configuration>
                     <java>
                         <palantirJavaFormat><version>2.38.0</version></palantirJavaFormat>
