@@ -13,8 +13,8 @@
  */
 package net.javacrumbs.shedlock.provider.redis.jedis4;
 
-import com.playtika.test.redis.RedisProperties;
-import com.playtika.test.redis.wait.RedisClusterStatusCheck;
+import com.playtika.testcontainer.redis.RedisProperties;
+import com.playtika.testcontainer.redis.wait.RedisClusterStatusCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -29,7 +29,7 @@ class RedisContainer extends FixedHostPortGenericContainer<RedisContainer> {
     static final String ENV = "test";
 
     public RedisContainer(int hostPort) {
-        super("redis:5-alpine");
+        super("redis:7.2.3-alpine");
 
         RedisProperties properties = new RedisProperties();
         properties.host = "localhost";
