@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
-            <version>3.19.0</version>
+            <version>3.19.1</version>
         </dependency>
 
         <dependency>
