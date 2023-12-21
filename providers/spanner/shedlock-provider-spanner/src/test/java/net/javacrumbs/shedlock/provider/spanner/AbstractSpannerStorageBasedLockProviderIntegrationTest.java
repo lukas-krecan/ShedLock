@@ -29,7 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
         extends AbstractStorageBasedLockProviderIntegrationTest {
 
-    private static final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:latest";
+    private static final String SPANNER_EMULATOR_IMAGE = "gcr.io/cloud-spanner-emulator/emulator:1.5.12";
     private static final String PROJECT_NAME = "test-project";
     private static final String INSTANCE_NAME = "test-instance";
     private static final String DATABASE_NAME = "test-db";
