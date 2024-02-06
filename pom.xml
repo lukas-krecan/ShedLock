@@ -87,7 +87,7 @@
         <awaitility.ver>4.2.0</awaitility.ver>
         <assertj.ver>3.25.3</assertj.ver>
         <mockito.ver>5.10.0</mockito.ver>
-        <slf4j.ver>2.0.11</slf4j.ver>
+        <slf4j.ver>2.0.12</slf4j.ver>
         <fork.count>1</fork.count>
     </properties>
 
