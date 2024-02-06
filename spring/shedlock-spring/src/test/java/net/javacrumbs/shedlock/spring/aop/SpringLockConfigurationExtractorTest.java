@@ -13,6 +13,25 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import net.javacrumbs.shedlock.spring.proxytest.BeanInterface;
@@ -24,26 +43,6 @@ import org.springframework.core.annotation.AliasFor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.StringValueResolver;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.lang.reflect.Method;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.util.Optional;
-
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static java.time.temporal.ChronoUnit.MILLIS;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class SpringLockConfigurationExtractorTest {
 
@@ -93,7 +92,8 @@ public class SpringLockConfigurationExtractorTest {
 
     @Test
     public void shouldLockForDefaultTimeIfNoAnnotation() throws NoSuchMethodException {
-        SpringLockConfigurationExtractor.AnnotationData annotation = getAnnotation("annotatedMethodWithoutLockAtMostFor");
+        SpringLockConfigurationExtractor.AnnotationData annotation =
+                getAnnotation("annotatedMethodWithoutLockAtMostFor");
         TemporalAmount lockAtMostFor = extractor.getLockAtMostFor(annotation);
         assertThat(lockAtMostFor).isEqualTo(DEFAULT_LOCK_TIME);
     }
@@ -125,7 +125,8 @@ public class SpringLockConfigurationExtractorTest {
     @Test
     public void shouldGetZeroGracePeriodFromAnnotation() throws NoSuchMethodException {
         noopResolver();
-        SpringLockConfigurationExtractor.AnnotationData annotation = getAnnotation("annotatedMethodWithZeroGracePeriod");
+        SpringLockConfigurationExtractor.AnnotationData annotation =
+                getAnnotation("annotatedMethodWithZeroGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.ZERO);
     }
@@ -133,7 +134,8 @@ public class SpringLockConfigurationExtractorTest {
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotation() throws NoSuchMethodException {
         noopResolver();
-        SpringLockConfigurationExtractor.AnnotationData annotation = getAnnotation("annotatedMethodWithPositiveGracePeriod");
+        SpringLockConfigurationExtractor.AnnotationData annotation =
+                getAnnotation("annotatedMethodWithPositiveGracePeriod");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
     }
@@ -141,7 +143,8 @@ public class SpringLockConfigurationExtractorTest {
     @Test
     public void shouldGetPositiveGracePeriodFromAnnotationWithString() throws NoSuchMethodException {
         noopResolver();
-        SpringLockConfigurationExtractor.AnnotationData annotation = getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
+        SpringLockConfigurationExtractor.AnnotationData annotation =
+                getAnnotation("annotatedMethodWithPositiveGracePeriodWithString");
         TemporalAmount gracePeriod = extractor.getLockAtLeastFor(annotation);
         assertThat(gracePeriod).isEqualTo(Duration.of(10, MILLIS));
     }
@@ -149,7 +152,8 @@ public class SpringLockConfigurationExtractorTest {
     @Test
     public void shoulFailOnNegativeLockAtMostFor() throws NoSuchMethodException {
         noopResolver();
-        SpringLockConfigurationExtractor.AnnotationData annotation = getAnnotation("annotatedMethodWithNegativeGracePeriod");
+        SpringLockConfigurationExtractor.AnnotationData annotation =
+                getAnnotation("annotatedMethodWithNegativeGracePeriod");
         assertThatThrownBy(() -> extractor.getLockAtLeastFor(annotation)).isInstanceOf(IllegalArgumentException.class);
     }
 
