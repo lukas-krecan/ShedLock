@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScheduledTasks {
     @Scheduled(fixedRate = 100)
-    @SchedulerLock(name = "#{nameSource.getLockName()}", lockAtMostFor = "${lock.at.most.for}")
+    @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "${lock.at.most.for}")
     public void reportCurrentTime() {
         assertLocked();
         System.out.println(new Date());
