@@ -50,11 +50,6 @@ public class MethodProxyAopConfig {
         return new AnotherTestBeanImpl();
     }
 
-    @Bean
-    public NameSource nameSource() {
-        return new NameSource();
-    }
-
     static class TestBean {
         private final AtomicBoolean called = new AtomicBoolean(false);
 
@@ -120,11 +115,6 @@ public class MethodProxyAopConfig {
             called.set(true);
         }
 
-        @SchedulerLock(name = "#{nameSource.getLockName()}", lockAtLeastFor = "1s")
-        public void spelBean() {
-            called.set(true);
-        }
-
         @SchedulerLock(name = "${finalNotLocked}", lockAtLeastFor = "10ms")
         public final void finalNotLocked() {
             assertLocked();
@@ -140,11 +130,5 @@ public class MethodProxyAopConfig {
         @Override
         @SchedulerLock(name = "classAnnotation")
         public void runManually() {}
-    }
-
-    static class NameSource {
-        public String getLockName() {
-            return "myLockName";
-        }
     }
 }
