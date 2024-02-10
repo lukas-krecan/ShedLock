@@ -20,6 +20,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 public class AopCleanupTest {
     @Test
+    @Timeout(30)
     public void shouldCloseTaskExecutor() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
         context.start();
