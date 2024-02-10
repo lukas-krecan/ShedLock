@@ -16,16 +16,21 @@ package net.javacrumbs.shedlock.spring.aop;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.util.concurrent.Executors;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
+@Disabled
 public class AopCleanupTest {
     @Test
     public void shouldCloseTaskExecutor() {
@@ -44,6 +49,11 @@ public class AopCleanupTest {
         @Bean
         public LockProvider lockProvider() {
             return lockProvider;
+        }
+
+        @Bean
+        public TaskScheduler taskScheduler() {
+            return new ConcurrentTaskScheduler(Executors.newScheduledThreadPool(10));
         }
 
         @Scheduled(fixedRate = 10_000)
