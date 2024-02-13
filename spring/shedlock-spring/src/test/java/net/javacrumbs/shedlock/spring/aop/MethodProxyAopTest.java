@@ -143,6 +143,14 @@ public class MethodProxyAopTest {
     }
 
     @Test
+    public void shouldGetNameFromABeanParametrized() {
+        testBean.spelBean("test");
+        verify(lockProvider).lock(hasParams("myLockName", 30_000, 1_000));
+        verify(simpleLock).unlock();
+        assertThat(testBean.wasMethodCalled()).isTrue();
+    }
+
+    @Test
     public void shouldFailOnNotLockedMethod() {
         assertThatThrownBy(() -> testBean.finalNotLocked()).hasMessageStartingWith("The task is not locked.");
     }

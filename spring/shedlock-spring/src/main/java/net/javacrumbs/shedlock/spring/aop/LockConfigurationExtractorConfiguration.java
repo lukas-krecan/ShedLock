@@ -15,6 +15,10 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import java.time.Duration;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,15 +26,24 @@ import org.springframework.util.StringValueResolver;
 
 /** Defines ExtendedLockConfigurationExtractor bean. */
 @Configuration
-class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration implements EmbeddedValueResolverAware {
+class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration
+        implements EmbeddedValueResolverAware, BeanFactoryAware {
     private final StringToDurationConverter durationConverter = StringToDurationConverter.INSTANCE;
 
+    @Nullable
     private StringValueResolver resolver;
+
+    @Nullable
+    private BeanFactory beanFactory;
 
     @Bean
     ExtendedLockConfigurationExtractor lockConfigurationExtractor() {
         return new SpringLockConfigurationExtractor(
-                defaultLockAtMostForDuration(), defaultLockAtLeastForDuration(), resolver, durationConverter);
+                defaultLockAtMostForDuration(),
+                defaultLockAtLeastForDuration(),
+                resolver,
+                durationConverter,
+                beanFactory);
     }
 
     private Duration defaultLockAtLeastForDuration() {
@@ -60,5 +73,10 @@ class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration 
     @Override
     public void setEmbeddedValueResolver(StringValueResolver resolver) {
         this.resolver = resolver;
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 }
