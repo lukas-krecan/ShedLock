@@ -11,7 +11,7 @@
     <artifactId>shedlock-provider-redis-quarkus2</artifactId>
 
     <properties>
-        <quarkus.platform.version>3.7.3</quarkus.platform.version>
+        <quarkus.platform.version>2.6.12.Final</quarkus.platform.version>
     </properties>
 
     <dependencyManagement>
