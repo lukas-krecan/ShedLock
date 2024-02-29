@@ -213,7 +213,7 @@ public class Neo4jLockProviderIntegrationTest extends AbstractStorageBasedLockPr
 
     private static class MyNeo4jContainer extends Neo4jContainer<MyNeo4jContainer> {
         MyNeo4jContainer() {
-            super(DockerImageName.parse("neo4j").withTag("4.4.6"));
+            super(DockerImageName.parse("neo4j").withTag("5.17.0"));
             withoutAuthentication();
         }
     }
