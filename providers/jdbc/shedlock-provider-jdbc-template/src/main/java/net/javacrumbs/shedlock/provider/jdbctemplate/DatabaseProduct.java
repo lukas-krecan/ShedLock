@@ -7,14 +7,14 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Co
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 public enum DatabaseProduct {
-    POSTGRES_SQL("PostgreSQL"::equals, PostgresSqlServerTimeStatementsSource::new),
-    SQL_SERVER("Microsoft SQL Server"::equals, MsSqlServerTimeStatementsSource::new),
-    ORACLE("Oracle"::equals, OracleServerTimeStatementsSource::new),
-    MY_SQL("MySQL"::equals, MySqlServerTimeStatementsSource::new),
-    MARIA_DB("MariaDB"::equals, MySqlServerTimeStatementsSource::new),
-    HQL("HSQL Database Engine"::equals, HsqlServerTimeStatementsSource::new),
-    H2("H2"::equals, H2ServerTimeStatementsSource::new),
-    DB2(s -> s.startsWith("DB2"), Db2ServerTimeStatementsSource::new),
+    POSTGRES_SQL("PostgreSQL"::equalsIgnoreCase, PostgresSqlServerTimeStatementsSource::new),
+    SQL_SERVER("Microsoft SQL Server"::equalsIgnoreCase, MsSqlServerTimeStatementsSource::new),
+    ORACLE("Oracle"::equalsIgnoreCase, OracleServerTimeStatementsSource::new),
+    MY_SQL("MySQL"::equalsIgnoreCase, MySqlServerTimeStatementsSource::new),
+    MARIA_DB("MariaDB"::equalsIgnoreCase, MySqlServerTimeStatementsSource::new),
+    HQL("HSQL Database Engine"::equalsIgnoreCase, HsqlServerTimeStatementsSource::new),
+    H2("H2"::equalsIgnoreCase, H2ServerTimeStatementsSource::new),
+    DB2(s -> s.substring(0, 3).equalsIgnoreCase("DB2"), Db2ServerTimeStatementsSource::new),
     UNKNOWN(s -> false, configuration -> {
         throw new UnsupportedOperationException("DB time is not supported for unknown database product");
     });
