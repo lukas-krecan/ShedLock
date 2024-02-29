@@ -46,7 +46,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         try (Session session = getSession();
                 Transaction transaction = session.beginTransaction()) {
             transaction.run(String.format(
-                    "CREATE CONSTRAINT UNIQUE_%s_name IF NOT EXISTS ON (lock:%s) ASSERT lock.name IS UNIQUE",
+                    "CREATE CONSTRAINT UNIQUE_%s_name IF NOT EXISTS FOR (lock:%s) REQUIRE lock.name IS UNIQUE",
                     collectionName, collectionName));
             transaction.commit();
         }
