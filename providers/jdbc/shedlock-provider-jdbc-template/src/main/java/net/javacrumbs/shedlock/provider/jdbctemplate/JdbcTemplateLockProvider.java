@@ -91,6 +91,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final String lockedByValue;
         private final boolean useDbTime;
         private final Integer isolationLevel;
+        private final boolean throwUnexpectedException;
 
         Configuration(
                 @NonNull JdbcTemplate jdbcTemplate,
@@ -101,7 +102,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 @NonNull ColumnNames columnNames,
                 @NonNull String lockedByValue,
                 boolean useDbTime,
-                @Nullable Integer isolationLevel) {
+                @Nullable Integer isolationLevel,
+                boolean throwUnexpectedException) {
 
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.databaseProduct = databaseProduct;
@@ -115,6 +117,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 throw new IllegalArgumentException("Can not set both useDbTime and timeZone");
             }
             this.useDbTime = useDbTime;
+            this.throwUnexpectedException = throwUnexpectedException;
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -153,6 +156,10 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return isolationLevel;
         }
 
+        public boolean isThrowUnexpectedException() {
+            return throwUnexpectedException;
+        }
+
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -168,6 +175,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private boolean dbUpperCase = false;
             private boolean useDbTime = false;
             private Integer isolationLevel;
+            private boolean throwUnexpectedException = false;
 
             public Builder withJdbcTemplate(@NonNull JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -233,6 +241,11 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            public Builder withThrowUnexpectedException(boolean throwUnexpectedException) {
+                this.throwUnexpectedException = throwUnexpectedException;
+                return this;
+            }
+
             public JdbcTemplateLockProvider.Configuration build() {
                 return new JdbcTemplateLockProvider.Configuration(
                         jdbcTemplate,
@@ -243,7 +256,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                         dbUpperCase ? columnNames.toUpperCase() : columnNames,
                         lockedByValue,
                         useDbTime,
-                        isolationLevel);
+                        isolationLevel,
+                        throwUnexpectedException);
             }
         }
     }
