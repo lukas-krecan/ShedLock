@@ -76,7 +76,7 @@ class SqlStatementsSource {
                     logger.debug("Using H2ServerTimeStatementsSource");
                     return new H2ServerTimeStatementsSource(configuration);
                 default:
-                    if (databaseProductName.startsWith("DB2")) {
+                    if (databaseProductName.startsWith("db2")) {
                         logger.debug("Using Db2ServerTimeStatementsSource");
                         return new Db2ServerTimeStatementsSource(configuration);
                     }
