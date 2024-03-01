@@ -19,7 +19,7 @@ import org.testcontainers.containers.OracleContainer;
 
 public final class OracleServerConfig extends AbstractContainerBasedDbConfig<OracleContainer> {
     public OracleServerConfig() {
-        super(new OracleContainer("gvenzl/oracle-xe:18-slim"));
+        super(new OracleContainer("gvenzl/oracle-xe:21-slim"));
     }
 
     @Override
