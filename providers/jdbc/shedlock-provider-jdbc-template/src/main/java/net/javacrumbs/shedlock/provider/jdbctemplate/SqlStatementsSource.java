@@ -40,41 +40,50 @@ class SqlStatementsSource {
         this.configuration = configuration;
     }
 
+    private static final String POSTGRESQL = "postgresql";
+    private static final String MSSQL = "microsoft sql server";
+    private static final String ORACLE = "oracle";
+    private static final String MYSQL = "mysql";
+    private static final String MARIADB = "mariadb";
+    private static final String HSQL = "hsql database engine";
+    private static final String H2 = "h2";
+
+
     static SqlStatementsSource create(Configuration configuration) {
-        String databaseProductName = getDatabaseProductName(configuration);
+        String databaseProductName = getDatabaseProductName(configuration).toLowerCase();
 
         if (configuration.getUseDbTime()) {
             switch (databaseProductName) {
-                case "PostgreSQL":
+                case POSTGRESQL:
                     logger.debug("Using PostgresSqlServerTimeStatementsSource");
                     return new PostgresSqlServerTimeStatementsSource(configuration);
-                case "Microsoft SQL Server":
+                case MSSQL:
                     logger.debug("Using MsSqlServerTimeStatementsSource");
                     return new MsSqlServerTimeStatementsSource(configuration);
-                case "Oracle":
+                case ORACLE:
                     logger.debug("Using OracleServerTimeStatementsSource");
                     return new OracleServerTimeStatementsSource(configuration);
-                case "MySQL":
+                case MYSQL:
                     logger.debug("Using MySqlServerTimeStatementsSource");
                     return new MySqlServerTimeStatementsSource(configuration);
-                case "MariaDB":
+                case MARIADB:
                     logger.debug("Using MySqlServerTimeStatementsSource (for MariaDB)");
                     return new MySqlServerTimeStatementsSource(configuration);
-                case "HSQL Database Engine":
+                case HSQL:
                     logger.debug("Using HsqlServerTimeStatementsSource");
                     return new HsqlServerTimeStatementsSource(configuration);
-                case "H2":
+                case H2:
                     logger.debug("Using H2ServerTimeStatementsSource");
                     return new H2ServerTimeStatementsSource(configuration);
                 default:
-                    if (databaseProductName.startsWith("DB2")) {
+                    if (databaseProductName.startsWith("db2")) {
                         logger.debug("Using Db2ServerTimeStatementsSource");
                         return new Db2ServerTimeStatementsSource(configuration);
                     }
                     throw new UnsupportedOperationException("DB time is not supported for '" + databaseProductName + "'");
             }
         } else {
-            if ("PostgreSQL".equals(databaseProductName)) {
+            if (POSTGRESQL.equals(databaseProductName)) {
                 logger.debug("Using PostgresSqlServerTimeStatementsSource");
                 return new PostgresSqlStatementsSource(configuration);
             } else {
