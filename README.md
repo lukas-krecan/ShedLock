@@ -1152,6 +1152,9 @@ after another, `lockAtLeastFor` can prevent it.
 * #1804 Startup error with Neo4j 5.17.0
 * Dependency updates
 
+## 4.47.0 (2024-03-01)
+* #1800 Enable lower case for database type when using usingDbTime() (thanks @yuagu1)
+
 ## 5.11.0 (2024-02-13)
 * #1753 Fix SpEL for methods with parameters
 * Dependency updates
