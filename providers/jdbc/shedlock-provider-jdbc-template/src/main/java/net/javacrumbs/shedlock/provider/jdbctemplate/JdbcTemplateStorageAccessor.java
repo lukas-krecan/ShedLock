@@ -66,6 +66,9 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             logger.debug("Duplicate key", e);
             return false;
         } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
+            if (configuration.isThrowUnexpectedException()) {
+                throw e;
+            }
             logger.error("Unexpected exception", e);
             return false;
         }
@@ -80,6 +83,9 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
             logger.debug("Serialization exception", e);
             return false;
         } catch (DataIntegrityViolationException | TransactionSystemException | UncategorizedSQLException e) {
+            if (configuration.isThrowUnexpectedException()) {
+                throw e;
+            }
             logger.error("Unexpected exception", e);
             return false;
         }
