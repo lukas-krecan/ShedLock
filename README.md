@@ -291,8 +291,8 @@ create new transaction (with REQUIRES_NEW), jOOQ [does not support setting it](h
 ShedLock tries to create a new transaction, but depending on your set-up, ShedLock DB operations may
 end-up being part of the enclosing transaction.
 
-jOOQ lock provider is not yet as flexible as its JdbcTemplate counterpart, but it can be. If you need some
-configuration option, please let me know.
+If you need to configure the table name, schema or column names, you can use jOOQ render mapping as
+described [here](https://github.com/lukas-krecan/ShedLock/issues/1830#issuecomment-2015820509).
 
 #### Micronaut Data Jdbc
 If you are using Micronaut data and you do not want to add dependency on Spring JDBC, you can use
