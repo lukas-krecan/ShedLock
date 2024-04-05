@@ -4,12 +4,12 @@
     <parent>
         <groupId>net.javacrumbs.shedlock</groupId>
         <artifactId>shedlock-parent</artifactId>
-        <version>5.13.0</version>
+        <version>5.13.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>shedlock-provider-datastore</artifactId>
-    <version>5.13.0</version>
+    <version>5.13.1-SNAPSHOT</version>
 
     <properties>
         <datastore.ver>2.19.0</datastore.ver>
