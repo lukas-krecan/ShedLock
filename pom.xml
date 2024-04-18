@@ -83,7 +83,7 @@
         <micronaut4.version>4.3.8</micronaut4.version>
         <micronaut4.validation.version>4.5.0</micronaut4.validation.version>
         <micronaut4-data.version>4.4.0</micronaut4-data.version>
-        <logback.ver>1.5.5</logback.ver>
+        <logback.ver>1.5.6</logback.ver>
         <awaitility.ver>4.2.1</awaitility.ver>
         <assertj.ver>3.25.3</assertj.ver>
         <mockito.ver>5.11.0</mockito.ver>
