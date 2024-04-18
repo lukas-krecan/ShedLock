@@ -80,7 +80,7 @@
         <kotlin.ver>1.9.23</kotlin.ver>
         <micronaut3.version>3.10.4</micronaut3.version>
         <micronaut3-data.version>3.9.7</micronaut3-data.version>
-        <micronaut4.version>4.3.8</micronaut4.version>
+        <micronaut4.version>4.4.0</micronaut4.version>
         <micronaut4.validation.version>4.5.0</micronaut4.validation.version>
         <micronaut4-data.version>4.4.0</micronaut4-data.version>
         <logback.ver>1.5.5</logback.ver>
