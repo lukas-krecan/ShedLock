@@ -16,6 +16,9 @@ package net.javacrumbs.shedlock.provider.jooq;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 import org.jooq.SQLDialect;
+import org.jooq.conf.MappedSchema;
+import org.jooq.conf.MappedTable;
+import org.jooq.conf.RenderMapping;
 import org.jooq.conf.RenderNameCase;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
@@ -29,6 +32,12 @@ public class HsqlJooqLockProviderIntegrationTest extends AbstractJooqLockProvide
                 DSL.using(
                         dbConfig.getDataSource(),
                         SQLDialect.HSQLDB,
-                        new Settings().withRenderNameCase(RenderNameCase.UPPER)));
+                        new Settings().withRenderNameCase(RenderNameCase.UPPER).withRenderMapping(new RenderMapping()
+                            .withSchemata(
+                                new MappedSchema().withInput("") //Default schema
+                                    .withOutput("orchestrator") //My target schema where I want the shedlock table to be used from
+                                    .withTables(
+                                        new MappedTable().withInput("shedlock")
+                                            .withOutput("shedlock"))))));
     }
 }

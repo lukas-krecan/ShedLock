@@ -54,6 +54,7 @@
         <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch8</module>
         <module>providers/opensearch/shedlock-provider-opensearch</module>
+        <module>providers/opensearch/shedlock-provider-opensearch-java</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
         <module>providers/redis/shedlock-provider-redis-jedis4</module>
