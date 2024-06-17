@@ -12,7 +12,7 @@
     <version>5.13.1-SNAPSHOT</version>
 
     <properties>
-        <google-cloud-spanner.version>6.68.0</google-cloud-spanner.version>
+        <google-cloud-spanner.version>6.69.0</google-cloud-spanner.version>
     </properties>
 
     <dependencies>
