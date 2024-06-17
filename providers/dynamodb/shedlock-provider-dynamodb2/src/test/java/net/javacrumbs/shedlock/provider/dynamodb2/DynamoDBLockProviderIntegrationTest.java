@@ -45,7 +45,7 @@ import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 @Testcontainers
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     @Container
-    public static final DynamoDbContainer dynamoDbContainer =
+    static final DynamoDbContainer dynamoDbContainer =
             new DynamoDbContainer("amazon/dynamodb-local:2.5.1").withExposedPorts(8000);
 
     private static final String TABLE_NAME = "Shedlock";
@@ -78,8 +78,7 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
      * @return A DynamoDbClient pointing to the local DynamoDb instance
      */
     static DynamoDbClient createClient() {
-        String endpoint =
-                "http://" + dynamoDbContainer.getContainerIpAddress() + ":" + dynamoDbContainer.getFirstMappedPort();
+        String endpoint = "http://" + dynamoDbContainer.getHost() + ":" + dynamoDbContainer.getFirstMappedPort();
         return DynamoDbClient.builder()
                 .endpointOverride(URI.create(endpoint))
                 // The region is meaningless for local DynamoDb but required for client builder
