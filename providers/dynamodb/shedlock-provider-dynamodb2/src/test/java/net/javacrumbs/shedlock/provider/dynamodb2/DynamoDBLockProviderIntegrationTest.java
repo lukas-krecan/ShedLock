@@ -31,8 +31,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -48,7 +46,7 @@ import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     @Container
     public static final DynamoDbContainer dynamoDbContainer =
-            new DynamoDbContainer("quay.io/testcontainers/dynalite:v1.2.1-1").withExposedPorts(4567);
+            new DynamoDbContainer("amazon/dynamodb-local:2.5.1").withExposedPorts(8000);
 
     private static final String TABLE_NAME = "Shedlock";
     private static DynamoDbClient dynamodb;
@@ -87,8 +85,6 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
                 // The region is meaningless for local DynamoDb but required for client builder
                 // validation
                 .region(Region.US_EAST_1)
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy-key", "dummy-secret")))
                 .build();
     }
 
