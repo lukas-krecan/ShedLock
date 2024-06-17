@@ -31,6 +31,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -83,6 +85,7 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
                 .endpointOverride(URI.create(endpoint))
                 // The region is meaningless for local DynamoDb but required for client builder
                 // validation
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy", "dummy")))
                 .region(Region.US_EAST_1)
                 .build();
     }
