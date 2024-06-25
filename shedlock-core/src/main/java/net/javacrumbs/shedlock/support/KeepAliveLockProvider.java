@@ -33,19 +33,19 @@ import org.slf4j.LoggerFactory;
  * Wraps ExtensibleLockProvider that implements the actual locking.
  */
 public class KeepAliveLockProvider implements LockProvider {
-    private final ExtensibleLockProvider wrapped;
+    private final ExtensibleLockProvider wrappedLockProvider;
     private final ScheduledExecutorService executorService;
     private final Duration minimalLockAtMostFor;
 
     private static final Logger logger = LoggerFactory.getLogger(KeepAliveLockProvider.class);
 
-    public KeepAliveLockProvider(ExtensibleLockProvider wrapped, ScheduledExecutorService executorService) {
-        this(wrapped, executorService, Duration.ofSeconds(30));
+    public KeepAliveLockProvider(ExtensibleLockProvider wrappedLockProvider, ScheduledExecutorService executorService) {
+        this(wrappedLockProvider, executorService, Duration.ofSeconds(30));
     }
 
     KeepAliveLockProvider(
-            ExtensibleLockProvider wrapped, ScheduledExecutorService executorService, Duration minimalLockAtMostFor) {
-        this.wrapped = wrapped;
+        ExtensibleLockProvider wrappedLockProvider, ScheduledExecutorService executorService, Duration minimalLockAtMostFor) {
+        this.wrappedLockProvider = wrappedLockProvider;
         this.executorService = executorService;
         this.minimalLockAtMostFor = minimalLockAtMostFor;
     }
@@ -56,29 +56,29 @@ public class KeepAliveLockProvider implements LockProvider {
             throw new IllegalArgumentException(
                     "Can not use KeepAliveLockProvider with lockAtMostFor shorter than " + minimalLockAtMostFor);
         }
-        Optional<SimpleLock> lock = wrapped.lock(lockConfiguration);
+        Optional<SimpleLock> lock = wrappedLockProvider.lock(lockConfiguration);
         return lock.map(simpleLock -> new KeepAliveLock(lockConfiguration, simpleLock, executorService));
     }
 
     private static class KeepAliveLock extends AbstractSimpleLock {
         private final Duration lockExtensionPeriod;
-        private SimpleLock lock;
+        private SimpleLock obtainedLock;
         private Duration remainingLockAtLeastFor;
         private final ScheduledFuture<?> future;
         private boolean active = true;
         private Instant currentLockAtMostUntil;
 
         private KeepAliveLock(
-                LockConfiguration lockConfiguration, SimpleLock lock, ScheduledExecutorService executorService) {
+            LockConfiguration lockConfiguration, SimpleLock obtainedLock, ScheduledExecutorService executorService) {
             super(lockConfiguration);
-            this.lock = lock;
+            this.obtainedLock = obtainedLock;
             this.lockExtensionPeriod = lockConfiguration.getLockAtMostFor().dividedBy(2);
             this.remainingLockAtLeastFor = lockConfiguration.getLockAtLeastFor();
             this.currentLockAtMostUntil = lockConfiguration.getLockAtMostUntil();
 
-            long extensionPeriodMs = lockExtensionPeriod.toMillis();
+            long extensionPeriodMilliseconds = lockExtensionPeriod.toMillis();
             this.future = executorService.scheduleAtFixedRate(
-                    this::extendForNextPeriod, extensionPeriodMs, extensionPeriodMs, MILLISECONDS);
+                    this::extendForNextPeriod, extensionPeriodMilliseconds, extensionPeriodMilliseconds, MILLISECONDS);
         }
 
         private void extendForNextPeriod() {
@@ -104,9 +104,9 @@ public class KeepAliveLockProvider implements LockProvider {
                 }
                 currentLockAtMostUntil = now().plus(lockConfiguration.getLockAtMostFor());
                 Optional<SimpleLock> extendedLock =
-                        lock.extend(lockConfiguration.getLockAtMostFor(), remainingLockAtLeastFor);
+                        obtainedLock.extend(lockConfiguration.getLockAtMostFor(), remainingLockAtLeastFor);
                 if (extendedLock.isPresent()) {
-                    lock = extendedLock.get();
+                    obtainedLock = extendedLock.get();
                     logger.trace(
                             "Lock {} extended for {}",
                             lockConfiguration.getName(),
@@ -128,7 +128,7 @@ public class KeepAliveLockProvider implements LockProvider {
             synchronized (this) {
                 logger.trace("Unlocking lock {}", lockConfiguration.getName());
                 stop();
-                lock.unlock();
+                obtainedLock.unlock();
             }
         }
 

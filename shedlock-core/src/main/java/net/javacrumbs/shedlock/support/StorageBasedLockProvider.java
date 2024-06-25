@@ -64,20 +64,20 @@ public class StorageBasedLockProvider implements ExtensibleLockProvider {
      * Sets lockUntil according to LockConfiguration if current lockUntil &lt;= now
      */
     protected boolean doLock(LockConfiguration lockConfiguration) {
-        String name = lockConfiguration.getName();
+        String lockName = lockConfiguration.getName();
 
-        boolean tryToCreateLockRecord = !lockRecordRegistry.lockRecordRecentlyCreated(name);
+        boolean tryToCreateLockRecord = !lockRecordRegistry.lockRecordRecentlyCreated(lockName);
         if (tryToCreateLockRecord) {
             // create record in case it does not exist yet
             if (storageAccessor.insertRecord(lockConfiguration)) {
-                lockRecordRegistry.addLockRecord(name);
+                lockRecordRegistry.addLockRecord(lockName);
                 // we were able to create the record, we have the lock
                 return true;
             }
             // we were not able to create the record, it already exists, let's put it to the
             // cache so we
             // do not try again
-            lockRecordRegistry.addLockRecord(name);
+            lockRecordRegistry.addLockRecord(lockName);
         }
 
         // let's try to update the record, if successful, we have the lock
@@ -93,7 +93,7 @@ public class StorageBasedLockProvider implements ExtensibleLockProvider {
             // clear the
             // cache here.
             if (tryToCreateLockRecord) {
-                lockRecordRegistry.removeLockRecord(name);
+                lockRecordRegistry.removeLockRecord(lockName);
             }
             throw e;
         }

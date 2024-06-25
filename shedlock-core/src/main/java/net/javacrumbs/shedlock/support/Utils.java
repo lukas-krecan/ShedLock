@@ -55,22 +55,22 @@ public final class Utils {
      * @see <a href="https://stackoverflow.com/a/5098252">natural sorting of ISO
      *      8601 time format</a>
      */
-    private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendInstant(3)
             .toFormatter();
 
-    private static final String hostname = initHostname();
+    private static final String HOSTNAME = initHostname();
 
     private Utils() {}
 
     public static String getHostname() {
-        return hostname;
+        return HOSTNAME;
     }
 
     public static String toIsoString(Instant instant) {
         OffsetDateTime utc = instant.atOffset(ZoneOffset.UTC);
-        return formatter.format(utc);
+        return FORMATTER.format(utc);
     }
 
     private static String initHostname() {
