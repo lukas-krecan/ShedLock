@@ -24,8 +24,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
@@ -39,7 +39,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking
  * mechanism. See https://redis.io/commands/set
  */
-public class RedisLockProvider implements LockProvider {
+public class RedisLockProvider implements ExtensibleLockProvider {
     private static final String KEY_PREFIX_DEFAULT = "job-lock";
     private static final String ENV_DEFAULT = "default";
 
@@ -146,7 +146,18 @@ public class RedisLockProvider implements LockProvider {
                 tryToSetExpiration(this.redisTemplate, key, keepLockFor, SetOption.SET_IF_PRESENT);
             }
         }
+
+        @Override
+        public Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
+            Expiration expiration = getExpiration(newConfiguration.getLockAtMostUntil());
+            if (TRUE.equals(tryToSetExpiration(redisTemplate, key, expiration, SetOption.SET_IF_PRESENT))) {
+                return Optional.of(new RedisLock(key, redisTemplate, newConfiguration));
+            } else {
+                return Optional.empty();
+            }
+        }
     }
+
 
     String buildKey(String lockName) {
         return String.format("%s:%s:%s", keyPrefix, environment, lockName);
