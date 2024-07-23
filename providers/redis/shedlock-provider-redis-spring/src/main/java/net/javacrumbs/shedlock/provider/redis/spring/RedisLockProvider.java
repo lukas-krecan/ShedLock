@@ -152,9 +152,8 @@ public class RedisLockProvider implements ExtensibleLockProvider {
             Expiration expiration = getExpiration(newConfiguration.getLockAtMostUntil());
             if (TRUE.equals(tryToSetExpiration(redisTemplate, key, expiration, SetOption.SET_IF_PRESENT))) {
                 return Optional.of(new RedisLock(key, redisTemplate, newConfiguration));
-            } else {
-                return Optional.empty();
             }
+            return Optional.empty();
         }
     }
 
