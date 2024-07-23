@@ -158,7 +158,6 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         }
     }
 
-
     String buildKey(String lockName) {
         return String.format("%s:%s:%s", keyPrefix, environment, lockName);
     }
