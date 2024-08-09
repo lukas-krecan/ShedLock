@@ -13,23 +13,16 @@
  */
 package net.javacrumbs.shedlock.test.boot;
 
-import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
-
-import java.util.Date;
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ScheduledTasks implements I1 {
+public class Component2 implements I2 {
     @Autowired
-    private Component2 component2;
+    private ScheduledTasks scheduledTasks;
 
-    @Scheduled(fixedRate = 100)
-    @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "${lock.at.most.for}")
+    @Override
     public void reportCurrentTime() {
-        assertLocked();
-        System.out.println(new Date());
+
     }
 }
