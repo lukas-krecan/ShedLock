@@ -42,7 +42,7 @@ public class JedisLockProviderIntegrationTest {
 
         @BeforeEach
         public void createLockProvider() {
-            jedisCluster = new JedisCluster(new HostAndPort(redis.getContainerIpAddress(), redis.getFirstMappedPort()));
+            jedisCluster = new JedisCluster(new HostAndPort(redis.getHost(), redis.getFirstMappedPort()));
             lockProvider = new JedisLockProvider(jedisCluster, ENV);
         }
 
@@ -74,7 +74,7 @@ public class JedisLockProviderIntegrationTest {
 
         @BeforeEach
         public void createLockProvider() {
-            jedisPool = new JedisPool(redis.getContainerIpAddress(), redis.getMappedPort(PORT));
+            jedisPool = new JedisPool(redis.getHost(), redis.getMappedPort(PORT));
             lockProvider = new JedisLockProvider(jedisPool, ENV);
         }
 

@@ -57,7 +57,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
         container.start();
 
         Set<SeedNode> seedNodes = new HashSet<>(List.of(SeedNode.create(
-                container.getContainerIpAddress(),
+                container.getHost(),
                 Optional.of(container.getBootstrapCarrierDirectPort()),
                 Optional.of(container.getBootstrapHttpDirectPort()))));
         ClusterOptions options = ClusterOptions.clusterOptions(container.getUsername(), container.getPassword());

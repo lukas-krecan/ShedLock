@@ -50,7 +50,7 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @BeforeAll
     public static void startCassandra() {
-        String containerIpAddress = cassandra.getContainerIpAddress();
+        String containerIpAddress = cassandra.getHost();
         int containerPort = cassandra.getMappedPort(9042);
         InetSocketAddress containerEndPoint = new InetSocketAddress(containerIpAddress, containerPort);
 
