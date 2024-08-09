@@ -93,7 +93,6 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
         return getMongo().getDatabase(DB_NAME).getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME);
     }
 
-
     private Document getLockDocument(String lockName) {
         return getLockCollection().find(eq(ID, lockName)).first();
     }

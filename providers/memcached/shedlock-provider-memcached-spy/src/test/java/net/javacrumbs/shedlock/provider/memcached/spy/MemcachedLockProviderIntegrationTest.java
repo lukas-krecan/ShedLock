@@ -31,8 +31,8 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
 
     @BeforeEach
     public void createLockProvider() throws IOException {
-        memcachedClient = new MemcachedClient(
-                AddrUtil.getAddresses(container.getHost() + ":" + container.getFirstMappedPort()));
+        memcachedClient =
+                new MemcachedClient(AddrUtil.getAddresses(container.getHost() + ":" + container.getFirstMappedPort()));
 
         lockProvider = new MemcachedLockProvider(memcachedClient, ENV);
     }
