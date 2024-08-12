@@ -79,7 +79,7 @@
         <test-containers.ver>1.20.1</test-containers.ver>
         <kotlin.ver>2.0.10</kotlin.ver>
         <micronaut3.version>3.10.4</micronaut3.version>
-        <micronaut3-data.version>3.9.7</micronaut3-data.version>
+        <micronaut3-data.version>4.8.5</micronaut3-data.version>
         <micronaut4.version>4.5.1</micronaut4.version>
         <micronaut4.validation.version>4.6.1</micronaut4.validation.version>
         <micronaut4-data.version>4.8.1</micronaut4-data.version>
