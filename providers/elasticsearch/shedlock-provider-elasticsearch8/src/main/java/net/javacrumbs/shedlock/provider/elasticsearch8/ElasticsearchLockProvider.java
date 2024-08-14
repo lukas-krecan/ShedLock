@@ -109,8 +109,7 @@ public class ElasticsearchLockProvider implements LockProvider {
             UpdateRequest<Lock, Lock> updateRequest = UpdateRequest.of(ur -> ur.index(index)
                     .id(lockConfiguration.getName())
                     .refresh(Refresh.True)
-                    .script(sc -> sc.inline(
-                            in -> in.lang("painless").source(UPDATE_SCRIPT).params(lockObject)))
+                    .script(sc -> sc.lang("painless").source(UPDATE_SCRIPT).params(lockObject))
                     .upsert(pojo));
 
             UpdateResponse<Lock> res = client.update(updateRequest, Lock.class);
@@ -163,9 +162,9 @@ public class ElasticsearchLockProvider implements LockProvider {
                 UpdateRequest<Lock, Lock> updateRequest = UpdateRequest.of(ur -> ur.index(index)
                         .id(lockConfiguration.getName())
                         .refresh(Refresh.True)
-                        .script(sc -> sc.inline(in -> in.lang("painless")
+                        .script(sc -> sc.lang("painless")
                                 .source("ctx._source.lockUntil = params.unlockTime")
-                                .params(lockObject))));
+                                .params(lockObject)));
                 client.update(updateRequest, Lock.class);
             } catch (IOException | ElasticsearchException e) {
                 throw new LockException("Unexpected exception occurred", e);
