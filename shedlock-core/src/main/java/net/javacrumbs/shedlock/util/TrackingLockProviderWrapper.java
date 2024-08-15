@@ -59,7 +59,7 @@ public class TrackingLockProviderWrapper implements LockProvider {
         public void unlock() {
             try {
                 // Unlocking only once - unlocking twice is dangerous as it's likely that the second unlock will
-                // unlock a lock heald by another process
+                // unlock a lock held by another process
                 if (locked.compareAndSet(true, false)) {
                     wrappedLock.unlock();
                 }
