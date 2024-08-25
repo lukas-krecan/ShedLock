@@ -22,7 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-public class Neo4jLockProviderIntegrationTest extends AbstractNeo4jLockProviderIntegrationTest {
+public class EnterpriseNeo4jLockProviderIntegrationTest extends AbstractNeo4jLockProviderIntegrationTest {
     private static Neo4jTestUtils testUtils;
 
     @Container
@@ -40,7 +40,8 @@ public class Neo4jLockProviderIntegrationTest extends AbstractNeo4jLockProviderI
 
     private static class MyNeo4jContainer extends Neo4jContainer<MyNeo4jContainer> {
         MyNeo4jContainer() {
-            super(DockerImageName.parse("neo4j").withTag("5.22.0"));
+            super(DockerImageName.parse("neo4j").withTag("5.22.0-enterprise"));
+            addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "eval");
             withoutAuthentication();
         }
     }

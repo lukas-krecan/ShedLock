@@ -84,7 +84,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format(
-                "MATCH (lock:%s) " + "WHERE lock.name = $lockName AND lock.lock_until <= $now "
+                "CYPHER runtime = slotted MATCH (lock:%s) " + "WHERE lock.name = $lockName AND lock.lock_until <= $now "
                         + "SET lock._LOCK_ = true " + "WITH lock as l " + "WHERE l.lock_until <= $now "
                         + "SET l.lock_until = $lockUntil, l.locked_at = $now, l.locked_by = $lockedBy "
                         + "REMOVE l._LOCK_ ",
