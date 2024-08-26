@@ -56,7 +56,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists
         String cypher = String.format(
-                "CREATE (lock:%s {name: $lockName, lock_until: $lockUntil, locked_at: $now, locked_by: $lockedBy })",
+                "CYPHER runtime = slotted CREATE (lock:%s {name: $lockName, lock_until: $lockUntil, locked_at: $now, locked_by: $lockedBy })",
                 collectionName);
         Map<String, Object> parameters = createParameterMap(lockConfiguration);
         return executeCommand(
@@ -103,7 +103,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean extend(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format(
-                "MATCH (lock:%s) "
+                "CYPHER runtime = slotted MATCH (lock:%s) "
                         + "WHERE lock.name = $lockName AND lock.locked_by = $lockedBy AND lock.lock_until > $now "
                         + "SET lock._LOCK_ = true " + "WITH lock as l "
                         + "WHERE l.name = $lockName AND l.locked_by = $lockedBy AND l.lock_until > $now "
@@ -126,7 +126,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format(
-                "MATCH (lock:%s) WHERE lock.name = $lockName " + "SET lock.lock_until = $lockUntil ", collectionName);
+                "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName " + "SET lock.lock_until = $lockUntil ", collectionName);
         Map<String, Object> parameters = Map.of(
                 "lockName",
                 lockConfiguration.getName(),
