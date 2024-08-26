@@ -84,8 +84,8 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format(
-                "CYPHER runtime = slotted MATCH (lock:%s) " + "WHERE lock.name = $lockName AND lock.lock_until <= $now "
-                        + "SET lock._LOCK_ = true " + "WITH lock as l " + "WHERE l.lock_until <= $now "
+                "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName AND lock.lock_until <= $now "
+                        + "SET lock._LOCK_ = true WITH lock as l WHERE l.lock_until <= $now "
                         + "SET l.lock_until = $lockUntil, l.locked_at = $now, l.locked_by = $lockedBy "
                         + "REMOVE l._LOCK_ ",
                 collectionName);
@@ -105,9 +105,9 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
         String cypher = String.format(
                 "CYPHER runtime = slotted MATCH (lock:%s) "
                         + "WHERE lock.name = $lockName AND lock.locked_by = $lockedBy AND lock.lock_until > $now "
-                        + "SET lock._LOCK_ = true " + "WITH lock as l "
+                        + "SET lock._LOCK_ = true WITH lock as l "
                         + "WHERE l.name = $lockName AND l.locked_by = $lockedBy AND l.lock_until > $now "
-                        + "SET l.lock_until = $lockUntil " + "REMOVE l._LOCK_ ",
+                        + "SET l.lock_until = $lockUntil REMOVE l._LOCK_ ",
                 collectionName);
         Map<String, Object> parameters = createParameterMap(lockConfiguration);
 
@@ -126,7 +126,8 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     @Override
     public void unlock(@NonNull LockConfiguration lockConfiguration) {
         String cypher = String.format(
-                "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName " + "SET lock.lock_until = $lockUntil ", collectionName);
+                "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName SET lock.lock_until = $lockUntil",
+                collectionName);
         Map<String, Object> parameters = Map.of(
                 "lockName",
                 lockConfiguration.getName(),
