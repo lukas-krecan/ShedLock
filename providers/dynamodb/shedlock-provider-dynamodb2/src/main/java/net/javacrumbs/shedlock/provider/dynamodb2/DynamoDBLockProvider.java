@@ -99,7 +99,8 @@ public class DynamoDBLockProvider implements LockProvider {
      * @param tableName        the lock table name
      * @param partitionKeyName the partitionKey name of table
      */
-    public DynamoDBLockProvider(@NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName, @NonNull String partitionKeyName) {
+    public DynamoDBLockProvider(
+            @NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName, @NonNull String partitionKeyName) {
         this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
         this.partitionKeyName = requireNonNull(partitionKeyName, "partitionKeyName can not be null");
@@ -154,7 +155,11 @@ public class DynamoDBLockProvider implements LockProvider {
         private final String tableName;
         private final String partitionKeyName;
 
-        private DynamoDBLock(DynamoDbClient dynamoDbClient, String tableName, String partitionKeyName, LockConfiguration lockConfiguration) {
+        private DynamoDBLock(
+                DynamoDbClient dynamoDbClient,
+                String tableName,
+                String partitionKeyName,
+                LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.dynamoDbClient = dynamoDbClient;
             this.tableName = tableName;
