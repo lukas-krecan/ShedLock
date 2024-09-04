@@ -18,16 +18,16 @@ import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.currentTimestamp;
 import static com.mongodb.client.model.Updates.set;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
 import com.mongodb.MongoServerException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
-import java.time.Instant;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -52,9 +52,9 @@ import org.bson.conversions.Bson;
  * </pre>
  *
  * lockedAt and lockedBy are just for troubleshooting and are not read by the
- * code.
+ * code
  */
-public class MongoLockProvider implements ExtensibleLockProvider {
+public class DbTimeMongoLockProvider implements ExtensibleLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
@@ -65,7 +65,7 @@ public class MongoLockProvider implements ExtensibleLockProvider {
     private final MongoCollection<Document> collection;
 
     /** Uses Mongo to coordinate locks */
-    public MongoLockProvider(MongoDatabase mongoDatabase) {
+    public DbTimeMongoLockProvider(MongoDatabase mongoDatabase) {
         this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
     }
 
@@ -75,16 +75,17 @@ public class MongoLockProvider implements ExtensibleLockProvider {
      * @param collection
      *            Mongo collection to be used
      */
-    public MongoLockProvider(MongoCollection<Document> collection) {
+    public DbTimeMongoLockProvider(MongoCollection<Document> collection) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        Instant now = now();
         Bson update = combine(
-                set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()), set(LOCKED_AT, now), set(LOCKED_BY, hostname));
+                set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()),
+                currentTimestamp(LOCKED_AT),
+                set(LOCKED_BY, hostname));
         try {
             // There are three possible situations:
             // 1. The lock document does not exist yet - it is inserted - we have the lock
@@ -94,7 +95,7 @@ public class MongoLockProvider implements ExtensibleLockProvider {
             // thrown
             getCollection()
                     .findOneAndUpdate(
-                            and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
+                            and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now())),
                             update,
                             new FindOneAndUpdateOptions().upsert(true));
             return Optional.of(new MongoLock(lockConfiguration, this));
@@ -110,12 +111,12 @@ public class MongoLockProvider implements ExtensibleLockProvider {
     }
 
     private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
-        Instant now = now();
         Bson update = set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil());
 
         Document updatedDocument = getCollection()
                 .findOneAndUpdate(
-                        and(eq(ID, lockConfiguration.getName()), gt(LOCK_UNTIL, now), eq(LOCKED_BY, hostname)), update);
+                        and(eq(ID, lockConfiguration.getName()), gt(LOCK_UNTIL, now()), eq(LOCKED_BY, hostname)),
+                        update);
         if (updatedDocument != null) {
             return Optional.of(new MongoLock(lockConfiguration, this));
         } else {
@@ -135,14 +136,10 @@ public class MongoLockProvider implements ExtensibleLockProvider {
         return collection;
     }
 
-    private Instant now() {
-        return ClockProvider.now();
-    }
-
     private static final class MongoLock extends AbstractSimpleLock {
-        private final MongoLockProvider mongoLockProvider;
+        private final DbTimeMongoLockProvider mongoLockProvider;
 
-        private MongoLock(LockConfiguration lockConfiguration, MongoLockProvider mongoLockProvider) {
+        private MongoLock(LockConfiguration lockConfiguration, DbTimeMongoLockProvider mongoLockProvider) {
             super(lockConfiguration);
             this.mongoLockProvider = mongoLockProvider;
         }

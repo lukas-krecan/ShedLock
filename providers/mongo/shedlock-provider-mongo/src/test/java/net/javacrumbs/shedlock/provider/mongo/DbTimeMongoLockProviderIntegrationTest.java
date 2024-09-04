@@ -15,17 +15,26 @@ package net.javacrumbs.shedlock.provider.mongo;
 
 import java.util.Date;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import org.bson.BsonTimestamp;
 import org.bson.Document;
 
-class MongoLockProviderIntegrationTest extends AbstractMongoLockProviderIntegrationTest {
+class DbTimeMongoLockProviderIntegrationTest extends AbstractMongoLockProviderIntegrationTest {
 
     @Override
     protected ExtensibleLockProvider getLockProvider() {
-        return new MongoLockProvider(getMongo().getDatabase(DB_NAME));
+        return new DbTimeMongoLockProvider(getMongo().getDatabase(DB_NAME));
     }
 
     @Override
     protected Date getDate(Document lockDocument, String fieldName) {
-        return (Date) lockDocument.get(fieldName);
+        Object value = lockDocument.get(fieldName);
+        if (value instanceof Date) {
+            return (Date) value;
+        } else if (value instanceof BsonTimestamp) {
+            return new Date(((BsonTimestamp) value).getTime());
+        } else {
+            throw new UnsupportedOperationException(
+                    "Unsupported type: " + value.getClass().getName());
+        }
     }
 }
