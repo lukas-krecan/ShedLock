@@ -1055,9 +1055,10 @@ It is possible to use ShedLock without a framework
 LockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider);
 
 ...
-
-Instant lockAtMostUntil = Instant.now().plusSeconds(600);
-executor.executeWithLock(runnable, new LockConfiguration("lockName", lockAtMostUntil));
+Instant createdAt = Instant.now();
+Duration lockAtMostFor = Duration.ofSeconds(60);
+Duration lockAtLeastFor = Duration.ZERO;
+executor.executeWithLock(runnable, new LockConfiguration(createdAt, "lockName", lockAtMostFor, lockAtLeastFor));
 
 ```
 
