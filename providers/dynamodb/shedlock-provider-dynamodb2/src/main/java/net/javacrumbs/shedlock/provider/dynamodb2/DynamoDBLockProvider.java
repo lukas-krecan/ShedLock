@@ -78,6 +78,7 @@ public class DynamoDBLockProvider implements LockProvider {
     private final String hostname;
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
+    private final String partitionKeyName;
 
     /**
      * Uses DynamoDB to coordinate locks
@@ -88,8 +89,20 @@ public class DynamoDBLockProvider implements LockProvider {
      *            the lock table name
      */
     public DynamoDBLockProvider(@NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName) {
+        this(dynamoDbClient, tableName, ID);
+    }
+
+    /**
+     * Uses DynamoDB to coordinate locks
+     *
+     * @param dynamoDbClient   v2 of DynamoDB client
+     * @param tableName        the lock table name
+     * @param partitionKeyName the partitionKey name of table
+     */
+    public DynamoDBLockProvider(@NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName, @NonNull String partitionKeyName) {
         this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
+        this.partitionKeyName = requireNonNull(partitionKeyName, "partitionKeyName can not be null");
         this.hostname = Utils.getHostname();
     }
 
@@ -99,7 +112,7 @@ public class DynamoDBLockProvider implements LockProvider {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
-        Map<String, AttributeValue> key = singletonMap(ID, attr(lockConfiguration.getName()));
+        Map<String, AttributeValue> key = singletonMap(partitionKeyName, attr(lockConfiguration.getName()));
 
         Map<String, AttributeValue> attributeUpdates =
                 Map.of(":lockUntil", attr(lockUntilIso), ":lockedAt", attr(nowIso), ":lockedBy", attr(hostname));
@@ -121,7 +134,7 @@ public class DynamoDBLockProvider implements LockProvider {
             // 3. The lock document exists and lockUtil > now -
             // ConditionalCheckFailedException is thrown
             dynamoDbClient.updateItem(request);
-            return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, lockConfiguration));
+            return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, partitionKeyName, lockConfiguration));
         } catch (ConditionalCheckFailedException e) {
             // Condition failed. This means there was a lock with lockUntil > now.
             return Optional.empty();
@@ -139,11 +152,13 @@ public class DynamoDBLockProvider implements LockProvider {
     private static final class DynamoDBLock extends AbstractSimpleLock {
         private final DynamoDbClient dynamoDbClient;
         private final String tableName;
+        private final String partitionKeyName;
 
-        private DynamoDBLock(DynamoDbClient dynamoDbClient, String tableName, LockConfiguration lockConfiguration) {
+        private DynamoDBLock(DynamoDbClient dynamoDbClient, String tableName, String partitionKeyName, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.dynamoDbClient = dynamoDbClient;
             this.tableName = tableName;
+            this.partitionKeyName = partitionKeyName;
         }
 
         @Override
@@ -151,7 +166,7 @@ public class DynamoDBLockProvider implements LockProvider {
             // Set lockUntil to now or lockAtLeastUntil whichever is later
             String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
 
-            Map<String, AttributeValue> key = singletonMap(ID, attr(lockConfiguration.getName()));
+            Map<String, AttributeValue> key = singletonMap(partitionKeyName, attr(lockConfiguration.getName()));
 
             Map<String, AttributeValue> attributeUpdates = singletonMap(":lockUntil", attr(unlockTimeIso));
 
