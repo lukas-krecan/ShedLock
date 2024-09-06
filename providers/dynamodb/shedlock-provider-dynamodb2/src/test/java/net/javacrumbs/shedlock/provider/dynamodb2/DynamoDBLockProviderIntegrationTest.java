@@ -13,7 +13,6 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb2;
 
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.ID;
 import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCK_UNTIL;
@@ -46,6 +45,8 @@ import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 @Testcontainers
 public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+    private static final String ID = "_id2";
+
     @Container
     static final DynamoDbContainer dynamoDbContainer =
             new DynamoDbContainer("amazon/dynamodb-local:2.5.1").withExposedPorts(8000);
@@ -62,7 +63,8 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
                 ProvisionedThroughput.builder()
                         .readCapacityUnits(1L)
                         .writeCapacityUnits(1L)
-                        .build());
+                        .build(),
+                ID);
         while (getTableStatus(lockTable) != TableStatus.ACTIVE)
             ;
     }
@@ -105,7 +107,7 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
 
     @Override
     protected LockProvider getLockProvider() {
-        return new DynamoDBLockProvider(dynamodb, TABLE_NAME);
+        return new DynamoDBLockProvider(dynamodb, TABLE_NAME, ID);
     }
 
     @Override

@@ -45,15 +45,37 @@ public class DynamoDBUtils {
      *             attempted to recreate an existing table.
      */
     public static String createLockTable(DynamoDbClient ddbClient, String tableName, ProvisionedThroughput throughput) {
+        return createLockTable(ddbClient, tableName, throughput, ID);
+    }
+    /**
+     * Creates a locking table with the given name.
+     *
+     * <p>
+     * This method does not check if a table with the given name exists already.
+     *
+     * @param ddbClient
+     *            v2 of DynamoDBClient
+     * @param tableName
+     *            table to be used
+     * @param throughput
+     *            AWS {@link ProvisionedThroughput throughput requirements} for the
+     *            given lock setup
+     * @return the table name
+     * @throws ResourceInUseException
+     *             The operation conflicts with the resource's availability. You
+     *             attempted to recreate an existing table.
+     */
+    public static String createLockTable(
+            DynamoDbClient ddbClient, String tableName, ProvisionedThroughput throughput, String partitionKeyName) {
 
         CreateTableRequest request = CreateTableRequest.builder()
                 .tableName(tableName)
                 .keySchema(KeySchemaElement.builder()
-                        .attributeName(ID)
+                        .attributeName(partitionKeyName)
                         .keyType(KeyType.HASH)
                         .build())
                 .attributeDefinitions(AttributeDefinition.builder()
-                        .attributeName(ID)
+                        .attributeName(partitionKeyName)
                         .attributeType(ScalarAttributeType.S)
                         .build())
                 .provisionedThroughput(throughput)
