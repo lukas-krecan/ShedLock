@@ -22,7 +22,7 @@ class DbTimeMongoLockProviderIntegrationTest extends AbstractMongoLockProviderIn
 
     @Override
     protected ExtensibleLockProvider getLockProvider() {
-        return new DbTimeMongoLockProvider(getMongo().getDatabase(DB_NAME));
+        return new MongoLockProvider(getMongo().getDatabase(DB_NAME), true);
     }
 
     @Override
@@ -34,7 +34,7 @@ class DbTimeMongoLockProviderIntegrationTest extends AbstractMongoLockProviderIn
             return new Date(((BsonTimestamp) value).getTime());
         } else {
             throw new UnsupportedOperationException(
-                    "Unsupported type: " + value.getClass().getName());
+                    "Unsupported type: " + value.getClass().getName() + " for value '" + value + "'");
         }
     }
 }
