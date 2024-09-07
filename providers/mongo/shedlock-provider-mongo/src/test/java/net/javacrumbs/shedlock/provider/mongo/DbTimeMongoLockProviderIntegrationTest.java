@@ -22,7 +22,7 @@ class DbTimeMongoLockProviderIntegrationTest extends AbstractMongoLockProviderIn
 
     @Override
     protected ExtensibleLockProvider getLockProvider() {
-        return new DbTimeMongoLockProvider(getMongo().getDatabase(DB_NAME));
+        return new MongoLockProvider(getMongo().getDatabase(DB_NAME), true);
     }
 
     @Override
