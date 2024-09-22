@@ -1,0 +1,13 @@
+{
+  "id" : "fa58f10a-1df3-45e2-a49c-2bf06b17d168",
+  "version" : 1,
+  "createdAt" : "2018-09-11T14:12:05.512Z",
+  "lastModifiedAt" : "2018-09-11T14:12:05.512Z",
+  "container" : "lock",
+  "key" : "lockName",
+  "value" : {
+    "lockUntil" : "$lockUntil",
+    "lockedAt" : "$lockedAt",
+    "lockedBy" : "hostname"
+  }
+}

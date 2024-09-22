@@ -1,0 +1,10 @@
+{
+  "statusCode": 404,
+  "message": "The CustomObject with ID '(version,versionKey)' was not found.",
+  "errors": [
+    {
+      "code": "InvalidSubject",
+      "message": "The CustomObject with ID '(version,versionKey)' was not found."
+    }
+  ]
+}
