@@ -68,9 +68,9 @@ class CommercetoolsLockProviderIntegrationTest {
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(lockName1));
         assertThat(lock).isNotEmpty();
 
-        assertLocked(lockName1);
+        assertLocked();
         lock.get().unlock();
-        assertUnlocked(lockName1);
+        assertUnlocked();
     }
 
     @Test
