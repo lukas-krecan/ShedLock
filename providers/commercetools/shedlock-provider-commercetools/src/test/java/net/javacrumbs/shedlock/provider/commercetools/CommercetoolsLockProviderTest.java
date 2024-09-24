@@ -37,43 +37,57 @@ class CommercetoolsLockProviderTest {
     @Test
     void doesNotLockIfLockIsAlreadyObtained() {
         Instant now = Instant.now();
-        setupLock("myLockName", createCustomObject(new LockValue(now.minusSeconds(1), Instant.now().plusSeconds(60), "host1"), 1L));
+        setupLock(
+                "myLockName",
+                createCustomObject(
+                        new LockValue(now.minusSeconds(1), Instant.now().plusSeconds(60), "host1"), 1L));
 
-        Optional<SimpleLock> lock = lockProvider.lock(lockConfig("myLockName", Duration.ofMillis(200), Duration.ofMillis(200).dividedBy(2)));
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig(
+                "myLockName", Duration.ofMillis(200), Duration.ofMillis(200).dividedBy(2)));
         assertThat(lock).isEmpty();
     }
 
     @Test
     void lockIfLockIsNotFound() {
-        when(projectApiRoot.customObjects()
-            .withContainerAndKey("lock", "myLockName")
-            .get()
-            .executeBlocking()
-            .getBody()).thenThrow(NotFoundException.class);
+        when(projectApiRoot
+                        .customObjects()
+                        .withContainerAndKey("lock", "myLockName")
+                        .get()
+                        .executeBlocking()
+                        .getBody())
+                .thenThrow(NotFoundException.class);
 
-        Optional<SimpleLock> lock = lockProvider.lock(lockConfig("myLockName", Duration.ofMillis(200), Duration.ofMillis(200).dividedBy(2)));
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig(
+                "myLockName", Duration.ofMillis(200), Duration.ofMillis(200).dividedBy(2)));
         assertThat(lock).isPresent();
     }
 
     @Test
     void doesNotLockIfConcurrentModification() {
         Instant now = Instant.now();
-        setupLock("myLockName", createCustomObject(new LockValue(now.minusSeconds(1), Instant.now().plusSeconds(60), "host1"), 1L));
-        when(projectApiRoot.customObjects()
-            .post(Mockito.any(CustomObjectDraft.class))
-            .executeBlocking()).thenThrow(ConcurrentModificationException.class);
+        setupLock(
+                "myLockName",
+                createCustomObject(
+                        new LockValue(now.minusSeconds(1), Instant.now().plusSeconds(60), "host1"), 1L));
+        when(projectApiRoot
+                        .customObjects()
+                        .post(Mockito.any(CustomObjectDraft.class))
+                        .executeBlocking())
+                .thenThrow(ConcurrentModificationException.class);
 
-        Optional<SimpleLock> lock = lockProvider.lock(lockConfig("myLockName", Duration.ofMillis(200), Duration.ofMillis(200).dividedBy(2)));
+        Optional<SimpleLock> lock = lockProvider.lock(lockConfig(
+                "myLockName", Duration.ofMillis(200), Duration.ofMillis(200).dividedBy(2)));
         assertThat(lock).isEmpty();
     }
 
     private void setupLock(String lockName, CustomObject customObject) {
-        when(projectApiRoot.customObjects()
-            .withContainerAndKey("lock", lockName)
-            .get()
-            .executeBlocking()
-            .getBody())
-            .thenReturn(customObject);
+        when(projectApiRoot
+                        .customObjects()
+                        .withContainerAndKey("lock", lockName)
+                        .get()
+                        .executeBlocking()
+                        .getBody())
+                .thenReturn(customObject);
     }
 
     private LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
@@ -82,8 +96,10 @@ class CommercetoolsLockProviderTest {
 
     private CustomObject createCustomObject(LockValue lockValue, Long version) {
         var customObject = mock(CustomObject.class);
-        lenient().when(customObject.getValue()).thenReturn(JsonUtils.createObjectMapper().convertValue(lockValue, new TypeReference<LinkedHashMap<String, String>>() {
-        }));
+        lenient()
+                .when(customObject.getValue())
+                .thenReturn(JsonUtils.createObjectMapper()
+                        .convertValue(lockValue, new TypeReference<LinkedHashMap<String, String>>() {}));
         lenient().when(customObject.getVersion()).thenReturn(version);
         return customObject;
     }

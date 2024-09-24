@@ -15,5 +15,4 @@ package net.javacrumbs.shedlock.provider.commercetools;
 
 import java.time.Instant;
 
-record LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
-}
+record LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {}

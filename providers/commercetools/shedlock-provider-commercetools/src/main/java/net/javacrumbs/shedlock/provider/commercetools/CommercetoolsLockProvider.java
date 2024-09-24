@@ -19,9 +19,9 @@ import static net.javacrumbs.shedlock.support.Utils.getHostname;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
-import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vrap.rmf.base.client.ApiHttpException;
+import io.vrap.rmf.base.client.DeserializationException;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.time.Instant;
@@ -63,7 +63,7 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
  * </ol>
  */
 public class CommercetoolsLockProvider implements LockProvider {
-    private static final String LOCK_CONTAINER = "lock";
+    static final String LOCK_CONTAINER = "lock";
 
     private final ProjectApiRoot projectApiRoot;
     private final String hostname;
@@ -80,13 +80,10 @@ public class CommercetoolsLockProvider implements LockProvider {
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         try {
             Instant now = now();
-            VersionedLockValue oldVal = getExistingLock(lockConfiguration);
+            LockValue oldVal = getExistingLock(lockConfiguration);
             LockValue newVal = new LockValue(now, lockConfiguration.getLockAtMostUntil(), hostname);
-            if (oldVal == null) {
-                createOrUpdateLockValue(lockConfiguration.getName(), null, newVal);
-                return Optional.of(new CommercetoolsSimpleLock(lockConfiguration));
-            } else if (!now.isBefore(oldVal.lockValue().lockUntil())) {
-                createOrUpdateLockValue(lockConfiguration.getName(), oldVal.version(), newVal);
+            if (oldVal == null || !now.isBefore(oldVal.lockUntil())) {
+                createOrUpdateLockValue(lockConfiguration.getName(), newVal);
                 return Optional.of(new CommercetoolsSimpleLock(lockConfiguration));
             }
             return Optional.empty();
@@ -97,27 +94,27 @@ public class CommercetoolsLockProvider implements LockProvider {
         }
     }
 
-    private VersionedLockValue getExistingLock(LockConfiguration lockConfiguration) {
+    private LockValue getExistingLock(LockConfiguration lockConfiguration) {
         try {
-            CustomObject responseBody = projectApiRoot.customObjects()
-                .withContainerAndKey(LOCK_CONTAINER, lockConfiguration.getName()).get()
-                .executeBlocking().getBody();
-            LockValue lockValue = objectMapper.convertValue(responseBody.getValue(), LockValue.class);
-            return new VersionedLockValue(responseBody.getVersion(), lockValue);
-        } catch (NotFoundException ex) {
+            CustomObject responseBody = projectApiRoot
+                .customObjects()
+                .withContainerAndKey(LOCK_CONTAINER, lockConfiguration.getName())
+                .get()
+                .executeBlocking()
+                .getBody();
+            return objectMapper.convertValue(responseBody.getValue(), LockValue.class);
+        } catch (NotFoundException | DeserializationException ex) {
             return null;
         }
     }
 
-    private void createOrUpdateLockValue(String lockName, Long existingVersion, LockValue lockValue) {
-        CustomObjectDraftBuilder customObjectDraftBuilder = CustomObjectDraft.builder()
+    private void createOrUpdateLockValue(String lockName, LockValue lockValue) {
+        CustomObjectDraft customObjectDraft = CustomObjectDraft.builder()
             .container(LOCK_CONTAINER)
             .key(lockName)
-            .value(lockValue);
-        if (existingVersion != null) {
-            customObjectDraftBuilder.version(existingVersion);
-        }
-        projectApiRoot.customObjects().post(customObjectDraftBuilder.build()).executeBlocking();
+            .value(lockValue)
+            .build();
+        projectApiRoot.customObjects().post(customObjectDraft).executeBlocking();
     }
 
     private final class CommercetoolsSimpleLock extends AbstractSimpleLock {
@@ -129,9 +126,11 @@ public class CommercetoolsLockProvider implements LockProvider {
         @Override
         public void doUnlock() {
             try {
-                VersionedLockValue existingLockValue = getExistingLock(lockConfiguration);
+                LockValue existingLockValue = getExistingLock(lockConfiguration);
                 if (existingLockValue != null) {
-                    createOrUpdateLockValue(lockConfiguration.getName(), existingLockValue.version(), new LockValue(existingLockValue.lockValue().lockedAt(), lockConfiguration.getUnlockTime(), hostname));
+                    createOrUpdateLockValue(
+                        lockConfiguration.getName(),
+                        new LockValue(existingLockValue.lockedAt(), lockConfiguration.getUnlockTime(), hostname));
                 } else {
                     throw new LockException("Existing lock does not exist");
                 }
@@ -140,7 +139,5 @@ public class CommercetoolsLockProvider implements LockProvider {
                 throw new LockException("Unexpected exception occurred", e);
             }
         }
-
-
     }
 }

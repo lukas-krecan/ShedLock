@@ -1,151 +1,93 @@
 package net.javacrumbs.shedlock.provider.commercetools;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static net.javacrumbs.shedlock.provider.commercetools.CommercetoolsLockProvider.LOCK_CONTAINER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
+import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.defaultconfig.ApiRootBuilder;
-import io.vrap.rmf.base.client.oauth2.ClientCredentials;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.jupiter.api.AfterEach;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.AuthenticationToken;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.matchers.Times;
-import org.testcontainers.containers.MockServerContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-class CommercetoolsLockProviderIntegrationTest {
-    private String lockName1;
-    public static final DockerImageName MOCKSERVER_IMAGE = DockerImageName
-        .parse("mockserver/mockserver")
-        .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
+class CommercetoolsLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+    static final int COMMERCETOOLS_DEFAULT_PORT = 8989;
 
     @Container
-    public MockServerContainer mockServer = new MockServerContainer(MOCKSERVER_IMAGE);
+    private static final CommercetoolsContainer container = new CommercetoolsContainer();
 
-    private MockServerClient mockServerClient;
-    private String mockServerHostAndPort;
+    private ProjectApiRoot projectApiRoot;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
-    void setUp() throws IOException {
-        lockName1 = UUID.randomUUID().toString();
-        mockServerHostAndPort = "http://" + mockServer.getHost() + ":" + mockServer.getServerPort();
-        mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
-        mockServerClient
-            .when(request().withPath("/auth"))
-            .respond(response().withBody(readResponseFromFile("./token.json")));
+    void setUp() {
+        objectMapper = JsonUtils.createObjectMapper();
+        var token = new AuthenticationToken();
+        token.setTokenType("Bearer");
+        token.setExpiresIn(172800L);
+        token.setAccessToken("P7K6uFOgoWBdlwj6nO08Dg==");
+        projectApiRoot = ApiRootBuilder.of()
+            .withStaticTokenFlow(token)
+            .withApiBaseUrl(container.getApiBaseUrl())
+            .build("my-project");
     }
 
-
-    @AfterEach
-    void tearDown() {
-        mockServerClient.reset();
-        mockServerClient.close();
+    @Override
+    protected LockProvider getLockProvider() {
+        return new CommercetoolsLockProvider(projectApiRoot);
     }
 
-    @Test
-    public void shouldCreateLock() throws IOException {
-        Instant now = now();
-        mockRequestLockNotFound(lockName1);
-        mockRequestLockCreateOrUpdate();
-        mockRequestLockFound(lockName1, now, now.plusSeconds(10));
-
-        Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(lockName1));
-        assertThat(lock).isNotEmpty();
-
-        assertLocked();
-        lock.get().unlock();
-        assertUnlocked();
+    @Override
+    protected void assertUnlocked(String lockName) {
+        CustomObject responseBody = readLockValue(lockName);
+        LockValue lockValue = objectMapper.convertValue(responseBody.getValue(), LockValue.class);
+        assertThat(lockValue.lockUntil()).isBeforeOrEqualTo((now()));
+        assertThat(lockValue.lockedAt()).isBeforeOrEqualTo(now());
+        assertThat(lockValue.lockedBy()).isNotBlank();
+        assertThat(responseBody.getKey()).isEqualTo(lockName);
     }
 
-    @Test
-    public void shouldNotReturnSecondLock() throws IOException {
-        Instant now = now();
-        mockRequestLockFound(lockName1, now, now.plusSeconds(10));
-
-        CommercetoolsLockProvider lockProvider = getLockProvider();
-        assertThat(lockProvider.lock(lockConfig(lockName1))).isEmpty();
+    @Override
+    protected void assertLocked(String lockName) {
+        CustomObject responseBody = readLockValue(lockName);
+        LockValue lockValue = objectMapper.convertValue(responseBody.getValue(), LockValue.class);
+        assertThat(lockValue.lockUntil()).isAfter((now()));
+        assertThat(lockValue.lockedAt()).isBeforeOrEqualTo(now());
+        assertThat(lockValue.lockedBy()).isNotBlank();
+        assertThat(responseBody.getKey()).isEqualTo(lockName);
     }
 
-    @Test
-    public void shouldCreateTwoIndependentLocks() throws IOException {
-        mockRequestLockNotFound(lockName1);
-        mockRequestLockNotFound("name2");
-        mockRequestLockCreateOrUpdate();
-
-        Optional<SimpleLock> lock1 = getLockProvider().lock(lockConfig(lockName1));
-        assertThat(lock1).isNotEmpty();
-
-        Optional<SimpleLock> lock2 = getLockProvider().lock(lockConfig("name2"));
-        assertThat(lock2).isNotEmpty();
+    private CustomObject readLockValue(String lockName) {
+        return projectApiRoot
+            .customObjects()
+            .withContainerAndKey(LOCK_CONTAINER, lockName)
+            .get()
+            .executeBlocking()
+            .getBody();
     }
 
+    private static class CommercetoolsContainer extends GenericContainer<CommercetoolsContainer> {
+        CommercetoolsContainer() {
+            super("labdigital/commercetools-mock-server");
+            withExposedPorts(COMMERCETOOLS_DEFAULT_PORT);
+            setImage(prepareImage(getDockerImageName()));
+        }
 
-    private void mockRequestLockFound(String lockName, Instant lockedAt, Instant lockUntil) throws IOException {
-        mockServerClient
-            .when(request().withMethod("GET").withPath("/integration-test/custom-objects/lock/" + lockName), Times.exactly(1))
-            .respond(response()
-                .withBody(readResponseFromFile("./lock.json")
-                    .replace("$lockUntil", lockUntil.toString())
-                    .replace("$lockedAt", lockedAt.toString())));
-    }
+        private ImageFromDockerfile prepareImage(String imageName) {
+            return new ImageFromDockerfile().withDockerfileFromBuilder(builder -> builder.from(imageName));
+        }
 
-    private void mockRequestLockCreateOrUpdate() throws IOException {
-        mockServerClient
-            .when(request().withMethod("POST").withPath("/integration-test/custom-objects"))
-            .respond(response().withBody(readResponseFromFile("./lock.json")));
-    }
-
-    private void mockRequestLockNotFound(String lockName) throws IOException {
-        mockServerClient
-            .when(request().withMethod("GET").withPath("/integration-test/custom-objects/lock/" + lockName), Times.exactly(1))
-            .respond(response()
-                .withStatusCode(404)
-                .withBody(readResponseFromFile("./not-found.json")));
-    }
-
-    private CommercetoolsLockProvider getLockProvider() {
-        return new CommercetoolsLockProvider(ApiRootBuilder.of()
-            .defaultClient(ClientCredentials.of()
-                .withClientId("test")
-                .withClientSecret("test")
-                .build(), mockServerHostAndPort + "/auth", mockServerHostAndPort)
-            .build("integration-test"));
-    }
-
-    private void assertUnlocked() {
-        mockServerClient.verify(request().withPath("/integration-test/custom-objects"));
-    }
-
-    private void assertLocked() {
-        mockServerClient.verify(request().withPath("/integration-test/custom-objects"));
-    }
-
-    private String readResponseFromFile(String filename) throws IOException {
-        final File file = new File(getClass().getClassLoader().getResource(filename).getFile());
-        return Files.readString(file.toPath(), StandardCharsets.UTF_8);
-    }
-
-    private static LockConfiguration lockConfig(String name) {
-        return lockConfig(name, Duration.of(5, MINUTES), Duration.ZERO);
-    }
-
-    private static LockConfiguration lockConfig(String name, Duration lockAtMostFor, Duration lockAtLeastFor) {
-        return new LockConfiguration(now(), name, lockAtMostFor, lockAtLeastFor);
+        public String getApiBaseUrl() {
+            return "http://" + getHost() + ":" + getFirstMappedPort();
+        }
     }
 }
