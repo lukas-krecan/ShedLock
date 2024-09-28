@@ -1,18 +1,17 @@
 package net.javacrumbs.shedlock.provider.commercetools;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
-import static net.javacrumbs.shedlock.provider.commercetools.CommercetoolsLockProvider.LOCK_CONTAINER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.defaultconfig.ApiRootBuilder;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vrap.rmf.base.client.AuthenticationToken;
+import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,19 +24,20 @@ class CommercetoolsLockProviderIntegrationTest extends AbstractLockProviderInteg
     @Container
     private static final CommercetoolsContainer container = new CommercetoolsContainer();
 
-    private ProjectApiRoot projectApiRoot;
-    private ObjectMapper objectMapper;
+    private static ProjectApiRoot projectApiRoot;
+    private static ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         objectMapper = JsonUtils.createObjectMapper();
-        var token = new AuthenticationToken();
-        token.setTokenType("Bearer");
-        token.setExpiresIn(172800L);
-        token.setAccessToken("P7K6uFOgoWBdlwj6nO08Dg==");
         projectApiRoot = ApiRootBuilder.of()
-            .withStaticTokenFlow(token)
-            .withApiBaseUrl(container.getApiBaseUrl())
+            .defaultClient(
+                ClientCredentials.of()
+                    .withClientId("myId")
+                    .withClientSecret("mySecret")
+                    .build(),
+                container.getApiBaseUrl() + "/oauth/token",
+                container.getApiBaseUrl())
             .build("my-project");
     }
 
@@ -69,7 +69,7 @@ class CommercetoolsLockProviderIntegrationTest extends AbstractLockProviderInteg
     private CustomObject readLockValue(String lockName) {
         return projectApiRoot
             .customObjects()
-            .withContainerAndKey(LOCK_CONTAINER, lockName)
+            .withContainerAndKey("lock", lockName)
             .get()
             .executeBlocking()
             .getBody();
