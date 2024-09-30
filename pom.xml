@@ -86,7 +86,7 @@
         <logback.ver>1.5.8</logback.ver>
         <awaitility.ver>4.2.2</awaitility.ver>
         <assertj.ver>3.26.3</assertj.ver>
-        <mockito.ver>5.14.0</mockito.ver>
+        <mockito.ver>5.14.1</mockito.ver>
         <slf4j.ver>2.0.16</slf4j.ver>
         <fork.count>1</fork.count>
     </properties>
