@@ -47,7 +47,7 @@
             <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
             <!-- Maintained in as pgjdbc project with own release cycle -->
-            <version>1.0.6.RELEASE</version>
+            <version>1.0.7.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
