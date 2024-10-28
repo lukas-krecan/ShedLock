@@ -44,8 +44,6 @@ public class FuzzTester {
     private static final int THREADS = 8;
     public static final int SHORT_ITERATION = 10;
 
-    private final LockProvider lockProvider;
-
     private final Duration sleepFor;
     private final Duration lockAtMostFor;
     private final int iterations;
@@ -59,7 +57,6 @@ public class FuzzTester {
     }
 
     public FuzzTester(LockProvider lockProvider, Duration sleepFor, Duration lockAtMostFor, int iterations) {
-        this.lockProvider = lockProvider;
         this.sleepFor = sleepFor;
         this.lockAtMostFor = lockAtMostFor;
         this.iterations = iterations;
