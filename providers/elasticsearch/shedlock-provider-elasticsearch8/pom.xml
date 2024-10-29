@@ -14,7 +14,7 @@
     <properties>
         <elasticsearch.version>8.15.3</elasticsearch.version>
         <jakarta.json-api.version>2.1.3</jakarta.json-api.version>
-        <jackson.version>2.18.0</jackson.version>
+        <jackson.version>2.18.1</jackson.version>
     </properties>
 
     <dependencies>
