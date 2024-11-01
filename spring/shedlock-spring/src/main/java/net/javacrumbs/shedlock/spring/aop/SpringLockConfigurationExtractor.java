@@ -127,7 +127,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     private String getName(AnnotationData annotation, Method method, Object[] parameterValues) {
-        String name = parseSpEL(annotation.getName(), method, parameterValues);
+        String name = parseSpEL(annotation.name(), method, parameterValues);
         if (embeddedValueResolver != null) {
             return embeddedValueResolver.resolveStringValue(name);
         } else {
@@ -159,16 +159,16 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
     Duration getLockAtMostFor(AnnotationData annotation) {
         return getValue(
-                annotation.getLockAtMostFor(),
-                annotation.getLockAtMostForString(),
+                annotation.lockAtMostFor(),
+                annotation.lockAtMostForString(),
                 this.defaultLockAtMostFor,
                 "lockAtMostForString");
     }
 
     Duration getLockAtLeastFor(AnnotationData annotation) {
         return getValue(
-                annotation.getLockAtLeastFor(),
-                annotation.getLockAtLeastForString(),
+                annotation.lockAtLeastFor(),
+                annotation.lockAtLeastForString(),
                 this.defaultLockAtLeastFor,
                 "lockAtLeastForString");
     }
@@ -198,7 +198,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     @Nullable
-    AnnotationData findAnnotation(Object target, Method method) {
+    static AnnotationData findAnnotation(Object target, Method method) {
         AnnotationData annotation = findAnnotation(method);
         if (annotation != null) {
             return annotation;
@@ -215,11 +215,16 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     @Nullable
-    private AnnotationData findAnnotation(Method method) {
+    private static AnnotationData findAnnotation(Method method) {
         SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
         if (annotation != null) {
             return new AnnotationData(
-                    annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
+                    annotation.name(),
+                    -1,
+                    annotation.lockAtMostFor(),
+                    -1,
+                    annotation.lockAtLeastFor(),
+                    annotation.lockProviderBeanName());
         }
         return null;
     }
@@ -228,46 +233,13 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         return annotation != null;
     }
 
-    static class AnnotationData {
-        private final String name;
-        private final long lockAtMostFor;
-        private final String lockAtMostForString;
-        private final long lockAtLeastFor;
-        private final String lockAtLeastForString;
-
-        private AnnotationData(
-                String name,
-                long lockAtMostFor,
-                String lockAtMostForString,
-                long lockAtLeastFor,
-                String lockAtLeastForString) {
-            this.name = name;
-            this.lockAtMostFor = lockAtMostFor;
-            this.lockAtMostForString = lockAtMostForString;
-            this.lockAtLeastFor = lockAtLeastFor;
-            this.lockAtLeastForString = lockAtLeastForString;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public long getLockAtMostFor() {
-            return lockAtMostFor;
-        }
-
-        public String getLockAtMostForString() {
-            return lockAtMostForString;
-        }
-
-        public long getLockAtLeastFor() {
-            return lockAtLeastFor;
-        }
-
-        public String getLockAtLeastForString() {
-            return lockAtLeastForString;
-        }
-    }
+    record AnnotationData(
+            String name,
+            long lockAtMostFor,
+            String lockAtMostForString,
+            long lockAtLeastFor,
+            String lockAtLeastForString,
+            String lockProviderBeanName) {}
 
     /**
      * Not using {@link StandardReflectionParameterNameDiscoverer} as it is calling executable.hasRealParameterData()

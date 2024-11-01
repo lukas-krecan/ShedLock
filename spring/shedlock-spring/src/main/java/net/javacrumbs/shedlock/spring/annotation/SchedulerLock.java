@@ -48,4 +48,6 @@ public @interface SchedulerLock {
      * {@link java.time.Duration#parse(CharSequence)}, for example PT30S.
      */
     String lockAtLeastFor() default "";
+
+    String lockProviderBeanName() default "";
 }
