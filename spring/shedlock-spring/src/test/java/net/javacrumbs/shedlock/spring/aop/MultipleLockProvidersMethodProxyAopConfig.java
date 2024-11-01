@@ -18,6 +18,7 @@ import static org.mockito.Mockito.mock;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.LockProviderBeanName;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,12 +55,14 @@ public class MultipleLockProvidersMethodProxyAopConfig {
             return called.get();
         }
 
-        @SchedulerLock(name = "method1", lockProviderBeanName = "lockProvider1")
+        @SchedulerLock(name = "method1")
+        @LockProviderBeanName("lockProvider1")
         public void method1() {
             called.set(true);
         }
 
-        @SchedulerLock(name = "method2", lockProviderBeanName = "lockProvider2")
+        @SchedulerLock(name = "method2")
+        @LockProviderBeanName("lockProvider2")
         public void method2() {
             called.set(true);
         }

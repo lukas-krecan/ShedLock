@@ -16,6 +16,7 @@ package net.javacrumbs.shedlock.spring.aop;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -199,7 +200,17 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
     @Nullable
     static AnnotationData findAnnotation(Object target, Method method) {
-        AnnotationData annotation = findAnnotation(method);
+        SchedulerLock annotation = findAnnotation(target, method, SchedulerLock.class);
+        if (annotation != null) {
+            return new AnnotationData(
+                    annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
+        }
+        return null;
+    }
+
+    @Nullable
+    static <A extends Annotation> A findAnnotation(Object target, Method method, Class<A> annotationType) {
+        A annotation = AnnotatedElementUtils.getMergedAnnotation(method, annotationType);
         if (annotation != null) {
             return annotation;
         } else {
@@ -207,26 +218,11 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
             Class<?> targetClass = AopUtils.getTargetClass(target);
             try {
                 Method methodOnTarget = targetClass.getMethod(method.getName(), method.getParameterTypes());
-                return findAnnotation(methodOnTarget);
+                return AnnotatedElementUtils.getMergedAnnotation(methodOnTarget, annotationType);
             } catch (NoSuchMethodException e) {
                 return null;
             }
         }
-    }
-
-    @Nullable
-    private static AnnotationData findAnnotation(Method method) {
-        SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
-        if (annotation != null) {
-            return new AnnotationData(
-                    annotation.name(),
-                    -1,
-                    annotation.lockAtMostFor(),
-                    -1,
-                    annotation.lockAtLeastFor(),
-                    annotation.lockProviderBeanName());
-        }
-        return null;
     }
 
     private boolean shouldLock(@Nullable AnnotationData annotation) {
@@ -238,8 +234,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
             long lockAtMostFor,
             String lockAtMostForString,
             long lockAtLeastFor,
-            String lockAtLeastForString,
-            String lockProviderBeanName) {}
+            String lockAtLeastForString) {}
 
     /**
      * Not using {@link StandardReflectionParameterNameDiscoverer} as it is calling executable.hasRealParameterData()
