@@ -44,6 +44,7 @@ public class MultipleLockProvidersMethodProxyAopConfig {
         return new TestBean();
     }
 
+    @LockProviderBeanName("lockProvider1") // Default for the class
     static class TestBean {
         private final AtomicBoolean called = new AtomicBoolean(false);
 
@@ -56,13 +57,12 @@ public class MultipleLockProvidersMethodProxyAopConfig {
         }
 
         @SchedulerLock(name = "method1")
-        @LockProviderBeanName("lockProvider1")
         public void method1() {
             called.set(true);
         }
 
         @SchedulerLock(name = "method2")
-        @LockProviderBeanName("lockProvider2")
+        @LockProviderBeanName("lockProvider2") // Override the default
         public void method2() {
             called.set(true);
         }

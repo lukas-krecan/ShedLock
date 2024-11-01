@@ -14,7 +14,6 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
-import net.javacrumbs.shedlock.spring.LockProviderSupplier;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;

@@ -20,7 +20,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
-import net.javacrumbs.shedlock.spring.LockProviderSupplier;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.aopalliance.aop.Advice;
