@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.aop;
+package net.javacrumbs.shedlock.spring.aop.multiplelockproviders;
 
 import static org.mockito.Mockito.mock;
 
@@ -40,12 +40,22 @@ public class MultipleLockProvidersMethodProxyAopConfig {
     }
 
     @Bean
-    TestBean testBean() {
-        return new TestBean();
+    public LockProvider lockProvider3() {
+        return mock();
     }
 
-    @LockProviderBeanName("lockProvider1") // Default for the class
-    static class TestBean {
+    @Bean
+    TestBean1 testBean1() {
+        return new TestBean1();
+    }
+
+    @Bean
+    TestBean2 testBean2() {
+        return new TestBean2();
+    }
+
+    // LockProvider name taken from package-info.java
+    static class TestBean1 {
         private final AtomicBoolean called = new AtomicBoolean(false);
 
         void reset() {
@@ -60,10 +70,28 @@ public class MultipleLockProvidersMethodProxyAopConfig {
         public void method1() {
             called.set(true);
         }
+    }
+
+    @LockProviderBeanName("lockProvider2") // Default for the class
+    static class TestBean2 {
+        private final AtomicBoolean called = new AtomicBoolean(false);
+
+        void reset() {
+            called.set(false);
+        }
+
+        boolean wasMethodCalled() {
+            return called.get();
+        }
 
         @SchedulerLock(name = "method2")
-        @LockProviderBeanName("lockProvider2") // Override the default
         public void method2() {
+            called.set(true);
+        }
+
+        @SchedulerLock(name = "method3")
+        @LockProviderBeanName("lockProvider3") // Override the default
+        public void method3() {
             called.set(true);
         }
     }

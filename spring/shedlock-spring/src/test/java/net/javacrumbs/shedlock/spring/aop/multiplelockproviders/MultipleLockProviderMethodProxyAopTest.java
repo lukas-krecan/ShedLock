@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.spring.aop;
+package net.javacrumbs.shedlock.spring.aop.multiplelockproviders;
 
 import static net.javacrumbs.shedlock.spring.TestUtils.hasParams;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.spring.aop.MultipleLockProvidersMethodProxyAopConfig.TestBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,32 +41,51 @@ public class MultipleLockProviderMethodProxyAopTest {
     private LockProvider lockProvider2;
 
     @Autowired
-    private TestBean testBean;
+    private LockProvider lockProvider3;
 
-    private final SimpleLock simpleLock1 = mock(SimpleLock.class);
-    private final SimpleLock simpleLock2 = mock(SimpleLock.class);
+
+    @Autowired
+    private MultipleLockProvidersMethodProxyAopConfig.TestBean1 testBean1;
+
+    @Autowired
+    private MultipleLockProvidersMethodProxyAopConfig.TestBean2 testBean2;
+
+    private final SimpleLock simpleLock1 = mock();
+    private final SimpleLock simpleLock2 = mock();
+    private final SimpleLock simpleLock3 = mock();
 
     @BeforeEach
     public void prepareMocks() {
-        Mockito.reset(lockProvider1, lockProvider2, simpleLock1, simpleLock2);
+        Mockito.reset(lockProvider1, lockProvider2, lockProvider3, simpleLock1, simpleLock2, simpleLock3);
         when(lockProvider1.lock(any())).thenReturn(Optional.of(simpleLock1));
         when(lockProvider2.lock(any())).thenReturn(Optional.of(simpleLock2));
-        testBean.reset();
+        when(lockProvider3.lock(any())).thenReturn(Optional.of(simpleLock3));
+        testBean1.reset();
+        testBean2.reset();
     }
 
     @Test
-    public void shouldCallLockProvider1OnDirectCall() {
-        testBean.method1();
+    public void shouldCallLockProviderDefinedOnPackage() {
+        testBean1.method1();
         verify(lockProvider1).lock(hasParams("method1", 60_000, 0));
         verify(simpleLock1).unlock();
-        assertThat(testBean.wasMethodCalled()).isTrue();
+        assertThat(testBean1.wasMethodCalled()).isTrue();
     }
 
     @Test
-    public void shouldCallLockProvider2OnDirectCall() {
-        testBean.method2();
+    public void shouldCallLockProviderDefinedOnClass() {
+        testBean2.method2();
         verify(lockProvider2).lock(hasParams("method2", 60_000, 0));
         verify(simpleLock2).unlock();
-        assertThat(testBean.wasMethodCalled()).isTrue();
+        assertThat(testBean2.wasMethodCalled()).isTrue();
     }
+
+    @Test
+    public void shouldCallLockProviderDefinedOnMethod() {
+        testBean2.method3();
+        verify(lockProvider3).lock(hasParams("method3", 60_000, 0));
+        verify(simpleLock3).unlock();
+        assertThat(testBean2.wasMethodCalled()).isTrue();
+    }
+
 }
