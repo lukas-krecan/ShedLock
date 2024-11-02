@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
-import net.javacrumbs.shedlock.spring.annotation.LockProviderBeanName;
+import net.javacrumbs.shedlock.spring.annotation.LockProviderToUse;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -72,7 +72,7 @@ public class MultipleLockProvidersMethodProxyAopConfig {
         }
     }
 
-    @LockProviderBeanName("lockProvider2") // Default for the class
+    @LockProviderToUse("lockProvider2") // Default for the class
     static class TestBean2 {
         private final AtomicBoolean called = new AtomicBoolean(false);
 
@@ -90,7 +90,7 @@ public class MultipleLockProvidersMethodProxyAopConfig {
         }
 
         @SchedulerLock(name = "method3")
-        @LockProviderBeanName("lockProvider3") // Override the default
+        @LockProviderToUse("lockProvider3") // Override the default
         public void method3() {
             called.set(true);
         }

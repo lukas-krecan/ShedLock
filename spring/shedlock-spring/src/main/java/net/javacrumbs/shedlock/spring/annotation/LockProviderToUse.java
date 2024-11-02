@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.PACKAGE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface LockProviderBeanName {
+public @interface LockProviderToUse {
     String value();
 }

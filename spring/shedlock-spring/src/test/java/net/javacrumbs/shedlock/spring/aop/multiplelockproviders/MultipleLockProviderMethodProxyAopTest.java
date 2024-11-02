@@ -43,7 +43,6 @@ public class MultipleLockProviderMethodProxyAopTest {
     @Autowired
     private LockProvider lockProvider3;
 
-
     @Autowired
     private MultipleLockProvidersMethodProxyAopConfig.TestBean1 testBean1;
 
@@ -87,5 +86,4 @@ public class MultipleLockProviderMethodProxyAopTest {
         verify(simpleLock3).unlock();
         assertThat(testBean2.wasMethodCalled()).isTrue();
     }
-
 }

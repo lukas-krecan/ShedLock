@@ -12,13 +12,10 @@ public class MethodProxyAopFailureTest {
     @Test
     public void shouldFailOnStartupWithoutLockProvider() {
         assertThatThrownBy(() -> new AnnotationConfigApplicationContext(BeanCreationException.class))
-            .isInstanceOf(BeanCreationException.class);
+                .isInstanceOf(BeanCreationException.class);
     }
 
     @Configuration
     @EnableSchedulerLock(defaultLockAtMostFor = "60s")
-    public static class NoLockProviderConfig {
-
-    }
-
+    public static class NoLockProviderConfig {}
 }
