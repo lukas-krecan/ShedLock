@@ -28,8 +28,7 @@ class MethodProxyLockConfiguration extends AbstractLockConfiguration {
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     MethodProxyScheduledLockAdvisor proxyScheduledLockAopBeanPostProcessor(
         ListableBeanFactory beanFactory, @Lazy ExtendedLockConfigurationExtractor lockConfigurationExtractor) {
-        // TODO: make LockProviderSupplier configurable
-        LockProviderSupplier lockProviderSupplier = new DefaultLockProviderSupplier(beanFactory);
+        LockProviderSupplier lockProviderSupplier = LockProviderSupplier.create(beanFactory);
         MethodProxyScheduledLockAdvisor advisor =
                 new MethodProxyScheduledLockAdvisor(lockConfigurationExtractor, lockProviderSupplier);
         advisor.setOrder(getOrder());
