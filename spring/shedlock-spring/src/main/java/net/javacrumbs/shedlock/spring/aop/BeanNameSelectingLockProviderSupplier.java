@@ -31,7 +31,7 @@ class BeanNameSelectingLockProviderSupplier implements LockProviderSupplier {
                 LockProvider.class,
                 lockProviders.size(),
                 "Multiple LockProviders found (" + String.join(", ", lockProviders.keySet())
-                        + "), use @LockProviderBeanName to disambiguate.");
+                        + "), use @LockProviderToUse to disambiguate.");
     }
 
     @Nullable
