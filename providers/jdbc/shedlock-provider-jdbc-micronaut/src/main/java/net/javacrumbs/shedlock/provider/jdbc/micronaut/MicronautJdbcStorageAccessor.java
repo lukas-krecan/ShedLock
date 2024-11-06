@@ -25,20 +25,20 @@ import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccesso
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 class MicronautJdbcStorageAccessor extends AbstractJdbcStorageAccessor {
-    private final TransactionOperations<Connection> transactionManager;
+    private final TransactionOperations<Connection> transactionOperations;
 
     private final TransactionDefinition.Propagation propagation = TransactionDefinition.Propagation.REQUIRES_NEW;
 
     MicronautJdbcStorageAccessor(
-            @NonNull TransactionOperations<Connection> transactionManager, @NonNull String tableName) {
+            @NonNull TransactionOperations<Connection> transactionOperations, @NonNull String tableName) {
         super(tableName);
-        this.transactionManager = requireNonNull(transactionManager, "transactionManager can not be null");
+        this.transactionOperations = requireNonNull(transactionOperations, "transactionManager can not be null");
     }
 
     @Override
     protected <T> T executeCommand(
             String sql, SqlFunction<PreparedStatement, T> body, BiFunction<String, SQLException, T> exceptionHandler) {
-        return transactionManager.execute(TransactionDefinition.of(propagation), status -> {
+        return transactionOperations.execute(TransactionDefinition.of(propagation), status -> {
             try (PreparedStatement statement = status.getConnection().prepareStatement(sql)) {
                 return body.apply(statement);
             } catch (SQLException e) {

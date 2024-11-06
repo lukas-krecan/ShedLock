@@ -1011,7 +1011,6 @@ Import the project:
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- use shedlock-cdi-vintage for quarkus 2.x -->
     <artifactId>shedlock-cdi</artifactId>
     <version>5.16.0</version>
 </dependency>
