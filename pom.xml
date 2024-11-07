@@ -75,7 +75,7 @@
         <kotlin.ver>2.0.21</kotlin.ver>
         <micronaut4.version>4.6.3</micronaut4.version>
         <micronaut4.validation.version>4.8.0</micronaut4.validation.version>
-        <micronaut4-data.version>4.8.1</micronaut4-data.version>
+        <micronaut4-data.version>.8.2</micronaut4-data.version>
         <logback.ver>1.5.12</logback.ver>
         <awaitility.ver>4.2.2</awaitility.ver>
         <assertj.ver>3.26.3</assertj.ver>
