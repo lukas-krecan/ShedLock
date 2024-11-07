@@ -16,6 +16,7 @@ package net.javacrumbs.shedlock.spring.aop;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Objects.requireNonNull;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -127,7 +128,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     private String getName(AnnotationData annotation, Method method, Object[] parameterValues) {
-        String name = parseSpEL(annotation.getName(), method, parameterValues);
+        String name = parseSpEL(annotation.name(), method, parameterValues);
         if (embeddedValueResolver != null) {
             return embeddedValueResolver.resolveStringValue(name);
         } else {
@@ -159,16 +160,16 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
 
     Duration getLockAtMostFor(AnnotationData annotation) {
         return getValue(
-                annotation.getLockAtMostFor(),
-                annotation.getLockAtMostForString(),
+                annotation.lockAtMostFor(),
+                annotation.lockAtMostForString(),
                 this.defaultLockAtMostFor,
                 "lockAtMostForString");
     }
 
     Duration getLockAtLeastFor(AnnotationData annotation) {
         return getValue(
-                annotation.getLockAtLeastFor(),
-                annotation.getLockAtLeastForString(),
+                annotation.lockAtLeastFor(),
+                annotation.lockAtLeastForString(),
                 this.defaultLockAtLeastFor,
                 "lockAtLeastForString");
     }
@@ -198,25 +199,8 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     }
 
     @Nullable
-    AnnotationData findAnnotation(Object target, Method method) {
-        AnnotationData annotation = findAnnotation(method);
-        if (annotation != null) {
-            return annotation;
-        } else {
-            // Try to find annotation on proxied class
-            Class<?> targetClass = AopUtils.getTargetClass(target);
-            try {
-                Method methodOnTarget = targetClass.getMethod(method.getName(), method.getParameterTypes());
-                return findAnnotation(methodOnTarget);
-            } catch (NoSuchMethodException e) {
-                return null;
-            }
-        }
-    }
-
-    @Nullable
-    private AnnotationData findAnnotation(Method method) {
-        SchedulerLock annotation = AnnotatedElementUtils.getMergedAnnotation(method, SchedulerLock.class);
+    static AnnotationData findAnnotation(Object target, Method method) {
+        SchedulerLock annotation = findAnnotation(target, method, SchedulerLock.class);
         if (annotation != null) {
             return new AnnotationData(
                     annotation.name(), -1, annotation.lockAtMostFor(), -1, annotation.lockAtLeastFor());
@@ -224,50 +208,33 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         return null;
     }
 
+    @Nullable
+    static <A extends Annotation> A findAnnotation(Object target, Method method, Class<A> annotationType) {
+        A annotation = AnnotatedElementUtils.getMergedAnnotation(method, annotationType);
+        if (annotation != null) {
+            return annotation;
+        } else {
+            // Try to find annotation on proxied class
+            Class<?> targetClass = AopUtils.getTargetClass(target);
+            try {
+                Method methodOnTarget = targetClass.getMethod(method.getName(), method.getParameterTypes());
+                return AnnotatedElementUtils.getMergedAnnotation(methodOnTarget, annotationType);
+            } catch (NoSuchMethodException e) {
+                return null;
+            }
+        }
+    }
+
     private boolean shouldLock(@Nullable AnnotationData annotation) {
         return annotation != null;
     }
 
-    static class AnnotationData {
-        private final String name;
-        private final long lockAtMostFor;
-        private final String lockAtMostForString;
-        private final long lockAtLeastFor;
-        private final String lockAtLeastForString;
-
-        private AnnotationData(
-                String name,
-                long lockAtMostFor,
-                String lockAtMostForString,
-                long lockAtLeastFor,
-                String lockAtLeastForString) {
-            this.name = name;
-            this.lockAtMostFor = lockAtMostFor;
-            this.lockAtMostForString = lockAtMostForString;
-            this.lockAtLeastFor = lockAtLeastFor;
-            this.lockAtLeastForString = lockAtLeastForString;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public long getLockAtMostFor() {
-            return lockAtMostFor;
-        }
-
-        public String getLockAtMostForString() {
-            return lockAtMostForString;
-        }
-
-        public long getLockAtLeastFor() {
-            return lockAtLeastFor;
-        }
-
-        public String getLockAtLeastForString() {
-            return lockAtLeastForString;
-        }
-    }
+    record AnnotationData(
+            String name,
+            long lockAtMostFor,
+            String lockAtMostForString,
+            long lockAtLeastFor,
+            String lockAtLeastForString) {}
 
     /**
      * Not using {@link StandardReflectionParameterNameDiscoverer} as it is calling executable.hasRealParameterData()

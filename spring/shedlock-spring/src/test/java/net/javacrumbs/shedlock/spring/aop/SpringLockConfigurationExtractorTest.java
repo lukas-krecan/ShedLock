@@ -162,7 +162,7 @@ public class SpringLockConfigurationExtractorTest {
         mockResolvedValue("20", "20");
         SpringLockConfigurationExtractor.AnnotationData annotation = getAnnotation("composedAnnotation");
         TemporalAmount atMostFor = extractor.getLockAtMostFor(annotation);
-        assertThat(annotation.getName()).isEqualTo("lockName1");
+        assertThat(annotation.name()).isEqualTo("lockName1");
         assertThat(atMostFor).isEqualTo(Duration.of(20, MILLIS));
     }
 

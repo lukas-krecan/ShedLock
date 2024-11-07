@@ -21,12 +21,12 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-micronaut</artifactId>
+                <artifactId>shedlock-micronaut4</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-micronaut4</artifactId>
+                <artifactId>shedlock-cdi</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -102,11 +102,6 @@
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-redis-spring</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-redis-quarkus2</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

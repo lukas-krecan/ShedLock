@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
+import io.micronaut.data.spring.jdbc.SpringJdbcConnectionOperations;
 import io.micronaut.transaction.jdbc.DataSourceTransactionManager;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
@@ -26,6 +27,7 @@ abstract class AbstractMicronautJdbcTest extends AbstractJdbcLockProviderIntegra
 
     @Override
     protected StorageBasedLockProvider getLockProvider() {
-        return new MicronautJdbcLockProvider(new DataSourceTransactionManager(testUtils.getDatasource()));
+        return new MicronautJdbcLockProvider(new DataSourceTransactionManager(
+                getDatasource(), new SpringJdbcConnectionOperations(getDatasource()), null));
     }
 }
