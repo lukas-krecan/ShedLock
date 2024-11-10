@@ -179,7 +179,7 @@ CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAM
     locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
 
-Or use [this](micronaut/test/micronaut-jdbc/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
+Or use [this](micronaut/test/micronaut4-jdbc/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
 
 Add dependency
 
