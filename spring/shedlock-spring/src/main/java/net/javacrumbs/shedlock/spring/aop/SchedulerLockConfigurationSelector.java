@@ -29,12 +29,12 @@ public class SchedulerLockConfigurationSelector implements ImportSelector {
                 metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
         InterceptMode mode = attributes.getEnum("interceptMode");
         return switch (mode) {
-            case PROXY_METHOD -> new String[]{
+            case PROXY_METHOD -> new String[] {
                 AutoProxyRegistrar.class.getName(),
                 LockConfigurationExtractorConfiguration.class.getName(),
                 MethodProxyLockConfiguration.class.getName()
             };
-            case PROXY_SCHEDULER -> new String[]{
+            case PROXY_SCHEDULER -> new String[] {
                 AutoProxyRegistrar.class.getName(),
                 LockConfigurationExtractorConfiguration.class.getName(),
                 SchedulerProxyLockConfiguration.class.getName(),
