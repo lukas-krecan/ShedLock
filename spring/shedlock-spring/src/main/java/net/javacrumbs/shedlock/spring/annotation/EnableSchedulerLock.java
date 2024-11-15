@@ -28,11 +28,14 @@ import org.springframework.core.Ordered;
 public @interface EnableSchedulerLock {
     enum InterceptMode {
         /**
-         * Default mode when a TaskScheduler is wrapped in a proxy to ensure locking.
+         * TaskScheduler is wrapped in a proxy to ensure locking.
          * Only applies lock if the
          * {@link net.javacrumbs.shedlock.spring.annotation.SchedulerLock} annotated
          * method is called using scheduler.
+         *
+         * @deprecated Use PROXY_METHOD. Requires a reflection hack to work well with Spring 6.2.
          */
+        @Deprecated(forRemoval = true)
         PROXY_SCHEDULER,
 
         /**
