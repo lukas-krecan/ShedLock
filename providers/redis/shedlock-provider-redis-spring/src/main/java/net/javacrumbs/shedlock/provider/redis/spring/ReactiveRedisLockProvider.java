@@ -38,7 +38,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
      * @param redisConn
      *            ReactiveRedisConnectionFactory
      * @param environment
-     *            environment is part of the key and thus makes sure there is not
+     *            environment is part of the key and thus makes sure there is no
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      */
@@ -52,7 +52,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
      * @param redisConn
      *            ReactiveRedisConnectionFactory
      * @param environment
-     *            environment is part of the key and thus makes sure there is not
+     *            environment is part of the key and thus makes sure there is no
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      * @param keyPrefix
@@ -69,7 +69,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
      * @param redisTemplate
      *            ReactiveStringRedisTemplate
      * @param environment
-     *            environment is part of the key and thus makes sure there is not
+     *            environment is part of the key and thus makes sure there is no
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      * @param keyPrefix

@@ -44,11 +44,6 @@
             <artifactId>quarkus-scheduler</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-provider-jdbc</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <version>1.20.3</version>

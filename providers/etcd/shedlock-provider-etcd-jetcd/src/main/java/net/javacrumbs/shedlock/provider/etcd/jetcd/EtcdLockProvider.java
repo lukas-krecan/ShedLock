@@ -214,7 +214,7 @@ public class EtcdLockProvider implements LockProvider {
         }
 
         private PutOption putOptionWithLeaseId(Long leaseId) {
-            return PutOption.newBuilder().withLeaseId(leaseId).build();
+            return PutOption.builder().withLeaseId(leaseId).build();
         }
     }
 }
