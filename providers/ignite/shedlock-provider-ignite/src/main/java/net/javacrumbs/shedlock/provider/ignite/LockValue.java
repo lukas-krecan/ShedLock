@@ -15,12 +15,54 @@ package net.javacrumbs.shedlock.provider.ignite;
 
 import java.time.Instant;
 
-/** Value object for ShedLock cache.
- * @param lockedAt  Locked at time.
- * @param lockUntil  Locked until time.
- * @param lockedBy  Locked by hostname. */
-record LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
+/** Value object for ShedLock cache. */
+// Don't convert to record, does not work
+class LockValue {
+    /** Locked at time. */
+    private final Instant lockedAt;
+
+    /** Locked until time. */
+    private final Instant lockUntil;
+
+    /** Locked by hostname. */
+    private final String lockedBy;
+
+    /**
+     * @param lockedAt
+     *            Locked at time.
+     * @param lockUntil
+     *            Locked until time.
+     * @param lockedBy
+     *            Locked by hostname.
+     */
+    public LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
+        this.lockedAt = lockedAt;
+        this.lockUntil = lockUntil;
+        this.lockedBy = lockedBy;
+    }
+
     LockValue withLockUntil(Instant lockUntil) {
         return new LockValue(lockedAt, lockUntil, lockedBy);
+    }
+
+    /**
+     * @return Locked at time.
+     */
+    public Instant getLockedAt() {
+        return lockedAt;
+    }
+
+    /**
+     * @return Locked until time.
+     */
+    public Instant getLockUntil() {
+        return lockUntil;
+    }
+
+    /**
+     * @return Locked by hostname.
+     */
+    public String getLockedBy() {
+        return lockedBy;
     }
 }
