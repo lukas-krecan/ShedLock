@@ -25,7 +25,6 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [jOOQ](#jooq-lock-provider)
   - [Micronaut Data Jdbc](#micronaut-data-jdbc)
   - [Mongo](#mongo)
-  - [DynamoDB](#dynamodb)
   - [DynamoDB 2](#dynamodb-2)
   - [ZooKeeper (using Curator)](#zookeeper-using-curator)
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
@@ -180,7 +179,7 @@ CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAM
     locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL);
 ```
 
-Or use [this](micronaut/test/micronaut-jdbc/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
+Or use [this](micronaut/test/micronaut4-jdbc/src/main/resources/db/liquibase-changelog.xml) liquibase change-set.
 
 Add dependency
 
@@ -296,7 +295,7 @@ If you need to configure the table name, schema or column names, you can use jOO
 described [here](https://github.com/lukas-krecan/ShedLock/issues/1830#issuecomment-2015820509).
 
 #### Micronaut Data Jdbc
-If you are using Micronaut data and you do not want to add dependency on Spring JDBC, you can use
+If you are using Micronaut data, and you do not want to add dependency on Spring JDBC, you can use
 Micronaut JDBC support. Just be aware that it has just a basic functionality when compared to
 the JdbcTemplate provider.
 
@@ -559,7 +558,7 @@ public CouchbaseLockProvider lockProvider(Bucket bucket) {
 For Couchbase 3 use `shedlock-provider-couchbase-javaclient3` module and `net.javacrumbs.shedlock.provider.couchbase3` package.
 
 #### Elasticsearch
-I am really not sure it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
+I am really not sure if it's a good idea to use Elasticsearch as a lock provider. But if you have no other choice, you can. Import the project
 
 ```xml
 <dependency>
@@ -1044,7 +1043,6 @@ Import the project:
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- use shedlock-cdi-vintage for quarkus 2.x -->
     <artifactId>shedlock-cdi</artifactId>
     <version>5.16.0</version>
 </dependency>
@@ -1124,7 +1122,7 @@ It can be switched-on like this (PROXY_SCHEDULER was the default method before 4
 ```
 
 If you do not specify your task scheduler, a default one is created for you. If you have special needs, just create a bean implementing `TaskScheduler`
-interface and it will get wrapped into the AOP proxy automatically.
+interface, and it will get wrapped into the AOP proxy automatically.
 
 ```java
 @Bean

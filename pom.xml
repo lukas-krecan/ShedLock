@@ -23,13 +23,9 @@
     <modules>
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
-        <module>cdi/shedlock-cdi-vintage</module>
         <module>cdi/shedlock-cdi</module>
         <module>cdi/test/quarkus-test</module>
-        <module>micronaut/shedlock-micronaut</module>
         <module>micronaut/shedlock-micronaut4</module>
-        <module>micronaut/test/micronaut-jdbc</module>
-        <module>micronaut/test/micronaut-jdbc-template</module>
         <module>micronaut/test/micronaut4-jdbc</module>
         <module>micronaut/test/micronaut4-jdbc-template</module>
         <module>spring/shedlock-spring</module>
@@ -51,14 +47,12 @@
         <module>providers/r2dbc/shedlock-provider-r2dbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
-        <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch8</module>
         <module>providers/opensearch/shedlock-provider-opensearch</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
         <module>providers/redis/shedlock-provider-redis-jedis4</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
-        <module>providers/redis/shedlock-provider-redis-quarkus2</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
         <module>providers/consul/shedlock-provider-consul</module>
@@ -68,20 +62,19 @@
         <module>providers/memcached/shedlock-provider-memcached-spy</module>
         <module>providers/datastore/shedlock-provider-datastore</module>
         <module>providers/spanner/shedlock-provider-spanner</module>
+        <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/jetstream/shedlock-provider-jetstream</module>
     </modules>
 
     <properties>
-        <spring.version>6.1.14</spring.version>
+        <spring.version>6.2.0</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <spring-boot-current.version>3.3.5</spring-boot-current.version>
         <junit.ver>5.11.3</junit.ver>
         <test-containers.ver>1.20.3</test-containers.ver>
         <kotlin.ver>2.0.21</kotlin.ver>
-        <micronaut3.version>3.10.4</micronaut3.version>
-        <micronaut3-data.version>3.9.7</micronaut3-data.version>
-        <micronaut4.version>4.6.3</micronaut4.version>
+        <micronaut4.version>4.7.0</micronaut4.version>
         <micronaut4.validation.version>4.8.0</micronaut4.validation.version>
         <micronaut4-data.version>4.8.1</micronaut4-data.version>
         <logback.ver>1.5.12</logback.ver>
@@ -134,7 +127,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.5.2</version>
                 <configuration>
                     <forkCount>${fork.count}</forkCount>
                     <argLine>-Xmx512m</argLine>
@@ -148,7 +141,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.1</version>
                 <configuration>
                     <failOnError>false</failOnError>
                 </configuration>
@@ -196,7 +189,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>versions-maven-plugin</artifactId>
-                        <version>2.17.1</version>
+                        <version>2.18.0</version>
                     </plugin>
                 </plugins>
             </build>

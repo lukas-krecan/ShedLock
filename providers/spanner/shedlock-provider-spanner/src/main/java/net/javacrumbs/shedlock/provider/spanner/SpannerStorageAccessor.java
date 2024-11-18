@@ -75,15 +75,14 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
      */
     @Override
     public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
-        return Boolean.TRUE.equals(databaseClient.readWriteTransaction().run(tx -> {
-            return findLock(tx, lockConfiguration.getName())
-                    .filter(lock -> lock.lockedUntil().compareTo(now()) <= 0)
-                    .map(lock -> {
-                        tx.buffer(buildMutation(lockConfiguration, newUpdateBuilder(table)));
-                        return true;
-                    })
-                    .orElse(false);
-        }));
+        return Boolean.TRUE.equals(
+                databaseClient.readWriteTransaction().run(tx -> findLock(tx, lockConfiguration.getName())
+                        .filter(lock -> lock.lockedUntil().compareTo(now()) <= 0)
+                        .map(lock -> {
+                            tx.buffer(buildMutation(lockConfiguration, newUpdateBuilder(table)));
+                            return true;
+                        })
+                        .orElse(false)));
     }
 
     private Mutation buildMutation(LockConfiguration lockConfiguration, WriteBuilder builder) {

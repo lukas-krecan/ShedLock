@@ -24,7 +24,7 @@ import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider
 public class Configuration {
 
     @Singleton
-    public LockProvider lockProvider(TransactionOperations<Connection> transactionManager) {
-        return new MicronautJdbcLockProvider(transactionManager);
+    public LockProvider lockProvider(TransactionOperations<Connection> transactionOperations) {
+        return new MicronautJdbcLockProvider(transactionOperations);
     }
 }

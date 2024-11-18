@@ -21,13 +21,27 @@
         <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-tx</artifactId>
-            <version>${micronaut3-data.version}</version>
+            <version>${micronaut4-data.version}</version>
         </dependency>
 
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support-jdbc</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micronaut.data</groupId>
+            <artifactId>micronaut-data-spring-jdbc</artifactId>
+            <version>${micronaut4-data.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micronaut.data</groupId>
+            <artifactId>micronaut-data-tx-jdbc</artifactId>
+            <version>${micronaut4-data.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

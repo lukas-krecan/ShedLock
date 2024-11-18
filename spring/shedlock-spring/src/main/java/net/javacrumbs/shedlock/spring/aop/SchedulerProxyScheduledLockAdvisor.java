@@ -13,8 +13,12 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import java.lang.reflect.Field;
+import net.javacrumbs.shedlock.core.DefaultLockManager;
 import net.javacrumbs.shedlock.core.LockManager;
+import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockableRunnable;
+import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -27,14 +31,16 @@ import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.NameMatchMethodPointcut;
 import org.springframework.aop.support.RootClassFilter;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.ScheduledMethodRunnable;
 
 class SchedulerProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     private final Pointcut pointcut = new TaskSchedulerPointcut();
     private final Advice advice;
     private static final Logger logger = LoggerFactory.getLogger(SchedulerProxyScheduledLockAdvisor.class);
 
-    SchedulerProxyScheduledLockAdvisor(LockManager lockManager) {
-        this.advice = new LockingInterceptor(lockManager);
+    SchedulerProxyScheduledLockAdvisor(
+            LockProviderSupplier lockProviderSupplier, ExtendedLockConfigurationExtractor lockConfigurationExtractor) {
+        this.advice = new LockingInterceptor(lockProviderSupplier, lockConfigurationExtractor);
     }
 
     /** Get the Pointcut that drives this advisor. */
@@ -49,21 +55,49 @@ class SchedulerProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     }
 
     private static class LockingInterceptor implements MethodInterceptor {
-        private final LockManager lockManager;
+        private final LockProviderSupplier lockProviderSupplier;
 
-        private LockingInterceptor(LockManager lockManager) {
-            this.lockManager = lockManager;
+        private final ExtendedLockConfigurationExtractor lockConfigurationExtractor;
+
+        private LockingInterceptor(
+                LockProviderSupplier lockProviderSupplier,
+                ExtendedLockConfigurationExtractor lockConfigurationExtractor) {
+            this.lockProviderSupplier = lockProviderSupplier;
+            this.lockConfigurationExtractor = lockConfigurationExtractor;
         }
 
         @Override
         public Object invoke(MethodInvocation invocation) throws Throwable {
             Object[] arguments = invocation.getArguments();
-            if (arguments.length >= 1 && arguments[0] instanceof Runnable) {
-                arguments[0] = new LockableRunnable((Runnable) arguments[0], lockManager);
+            if (arguments.length >= 1) {
+                arguments[0] = wrapTask(arguments[0]);
             } else {
-                logger.warn("Task scheduler first argument should be Runnable");
+                throw new IllegalStateException("Task scheduler method does not have any arguments");
             }
             return invocation.proceed();
+        }
+
+        private Object wrapTask(Object firstArgument) throws NoSuchFieldException, IllegalAccessException {
+            if (firstArgument instanceof ScheduledMethodRunnable task) {
+                return wrapTask(task);
+            } else if (firstArgument.getClass().getSimpleName().equals("OutcomeTrackingRunnable")) {
+                // We need to access the wrapped runnable. This is the only way
+                Field runnable = firstArgument.getClass().getDeclaredField("runnable");
+                runnable.setAccessible(true);
+                Object wrappedRunnable = runnable.get(firstArgument);
+                if (wrappedRunnable instanceof ScheduledMethodRunnable task) {
+                    return wrapTask(task);
+                }
+            }
+            logger.warn("Task scheduler first argument should be ScheduledMethodRunnable or OutcomeTrackingRunnable");
+            return firstArgument;
+        }
+
+        private LockableRunnable wrapTask(ScheduledMethodRunnable task) {
+            LockProvider lockProvider =
+                    lockProviderSupplier.supply(task.getTarget(), task.getMethod(), new Object[] {});
+            LockManager lockManager = new DefaultLockManager(lockProvider, lockConfigurationExtractor);
+            return new LockableRunnable(task, lockManager);
         }
     }
 

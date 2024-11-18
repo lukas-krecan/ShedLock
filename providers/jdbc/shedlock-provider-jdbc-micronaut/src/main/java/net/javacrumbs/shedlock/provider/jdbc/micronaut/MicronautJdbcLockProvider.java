@@ -14,9 +14,7 @@
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
 import io.micronaut.transaction.TransactionOperations;
-import io.micronaut.transaction.jdbc.DataSourceTransactionManager;
 import java.sql.Connection;
-import javax.sql.DataSource;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 
@@ -41,23 +39,12 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
 
     private static final String DEFAULT_TABLE_NAME = "shedlock";
 
-    /**
-     * @deprecated Use {@link #MicronautJdbcLockProvider(TransactionOperations)}
-     *             instead as transaction management has be refactored in Micronaut
-     *             Data 4.0 and DataSourceTransactionManager is not easy to
-     *             construct.
-     */
-    @Deprecated
-    public MicronautJdbcLockProvider(@NonNull DataSource datasource) {
-        this(new DataSourceTransactionManager(datasource), DEFAULT_TABLE_NAME);
-    }
-
-    public MicronautJdbcLockProvider(@NonNull TransactionOperations<Connection> transactionManager) {
-        this(transactionManager, DEFAULT_TABLE_NAME);
+    public MicronautJdbcLockProvider(@NonNull TransactionOperations<Connection> transactionOperations) {
+        this(transactionOperations, DEFAULT_TABLE_NAME);
     }
 
     public MicronautJdbcLockProvider(
-            @NonNull TransactionOperations<Connection> transactionManager, @NonNull String tableName) {
-        super(new MicronautJdbcStorageAccessor(transactionManager, tableName));
+            @NonNull TransactionOperations<Connection> transactionOperations, @NonNull String tableName) {
+        super(new MicronautJdbcStorageAccessor(transactionOperations, tableName));
     }
 }

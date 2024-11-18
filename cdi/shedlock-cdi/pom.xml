@@ -12,7 +12,6 @@
     <artifactId>shedlock-cdi</artifactId>
     <version>5.16.1-SNAPSHOT</version>
 
-
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>

@@ -14,8 +14,6 @@
 package net.javacrumbs.shedlock.spring.aop;
 
 import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode;
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_METHOD;
-import static net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock.InterceptMode.PROXY_SCHEDULER;
 
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.context.annotation.AutoProxyRegistrar;
@@ -30,21 +28,18 @@ public class SchedulerLockConfigurationSelector implements ImportSelector {
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(
                 metadata.getAnnotationAttributes(EnableSchedulerLock.class.getName(), false));
         InterceptMode mode = attributes.getEnum("interceptMode");
-        if (mode == PROXY_METHOD) {
-            return new String[] {
+        return switch (mode) {
+            case PROXY_METHOD -> new String[] {
                 AutoProxyRegistrar.class.getName(),
                 LockConfigurationExtractorConfiguration.class.getName(),
                 MethodProxyLockConfiguration.class.getName()
             };
-        } else if (mode == PROXY_SCHEDULER) {
-            return new String[] {
+            case PROXY_SCHEDULER -> new String[] {
                 AutoProxyRegistrar.class.getName(),
                 LockConfigurationExtractorConfiguration.class.getName(),
                 SchedulerProxyLockConfiguration.class.getName(),
                 RegisterDefaultTaskSchedulerPostProcessor.class.getName()
             };
-        } else {
-            throw new UnsupportedOperationException("Unknown mode " + mode);
-        }
+        };
     }
 }
