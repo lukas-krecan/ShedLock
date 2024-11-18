@@ -10,8 +10,8 @@ import io.nats.client.Nats;
 import io.nats.client.Options;
 import io.nats.client.api.KeyValueEntry;
 import java.time.Duration;
-import java.util.UUID;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,38 +68,19 @@ class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProviderInteg
     @Test
     public void shouldTimeout() throws InterruptedException {
         /** jetstreams smallest allowed unit is 100 milliseconds. */
-        this.doTestTimeout(Duration.ofMillis(100));
-    }
-
-    @Override
-    protected void doTestTimeout(Duration lockAtMostFor) throws InterruptedException {
-        final var SHORT_LOCK_NAME = UUID.randomUUID().toString();
-
-        var configWithShortTimeout = lockConfig(SHORT_LOCK_NAME, lockAtMostFor, Duration.ZERO);
-        var lock1 = getLockProvider().lock(configWithShortTimeout);
-        assertThat(lock1).isNotEmpty();
-
-        // there is no config to control how fast NATS actually honors its TTL.. ie reaper timers ect
-        sleep(Duration.ofSeconds(2).toMillis());
-        assertUnlocked(SHORT_LOCK_NAME);
-
-        var lock2 = getLockProvider().lock(lockConfig(SHORT_LOCK_NAME, lockAtMostFor, Duration.ZERO));
-        assertThat(lock2).isNotEmpty();
-        lock2.get().unlock();
+        this.doTestTimeout(Duration.ofMillis(100), Duration.ofSeconds(2));
     }
 
     @Override
     @Test
     public void shouldLockAtLeastFor() throws InterruptedException {
-        doTestShouldLockAtLeastFor(100);
+        doTestShouldLockAtLeastFor(3_000);
     }
 
     @Override
     protected void doTestShouldLockAtLeastFor(int sleepForMs) throws InterruptedException {
-        final var ATLEAST_LOCK_NAME = UUID.randomUUID().toString();
-        final var lockAtLeastFor = Duration.ofSeconds(1L);
-
-        var lockConfig = lockConfig(ATLEAST_LOCK_NAME, lockAtLeastFor.multipliedBy(2), lockAtLeastFor);
+        Duration lockAtLeastFor = LOCK_AT_LEAST_FOR;
+        var lockConfig = lockConfig(LOCK_NAME1, lockAtLeastFor.multipliedBy(2), lockAtLeastFor);
 
         // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before
         // this time
@@ -108,7 +89,7 @@ class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProviderInteg
         lock1.get().unlock();
 
         // Even though we have unlocked the lock, it will be held for some time
-        assertThat(getLockProvider().lock(lockConfig))
+        assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1)))
                 .describedAs(getClass().getName() + "Can not acquire lock, grace period did not pass yet")
                 .isEmpty();
 
@@ -117,6 +98,7 @@ class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProviderInteg
         sleep(lockAtLeastFor.toMillis() * 4);
 
         // Should be able to acquire now
+        // THIS is the difference when compared to the standard test
         var lock3 = getLockProvider().lock(lockConfig);
         assertThat(lock3)
                 .describedAs(getClass().getName() + "Can acquire the lock after grace period")

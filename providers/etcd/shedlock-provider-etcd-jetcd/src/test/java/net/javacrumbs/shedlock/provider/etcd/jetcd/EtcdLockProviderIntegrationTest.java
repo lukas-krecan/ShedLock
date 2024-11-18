@@ -81,7 +81,7 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     @Test
     @Override
     public void shouldLockAtLeastFor() throws InterruptedException {
-        doTestShouldLockAtLeastFor(2000);
+        doTestShouldLockAtLeastFor(LOCK_AT_LEAST_FOR, 2000);
     }
 
     @Override

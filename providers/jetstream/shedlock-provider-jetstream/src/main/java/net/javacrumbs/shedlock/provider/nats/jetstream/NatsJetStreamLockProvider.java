@@ -61,7 +61,7 @@ public class NatsJetStreamLockProvider implements LockProvider {
                             LockContentHandler.writeContent(new LockContent(
                                     lockConfiguration.getLockAtLeastUntil(), lockConfiguration.getLockAtMostUntil())));
 
-            log.debug("Accuired lock for bucketName: {}", bucketName);
+            log.debug("Acquired lock for bucketName: {}", bucketName);
 
             return Optional.of(new NatsJetStreamLock(connection, lockConfiguration));
         } catch (JetStreamApiException e) {
