@@ -1,22 +1,7 @@
 package net.javacrumbs.shedlock.provider.nats.jetstream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.Duration;
-import java.util.UUID;
-
-import org.junit.jupiter.api.AfterEach;
-
 import static java.lang.Thread.sleep;
-
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.nats.client.Connection;
 import io.nats.client.ConnectionListener;
@@ -24,9 +9,20 @@ import io.nats.client.JetStreamApiException;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 import io.nats.client.api.KeyValueEntry;
+import java.time.Duration;
+import java.util.UUID;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
-public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
 
     @Container
     public static final NatsJetStreamContainer container = new NatsJetStreamContainer();
@@ -35,7 +31,7 @@ public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProvid
     private Connection connection;
 
     @BeforeEach
-    public void createLockProvider() throws Exception {
+    void createLockProvider() throws Exception {
         var natsUrl = String.format("nats://%s:%d", container.getHost(), container.getFirstMappedPort());
         connection = Nats.connect(Options.builder()
                 .server(natsUrl)
@@ -54,7 +50,7 @@ public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProvid
     }
 
     @AfterEach
-    public void stopLockProvider() throws Exception {
+    void stopLockProvider() throws Exception {
         connection.close();
     }
 
@@ -107,8 +103,7 @@ public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProvid
 
         // Lock for LOCK_AT_LEAST_FOR - we do not expect the lock to be released before
         // this time
-        var lock1 =
-                getLockProvider().lock(lockConfig);
+        var lock1 = getLockProvider().lock(lockConfig);
         assertThat(lock1).describedAs("Should be locked").isNotEmpty();
         lock1.get().unlock();
 
@@ -129,20 +124,15 @@ public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProvid
         lock3.get().unlock();
     }
 
-
     @Override
     protected LockProvider getLockProvider() {
         return lockProvider;
     }
 
-    private KeyValueEntry getLock(String lockName) {
+    private @Nullable KeyValueEntry getLock(String lockName) {
         try {
             var bucketName = String.format("SHEDLOCK-%s", lockName);
-            var keyValueEntry = connection.keyValue(bucketName).get("LOCKED");
-            if (keyValueEntry != null) {
-
-            }
-            return keyValueEntry;
+            return connection.keyValue(bucketName).get("LOCKED");
         } catch (JetStreamApiException e) {
             return null;
         } catch (Exception e) {
