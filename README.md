@@ -891,8 +891,6 @@ NatsJetStreamLockProvider has some limitations due to how NATS have implemented 
 
 100ms is the smallest lock timing NATS support (currently NatsJetStreamLockProvider will silently increase the values below this to 100ms). Reaper timings of TTL expired locks cannot be configured in NATS currently, so timing is best effort.
 
-Support for LockAtLeastFor is not implemented. NatsJetStreamLockProvider will trigger log warning if this setting is used.
-
 TTL is currently defined on 'bucket' level, meaning a lockname is fixed to a TTL when first encountered. So avoid using the same lockname with different timing settings.
 
 Dont do:
@@ -906,6 +904,13 @@ But instead you can do:
 @SchedulerLock(name = "scheduledTaskName-10m", lockAtMostFor = "10m")
 
 Buckets are auto created with fixed TTL, but never deleted. So any timing changes will require manual deletion of the bucket. NatsJetStreamLockProvider will trigger log warning if this mismatch is detected.
+
+Support for LockAtLeastFor is the following due to bucket TTL limitation.
+Example with 400ms lockAtLeastFor, and 800ms lockAtMost.
+Call unlock before 400ms lockAtLeastFor is up. Lock will stay for AtMostFor timing (800ms)
+Call unlock after 400ms lockAtLeastFor was up. Lock will be deleted asap.
+
+NatsJetStreamLockProvider will trigger log warning if this setting is used.
 
 NATS 2.11 should make it possible to define TTL on key level when released... so fingers crossed :D
 

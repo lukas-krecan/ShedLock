@@ -26,6 +26,8 @@ public class NatsJetStreamLockProvider implements LockProvider {
 
     private final Connection connection;
 
+    private boolean issueLockAtLeastWarning = true;
+
     /**
      * Create NatsJetStreamLockProvider
      *
@@ -42,8 +44,9 @@ public class NatsJetStreamLockProvider implements LockProvider {
         var bucketName = String.format("SHEDLOCK-%s", lockConfiguration.getName());
         log.debug("Attempting lock for bucketName: {}", bucketName);
         try {
-            if (!lockConfiguration.getLockAtLeastFor().isZero()) {
-                log.warn("lockAtLeastFor does not work with this NatsJetStreamLockProvider. So this setting is ignored!");
+            if (!lockConfiguration.getLockAtLeastFor().isZero() && issueLockAtLeastWarning) {
+                log.warn("lockAtLeastFor does work special for NatsJetStreamLockProvider. Read documentation!");
+                issueLockAtLeastWarning = false;
             }
             var lockTime = lockConfiguration.getLockAtMostFor();
 
@@ -58,7 +61,7 @@ public class NatsJetStreamLockProvider implements LockProvider {
             connection.keyValue(bucketName).create("LOCKED", LockContentHandler.writeContent(
                     new LockContent(lockConfiguration.getLockAtLeastUntil(), lockConfiguration.getLockAtMostUntil())));
 
-            log.debug("Accuired lock for bucketName: {}", bucketName);
+            log.debug("Acquired lock for bucketName: {}", bucketName);
 
             return Optional.of(new NatsJetStreamLock(connection, lockConfiguration));
         } catch (JetStreamApiException e) {
