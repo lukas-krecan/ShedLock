@@ -887,12 +887,25 @@ public LockProvider lockProvider(DatabaseClient databaseClient) {
 ```
 
 #### JetStream
-NatsJetStreamLockProvider has some limitations due to how NATS have implemented TTL.
-TTL is currently defined on 'bucket' level, meaning a lockname cannot have multiple lock timings.
-Also 100ms is the smallest lock timing supported. Reaping the TTL expired locks cannot be configured in NATS currently,
-so timing is best effort.
+NatsJetStreamLockProvider has some limitations due to how NATS have implemented TTL, but its still useful for most usecases.
 
-Buckets are auto created, but never deleted. So any timing changes will require manual deletion of the bucket.
+100ms is the smallest lock timing NATS support (currently NatsJetStreamLockProvider will silently increase the values below this to 100ms). Reaper timings of TTL expired locks cannot be configured in NATS currently, so timing is best effort.
+
+Support for LockAtLeastFor is not implemented. NatsJetStreamLockProvider will trigger log warning if this setting is used.
+
+TTL is currently defined on 'bucket' level, meaning a lockname is fixed to a TTL when first encountered. So avoid using the same lockname with different timing settings.
+
+Dont do:
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = "5m")
+.. (somewhere else)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = "10m")
+
+But instead you can do:
+@SchedulerLock(name = "scheduledTaskName-5m", lockAtMostFor = "5m")
+.. (somewhere else)
+@SchedulerLock(name = "scheduledTaskName-10m", lockAtMostFor = "10m")
+
+Buckets are auto created with fixed TTL, but never deleted. So any timing changes will require manual deletion of the bucket. NatsJetStreamLockProvider will trigger log warning if this mismatch is detected.
 
 NATS 2.11 should make it possible to define TTL on key level when released... so fingers crossed :D
 

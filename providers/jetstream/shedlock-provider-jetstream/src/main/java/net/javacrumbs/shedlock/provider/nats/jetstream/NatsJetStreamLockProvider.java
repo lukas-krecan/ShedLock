@@ -42,6 +42,9 @@ public class NatsJetStreamLockProvider implements LockProvider {
         var bucketName = String.format("SHEDLOCK-%s", lockConfiguration.getName());
         log.debug("Attempting lock for bucketName: {}", bucketName);
         try {
+            if (!lockConfiguration.getLockAtLeastFor().isZero()) {
+                log.warn("lockAtLeastFor does not work with this NatsJetStreamLockProvider. So this setting is ignored!");
+            }
             var lockTime = lockConfiguration.getLockAtMostFor();
 
             // nats cannot accept below 100ms
@@ -59,8 +62,11 @@ public class NatsJetStreamLockProvider implements LockProvider {
 
             return Optional.of(new NatsJetStreamLock(connection, lockConfiguration));
         } catch (JetStreamApiException e) {
-            if (e.getApiErrorCode() == 10058 || e.getApiErrorCode() == 10071) {
+            if (e.getApiErrorCode() == 10071) {
                 log.debug("Rejected lock for bucketName: {}, message: {}", bucketName, e.getMessage());
+                return Optional.empty();
+            } else if(e.getApiErrorCode() == 10058) {
+                log.warn("Settings on the bucket TTL does not match configuration. Manually delete the bucket on NATS server, or revert lock settings!");
                 return Optional.empty();
             }
             log.warn("Rejected lock for bucketName: {}", bucketName);
