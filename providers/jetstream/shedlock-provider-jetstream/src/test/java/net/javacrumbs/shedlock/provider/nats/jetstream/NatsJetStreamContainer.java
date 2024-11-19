@@ -1,7 +1,6 @@
 package net.javacrumbs.shedlock.provider.nats.jetstream;
 
 import java.time.Duration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -20,10 +19,10 @@ public class NatsJetStreamContainer extends GenericContainer<NatsJetStreamContai
     public NatsJetStreamContainer() {
         super(NATS_IMAGE.asCanonicalNameString());
         this.withExposedPorts(NATS_PORT, NATS_HTTP_PORT)
-            .withNetworkAliases("nats")
-            .withLogConsumer(frame -> LOGGER.info(frame.getUtf8String().replace("\n", "")))
-            .withCommand("--jetstream", "--http_port", NATS_HTTP_PORT.toString())
-            .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Server is ready.*"))
-            .withStartupTimeout(Duration.ofSeconds(180L));
+                .withNetworkAliases("nats")
+                .withLogConsumer(frame -> LOGGER.info(frame.getUtf8String().replace("\n", "")))
+                .withCommand("--jetstream", "--http_port", NATS_HTTP_PORT.toString())
+                .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Server is ready.*"))
+                .withStartupTimeout(Duration.ofSeconds(180L));
     }
 }

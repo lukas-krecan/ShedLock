@@ -1,19 +1,17 @@
 package net.javacrumbs.shedlock.provider.nats.jetstream;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.api.KeyValueConfiguration;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lock Provider for NATS JetStream
@@ -51,15 +49,25 @@ public class NatsJetStreamLockProvider implements LockProvider {
             var lockTime = lockConfiguration.getLockAtMostFor();
 
             // nats cannot accept below 100ms
-            if(lockTime.toMillis() < 100) {
-                log.debug("NATS must be above 100ms for smallest locktime, correcting {}ms to 100ms!", lockTime.toMillis());
+            if (lockTime.toMillis() < 100) {
+                log.debug(
+                        "NATS must be above 100ms for smallest locktime, correcting {}ms to 100ms!",
+                        lockTime.toMillis());
                 lockTime = Duration.ofMillis(100L);
             }
 
-            connection.keyValueManagement().create(
-                    KeyValueConfiguration.builder().name(bucketName).ttl(lockTime).build());
-            connection.keyValue(bucketName).create("LOCKED", LockContentHandler.writeContent(
-                    new LockContent(lockConfiguration.getLockAtLeastUntil(), lockConfiguration.getLockAtMostUntil())));
+            connection
+                    .keyValueManagement()
+                    .create(KeyValueConfiguration.builder()
+                            .name(bucketName)
+                            .ttl(lockTime)
+                            .build());
+            connection
+                    .keyValue(bucketName)
+                    .create(
+                            "LOCKED",
+                            LockContentHandler.writeContent(new LockContent(
+                                    lockConfiguration.getLockAtLeastUntil(), lockConfiguration.getLockAtMostUntil())));
 
             log.debug("Acquired lock for bucketName: {}", bucketName);
 
@@ -68,8 +76,9 @@ public class NatsJetStreamLockProvider implements LockProvider {
             if (e.getApiErrorCode() == 10071) {
                 log.debug("Rejected lock for bucketName: {}, message: {}", bucketName, e.getMessage());
                 return Optional.empty();
-            } else if(e.getApiErrorCode() == 10058) {
-                log.warn("Settings on the bucket TTL does not match configuration. Manually delete the bucket on NATS server, or revert lock settings!");
+            } else if (e.getApiErrorCode() == 10058) {
+                log.warn(
+                        "Settings on the bucket TTL does not match configuration. Manually delete the bucket on NATS server, or revert lock settings!");
                 return Optional.empty();
             }
             log.warn("Rejected lock for bucketName: {}", bucketName);
