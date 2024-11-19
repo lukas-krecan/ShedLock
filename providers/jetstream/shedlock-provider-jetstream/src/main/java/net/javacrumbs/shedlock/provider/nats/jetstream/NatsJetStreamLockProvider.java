@@ -1,18 +1,16 @@
 package net.javacrumbs.shedlock.provider.nats.jetstream;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.api.KeyValueConfiguration;
-
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -29,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class NatsJetStreamLockProvider implements LockProvider, AutoCloseable {
 
     private final Logger log = LoggerFactory.getLogger(NatsJetStreamLockProvider.class);
-    
+
     private final ScheduledExecutorService unlockScheduler = Executors.newSingleThreadScheduledExecutor();
 
     private final Connection connection;
@@ -66,11 +64,7 @@ public class NatsJetStreamLockProvider implements LockProvider, AutoCloseable {
                             .name(bucketName)
                             .ttl(lockTime)
                             .build());
-            connection
-                    .keyValue(bucketName)
-                    .create(
-                            "LOCKED",
-                            "ShedLock internal value. Do not touch.".getBytes());
+            connection.keyValue(bucketName).create("LOCKED", "ShedLock internal value. Do not touch.".getBytes());
 
             log.debug("Acquired lock for bucketName: {}", bucketName);
 
@@ -131,8 +125,7 @@ public class NatsJetStreamLockProvider implements LockProvider, AutoCloseable {
     public void close() {
         unlockScheduler.shutdown();
         try {
-            if (!unlockScheduler.awaitTermination(
-                Duration.ofSeconds(2).toMillis(), TimeUnit.MILLISECONDS)) {
+            if (!unlockScheduler.awaitTermination(Duration.ofSeconds(2).toMillis(), TimeUnit.MILLISECONDS)) {
                 unlockScheduler.shutdownNow();
             }
         } catch (InterruptedException ignored) {

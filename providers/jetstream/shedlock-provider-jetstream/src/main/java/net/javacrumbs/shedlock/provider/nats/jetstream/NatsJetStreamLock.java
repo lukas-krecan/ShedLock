@@ -8,7 +8,9 @@ public final class NatsJetStreamLock extends AbstractSimpleLock {
 
     private final NatsJetStreamLockProvider natsJetStreamLockProvider;
 
-    protected NatsJetStreamLock(@NonNull LockConfiguration lockConfiguration, @NonNull NatsJetStreamLockProvider natsJetStreamLockProvider) {
+    protected NatsJetStreamLock(
+            @NonNull LockConfiguration lockConfiguration,
+            @NonNull NatsJetStreamLockProvider natsJetStreamLockProvider) {
         super(lockConfiguration);
         this.natsJetStreamLockProvider = natsJetStreamLockProvider;
     }
