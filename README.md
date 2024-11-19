@@ -905,13 +905,6 @@ But instead you can do:
 
 Buckets are auto created with fixed TTL, but never deleted. So any timing changes will require manual deletion of the bucket. NatsJetStreamLockProvider will trigger log warning if this mismatch is detected.
 
-Support for LockAtLeastFor is the following due to bucket TTL limitation.
-Example with 400ms lockAtLeastFor, and 800ms lockAtMost.
-Call unlock before 400ms lockAtLeastFor is up. Lock will stay for AtMostFor timing (800ms)
-Call unlock after 400ms lockAtLeastFor was up. Lock will be deleted asap.
-
-NatsJetStreamLockProvider will trigger log warning if this setting is used.
-
 NATS 2.11 should make it possible to define TTL on key level when released... so fingers crossed :D
 
 Import the project
