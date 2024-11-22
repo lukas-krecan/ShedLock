@@ -1,11 +1,12 @@
 # Release notes
 
-## 6.0.0
+## 6.0.1
 * Support for multiple LockProviders
 * cdi-vintage module removed
 * Micronaut 3 support removed
 * micronaut-jdbc built on top of Micronaut 4
 * PROXY_SCHEDULER mode deprecated
+* Cassandra lock provider stated to use the org.apache.cassandra driver
 * Dependency updates
 
 ## 5.16.0 (2024-09-06)
