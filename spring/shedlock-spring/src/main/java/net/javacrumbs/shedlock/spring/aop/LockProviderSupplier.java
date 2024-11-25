@@ -15,7 +15,7 @@ interface LockProviderSupplier {
         // Only fetching beanNames as the beans might not have been initialized yet.
         String[] beanNamesForType = beanFactory.getBeanNamesForType(LockProvider.class);
         // If there are no beans of LockProvider type, we can't fail here as in older version we
-        // did not fail, and it's quire common in tests. To maintain backward compatibility
+        // did not fail, and it's quite common in the tests. To maintain backward compatibility
         // the failure will happen in runtime.
         if (beanNamesForType.length <= 1) {
             return (target, method, arguments) -> beanFactory.getBean(LockProvider.class);
