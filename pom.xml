@@ -73,7 +73,7 @@
         <junit.ver>5.11.3</junit.ver>
         <test-containers.ver>1.20.4</test-containers.ver>
         <kotlin.ver>2.0.21</kotlin.ver>
-        <micronaut4.version>4.7.0</micronaut4.version>
+        <micronaut4.version>4.7.1</micronaut4.version>
         <micronaut4.validation.version>4.8.0</micronaut4.validation.version>
         <micronaut4-data.version>4.8.1</micronaut4-data.version>
         <logback.ver>1.5.12</logback.ver>
