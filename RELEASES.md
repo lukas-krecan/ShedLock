@@ -1,5 +1,9 @@
 # Release notes
 
+## 6.0.2
+* #2272 Don't fail on startup if LockProvider not found
+* Dependency updates
+
 ## 6.0.1
 * Support for multiple LockProviders
 * cdi-vintage module removed
