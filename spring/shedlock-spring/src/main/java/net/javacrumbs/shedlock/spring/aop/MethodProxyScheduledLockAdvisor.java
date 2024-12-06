@@ -44,11 +44,33 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
 
     @NonNull
     private static AnnotationMatchingPointcut methodPointcutFor(Class<? extends Annotation> methodAnnotationType) {
+        Integer springVersion = getSpringMajorVersion();
+        if (springVersion != null) {
+            if (springVersion < 2) {
+                throw new IllegalStateException("Spring < 2.x is not supported");
+            }
+            if (springVersion < 5) {
+                return new AnnotationMatchingPointcut(
+                    null,
+                    methodAnnotationType
+                );
+            }
+        }
         return new AnnotationMatchingPointcut(
             null,
             methodAnnotationType,
             true
         );
+    }
+
+    private static Integer getSpringMajorVersion() {
+        try {
+            String springVersion = SpringVersion.getVersion();
+            int dot = springVersion.indexOf('.');
+            return dot > 0 ? Integer.parseInt(springVersion.substring(0, dot)) : Integer.parseInt(springVersion);
+        } catch (NumberFormatException | NullPointerException e) {
+            return null;
+        }
     }
 
     /**
