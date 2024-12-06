@@ -28,6 +28,7 @@ import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
+import org.springframework.core.SpringVersion;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
