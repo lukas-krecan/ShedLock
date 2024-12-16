@@ -87,11 +87,15 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     protected void doTestTimeout(Duration lockAtMostFor) throws InterruptedException {
+        doTestTimeout(lockAtMostFor, lockAtMostFor.multipliedBy(2));
+    }
+
+    protected void doTestTimeout(Duration lockAtMostFor, Duration waitFor) throws InterruptedException {
         LockConfiguration configWithShortTimeout = lockConfig(LOCK_NAME1, lockAtMostFor, Duration.ZERO);
         Optional<SimpleLock> lock1 = getLockProvider().lock(configWithShortTimeout);
         assertThat(lock1).isNotEmpty();
 
-        sleep(lockAtMostFor.toMillis() * 2);
+        sleep(waitFor.toMillis());
         assertUnlocked(LOCK_NAME1);
 
         Optional<SimpleLock> lock2 =
