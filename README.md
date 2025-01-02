@@ -44,6 +44,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [In-Memory](#in-memory)
   - [Memcached](#memcached-using-spymemcached)
   - [Datastore](#datastore)
+  - [S3](#s3)
 + [Multi-tenancy](#multi-tenancy)
 + [Customization](#customization)
 + [Duration specification](#duration-specification)
@@ -885,6 +886,28 @@ public LockProvider lockProvider(DatabaseClient databaseClient) {
 }
 ```
 
+#### S3
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-s3</artifactId>
+    <version>6.0.2</version>
+</dependency>
+```
+
+and configure
+```java
+import net.javacrumbs.shedlock.provider.s3.S3LockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.amazonaws.services.s3.AmazonS3 amazonS3) {
+    return new S3LockProvider(amazonS3);
+}
+```
 
 ## Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
