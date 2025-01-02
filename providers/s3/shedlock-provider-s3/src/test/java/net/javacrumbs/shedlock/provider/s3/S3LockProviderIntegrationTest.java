@@ -1,7 +1,6 @@
 package net.javacrumbs.shedlock.provider.s3;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -30,19 +29,19 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
 
     @Container
     public static final MyLocalStackS3Container localStackS3 = new MyLocalStackS3Container();
+
     private static AmazonS3 s3Client;
     private static final String BUCKET_NAME = "my-bucket";
     private static final String OBJECT_PREFIX = "prefix";
 
     @BeforeAll
     public static void startLocalStackS3() {
-        s3Client = AmazonS3ClientBuilder.standard().withEndpointConfiguration(
-            new AwsClientBuilder.EndpointConfiguration(localStackS3.getEndpoint().toString(), localStackS3.getRegion())
-        ).withCredentials(
-            new AWSStaticCredentialsProvider(
-                new BasicAWSCredentials(localStackS3.getAccessKey(), localStackS3.getSecretKey())
-            )
-        ).build();
+        s3Client = AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(
+                        localStackS3.getEndpoint().toString(), localStackS3.getRegion()))
+                .withCredentials(new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(localStackS3.getAccessKey(), localStackS3.getSecretKey())))
+                .build();
     }
 
     @BeforeEach
@@ -52,7 +51,7 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
 
     @AfterEach
     public void after() {
-        s3Client.listObjects(BUCKET_NAME).getObjectSummaries().forEach(obj ->{
+        s3Client.listObjects(BUCKET_NAME).getObjectSummaries().forEach(obj -> {
             s3Client.deleteObject(BUCKET_NAME, obj.getKey());
         });
     }
@@ -79,7 +78,9 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
     }
 
     private Lock findLock(String lockName) {
-        return new S3StorageAccessor(s3Client, BUCKET_NAME, OBJECT_PREFIX).find(lockName, "test").get();
+        return new S3StorageAccessor(s3Client, BUCKET_NAME, OBJECT_PREFIX)
+                .find(lockName, "test")
+                .get();
     }
 
     private static class MyLocalStackS3Container extends LocalStackContainer {
@@ -88,4 +89,3 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
         }
     }
 }
-

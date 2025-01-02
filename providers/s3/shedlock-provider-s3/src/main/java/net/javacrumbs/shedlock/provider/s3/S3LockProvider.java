@@ -1,4 +1,5 @@
 package net.javacrumbs.shedlock.provider.s3;
+
 import com.amazonaws.services.s3.AmazonS3;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 
@@ -28,4 +29,3 @@ public class S3LockProvider extends StorageBasedLockProvider {
         this(s3Client, bucketName, "shedlock/");
     }
 }
-

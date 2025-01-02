@@ -1,18 +1,17 @@
 package net.javacrumbs.shedlock.provider.s3;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
-import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 
 /**
  * Implementation of StorageAccessor for S3 as a lock storage backend.
@@ -66,12 +65,12 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
 
         try {
             var lockContent = UUID.randomUUID().toString().getBytes();
-            ObjectMetadata metadata = createMetadata(lockConfiguration.getLockAtMostUntil(), ClockProvider.now(), getHostname());
+            ObjectMetadata metadata =
+                    createMetadata(lockConfiguration.getLockAtMostUntil(), ClockProvider.now(), getHostname());
             metadata.setContentLength(lockContent.length);
 
-            PutObjectRequest request = new PutObjectRequest(
-                    bucketName, objectName(name), new ByteArrayInputStream(lockContent), metadata
-            );
+            PutObjectRequest request =
+                    new PutObjectRequest(bucketName, objectName(name), new ByteArrayInputStream(lockContent), metadata);
             request.putCustomRequestHeader("If-None-Match", "*");
 
             s3Client.putObject(request);
@@ -91,12 +90,17 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
     public boolean updateRecord(LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName(), "updateRecord");
         if (lock.isEmpty() || lock.get().lockUntil().isAfter(ClockProvider.now())) {
-            logger.debug("Update skipped. Lock still valid or not found. name: {}, lock: {}", lockConfiguration.getName(), lock);
+            logger.debug(
+                    "Update skipped. Lock still valid or not found. name: {}, lock: {}",
+                    lockConfiguration.getName(),
+                    lock);
             return false;
         }
 
-        ObjectMetadata newMetadata = createMetadata(lockConfiguration.getLockAtMostUntil(), ClockProvider.now(), getHostname());
-        return replaceObjectMetadata(lockConfiguration.getName(), newMetadata, lock.get().eTag(), "updateRecord");
+        ObjectMetadata newMetadata =
+                createMetadata(lockConfiguration.getLockAtMostUntil(), ClockProvider.now(), getHostname());
+        return replaceObjectMetadata(
+                lockConfiguration.getName(), newMetadata, lock.get().eTag(), "updateRecord");
     }
 
     @Override
@@ -116,7 +120,10 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
         if (lock.isEmpty()
                 || lock.get().lockUntil().isBefore(ClockProvider.now())
                 || !lock.get().lockedBy().equals(getHostname())) {
-            logger.debug("Extend skipped. Lock invalid or not owned by host. name: {}, lock: {}", lockConfiguration.getName(), lock);
+            logger.debug(
+                    "Extend skipped. Lock invalid or not owned by host. name: {}, lock: {}",
+                    lockConfiguration.getName(),
+                    lock);
             return false;
         }
 
@@ -125,7 +132,8 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
 
     private boolean updateUntil(String name, Lock lock, Instant until, String action) {
         ObjectMetadata existingMetadata = s3Client.getObjectMetadata(bucketName, objectName(name));
-        ObjectMetadata newMetadata = createMetadata(until, Instant.parse(existingMetadata.getUserMetaDataOf(LOCKED_AT)), getHostname());
+        ObjectMetadata newMetadata =
+                createMetadata(until, Instant.parse(existingMetadata.getUserMetaDataOf(LOCKED_AT)), getHostname());
 
         return replaceObjectMetadata(name, newMetadata, lock.eTag(), action);
     }
@@ -134,14 +142,18 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
         var lockContent = UUID.randomUUID().toString().getBytes();
         newMetadata.setContentLength(lockContent.length);
 
-        PutObjectRequest request = new PutObjectRequest(
-                bucketName, objectName(name), new ByteArrayInputStream(lockContent), newMetadata
-        );
+        PutObjectRequest request =
+                new PutObjectRequest(bucketName, objectName(name), new ByteArrayInputStream(lockContent), newMetadata);
         request.putCustomRequestHeader("If-Match", eTag);
 
         try {
             PutObjectResult response = s3Client.putObject(request);
-            logger.debug("Lock {} successfully. name: {}, old e-tag: {}, new e-tag: {}", action, name, eTag, response.getETag());
+            logger.debug(
+                    "Lock {} successfully. name: {}, old e-tag: {}, new e-tag: {}",
+                    action,
+                    name,
+                    eTag,
+                    response.getETag());
             return true;
         } catch (AmazonServiceException e) {
             if (e.getStatusCode() == 412) {
