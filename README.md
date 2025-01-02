@@ -1078,7 +1078,7 @@ and one that proxies TaskScheduler (PROXY_SCHEDULER)
 Since version 4.0.0, the default mode of Spring integration is an AOP proxy around the annotated method.
 
 The main advantage of this mode is that it plays well with other frameworks that want to somehow alter the default Spring scheduling mechanism.
-The disadvantage is that the lock is applied even if you call the method directly. If the method returns a value and the lock is held
+It also means that *the lock is applied even if you call the method directly*. If the method returns a value and the lock is held
 by another process, null or an empty Optional will be returned (primitive return types are not supported).
 
 Final and non-public methods are not proxied so either you have to make your scheduled methods public and non-final or use TaskScheduler proxy.
