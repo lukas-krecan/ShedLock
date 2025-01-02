@@ -44,6 +44,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [In-Memory](#in-memory)
   - [Memcached](#memcached-using-spymemcached)
   - [Datastore](#datastore)
+  - [NATS JetStream](#jetstream)
 + [Multi-tenancy](#multi-tenancy)
 + [Customization](#customization)
 + [Duration specification](#duration-specification)
@@ -885,6 +886,49 @@ public LockProvider lockProvider(DatabaseClient databaseClient) {
 }
 ```
 
+#### JetStream
+NatsJetStreamLockProvider has some limitations due to how NATS have implemented TTL, but its still useful for most usecases.
+
+100ms is the smallest lock timing NATS support (currently NatsJetStreamLockProvider will silently increase the values below this to 100ms). Reaper timings of TTL expired locks cannot be configured in NATS currently, so timing is best effort.
+
+TTL is currently defined on 'bucket' level, meaning a lockname is fixed to a TTL when first encountered. So avoid using the same lockname with different timing settings.
+
+Dont do:
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = "5m")
+.. (somewhere else)
+@SchedulerLock(name = "scheduledTaskName", lockAtMostFor = "10m")
+
+But instead you can do:
+@SchedulerLock(name = "scheduledTaskName-5m", lockAtMostFor = "5m")
+.. (somewhere else)
+@SchedulerLock(name = "scheduledTaskName-10m", lockAtMostFor = "10m")
+
+Buckets are auto created with fixed TTL, but never deleted. So any timing changes will require manual deletion of the bucket. NatsJetStreamLockProvider will trigger log warning if this mismatch is detected.
+
+NATS 2.11 should make it possible to define TTL on key level when released... so fingers crossed :D
+
+Import the project
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jetstream</artifactId>
+    <version>5.16.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.nats.jetstream.NatsJetStreamLockProvider;
+
+...
+
+@Bean
+public NatsJetStreamLockProvider lockProvider(io.nats.client.Connection connection) {
+    return new NatsJetStreamLockProvider(connection);
+}
+```
 
 ## Multi-tenancy
 If you have multi-tenancy use-case you can use a lock provider similar to this one
