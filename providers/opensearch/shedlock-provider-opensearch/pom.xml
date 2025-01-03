@@ -13,6 +13,7 @@
 
     <properties>
         <opensearch.version>2.17.1</opensearch.version>
+        <opensearch.java.client.version>2.19.0</opensearch.java.client.version>
     </properties>
 
     <dependencies>
@@ -26,6 +27,12 @@
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-rest-high-level-client</artifactId>
             <version>${opensearch.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>opensearch-java</artifactId>
+            <version>${opensearch.java.client.version}</version>
         </dependency>
 
         <dependency>
