@@ -600,6 +600,13 @@ import static net.javacrumbs.shedlock.provider.opensearch.OpenSearchLockProvider
 ...
 
 @Bean
+public OpenSearchLockProvider lockProvider(OpenSearchClient openSearchClient) {
+        return new OpenSearchLockProvider(openSearchClient);
+}
+
+Or using deprecated `RestHighLevelClient`
+
+@Bean
 public OpenSearchLockProvider lockProvider(RestHighLevelClient highLevelClient) {
     return new OpenSearchLockProvider(highLevelClient);
 }
