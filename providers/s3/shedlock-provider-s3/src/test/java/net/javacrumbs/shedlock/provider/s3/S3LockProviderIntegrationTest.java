@@ -28,7 +28,7 @@ import org.testcontainers.utility.DockerImageName;
 public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     @Container
-    public static final MyLocalStackS3Container localStackS3 = new MyLocalStackS3Container();
+    static final MyLocalStackS3Container localStackS3 = new MyLocalStackS3Container();
 
     private static AmazonS3 s3Client;
     private static final String BUCKET_NAME = "my-bucket";
