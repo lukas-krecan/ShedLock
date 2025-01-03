@@ -63,6 +63,7 @@
         <module>providers/datastore/shedlock-provider-datastore</module>
         <module>providers/spanner/shedlock-provider-spanner</module>
         <module>providers/neo4j/shedlock-provider-neo4j</module>
+        <module>providers/s3/shedlock-provider-s3</module>
     </modules>
 
     <properties>
