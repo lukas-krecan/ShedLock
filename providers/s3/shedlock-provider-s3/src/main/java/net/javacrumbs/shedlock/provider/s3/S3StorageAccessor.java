@@ -1,15 +1,17 @@
 package net.javacrumbs.shedlock.provider.s3;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 
@@ -17,11 +19,12 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
  * Implementation of StorageAccessor for S3 as a lock storage backend.
  * Manages locks using S3 objects with metadata for expiration and conditional writes.
  */
-public class S3StorageAccessor extends AbstractStorageAccessor {
+class S3StorageAccessor extends AbstractStorageAccessor {
 
     private static final String LOCK_UNTIL = "lockUntil";
     private static final String LOCKED_AT = "lockedAt";
     private static final String LOCKED_BY = "lockedBy";
+    private static final int PRECONDITION_FAILED = 412;
 
     private final AmazonS3 s3Client;
     private final String bucketName;
@@ -64,9 +67,8 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
         }
 
         try {
-            var lockContent = UUID.randomUUID().toString().getBytes();
-            ObjectMetadata metadata =
-                    createMetadata(lockConfiguration.getLockAtMostUntil(), ClockProvider.now(), getHostname());
+            var lockContent = getLockContent();
+            ObjectMetadata metadata = createMetadata(lockConfiguration.getLockAtMostUntil(), now(), getHostname());
             metadata.setContentLength(lockContent.length);
 
             PutObjectRequest request =
@@ -77,7 +79,7 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
             logger.debug("Lock created successfully. name: {}, metadata: {}", name, metadata.getUserMetadata());
             return true;
         } catch (AmazonServiceException e) {
-            if (e.getStatusCode() == 412) {
+            if (e.getStatusCode() == PRECONDITION_FAILED) {
                 logger.debug("Lock already in use. name: {}", name);
             } else {
                 logger.warn("Failed to create lock. name: {}", name, e);
@@ -89,16 +91,16 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName(), "updateRecord");
-        if (lock.isEmpty() || lock.get().lockUntil().isAfter(ClockProvider.now())) {
-            logger.debug(
-                    "Update skipped. Lock still valid or not found. name: {}, lock: {}",
-                    lockConfiguration.getName(),
-                    lock);
+        if (lock.isEmpty()) {
+            logger.warn("Update skipped. Lock not found. name: {}, lock: {}", lockConfiguration.getName(), lock);
+            return false;
+        }
+        if (lock.get().lockUntil().isAfter(now())) {
+            logger.debug("Update skipped. Lock still valid. name: {}, lock: {}", lockConfiguration.getName(), lock);
             return false;
         }
 
-        ObjectMetadata newMetadata =
-                createMetadata(lockConfiguration.getLockAtMostUntil(), ClockProvider.now(), getHostname());
+        ObjectMetadata newMetadata = createMetadata(lockConfiguration.getLockAtMostUntil(), now(), getHostname());
         return replaceObjectMetadata(
                 lockConfiguration.getName(), newMetadata, lock.get().eTag(), "updateRecord");
     }
@@ -107,7 +109,7 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
     public void unlock(LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName(), "unlock");
         if (lock.isEmpty()) {
-            logger.debug("Unlock skipped. Lock not found. name: {}, lock: {}", lockConfiguration.getName(), lock);
+            logger.warn("Unlock skipped. Lock not found. name: {}, lock: {}", lockConfiguration.getName(), lock);
             return;
         }
 
@@ -118,7 +120,7 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
     public boolean extend(LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName(), "extend");
         if (lock.isEmpty()
-                || lock.get().lockUntil().isBefore(ClockProvider.now())
+                || lock.get().lockUntil().isBefore(now())
                 || !lock.get().lockedBy().equals(getHostname())) {
             logger.debug(
                     "Extend skipped. Lock invalid or not owned by host. name: {}, lock: {}",
@@ -139,7 +141,7 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
     }
 
     private boolean replaceObjectMetadata(String name, ObjectMetadata newMetadata, String eTag, String action) {
-        var lockContent = UUID.randomUUID().toString().getBytes();
+        var lockContent = getLockContent();
         newMetadata.setContentLength(lockContent.length);
 
         PutObjectRequest request =
@@ -156,13 +158,21 @@ public class S3StorageAccessor extends AbstractStorageAccessor {
                     response.getETag());
             return true;
         } catch (AmazonServiceException e) {
-            if (e.getStatusCode() == 412) {
+            if (e.getStatusCode() == PRECONDITION_FAILED) {
                 logger.debug("Lock not exists to {}. name: {}, e-tag {}", action, name, eTag);
             } else {
-                logger.warn("Failed to create lock. name: {}", name, e);
+                logger.warn("Failed to {} lock. name: {}", action, name, e);
             }
             return false;
         }
+    }
+
+    private static byte[] getLockContent() {
+        var uuid = UUID.randomUUID();
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
     }
 
     private ObjectMetadata createMetadata(Instant lockUntil, Instant lockedAt, String lockedBy) {
