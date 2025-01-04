@@ -905,7 +905,7 @@ import net.javacrumbs.shedlock.provider.s3.S3LockProvider;
 
 @Bean
 public LockProvider lockProvider(com.amazonaws.services.s3.AmazonS3 amazonS3) {
-    return new S3LockProvider(amazonS3, "BUKET_NAME");
+    return new S3LockProvider(amazonS3, "BUCKET_NAME");
 }
 ```
 
