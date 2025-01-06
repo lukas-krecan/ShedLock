@@ -12,7 +12,7 @@
     <version>6.0.3-SNAPSHOT</version>
 
     <properties>
-        <aws-java-sdk-s3.version>1.12.747</aws-java-sdk-s3.version>
+        <aws-java-sdk-s3.version>1.12.780</aws-java-sdk-s3.version>
     </properties>
 
     <dependencies>
