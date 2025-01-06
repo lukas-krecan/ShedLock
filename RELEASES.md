@@ -1,5 +1,9 @@
 # Release notes
 
+## 6.1.0
+* Support for S3 lock provider (thanks @caiooliveiraeti)
+* Dependency updates
+
 ## 6.0.2
 * #2272 Don't fail on startup if LockProvider not found
 * Dependency updates
