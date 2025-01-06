@@ -79,7 +79,7 @@
         <micronaut4-data.version>4.8.1</micronaut4-data.version>
         <logback.ver>1.5.16</logback.ver>
         <awaitility.ver>4.2.2</awaitility.ver>
-        <assertj.ver>3.27.1</assertj.ver>
+        <assertj.ver>3.27.2</assertj.ver>
         <mockito.ver>5.15.2</mockito.ver>
         <slf4j.ver>2.0.16</slf4j.ver>
         <fork.count>1</fork.count>
