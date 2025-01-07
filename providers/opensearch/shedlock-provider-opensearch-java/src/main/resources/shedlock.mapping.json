@@ -1,0 +1,18 @@
+{
+  "lock": {
+    "properties": {
+      "lockUntil": {
+        "type": "date"
+      },
+      "lockedAt": {
+        "type": "date"
+      },
+      "lockedBy": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      }
+    }
+  }
+}

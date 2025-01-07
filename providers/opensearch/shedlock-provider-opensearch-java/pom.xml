@@ -8,11 +8,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>shedlock-provider-opensearch</artifactId>
+    <artifactId>shedlock-provider-opensearch-java</artifactId>
     <version>6.1.1-SNAPSHOT</version>
 
     <properties>
-        <opensearch.version>2.17.1</opensearch.version>
+        <opensearch.java.client.version>2.19.0</opensearch.java.client.version>
     </properties>
 
     <dependencies>
@@ -24,8 +24,8 @@
 
         <dependency>
             <groupId>org.opensearch.client</groupId>
-            <artifactId>opensearch-rest-high-level-client</artifactId>
-            <version>${opensearch.version}</version>
+            <artifactId>opensearch-java</artifactId>
+            <version>${opensearch.java.client.version}</version>
         </dependency>
 
         <dependency>
@@ -39,6 +39,13 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${test-containers.ver}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opensearch</groupId>
+            <artifactId>opensearch-testcontainers</artifactId>
+            <version>2.1.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -59,7 +66,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.opensearch
+                                net.javacrumbs.shedlock.provider.opensearch.java
                             </Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
