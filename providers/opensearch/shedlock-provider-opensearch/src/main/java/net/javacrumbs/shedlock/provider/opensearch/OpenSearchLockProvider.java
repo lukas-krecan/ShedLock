@@ -74,7 +74,10 @@ import org.opensearch.script.ScriptType;
  * update failed (0 updated documents) somebody else holds the lock
  * <li>When unlocking, lock_until is set to now.
  * </ol>
+ *
+ * @deprecated Use shedlock-provider-opensearch-java module
  */
+@Deprecated(forRemoval = true)
 public class OpenSearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
     static final String LOCK_UNTIL = "lockUntil";
