@@ -1,6 +1,10 @@
 # Release notes
 
-## 6.1.0
+## 6.2.0 (2025-01-08)
+* Support OpenSearch Java client (thanks @harisonde)
+* Dependency updates
+
+## 6.1.0 (2025-01-06)
 * Support for S3 lock provider (thanks @caiooliveiraeti)
 * Dependency updates
 
