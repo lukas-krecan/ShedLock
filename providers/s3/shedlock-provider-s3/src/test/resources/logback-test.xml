@@ -23,9 +23,6 @@
         </encoder>
     </appender>
 
-    <logger name="net.javacrumbs.shedlock.provider.s3" level="DEBUG" />
-    <logger name="net.javacrumbs.shedlock.test.support" level="DEBUG" />
-
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
