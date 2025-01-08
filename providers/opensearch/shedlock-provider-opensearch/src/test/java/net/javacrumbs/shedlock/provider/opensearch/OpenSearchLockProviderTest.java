@@ -22,10 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
-import net.javacrumbs.container.OpenSearchContainer;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.apache.http.HttpHost;
@@ -36,17 +34,17 @@ import org.opensearch.action.get.GetResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.testcontainers.OpensearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
     @Container
-    private static final OpenSearchContainer container = new OpenSearchContainer("opensearchproject/opensearch:1.1.0")
-            .withStartupTimeout(Duration.ofMinutes(2))
-            .withEnv("plugins.security.disabled", "true")
-            .withStartupAttempts(2);
+    private static final OpensearchContainer<?> container =
+            new OpensearchContainer<>(DockerImageName.parse("opensearchproject/opensearch:2"));
 
     private RestHighLevelClient highLevelClient;
     private OpenSearchLockProvider lockProvider;
