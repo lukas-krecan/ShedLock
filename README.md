@@ -109,23 +109,18 @@ public void scheduledTask() {
     // do something
 }
 ```
-
-The `@SchedulerLock` annotation has several purposes. First of all, only annotated methods are locked, the library ignores
-all other scheduled tasks. You also have to specify the name for the lock. Only one task with the same name can be executed
-at the same time.
-
-You can also set `lockAtMostFor` attribute which specifies how long the lock should be kept in case the
-executing node dies. This is just a fallback, under normal circumstances the lock is released as soon the tasks finishes
-(unless `lockAtLeastFor` is specified, see below)
-**You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
+### Behavior
+1. Only methods annotated by `@SchedulerLock` are locked, the library ignores all other scheduled tasks. By default, the lock will be applied
+even if the method is called directly, not only thorough the scheduler.
+2. Only one task with the same name can be executed at the same time.
+3. The lock is released as soon as the task is finished (unless `lockAtLeastFor` is specified, see below)
+4. If the JVM crashes before the task finishes, `lockAtMostFor` attribute comes to play. The lock is always released after
+`lockAtMostFor`. **You have to set `lockAtMostFor` to a value which is much longer than normal execution time.** If the task takes longer than
 `lockAtMostFor` the resulting behavior may be unpredictable (more than one process will effectively hold the lock).
-
-If you do not specify `lockAtMostFor` in `@SchedulerLock` default value from `@EnableSchedulerLock` will be used.
-
-Lastly, you can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept.
+5. If you don't specify `lockAtMostFor` in `@SchedulerLock`, the default value from `@EnableSchedulerLock` will be used.
+6. You can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept.
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
-
-All the annotations support Spring Expression Language (SpEL).
+7. All the annotations support Spring Expression Language (SpEL).
 
 #### Example
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
