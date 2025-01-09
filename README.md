@@ -56,6 +56,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Modes of Spring integration](#modes-of-spring-integration)
   - [Scheduled method proxy](#scheduled-method-proxy)
   - [TaskScheduler proxy](#taskscheduler-proxy)
++ [Compatibility matrix](#compatibility-matrix)
 + [Release notes](#release-notes)
 
 ## Versions
@@ -1175,6 +1176,17 @@ If there is more than one record with the same name, you are missing a primary k
 It should help you to see what's going on.
 5. For short-running tasks consider using `lockAtLeastFor`. If the tasks are short-running, they could be executed one
 after another, `lockAtLeastFor` can prevent it.
+
+# Compatibility matrix
+
+| ShedLock Version | Minimal JVM version | Tested with                                                          |
+|------------------|---------------------|----------------------------------------------------------------------|
+| 6.x.x            | 17                  | Spring 6.2, 6.1, <br/>Spring Boot 3.4, 3.3, <br/>Micronaut 4         |
+| 5.x.x            | 17                  | Spring 6.1, 6.0, <br/>Spring Boot 3.4, 3.3, 3.2, <br/>Micronaut 3, 4 |
+| 4.x.x            | 8                   | Spring 6.0, 5.3, <br/>Spring Boot 3.0, 2.7, 2.6                      |
+| 3.x.x            | 8                   | Spring 5.2, 5.1, <br/>Spring Boot 2.2, 2.1                           |
+
+ShedLock may work with additional versions of the Spring, this table just depicts what it was tested with.
 
 
 # Release notes
