@@ -16,7 +16,6 @@ scheduler, please use another project ([db-scheduler](https://github.com/kagkarl
 ShedLock is designed to be used in situations where you have scheduled tasks that are not ready to be executed in parallel, but can be safely
 executed repeatedly. Moreover, the locks are time-based and ShedLock assumes that clocks on the nodes are synchronized.
 
-+ [Versions](#versions)
 + [Components](#components)
 + [Usage](#usage)
 + [Lock Providers](#configure-lockprovider)
@@ -59,9 +58,6 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [Compatibility matrix](#compatibility-matrix)
 + [Release notes](#release-notes)
 
-## Versions
-If you are using JDK >17 and up-to-date libraries use the newest version. If you
-are on older JDK or library, use version **4.44.0** ([documentation](https://github.com/lukas-krecan/ShedLock/tree/version4)).
 
 ## Components
 Shedlock consists of three parts
