@@ -1179,12 +1179,14 @@ after another, `lockAtLeastFor` can prevent it.
 
 # Compatibility matrix
 
-| ShedLock Version | Minimal JVM version | Tested with                                                          |
-|------------------|---------------------|----------------------------------------------------------------------|
-| 6.x.x            | 17                  | Spring 6.2, 6.1, <br/>Spring Boot 3.4, 3.3, <br/>Micronaut 4         |
-| 5.x.x            | 17                  | Spring 6.1, 6.0, <br/>Spring Boot 3.4, 3.3, 3.2, <br/>Micronaut 3, 4 |
-| 4.x.x            | 8                   | Spring 6.0, 5.3, <br/>Spring Boot 3.0, 2.7, 2.6                      |
-| 3.x.x            | 8                   | Spring 5.2, 5.1, <br/>Spring Boot 2.2, 2.1                           |
+| ShedLock Version | Minimal JVM version | Tested with                                                        |
+|------------------|---------------------|--------------------------------------------------------------------|
+| 6.x.x            | 17                  | Spring 6.2, 6.1 <br/>Spring Boot 3.4, 3.3 <br/>Micronaut 4         |
+| 5.x.x            | 17                  | Spring 6.1, 6.0 <br/>Spring Boot 3.4, 3.3, 3.2 <br/>Micronaut 3, 4 |
+| 4.x.x            | 8                   | Spring 6.0, 5.3 <br/>Spring Boot 3.0, 2.7, 2.6                     |
+| 3.x.x            | 8                   | Spring 5.2, 5.1 <br/>Spring Boot 2.2, 2.1                          |
+| 2.x.x            | 8                   | Spring 5.1, 5.0 <br/>Spring Boot 2.1                               |
+| 1.x.x            | 8                   | Spring 5.0 <br/>Spring Boot 2.0                                    |
 
 ShedLock may work with additional versions of the Spring, this table just depicts what it was tested with.
 
