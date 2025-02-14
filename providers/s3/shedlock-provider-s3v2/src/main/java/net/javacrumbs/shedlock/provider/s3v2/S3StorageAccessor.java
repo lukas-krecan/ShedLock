@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
@@ -46,10 +45,10 @@ class S3StorageAccessor extends AbstractStorageAccessor {
     Optional<Lock> find(String name, String action) {
         try {
             HeadObjectResponse metadataResponse = this.s3Client.headObject(HeadObjectRequest.builder()
-              .bucket(this.bucketName)
-              .key(this.objectName(name))
-              .build()); 
-          
+                    .bucket(this.bucketName)
+                    .key(this.objectName(name))
+                    .build());
+
             Map<String, String> metadata = metadataResponse.metadata();
 
             Instant lockUntil = Instant.parse(metadata.get(LOCK_UNTIL));
