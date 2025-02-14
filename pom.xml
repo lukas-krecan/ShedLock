@@ -65,6 +65,7 @@
         <module>providers/spanner/shedlock-provider-spanner</module>
         <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/s3/shedlock-provider-s3</module>
+        <module>providers/s3/shedlock-provider-s3v2</module>
     </modules>
 
     <properties>
