@@ -44,10 +44,7 @@ class S3StorageAccessor extends AbstractStorageAccessor {
      */
     Optional<Lock> find(String name, String action) {
         try {
-            HeadObjectResponse metadataResponse = this.s3Client.headObject(HeadObjectRequest.builder()
-                    .bucket(this.bucketName)
-                    .key(this.objectName(name))
-                    .build());
+            HeadObjectResponse metadataResponse = getExistingMetadata(name);
 
             Map<String, String> metadata = metadataResponse.metadata();
 
@@ -76,17 +73,16 @@ class S3StorageAccessor extends AbstractStorageAccessor {
         }
 
         try {
-            var lockContent = getLockContent();
             Map<String, String> metadata = createMetadata(lockConfiguration.getLockAtMostUntil(), now(), getHostname());
 
             PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(this.bucketName)
-                    .key(this.objectName(name))
+                    .bucket(bucketName)
+                    .key(objectName(name))
                     .metadata(metadata)
                     .ifNoneMatch("*")
                     .build();
 
-            s3Client.putObject(request, RequestBody.fromBytes(lockContent));
+            s3Client.putObject(request, getLockContent());
             logger.debug("Lock created successfully. name: {}, metadata: {}", name, metadata);
             return true;
         } catch (AwsServiceException e) {
@@ -144,11 +140,7 @@ class S3StorageAccessor extends AbstractStorageAccessor {
     }
 
     private boolean updateUntil(String name, Lock lock, Instant until, String action) {
-
-        var existingMetadata = this.s3Client.headObject(HeadObjectRequest.builder()
-                .bucket(this.bucketName)
-                .key(this.objectName(name))
-                .build());
+        var existingMetadata = getExistingMetadata(name);
 
         Map<String, String> newMetadata =
                 createMetadata(until, Instant.parse(existingMetadata.metadata().get(LOCKED_AT)), getHostname());
@@ -156,18 +148,23 @@ class S3StorageAccessor extends AbstractStorageAccessor {
         return replaceObjectMetadata(name, newMetadata, lock.eTag(), action);
     }
 
-    private boolean replaceObjectMetadata(String name, Map<String, String> newMetadata, String eTag, String action) {
-        var lockContent = getLockContent();
+    private HeadObjectResponse getExistingMetadata(String name) {
+        return s3Client.headObject(HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectName(name))
+                .build());
+    }
 
+    private boolean replaceObjectMetadata(String name, Map<String, String> newMetadata, String eTag, String action) {
         PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(this.bucketName)
-                .key(this.objectName(name))
+                .bucket(bucketName)
+                .key(objectName(name))
                 .metadata(newMetadata)
                 .ifMatch(eTag)
                 .build();
 
         try {
-            PutObjectResponse response = s3Client.putObject(request, RequestBody.fromBytes(lockContent));
+            PutObjectResponse response = s3Client.putObject(request, getLockContent());
             logger.debug(
                     "Lock {} successfully. name: {}, old e-tag: {}, new e-tag: {}",
                     action,
@@ -185,12 +182,12 @@ class S3StorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private static byte[] getLockContent() {
+    private static RequestBody getLockContent() {
         var uuid = UUID.randomUUID();
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
-        return bb.array();
+        return RequestBody.fromBytes(bb.array());
     }
 
     private Map<String, String> createMetadata(Instant lockUntil, Instant lockedAt, String lockedBy) {

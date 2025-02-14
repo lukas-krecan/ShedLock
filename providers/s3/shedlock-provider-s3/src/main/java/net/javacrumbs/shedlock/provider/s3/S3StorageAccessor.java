@@ -41,7 +41,7 @@ class S3StorageAccessor extends AbstractStorageAccessor {
      */
     Optional<Lock> find(String name, String action) {
         try {
-            ObjectMetadata metadata = s3Client.getObjectMetadata(bucketName, objectName(name));
+            ObjectMetadata metadata = getExistingMetadata(name);
             Instant lockUntil = Instant.parse(metadata.getUserMetaDataOf(LOCK_UNTIL));
             Instant lockedAt = Instant.parse(metadata.getUserMetaDataOf(LOCKED_AT));
             String lockedBy = metadata.getUserMetaDataOf(LOCKED_BY);
@@ -133,11 +133,15 @@ class S3StorageAccessor extends AbstractStorageAccessor {
     }
 
     private boolean updateUntil(String name, Lock lock, Instant until, String action) {
-        ObjectMetadata existingMetadata = s3Client.getObjectMetadata(bucketName, objectName(name));
+        ObjectMetadata existingMetadata = getExistingMetadata(name);
         ObjectMetadata newMetadata =
                 createMetadata(until, Instant.parse(existingMetadata.getUserMetaDataOf(LOCKED_AT)), getHostname());
 
         return replaceObjectMetadata(name, newMetadata, lock.eTag(), action);
+    }
+
+    private ObjectMetadata getExistingMetadata(String name) {
+        return s3Client.getObjectMetadata(bucketName, objectName(name));
     }
 
     private boolean replaceObjectMetadata(String name, ObjectMetadata newMetadata, String eTag, String action) {
