@@ -192,12 +192,12 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 ...
 @Bean
 public LockProvider lockProvider(DataSource dataSource) {
-            return new JdbcTemplateLockProvider(
-                JdbcTemplateLockProvider.Configuration.builder()
-                .withJdbcTemplate(new JdbcTemplate(dataSource))
-                .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
-                .build()
-            );
+    return new JdbcTemplateLockProvider(
+        JdbcTemplateLockProvider.Configuration.builder()
+        .withJdbcTemplate(new JdbcTemplate(dataSource))
+        .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
+        .build()
+    );
 }
 ```
 By specifying `usingDbTime()` the lock provider will use UTC time based on the DB server clock.
@@ -918,7 +918,7 @@ private static abstract class MultiTenancyLockProvider implements LockProvider {
         return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
     }
 
-    protected abstract LockProvider createLockProvider(String tenantName) ;
+    protected abstract LockProvider createLockProvider(String tenantName);
 
     protected abstract String getTenantName(LockConfiguration lockConfiguration);
 }
@@ -974,7 +974,7 @@ it adds more complexity to the library and the flow is harder to reason about so
 ```java
 @Bean
 public LockProvider lockProvider(...) {
-    return new  KeepAliveLockProvider(new XyzProvider(...), scheduler);
+    return new KeepAliveLockProvider(new XyzProvider(...), scheduler);
 }
 ```
 KeepAliveLockProvider extends the lock in the middle of the lockAtMostFor interval. For example, if the lockAtMostFor
@@ -989,10 +989,7 @@ Import the project:
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Micronaut 3 -->
-    <artifactId>shedlock-micronaut</artifactId>
-    <!-- For Micronaut 4 use -->
-    <!-- <artifactId>shedlock-micronaut4</artifactId> -->
+    <artifactId>shedlock-micronaut4</artifactId>
     <version>6.3.0</version>
 </dependency>
 ```
