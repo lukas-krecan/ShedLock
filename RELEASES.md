@@ -3,7 +3,7 @@
 * Add shedlock-provider-jdbc to bom (thanks @svenallers)
 * Dependency updates
 
-## 6.3.0 (2025-01-06)
+## 6.3.0 (2025-02-06)
 * Support for S3 V2 lock provider (thanks @JordiMartinezVicent)
 * Dependency updates
 
