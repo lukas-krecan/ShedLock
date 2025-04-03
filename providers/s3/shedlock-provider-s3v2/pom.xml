@@ -12,7 +12,7 @@
     <version>6.3.2-SNAPSHOT</version>
 
     <properties>
-        <aws-java-sdk2-s3.version>2.31.13</aws-java-sdk2-s3.version>
+        <aws-java-sdk2-s3.version>2.31.14</aws-java-sdk2-s3.version>
     </properties>
 
     <dependencies>
