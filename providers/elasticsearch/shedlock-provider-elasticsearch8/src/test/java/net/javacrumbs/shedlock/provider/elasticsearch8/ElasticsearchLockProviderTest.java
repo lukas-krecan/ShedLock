@@ -24,9 +24,6 @@ import static org.assertj.core.api.Assertions.fail;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -38,12 +35,6 @@ import java.util.Date;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -65,14 +56,10 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
     @BeforeEach
     public void setUp() {
-        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("elastic", "elastic1234"));
-        RestClient restClient = RestClient.builder(HttpHost.create(container.getHttpHostAddress()))
-                .setHttpClientConfigCallback(
-                        clientBuilder -> clientBuilder.setDefaultCredentialsProvider(credentialsProvider))
-                .build();
-        ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(objectMapper()));
-        client = new ElasticsearchClient(transport);
+        client = ElasticsearchClient.of(b -> b
+            .host("http://" + container.getHttpHostAddress())
+            .usernameAndPassword("elastic", "elastic1234")
+        );
         lockProvider = new ElasticsearchLockProvider(client);
     }
 

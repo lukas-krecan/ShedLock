@@ -34,7 +34,6 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
-import org.elasticsearch.client.ResponseException;
 
 /**
  * It uses a collection that contains documents like this:
@@ -109,7 +108,7 @@ public class ElasticsearchLockProvider implements LockProvider {
             UpdateRequest<Lock, Lock> updateRequest = UpdateRequest.of(ur -> ur.index(index)
                     .id(lockConfiguration.getName())
                     .refresh(Refresh.True)
-                    .script(sc -> sc.lang("painless").source(UPDATE_SCRIPT).params(lockObject))
+                    .script(sc -> sc.lang("painless").source(builder -> builder.scriptString(UPDATE_SCRIPT)).params(lockObject))
                     .upsert(pojo));
 
             UpdateResponse<Lock> res = client.update(updateRequest, Lock.class);
@@ -119,13 +118,7 @@ public class ElasticsearchLockProvider implements LockProvider {
                 return Optional.empty();
             }
         } catch (IOException | ElasticsearchException e) {
-            if ((e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == 409)
-                    || (e instanceof ResponseException
-                            && ((ResponseException) e)
-                                            .getResponse()
-                                            .getStatusLine()
-                                            .getStatusCode()
-                                    == 409)) {
+            if ((e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == 409)) {
                 return Optional.empty();
             } else {
                 throw new LockException("Unexpected exception occurred", e);
@@ -163,7 +156,7 @@ public class ElasticsearchLockProvider implements LockProvider {
                         .id(lockConfiguration.getName())
                         .refresh(Refresh.True)
                         .script(sc -> sc.lang("painless")
-                                .source("ctx._source.lockUntil = params.unlockTime")
+                                .source(builder -> builder.scriptString("ctx._source.lockUntil = params.unlockTime"))
                                 .params(lockObject)));
                 client.update(updateRequest, Lock.class);
             } catch (IOException | ElasticsearchException e) {
