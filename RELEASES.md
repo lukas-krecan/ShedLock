@@ -1,4 +1,8 @@
 # Release notes
+## 6.4.0 (2025-04-19)
+* Support ElasticSearch 9
+* Dependency updates
+
 ## 6.3.1 (2025-03-28)
 * Add shedlock-provider-jdbc to bom (thanks @svenallers)
 * Dependency updates
