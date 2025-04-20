@@ -105,9 +105,8 @@ public abstract class AbstractLockProviderIntegrationTest {
         LockConfiguration lockConfiguration = lockConfig(LOCK_NAME1);
         for (int i = 0; i < 10; i++) {
             Optional<SimpleLock> lock = getLockProvider().lock(lockConfiguration);
-            assertThat(lock).describedAs("Successfully locked").isNotEmpty();
+            assertThat(lock).describedAs("Successfully locked " + i).isNotEmpty();
             assertThat(getLockProvider().lock(lockConfiguration)).isEmpty();
-            assertThat(lock).isNotEmpty();
             lock.get().unlock();
         }
     }
