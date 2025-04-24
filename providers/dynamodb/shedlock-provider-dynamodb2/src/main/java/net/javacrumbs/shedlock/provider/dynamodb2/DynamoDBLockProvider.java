@@ -15,14 +15,13 @@ package net.javacrumbs.shedlock.provider.dynamodb2;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -174,10 +173,6 @@ public class DynamoDBLockProvider implements LockProvider {
 
     private static AttributeValue attr(String lockUntilIso) {
         return AttributeValue.builder().s(lockUntilIso).build();
-    }
-
-    private Instant now() {
-        return ClockProvider.now();
     }
 
     private static final class DynamoDBLock extends AbstractSimpleLock {
