@@ -15,13 +15,13 @@ package net.javacrumbs.shedlock.provider.dynamodb2;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
-import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -32,6 +32,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.awssdk.utils.StringUtils;
 
 /**
  * Distributed lock using DynamoDB. Depends on
@@ -68,6 +69,7 @@ public class DynamoDBLockProvider implements LockProvider {
     static final String LOCKED_AT = "lockedAt";
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
+    static final String SORT = "_SortKey";
 
     private static final String OBTAIN_LOCK_QUERY =
             "set " + LOCK_UNTIL + " = :lockUntil, " + LOCKED_AT + " = :lockedAt, " + LOCKED_BY + " = :lockedBy";
@@ -79,6 +81,7 @@ public class DynamoDBLockProvider implements LockProvider {
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
     private final String partitionKeyName;
+    private final String sortKeyName;
 
     /**
      * Uses DynamoDB to coordinate locks
@@ -101,9 +104,26 @@ public class DynamoDBLockProvider implements LockProvider {
      */
     public DynamoDBLockProvider(
             @NonNull DynamoDbClient dynamoDbClient, @NonNull String tableName, @NonNull String partitionKeyName) {
+        this(dynamoDbClient, tableName, partitionKeyName, null);
+    }
+
+    /**
+     * Uses DynamoDB to coordinate locks
+     *
+     * @param dynamoDbClient   v2 of DynamoDB client
+     * @param tableName        the lock table name
+     * @param partitionKeyName the partitionKey name of table
+     * @param sortKeyName      the sortKey name of table
+     */
+    public DynamoDBLockProvider(
+            @NonNull DynamoDbClient dynamoDbClient,
+            @NonNull String tableName,
+            @NonNull String partitionKeyName,
+            String sortKeyName) {
         this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
         this.partitionKeyName = requireNonNull(partitionKeyName, "partitionKeyName can not be null");
+        this.sortKeyName = sortKeyName;
         this.hostname = Utils.getHostname();
     }
 
@@ -113,7 +133,7 @@ public class DynamoDBLockProvider implements LockProvider {
         String nowIso = toIsoString(now());
         String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
 
-        Map<String, AttributeValue> key = singletonMap(partitionKeyName, attr(lockConfiguration.getName()));
+        Map<String, AttributeValue> key = getKey(lockConfiguration);
 
         Map<String, AttributeValue> attributeUpdates =
                 Map.of(":lockUntil", attr(lockUntilIso), ":lockedAt", attr(nowIso), ":lockedBy", attr(hostname));
@@ -135,43 +155,46 @@ public class DynamoDBLockProvider implements LockProvider {
             // 3. The lock document exists and lockUtil > now -
             // ConditionalCheckFailedException is thrown
             dynamoDbClient.updateItem(request);
-            return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, partitionKeyName, lockConfiguration));
+            return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, lockConfiguration, key));
         } catch (ConditionalCheckFailedException e) {
             // Condition failed. This means there was a lock with lockUntil > now.
             return Optional.empty();
         }
     }
 
-    private static AttributeValue attr(String lockUntilIso) {
-        return AttributeValue.builder().s(lockUntilIso).build();
+    private Map<String, AttributeValue> getKey(LockConfiguration lockConfiguration) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put(partitionKeyName, attr(lockConfiguration.getName()));
+        if (StringUtils.isNotBlank(sortKeyName)) {
+            key.put(sortKeyName, attr(lockConfiguration.getName().concat(SORT)));
+        }
+        return key;
     }
 
-    private Instant now() {
-        return ClockProvider.now();
+    private static AttributeValue attr(String lockUntilIso) {
+        return AttributeValue.builder().s(lockUntilIso).build();
     }
 
     private static final class DynamoDBLock extends AbstractSimpleLock {
         private final DynamoDbClient dynamoDbClient;
         private final String tableName;
-        private final String partitionKeyName;
+        private final Map<String, AttributeValue> key;
 
         private DynamoDBLock(
                 DynamoDbClient dynamoDbClient,
                 String tableName,
-                String partitionKeyName,
-                LockConfiguration lockConfiguration) {
+                LockConfiguration lockConfiguration,
+                Map<String, AttributeValue> key) {
             super(lockConfiguration);
             this.dynamoDbClient = dynamoDbClient;
             this.tableName = tableName;
-            this.partitionKeyName = partitionKeyName;
+            this.key = key;
         }
 
         @Override
         public void doUnlock() {
             // Set lockUntil to now or lockAtLeastUntil whichever is later
             String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
-
-            Map<String, AttributeValue> key = singletonMap(partitionKeyName, attr(lockConfiguration.getName()));
 
             Map<String, AttributeValue> attributeUpdates = singletonMap(":lockUntil", attr(unlockTimeIso));
 

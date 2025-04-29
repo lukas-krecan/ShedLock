@@ -13,51 +13,25 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb2;
 
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCK_UNTIL;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.net.URI;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
-import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
-@Testcontainers
-public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
+public class DynamoDBLockProviderIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
     private static final String ID = "_id2";
 
-    @Container
-    static final DynamoDbContainer dynamoDbContainer =
-            new DynamoDbContainer("amazon/dynamodb-local:2.5.1").withExposedPorts(8000);
-
-    private static final String TABLE_NAME = "Shedlock";
-    private static DynamoDbClient dynamodb;
-
     @BeforeAll
-    static void createLockProvider() {
+    static void createLockTable() {
         dynamodb = createClient();
-        String lockTable = DynamoDBUtils.createLockTable(
+        DynamoDBUtils.createLockTable(
                 dynamodb,
                 TABLE_NAME,
                 ProvisionedThroughput.builder()
@@ -65,31 +39,7 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
                         .writeCapacityUnits(1L)
                         .build(),
                 ID);
-        while (getTableStatus(lockTable) != TableStatus.ACTIVE)
-            ;
-    }
-
-    private static TableStatus getTableStatus(String lockTable) {
-        return dynamodb.describeTable(
-                        DescribeTableRequest.builder().tableName(lockTable).build())
-                .table()
-                .tableStatus();
-    }
-
-    /**
-     * Create a standard AWS v2 SDK client pointing to the local DynamoDb instance
-     *
-     * @return A DynamoDbClient pointing to the local DynamoDb instance
-     */
-    static DynamoDbClient createClient() {
-        String endpoint = "http://" + dynamoDbContainer.getHost() + ":" + dynamoDbContainer.getFirstMappedPort();
-        return DynamoDbClient.builder()
-                .endpointOverride(URI.create(endpoint))
-                // The region is meaningless for local DynamoDb but required for client builder
-                // validation
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy", "dummy")))
-                .region(Region.US_EAST_1)
-                .build();
+        waitForTableBeingActive();
     }
 
     @AfterEach
@@ -111,42 +61,12 @@ public class DynamoDBLockProviderIntegrationTest extends AbstractLockProviderInt
     }
 
     @Override
-    protected void assertUnlocked(String lockName) {
-        Map<String, AttributeValue> lockItem = getLockItem(lockName);
-        assertThat(fromIsoString(lockItem.get(LOCK_UNTIL).s())).isBeforeOrEqualTo(now());
-        assertThat(fromIsoString(lockItem.get(LOCKED_AT).s())).isBeforeOrEqualTo(now());
-        assertThat(lockItem.get(LOCKED_BY).s()).isNotEmpty();
-    }
-
-    private Instant now() {
-        return Instant.now();
-    }
-
-    @Override
-    protected void assertLocked(String lockName) {
-        Map<String, AttributeValue> lockItem = getLockItem(lockName);
-        assertThat(fromIsoString(lockItem.get(LOCK_UNTIL).s())).isAfter(now());
-        assertThat(fromIsoString(lockItem.get(LOCKED_AT).s())).isBeforeOrEqualTo(now());
-        assertThat(lockItem.get(LOCKED_BY).s()).isNotEmpty();
-    }
-
-    private Instant fromIsoString(String isoString) {
-        return Instant.parse(isoString);
-    }
-
-    private Map<String, AttributeValue> getLockItem(String lockName) {
+    protected Map<String, AttributeValue> getLockItem(String lockName) {
         GetItemRequest request = GetItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(Collections.singletonMap(
                         ID, AttributeValue.builder().s(lockName).build()))
                 .build();
-        GetItemResponse response = dynamodb.getItem(request);
-        return response.item();
-    }
-
-    private static class DynamoDbContainer extends GenericContainer<DynamoDbContainer> {
-        public DynamoDbContainer(String dockerImageName) {
-            super(dockerImageName);
-        }
+        return dynamodb.getItem(request).item();
     }
 }
