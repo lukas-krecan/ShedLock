@@ -12,7 +12,7 @@
     <version>6.5.1-SNAPSHOT</version>
 
     <properties>
-        <datastore.ver>2.27.2</datastore.ver>
+        <datastore.ver>2.28.0</datastore.ver>
     </properties>
 
     <dependencies>
