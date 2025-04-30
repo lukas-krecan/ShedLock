@@ -1,5 +1,5 @@
 # Release notes
-## 6.4.1 (2025-04-29)
+## 6.5.0 (2025-04-29)
 * Support for Sort Keys for DynamoDBLockProvider (thanks @avanish-p1)
 * Dependency updates
 
