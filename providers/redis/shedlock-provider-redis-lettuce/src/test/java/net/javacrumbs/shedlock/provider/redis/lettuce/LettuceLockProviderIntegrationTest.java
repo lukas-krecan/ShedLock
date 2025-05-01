@@ -11,12 +11,14 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redis.jedis4;
+package net.javacrumbs.shedlock.provider.redis.lettuce;
 
 import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.ENV;
 import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
@@ -24,27 +26,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPool;
 
 @Testcontainers
-public class JedisLockProviderIntegrationTest {
+public class LettuceLockProviderIntegrationTest {
 
     @Container
     public static final RedisContainer redis = new RedisContainer(PORT);
 
+    private static RedisClient createClient() {
+        String uri = String.format("redis://%s:%d", redis.getHost(), redis.getFirstMappedPort());
+        return RedisClient.create(uri);
+    }
+
     @Nested
     class Cluster extends AbstractExtensibleLockProviderIntegrationTest {
-        private ExtensibleLockProvider lockProvider;
 
-        private JedisCluster jedisCluster;
+        private ExtensibleLockProvider lockProvider;
+        private StatefulRedisConnection<String, String> connection;
 
         @BeforeEach
         public void createLockProvider() {
-            jedisCluster = new JedisCluster(new HostAndPort(redis.getHost(), redis.getFirstMappedPort()));
-            lockProvider = new JedisLockProvider(jedisCluster, ENV);
+            connection = createClient().connect();
+            lockProvider = new LettuceLockProvider(connection, ENV);
         }
 
         @Override
@@ -58,7 +61,7 @@ public class JedisLockProviderIntegrationTest {
         }
 
         private String getLock(String lockName) {
-            return jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV));
+            return connection.sync().get(LettuceLockProvider.buildKey(lockName, ENV));
         }
 
         @Override
@@ -69,32 +72,28 @@ public class JedisLockProviderIntegrationTest {
 
     @Nested
     class Pool extends AbstractExtensibleLockProviderIntegrationTest {
-        private ExtensibleLockProvider lockProvider;
 
-        private JedisPool jedisPool;
+        private ExtensibleLockProvider lockProvider;
+        private StatefulRedisConnection<String, String> connection;
 
         @BeforeEach
         public void createLockProvider() {
-            jedisPool = new JedisPool(redis.getHost(), redis.getMappedPort(PORT));
-            lockProvider = new JedisLockProvider(jedisPool, ENV);
+            connection = createClient().connect();
+            lockProvider = new LettuceLockProvider(connection, ENV);
         }
 
         @Override
         protected void assertUnlocked(String lockName) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                assertThat(getLock(lockName, jedis)).isNull();
-            }
+            assertThat(getLock(lockName)).isNull();
         }
 
         @Override
         protected void assertLocked(String lockName) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                assertThat(getLock(lockName, jedis)).isNotNull();
-            }
+            assertThat(getLock(lockName)).isNotNull();
         }
 
-        private String getLock(String lockName, Jedis jedis) {
-            return jedis.get(JedisLockProvider.buildKey(lockName, ENV));
+        private String getLock(String lockName) {
+            return connection.sync().get(LettuceLockProvider.buildKey(lockName, ENV));
         }
 
         @Override

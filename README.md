@@ -524,6 +524,30 @@ public HazelcastLockProvider lockProvider(HazelcastInstance hazelcastInstance) {
 }
 ```
 
+#### Redis (using Lettuce)
+
+Import
+
+```xml
+
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-redis-lettuce</artifactId>
+    <version>6.5.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import net.javacrumbs.shedlock.provider.redis.lettuce.LettuceLockProvider;
+...
+@Bean
+public LockProvider lockProvider(StatefulRedisConnection<String, String> connection) {
+    return new LettuceLockProvider(connection, ENV);
+}
+```
+
 #### Couchbase
 Import the project
 

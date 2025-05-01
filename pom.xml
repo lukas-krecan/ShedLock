@@ -53,7 +53,9 @@
         <module>providers/opensearch/shedlock-provider-opensearch-java</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
+        <module>providers/redis/shedlock-test-support-redis</module>
         <module>providers/redis/shedlock-provider-redis-jedis4</module>
+        <module>providers/redis/shedlock-provider-redis-lettuce</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
@@ -97,7 +99,7 @@
                 <configuration>
                     <java>
                         <palantirJavaFormat><version>2.38.0</version></palantirJavaFormat>
-                        <removeUnusedImports />
+                        <removeUnusedImports/>
                     </java>
                     <kotlin>
                         <ktfmt>
