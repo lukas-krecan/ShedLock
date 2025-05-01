@@ -13,34 +13,24 @@
  */
 package net.javacrumbs.shedlock.provider.redis.spring;
 
-import java.io.IOException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.PORT;
+
+import net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer;
 import org.junit.jupiter.api.Nested;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.redisson.spring.data.connection.RedissonConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import redis.embedded.RedisServer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
+@Testcontainers
 public class SpringRedisLockProviderIntegrationTest {
-    private static RedisServer redisServer;
-
-    private static final int PORT = 6381;
-    protected static final String HOST = "localhost";
-
-    @BeforeAll
-    public static void startRedis() throws IOException {
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-    }
-
-    @AfterAll
-    public static void stopRedis() {
-        redisServer.stop();
-    }
+    @Container
+    public static final RedisContainer redis = new RedisContainer(PORT);
 
     @Nested
     class Jedis extends AbstractRedisLockProviderIntegrationTest {
@@ -50,9 +40,8 @@ public class SpringRedisLockProviderIntegrationTest {
     }
 
     private static RedisConnectionFactory createJedisConnectionFactory() {
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setHostName(HOST);
-        jedisConnectionFactory.setPort(PORT);
+        JedisConnectionFactory jedisConnectionFactory =
+                new JedisConnectionFactory(new RedisStandaloneConfiguration(redis.getHost(), PORT));
         jedisConnectionFactory.afterPropertiesSet();
         return jedisConnectionFactory;
     }
@@ -72,7 +61,7 @@ public class SpringRedisLockProviderIntegrationTest {
     }
 
     private static LettuceConnectionFactory createLettuceConnectionFactory() {
-        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(HOST, PORT);
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redis.getHost(), PORT);
         lettuceConnectionFactory.afterPropertiesSet();
         return lettuceConnectionFactory;
     }
@@ -86,7 +75,7 @@ public class SpringRedisLockProviderIntegrationTest {
 
     private static RedisConnectionFactory createRedissonConnectionFactory() {
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://" + HOST + ":" + PORT);
+        config.useSingleServer().setAddress("redis://" + redis.getHost() + ":" + PORT);
         RedissonClient redisson = org.redisson.Redisson.create(config);
         return new RedissonConnectionFactory(redisson);
     }

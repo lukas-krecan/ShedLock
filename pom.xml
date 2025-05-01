@@ -53,6 +53,7 @@
         <module>providers/opensearch/shedlock-provider-opensearch-java</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
+        <module>providers/redis/shedlock-test-support-redis</module>
         <module>providers/redis/shedlock-provider-redis-jedis4</module>
         <module>providers/redis/shedlock-provider-redis-lettuce</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>

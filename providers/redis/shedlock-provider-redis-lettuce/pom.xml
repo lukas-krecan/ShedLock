@@ -33,9 +33,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.playtika.testcontainers</groupId>
-            <artifactId>embedded-redis</artifactId>
-            <version>3.1.11</version>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-test-support-redis</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -50,13 +50,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${test-containers.ver}</version>
             <scope>test</scope>
         </dependency>
 

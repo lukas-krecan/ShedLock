@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.redis.lettuce;
+package net.javacrumbs.shedlock.provider.redis.testsupport;
 
 import com.playtika.testcontainer.redis.RedisProperties;
 import com.playtika.testcontainer.redis.wait.RedisClusterStatusCheck;
@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.utility.MountableFile;
 
-class RedisContainer extends FixedHostPortGenericContainer<RedisContainer> {
+public class RedisContainer extends FixedHostPortGenericContainer<RedisContainer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisContainer.class);
 
-    static final int PORT = 6379;
+    public static final int PORT = 6379;
 
-    static final String ENV = "test";
+    public static final String ENV = "test";
 
     public RedisContainer(int hostPort) {
         super("redis:7.2.3-alpine");

@@ -13,13 +13,14 @@
  */
 package net.javacrumbs.shedlock.provider.redis.lettuce;
 
-import static net.javacrumbs.shedlock.provider.redis.lettuce.RedisContainer.ENV;
-import static net.javacrumbs.shedlock.provider.redis.lettuce.RedisContainer.PORT;
+import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.ENV;
+import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;

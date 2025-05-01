@@ -39,9 +39,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.kstyrc</groupId>
-            <artifactId>embedded-redis</artifactId>
-            <version>0.6</version>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-test-support-redis</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
