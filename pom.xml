@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -54,6 +55,7 @@
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
         <module>providers/redis/shedlock-provider-redis-jedis4</module>
+        <module>providers/redis/shedlock-provider-redis-lettuce</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
@@ -96,8 +98,10 @@
                 <version>2.44.4</version>
                 <configuration>
                     <java>
-                        <palantirJavaFormat><version>2.38.0</version></palantirJavaFormat>
-                        <removeUnusedImports />
+                        <palantirJavaFormat>
+                            <version>2.38.0</version>
+                        </palantirJavaFormat>
+                        <removeUnusedImports/>
                     </java>
                     <kotlin>
                         <ktfmt>
