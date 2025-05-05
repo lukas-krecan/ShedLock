@@ -109,6 +109,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
                 logger.info("Unlock failed due to TransactionSystemException - retrying attempt {}", i + 1);
             }
         }
+        logger.error("Unlock failed after 10 attempts");
     }
 
     private void doUnlock(LockConfiguration lockConfiguration) {
