@@ -45,7 +45,7 @@ public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExt
     private static final String DB_NAME = "db";
 
     @Container
-    public static final MongoDBContainer container = new MongoDBContainer("mongo:4.0.10");
+    public static final MongoDBContainer container = new MongoDBContainer("mongo:4.4.29");
 
     private static MongoClient mongo;
 
