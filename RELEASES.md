@@ -1,4 +1,8 @@
 # Release notes
+## 6.6.0 (2025-05-05)
+* Redis lettuce provider (thanks @s4got10dev)
+* Dependency updates
+
 ## 6.5.0 (2025-04-29)
 * Support for Sort Keys for DynamoDBLockProvider (thanks @avanish-p1)
 * Dependency updates
