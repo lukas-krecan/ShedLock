@@ -173,7 +173,9 @@
                         <artifact>quarkus-test</artifact>
                         <artifact>micronaut4-jdbc</artifact>
                         <artifact>micronaut4-jdbc-template</artifact>
+                        <artifact>shedlock-test-support</artifact>
                         <artifact>shedlock-test-support-jdbc</artifact>
+                        <artifact>shedlock-test-support-redis</artifact>
                     </excludeArtifacts>
                 </configuration>
             </plugin>
