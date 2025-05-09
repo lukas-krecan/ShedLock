@@ -163,6 +163,18 @@
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
+                    <excludeArtifacts>
+                        <artifact>shedlock-springboot-future-test</artifact>
+                        <artifact>shedlock-springboot-kotlin-test</artifact>
+                        <artifact>shedlock-springboot-old-test</artifact>
+                        <artifact>shedlock-springboot-sleuth-test</artifact>
+                        <artifact>shedlock-springboot-test</artifact>
+                        <artifact>shedlock-testng-test</artifact>
+                        <artifact>quarkus-test</artifact>
+                        <artifact>micronaut4-jdbc</artifact>
+                        <artifact>micronaut4-jdbc-template</artifact>
+                        <artifact>shedlock-test-support-jdbc</artifact>
+                    </excludeArtifacts>
                 </configuration>
             </plugin>
         </plugins>
