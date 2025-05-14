@@ -47,15 +47,15 @@ public class SpringRedisLockProviderIntegrationTest {
     }
 
     @Nested
-    class Letucce extends AbstractRedisLockProviderIntegrationTest {
-        public Letucce() {
+    class Lettuce extends AbstractRedisLockProviderIntegrationTest {
+        public Lettuce() {
             super(createLettuceConnectionFactory());
         }
     }
 
     @Nested
-    class ReactiveLetucce extends AbstractReactiveRedisLockProviderIntegrationTest {
-        public ReactiveLetucce() {
+    class ReactiveLettuce extends AbstractReactiveRedisLockProviderIntegrationTest {
+        public ReactiveLettuce() {
             super(createLettuceConnectionFactory());
         }
     }
