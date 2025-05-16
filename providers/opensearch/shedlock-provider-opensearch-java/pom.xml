@@ -12,7 +12,7 @@
     <version>6.6.2-SNAPSHOT</version>
 
     <properties>
-        <opensearch.java.client.version>2.23.0</opensearch.java.client.version>
+        <opensearch.java.client.version>3.0.0</opensearch.java.client.version>
     </properties>
 
     <dependencies>
