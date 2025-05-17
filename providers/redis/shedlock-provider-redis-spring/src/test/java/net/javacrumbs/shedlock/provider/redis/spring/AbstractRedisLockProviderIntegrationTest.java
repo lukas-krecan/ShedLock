@@ -16,11 +16,12 @@ package net.javacrumbs.shedlock.provider.redis.spring;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.provider.redis.testsupport.AbstractExtensibleLockProviderRedisIntegrationTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
+public abstract class AbstractRedisLockProviderIntegrationTest
+        extends AbstractExtensibleLockProviderRedisIntegrationTest {
 
     private final RedisLockProvider lockProvider;
     private final StringRedisTemplate redisTemplate;

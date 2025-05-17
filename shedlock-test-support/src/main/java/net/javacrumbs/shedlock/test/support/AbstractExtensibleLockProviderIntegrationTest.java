@@ -111,7 +111,7 @@ public abstract class AbstractExtensibleLockProviderIntegrationTest extends Abst
         return newLock.get();
     }
 
-    private SimpleLock lock(Duration lockAtMostFor) {
+    protected SimpleLock lock(Duration lockAtMostFor) {
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1, lockAtMostFor, ZERO));
         assertThat(lock).isNotEmpty();
         assertLocked(LOCK_NAME1);

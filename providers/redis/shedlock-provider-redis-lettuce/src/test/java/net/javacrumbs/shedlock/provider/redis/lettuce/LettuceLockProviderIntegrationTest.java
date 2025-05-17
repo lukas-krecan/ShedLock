@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.provider.redis.testsupport.AbstractExtensibleLockProviderRedisIntegrationTest;
 import net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.testcontainers.junit.jupiter.Container;
@@ -39,7 +39,7 @@ public class LettuceLockProviderIntegrationTest {
     }
 
     @Nested
-    class Cluster extends AbstractExtensibleLockProviderIntegrationTest {
+    class Cluster extends AbstractExtensibleLockProviderRedisIntegrationTest {
 
         private ExtensibleLockProvider lockProvider;
         private StatefulRedisConnection<String, String> connection;
@@ -71,7 +71,7 @@ public class LettuceLockProviderIntegrationTest {
     }
 
     @Nested
-    class Pool extends AbstractExtensibleLockProviderIntegrationTest {
+    class Pool extends AbstractExtensibleLockProviderRedisIntegrationTest {
 
         private ExtensibleLockProvider lockProvider;
         private StatefulRedisConnection<String, String> connection;

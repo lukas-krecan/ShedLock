@@ -24,12 +24,6 @@
             <version>5.2.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-test-support</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>

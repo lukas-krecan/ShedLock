@@ -19,7 +19,9 @@ import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
@@ -29,7 +31,6 @@ import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.commands.JedisCommands;
-import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
 
 /**
@@ -46,6 +47,27 @@ public class JedisLockProvider implements ExtensibleLockProvider {
 
     private final JedisTemplate jedisTemplate;
     private final String environment;
+
+    /*
+     * https://redis.io/docs/latest/develop/use/patterns/distributed-locks/
+     * */
+    private static final String delLuaScript =
+            """
+        if redis.call("get",KEYS[1]) == ARGV[1] then
+            return redis.call("del",KEYS[1])
+        else
+            return 0
+        end
+        """;
+
+    private static final String updLuaScript =
+            """
+        if redis.call('get', KEYS[1]) == ARGV[1] then
+           return redis.call('pexpire', KEYS[1], ARGV[2])
+        else
+           return 0
+        end
+        """;
 
     public JedisLockProvider(@NonNull Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
@@ -87,45 +109,43 @@ public class JedisLockProvider implements ExtensibleLockProvider {
         long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), this.environment);
+        String uniqueLockValue = buildValue();
 
-        String rez = jedisTemplate.set(key, buildValue(), setParams().nx().px(expireTime));
-
-        if ("OK".equals(rez)) {
-            return Optional.of(new RedisLock(key, this, lockConfiguration));
+        if (jedisTemplate.create(key, uniqueLockValue, expireTime)) {
+            return Optional.of(new RedisLock(key, uniqueLockValue, this, lockConfiguration));
         }
 
         return Optional.empty();
     }
 
-    private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
+    private Optional<SimpleLock> extend(RedisLock currentLock, LockConfiguration lockConfiguration) {
         long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
 
-        String key = buildKey(lockConfiguration.getName(), this.environment);
-
-        String rez = extendKeyExpiration(key, expireTime);
-
-        if ("OK".equals(rez)) {
-            return Optional.of(new RedisLock(key, this, lockConfiguration));
+        if (extendKeyExpiration(currentLock, expireTime)) {
+            return Optional.of(new RedisLock(currentLock.key, currentLock.value, this, lockConfiguration));
         }
 
         return Optional.empty();
     }
 
-    private String extendKeyExpiration(String key, long expiration) {
-        return jedisTemplate.set(key, buildValue(), setParams().xx().px(expiration));
+    private boolean extendKeyExpiration(RedisLock currentLock, long expiration) {
+        return jedisTemplate.upd(currentLock, expiration);
     }
 
-    private void deleteKey(String key) {
-        jedisTemplate.del(key);
+    private void deleteKey(String key, String value) {
+        jedisTemplate.del(key, value);
     }
 
     private static final class RedisLock extends AbstractSimpleLock {
         private final String key;
+        private final String value;
         private final JedisLockProvider jedisLockProvider;
 
-        private RedisLock(String key, JedisLockProvider jedisLockProvider, LockConfiguration lockConfiguration) {
+        private RedisLock(
+                String key, String value, JedisLockProvider jedisLockProvider, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
+            this.value = value;
             this.jedisLockProvider = jedisLockProvider;
         }
 
@@ -136,19 +156,19 @@ public class JedisLockProvider implements ExtensibleLockProvider {
             // lock at least until is in the past
             if (keepLockFor <= 0) {
                 try {
-                    jedisLockProvider.deleteKey(key);
+                    jedisLockProvider.deleteKey(key, this.value);
                 } catch (Exception e) {
                     throw new LockException("Can not remove node", e);
                 }
             } else {
-                jedisLockProvider.extendKeyExpiration(key, keepLockFor);
+                jedisLockProvider.extendKeyExpiration(this, keepLockFor);
             }
         }
 
         @Override
         @NonNull
         protected Optional<SimpleLock> doExtend(@NonNull LockConfiguration newConfiguration) {
-            return jedisLockProvider.extend(newConfiguration);
+            return jedisLockProvider.extend(this, newConfiguration);
         }
     }
 
@@ -161,28 +181,38 @@ public class JedisLockProvider implements ExtensibleLockProvider {
     }
 
     private static String buildValue() {
-        return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
+        return String.format("ADDED:%s@%s:%s", toIsoString(ClockProvider.now()), getHostname(), UUID.randomUUID());
     }
 
     private interface JedisTemplate {
-        String set(String key, String value, SetParams setParams);
+        boolean create(String key, String value, long expirationMs);
 
-        void del(String key);
+        boolean upd(RedisLock lock, long expirationMs);
+
+        void del(String key, String value);
     }
 
     private record JedisPoolTemplate(Pool<Jedis> jedisPool) implements JedisTemplate {
 
         @Override
-        public String set(String key, String value, SetParams setParams) {
+        public boolean create(String key, String value, long expirationMs) {
             try (Jedis jedis = jedisPool.getResource()) {
-                return jedis.set(key, value, setParams);
+                return "OK".equals(jedis.set(key, value, setParams().nx().px(expirationMs)));
             }
         }
 
         @Override
-        public void del(String key) {
+        public boolean upd(RedisLock lock, long expirationMs) {
             try (Jedis jedis = jedisPool.getResource()) {
-                jedis.del(key);
+                return jedis.eval(updLuaScript, List.of(lock.key), List.of(lock.value, String.valueOf(expirationMs)))
+                        .equals(1L);
+            }
+        }
+
+        @Override
+        public void del(String key, String value) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.eval(delLuaScript, 1, key, value);
             }
         }
     }
@@ -190,13 +220,20 @@ public class JedisLockProvider implements ExtensibleLockProvider {
     private record JedisCommandsTemplate(JedisCommands jedisCommands) implements JedisTemplate {
 
         @Override
-        public String set(String key, String value, SetParams setParams) {
-            return jedisCommands.set(key, value, setParams);
+        public boolean create(String key, String value, long expirationMs) {
+            return "OK".equals(jedisCommands.set(key, value, setParams().nx().px(expirationMs)));
         }
 
         @Override
-        public void del(String key) {
-            jedisCommands.del(key);
+        public boolean upd(RedisLock lock, long expirationMs) {
+            return jedisCommands
+                    .eval(updLuaScript, List.of(lock.key), List.of(lock.value, String.valueOf(expirationMs)))
+                    .equals(1L);
+        }
+
+        @Override
+        public void del(String key, String value) {
+            jedisCommands.eval(delLuaScript, 1, key, value);
         }
     }
 }
