@@ -61,7 +61,7 @@ public class LettuceLockProviderIntegrationTest {
         }
 
         private String getLock(String lockName) {
-            return connection.sync().get(LettuceLockProvider.buildKey(lockName, ENV));
+            return connection.sync().get(buildKey(lockName, ENV));
         }
 
         @Override
@@ -93,7 +93,7 @@ public class LettuceLockProviderIntegrationTest {
         }
 
         private String getLock(String lockName) {
-            return connection.sync().get(LettuceLockProvider.buildKey(lockName, ENV));
+            return connection.sync().get(buildKey(lockName, ENV));
         }
 
         @Override

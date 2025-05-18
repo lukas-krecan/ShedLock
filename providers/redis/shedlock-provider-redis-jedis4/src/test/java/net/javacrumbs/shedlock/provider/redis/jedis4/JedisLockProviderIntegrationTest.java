@@ -58,7 +58,7 @@ public class JedisLockProviderIntegrationTest {
         }
 
         private String getLock(String lockName) {
-            return jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV));
+            return jedisCluster.get(buildKey(lockName, ENV));
         }
 
         @Override
@@ -94,7 +94,7 @@ public class JedisLockProviderIntegrationTest {
         }
 
         private String getLock(String lockName, Jedis jedis) {
-            return jedis.get(JedisLockProvider.buildKey(lockName, ENV));
+            return jedis.get(buildKey(lockName, ENV));
         }
 
         @Override

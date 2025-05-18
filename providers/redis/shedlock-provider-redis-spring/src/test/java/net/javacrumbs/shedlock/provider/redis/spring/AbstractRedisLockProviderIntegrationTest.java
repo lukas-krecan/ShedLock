@@ -49,7 +49,7 @@ public abstract class AbstractRedisLockProviderIntegrationTest
     }
 
     private String buildKey(String lockName) {
-        return lockProvider.buildKey(lockName);
+        return buildKey(lockName, KEY_PREFIX, ENV);
     }
 
     @Override

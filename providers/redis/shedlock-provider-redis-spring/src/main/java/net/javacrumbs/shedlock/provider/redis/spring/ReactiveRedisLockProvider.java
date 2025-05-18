@@ -1,59 +1,28 @@
 package net.javacrumbs.shedlock.provider.redis.spring;
 
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+import static java.lang.Boolean.TRUE;
+import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.DEFAULT_KEY_PREFIX;
+import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.ENV_DEFAULT;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import net.javacrumbs.shedlock.core.AbstractSimpleLock;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
+import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking
  * mechanism. See https://redis.io/commands/set
  */
 public class ReactiveRedisLockProvider implements LockProvider {
-    private static final String KEY_PREFIX_DEFAULT = "job-lock";
-    private static final String ENV_DEFAULT = "default";
-
-    /*
-     * https://redis.io/docs/latest/develop/use/patterns/distributed-locks/
-     * */
-    private static final RedisScript<Long> delLuaScript = new DefaultRedisScript(
-            """
-        if redis.call("get",KEYS[1]) == ARGV[1] then
-            return redis.call("del",KEYS[1])
-        else
-            return 0
-        end
-        """,
-            Long.class);
-
-    private static final RedisScript<Long> updLuaScript = new DefaultRedisScript(
-            """
-        if redis.call('get', KEYS[1]) == ARGV[1] then
-           return redis.call('pexpire', KEYS[1], ARGV[2])
-        else
-           return 0
-        end
-        """,
-            Long.class);
-
-    private final ReactiveStringRedisTemplate redisTemplate;
-    private final String environment;
-    private final String keyPrefix;
+    private final InternalRedisLockProvider internalRedisLockProvider;
 
     public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
@@ -70,7 +39,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
      *            same Redis
      */
     public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment) {
-        this(redisConn, environment, KEY_PREFIX_DEFAULT);
+        this(redisConn, environment, DEFAULT_KEY_PREFIX);
     }
 
     /**
@@ -106,78 +75,20 @@ public class ReactiveRedisLockProvider implements LockProvider {
             @NonNull ReactiveStringRedisTemplate redisTemplate,
             @NonNull String environment,
             @NonNull String keyPrefix) {
-        this.redisTemplate = redisTemplate;
-        this.environment = environment;
-        this.keyPrefix = keyPrefix;
+        this.internalRedisLockProvider =
+                new InternalRedisLockProvider(new ReactiveRedisLockTemplate(redisTemplate), environment, keyPrefix);
     }
 
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        Instant now = ClockProvider.now();
-        String key = ReactiveRedisLock.createKey(keyPrefix, environment, lockConfiguration.getName());
-        String uniqueValue = ReactiveRedisLock.createValue(now);
-        Duration expirationTime = Duration.between(now, lockConfiguration.getLockAtMostUntil());
-        Boolean lockResult = redisTemplate
-                .opsForValue()
-                .setIfAbsent(key, uniqueValue, expirationTime)
-                .block();
-        if (Boolean.TRUE.equals(lockResult)) {
-            return Optional.of(new ReactiveRedisLock(key, uniqueValue, redisTemplate, lockConfiguration));
-        }
-        return Optional.empty();
-    }
-
-    private static final class ReactiveRedisLock extends AbstractSimpleLock {
-        private final String key;
-        private final String value;
-        private final ReactiveStringRedisTemplate redisTemplate;
-
-        private static String createKey(String keyPrefix, String environment, String lockName) {
-            return String.format("%s:%s:%s", keyPrefix, environment, lockName);
-        }
-
-        private static String createValue(Instant now) {
-            return String.format("ADDED:%s@%s:%s", toIsoString(now), getHostname(), UUID.randomUUID());
-        }
-
-        private ReactiveRedisLock(
-                String key,
-                String value,
-                ReactiveStringRedisTemplate redisTemplate,
-                LockConfiguration lockConfiguration) {
-            super(lockConfiguration);
-            this.key = key;
-            this.value = value;
-            this.redisTemplate = redisTemplate;
-        }
-
-        @Override
-        protected void doUnlock() {
-            Instant now = ClockProvider.now();
-            Duration expirationTime = Duration.between(now, lockConfiguration.getLockAtLeastUntil());
-            if (expirationTime.isNegative() || expirationTime.isZero()) {
-                try {
-                    redisTemplate
-                            .execute(delLuaScript, List.of(key), value)
-                            .next()
-                            .block();
-                } catch (Exception e) {
-                    throw new LockException("Can not remove node", e);
-                }
-            } else {
-                redisTemplate
-                        .execute(updLuaScript, List.of(key), value, String.valueOf(expirationTime.toMillis()))
-                        .next()
-                        .block();
-            }
-        }
+        return internalRedisLockProvider.lock(lockConfiguration);
     }
 
     public static class Builder {
         private final ReactiveStringRedisTemplate redisTemplate;
         private String environment = ENV_DEFAULT;
-        private String keyPrefix = KEY_PREFIX_DEFAULT;
+        private String keyPrefix = DEFAULT_KEY_PREFIX;
 
         public Builder(@NonNull ReactiveRedisConnectionFactory redisConnectionFactory) {
             this.redisTemplate = new ReactiveStringRedisTemplate(redisConnectionFactory);
@@ -199,6 +110,27 @@ public class ReactiveRedisLockProvider implements LockProvider {
 
         public ReactiveRedisLockProvider build() {
             return new ReactiveRedisLockProvider(redisTemplate, environment, keyPrefix);
+        }
+    }
+
+    private record ReactiveRedisLockTemplate(ReactiveStringRedisTemplate redisTemplate)
+            implements InternalRedisLockTemplate {
+
+        @Override
+        public boolean set(String key, String value, long expirationMs) {
+            return TRUE
+                    == redisTemplate
+                            .opsForValue()
+                            .setIfAbsent(key, value, Duration.ofMillis(expirationMs))
+                            .block();
+        }
+
+        @Override
+        public Object eval(String script, String key, String... values) {
+            return redisTemplate
+                    .execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), List.of(values))
+                    .next()
+                    .block();
         }
     }
 }

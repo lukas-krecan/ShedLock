@@ -34,4 +34,12 @@ public abstract class AbstractExtensibleLockProviderRedisIntegrationTest
         sleepFor(ofSeconds(lockDurationSeconds + 1));
         assertUnlocked(LOCK_NAME1);
     }
+
+    protected static String buildKey(String lockName, String env) {
+        return String.format("%s:%s:%s", "job-lock", env, lockName);
+    }
+
+    protected static String buildKey(String lockName, String keyPrefix, String env) {
+        return String.format("%s:%s:%s", keyPrefix, env, lockName);
+    }
 }
