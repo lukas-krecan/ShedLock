@@ -75,8 +75,8 @@ public class ReactiveRedisLockProvider implements LockProvider {
             @NonNull ReactiveStringRedisTemplate redisTemplate,
             @NonNull String environment,
             @NonNull String keyPrefix) {
-        this.internalRedisLockProvider =
-                new InternalRedisLockProvider(new ReactiveRedisLockTemplate(redisTemplate), environment, keyPrefix);
+        this.internalRedisLockProvider = new InternalRedisLockProvider(
+                new ReactiveRedisLockTemplate(redisTemplate), environment, keyPrefix, false);
     }
 
     @Override
@@ -117,11 +117,20 @@ public class ReactiveRedisLockProvider implements LockProvider {
             implements InternalRedisLockTemplate {
 
         @Override
-        public boolean set(String key, String value, long expirationMs) {
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
             return TRUE
                     == redisTemplate
                             .opsForValue()
                             .setIfAbsent(key, value, Duration.ofMillis(expirationMs))
+                            .block();
+        }
+
+        @Override
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return TRUE
+                    == redisTemplate
+                            .opsForValue()
+                            .setIfPresent(key, value, Duration.ofMillis(expirationMs))
                             .block();
         }
 
@@ -131,6 +140,11 @@ public class ReactiveRedisLockProvider implements LockProvider {
                     .execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), List.of(values))
                     .next()
                     .block();
+        }
+
+        @Override
+        public void delete(String key) {
+            redisTemplate.delete(key).block();
         }
     }
 }

@@ -52,8 +52,25 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
      */
     public LettuceLockProvider(
             @NonNull StatefulRedisConnection<String, String> connection, @NonNull String environment) {
+        this(connection, environment, false);
+    }
+
+    /**
+     * Creates LettuceLockProvider
+     *
+     * @param connection  StatefulRedisConnection
+     * @param environment environment is part of the key and thus makes sure there is not
+     *                    key conflict between multiple ShedLock instances running on the
+     *                    same Redis
+     * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+     *                   is already held by somebody else, we don't release/extend the lock.
+     */
+    public LettuceLockProvider(
+            @NonNull StatefulRedisConnection<String, String> connection,
+            @NonNull String environment,
+            boolean safeUpdate) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
-                new LettuceRedisLockTemplate(connection), environment, DEFAULT_KEY_PREFIX);
+                new LettuceRedisLockTemplate(connection), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     @Override
@@ -66,16 +83,27 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
             implements InternalRedisLockTemplate {
 
         @Override
-        public boolean set(String key, String value, long expirationMs) {
-            return "OK"
-                    .equals(connection
-                            .sync()
-                            .set(key, value, SetArgs.Builder.nx().px(expirationMs)));
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, SetArgs.Builder.nx().px(expirationMs));
+        }
+
+        @Override
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, SetArgs.Builder.xx().px(expirationMs));
+        }
+
+        private boolean set(String key, String value, SetArgs args) {
+            return "OK".equals(connection.sync().set(key, value, args));
         }
 
         @Override
         public Object eval(String script, String key, String... values) {
             return connection.sync().eval(script, ScriptOutputType.INTEGER, new String[] {key}, values);
+        }
+
+        @Override
+        public void delete(String key) {
+            connection.sync().del(key);
         }
     }
 }

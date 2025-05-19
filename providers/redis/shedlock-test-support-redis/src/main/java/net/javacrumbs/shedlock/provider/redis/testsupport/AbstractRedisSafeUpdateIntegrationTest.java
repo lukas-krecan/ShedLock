@@ -4,22 +4,20 @@ import static java.time.Duration.ZERO;
 import static java.time.Duration.ofSeconds;
 
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.junit.jupiter.api.Test;
 
 /**
  * The fix for this use-case only exists in Redis LockProvider implementations.
  * When we will fix this in all LockProviders, we can move this test to the base class, removing the need for this class.
  */
-public abstract class AbstractExtensibleLockProviderRedisIntegrationTest
-        extends AbstractExtensibleLockProviderIntegrationTest {
+public abstract class AbstractRedisSafeUpdateIntegrationTest extends AbstractRedisIntegrationTest {
 
     @Test
     public void unlockingAfterExpirationShouldBeNoOp() {
         int lockDurationSeconds = 2;
         SimpleLock lock1 = lock(ofSeconds(lockDurationSeconds));
         sleepFor(ofSeconds(lockDurationSeconds + 1));
-        SimpleLock lock2 = lock(ofSeconds(lockDurationSeconds));
+        lock(ofSeconds(lockDurationSeconds));
         lock1.unlock();
         assertLocked(LOCK_NAME1);
     }
@@ -29,17 +27,9 @@ public abstract class AbstractExtensibleLockProviderRedisIntegrationTest
         int lockDurationSeconds = 2;
         SimpleLock lock1 = lock(ofSeconds(lockDurationSeconds));
         sleepFor(ofSeconds(lockDurationSeconds + 1));
-        SimpleLock lock2 = lock(ofSeconds(lockDurationSeconds));
+        lock(ofSeconds(lockDurationSeconds));
         lock1.extend(ofSeconds(lockDurationSeconds * 5), ZERO);
         sleepFor(ofSeconds(lockDurationSeconds + 1));
         assertUnlocked(LOCK_NAME1);
-    }
-
-    protected static String buildKey(String lockName, String env) {
-        return String.format("%s:%s:%s", "job-lock", env, lockName);
-    }
-
-    protected static String buildKey(String lockName, String keyPrefix, String env) {
-        return String.format("%s:%s:%s", keyPrefix, env, lockName);
     }
 }

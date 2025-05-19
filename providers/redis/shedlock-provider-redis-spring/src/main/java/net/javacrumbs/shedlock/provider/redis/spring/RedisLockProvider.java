@@ -17,6 +17,7 @@ import static java.lang.Boolean.TRUE;
 import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.DEFAULT_KEY_PREFIX;
 import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.ENV_DEFAULT;
 import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_ABSENT;
+import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_PRESENT;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.types.Expiration;
@@ -89,8 +91,16 @@ public class RedisLockProvider implements ExtensibleLockProvider {
      */
     public RedisLockProvider(
             @NonNull StringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
-        this.internalRedisLockProvider =
-                new InternalRedisLockProvider(new SpringRedisLockTemplate(redisTemplate), environment, keyPrefix);
+        this(redisTemplate, environment, keyPrefix, false);
+    }
+
+    RedisLockProvider(
+            @NonNull StringRedisTemplate redisTemplate,
+            @NonNull String environment,
+            @NonNull String keyPrefix,
+            boolean safeUpdate) {
+        this.internalRedisLockProvider = new InternalRedisLockProvider(
+                new SpringRedisLockTemplate(redisTemplate), environment, keyPrefix, safeUpdate);
     }
 
     @Override
@@ -103,6 +113,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         private final StringRedisTemplate redisTemplate;
         private String environment = ENV_DEFAULT;
         private String keyPrefix = DEFAULT_KEY_PREFIX;
+        private boolean safeUpdate = false;
 
         public Builder(@NonNull RedisConnectionFactory redisConnectionFactory) {
             this.redisTemplate = new StringRedisTemplate(redisConnectionFactory);
@@ -122,15 +133,33 @@ public class RedisLockProvider implements ExtensibleLockProvider {
             return this;
         }
 
+        /**
+         * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+         *                  is already held by somebody else, we don't release/extend the lock.
+         */
+        public Builder safeUpdate(boolean safeUpdate) {
+            this.safeUpdate = safeUpdate;
+            return this;
+        }
+
         public RedisLockProvider build() {
-            return new RedisLockProvider(redisTemplate, environment, keyPrefix);
+            return new RedisLockProvider(redisTemplate, environment, keyPrefix, safeUpdate);
         }
     }
 
     private record SpringRedisLockTemplate(StringRedisTemplate template) implements InternalRedisLockTemplate {
 
         @Override
-        public boolean set(String key, String value, long expirationMs) {
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, expirationMs, SET_IF_ABSENT);
+        }
+
+        @Override
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, expirationMs, SET_IF_PRESENT);
+        }
+
+        private boolean set(String key, String value, long expirationMs, RedisStringCommands.SetOption setOption) {
             return TRUE
                     == template.execute(
                             connection -> {
@@ -144,7 +173,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
                                                 serializedKey,
                                                 serializedValue,
                                                 Expiration.from(expirationMs, TimeUnit.MILLISECONDS),
-                                                SET_IF_ABSENT);
+                                                setOption);
                             },
                             false);
         }
@@ -152,6 +181,11 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         @Override
         public Object eval(String script, String key, String... values) {
             return template.execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), (Object[]) values);
+        }
+
+        @Override
+        public void delete(String key) {
+            template.delete(key);
         }
     }
 }

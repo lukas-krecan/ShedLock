@@ -27,6 +27,7 @@ import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.commands.JedisCommands;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
 
 /**
@@ -55,8 +56,24 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      *            same Redis
      */
     public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment) {
-        this.internalRedisLockProvider =
-                new InternalRedisLockProvider(new JedisPoolTemplate(jedisPool), environment, DEFAULT_KEY_PREFIX);
+        this(jedisPool, environment, false);
+    }
+
+    /**
+     * Creates JedisLockProvider
+     *
+     * @param jedisPool
+     *            Jedis connection pool
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
+     * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+     *                   is already held by somebody else, we don't release/extend the lock.
+     */
+    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment, boolean safeUpdate) {
+        this.internalRedisLockProvider = new InternalRedisLockProvider(
+                new JedisPoolTemplate(jedisPool), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     /**
@@ -70,8 +87,24 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      *            same Redis
      */
     public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment) {
+        this(jedisCommands, environment, false);
+    }
+
+    /**
+     * Creates JedisLockProvider
+     *
+     * @param jedisCommands
+     *            implementation of JedisCommands.
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
+     * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+     *                   is already held by somebody else, we don't release/extend the lock.
+     */
+    public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment, boolean safeUpdate) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
-                new JedisCommandsTemplate(jedisCommands), environment, DEFAULT_KEY_PREFIX);
+                new JedisCommandsTemplate(jedisCommands), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     @Override
@@ -82,9 +115,18 @@ public class JedisLockProvider implements ExtensibleLockProvider {
 
     private record JedisPoolTemplate(Pool<Jedis> jedisPool) implements InternalRedisLockTemplate {
         @Override
-        public boolean set(String key, String value, long expirationMs) {
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().nx().px(expirationMs));
+        }
+
+        @Override
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().xx().px(expirationMs));
+        }
+
+        private boolean set(String key, String value, SetParams params) {
             try (Jedis jedis = jedisPool.getResource()) {
-                return "OK".equals(jedis.set(key, value, setParams().nx().px(expirationMs)));
+                return "OK".equals(jedis.set(key, value, params));
             }
         }
 
@@ -94,17 +136,38 @@ public class JedisLockProvider implements ExtensibleLockProvider {
                 return jedis.eval(script, List.of(key), List.of(values));
             }
         }
+
+        @Override
+        public void delete(String key) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.del(key);
+            }
+        }
     }
 
     private record JedisCommandsTemplate(JedisCommands jedisCommands) implements InternalRedisLockTemplate {
         @Override
-        public boolean set(String key, String value, long expirationMs) {
-            return "OK".equals(jedisCommands.set(key, value, setParams().nx().px(expirationMs)));
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().nx().px(expirationMs));
+        }
+
+        @Override
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().xx().px(expirationMs));
+        }
+
+        private boolean set(String key, String value, SetParams params) {
+            return "OK".equals(jedisCommands.set(key, value, params));
         }
 
         @Override
         public Object eval(String script, String key, String... values) {
             return jedisCommands.eval(script, List.of(key), List.of(values));
+        }
+
+        @Override
+        public void delete(String key) {
+            jedisCommands.del(key);
         }
     }
 }

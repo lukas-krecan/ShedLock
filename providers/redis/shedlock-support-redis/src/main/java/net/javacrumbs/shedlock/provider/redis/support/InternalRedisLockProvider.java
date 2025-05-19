@@ -39,6 +39,7 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
     private final InternalRedisLockTemplate redisLockTemplate;
     private final String environment;
     private final String keyPrefix;
+    private final boolean safeUpdate;
 
     /*
      * https://redis.io/docs/latest/develop/use/patterns/distributed-locks/
@@ -64,10 +65,12 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
     public InternalRedisLockProvider(
             @NonNull InternalRedisLockTemplate redisLockTemplate,
             @NonNull String environment,
-            @NonNull String keyPrefix) {
+            @NonNull String keyPrefix,
+            boolean safeUpdate) {
         this.redisLockTemplate = redisLockTemplate;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
+        this.safeUpdate = safeUpdate;
     }
 
     @Override
@@ -96,21 +99,25 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
     }
 
     private boolean setKeyExpiration(RedisLock currentLock, long expiration) {
-        return updateLock(currentLock, expiration);
+        if (safeUpdate) {
+            return redisLockTemplate
+                    .eval(updLuaScript, currentLock.key, currentLock.value, String.valueOf(expiration))
+                    .equals(1L);
+        } else {
+            return redisLockTemplate.setIfPresent(currentLock.key, currentLock.value, expiration);
+        }
     }
 
     private boolean createLock(String key, String value, long expirationMs) {
-        return redisLockTemplate.set(key, value, expirationMs);
-    }
-
-    private boolean updateLock(RedisLock lock, long expirationMs) {
-        return redisLockTemplate
-                .eval(updLuaScript, lock.key, lock.value, String.valueOf(expirationMs))
-                .equals(1L);
+        return redisLockTemplate.setIfAbsent(key, value, expirationMs);
     }
 
     private void deleteLock(String key, String value) {
-        redisLockTemplate.eval(delLuaScript, key, value);
+        if (safeUpdate) {
+            redisLockTemplate.eval(delLuaScript, key, value);
+        } else {
+            redisLockTemplate.delete(key);
+        }
     }
 
     private static final class RedisLock extends AbstractSimpleLock {
