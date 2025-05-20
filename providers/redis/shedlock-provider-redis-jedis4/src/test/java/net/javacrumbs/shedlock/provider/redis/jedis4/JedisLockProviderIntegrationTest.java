@@ -15,11 +15,11 @@ package net.javacrumbs.shedlock.provider.redis.jedis4;
 
 import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.ENV;
 import static net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer.PORT;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
+import net.javacrumbs.shedlock.provider.redis.testsupport.AbstractRedisIntegrationTest;
+import net.javacrumbs.shedlock.provider.redis.testsupport.AbstractRedisSafeUpdateIntegrationTest;
 import net.javacrumbs.shedlock.provider.redis.testsupport.RedisContainer;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.testcontainers.junit.jupiter.Container;
@@ -36,7 +36,7 @@ public class JedisLockProviderIntegrationTest {
     public static final RedisContainer redis = new RedisContainer(PORT);
 
     @Nested
-    class Cluster extends AbstractExtensibleLockProviderIntegrationTest {
+    class Cluster extends AbstractRedisIntegrationTest {
         private ExtensibleLockProvider lockProvider;
 
         private JedisCluster jedisCluster;
@@ -48,17 +48,8 @@ public class JedisLockProviderIntegrationTest {
         }
 
         @Override
-        protected void assertUnlocked(String lockName) {
-            assertThat(getLock(lockName)).isNull();
-        }
-
-        @Override
-        protected void assertLocked(String lockName) {
-            assertThat(getLock(lockName)).isNotNull();
-        }
-
-        private String getLock(String lockName) {
-            return jedisCluster.get(JedisLockProvider.buildKey(lockName, ENV));
+        protected String getLock(String lockName) {
+            return jedisCluster.get(buildKey(lockName, ENV));
         }
 
         @Override
@@ -68,7 +59,30 @@ public class JedisLockProviderIntegrationTest {
     }
 
     @Nested
-    class Pool extends AbstractExtensibleLockProviderIntegrationTest {
+    class ClusterSafeUpdate extends AbstractRedisSafeUpdateIntegrationTest {
+        private ExtensibleLockProvider lockProvider;
+
+        private JedisCluster jedisCluster;
+
+        @BeforeEach
+        public void createLockProvider() {
+            jedisCluster = new JedisCluster(new HostAndPort(redis.getHost(), redis.getFirstMappedPort()));
+            lockProvider = new JedisLockProvider(jedisCluster, ENV, true);
+        }
+
+        @Override
+        protected String getLock(String lockName) {
+            return jedisCluster.get(buildKey(lockName, ENV));
+        }
+
+        @Override
+        protected ExtensibleLockProvider getLockProvider() {
+            return lockProvider;
+        }
+    }
+
+    @Nested
+    class Pool extends AbstractRedisIntegrationTest {
         private ExtensibleLockProvider lockProvider;
 
         private JedisPool jedisPool;
@@ -80,21 +94,35 @@ public class JedisLockProviderIntegrationTest {
         }
 
         @Override
-        protected void assertUnlocked(String lockName) {
+        protected String getLock(String lockName) {
             try (Jedis jedis = jedisPool.getResource()) {
-                assertThat(getLock(lockName, jedis)).isNull();
+                return jedis.get(buildKey(lockName, ENV));
             }
         }
 
         @Override
-        protected void assertLocked(String lockName) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                assertThat(getLock(lockName, jedis)).isNotNull();
-            }
+        protected ExtensibleLockProvider getLockProvider() {
+            return lockProvider;
+        }
+    }
+
+    @Nested
+    class PoolSafeUpdate extends AbstractRedisSafeUpdateIntegrationTest {
+        private ExtensibleLockProvider lockProvider;
+
+        private JedisPool jedisPool;
+
+        @BeforeEach
+        public void createLockProvider() {
+            jedisPool = new JedisPool(redis.getHost(), redis.getMappedPort(PORT));
+            lockProvider = new JedisLockProvider(jedisPool, ENV, true);
         }
 
-        private String getLock(String lockName, Jedis jedis) {
-            return jedis.get(JedisLockProvider.buildKey(lockName, ENV));
+        @Override
+        protected String getLock(String lockName) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.get(buildKey(lockName, ENV));
+            }
         }
 
         @Override

@@ -13,19 +13,17 @@
  */
 package net.javacrumbs.shedlock.provider.redis.jedis4;
 
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.DEFAULT_KEY_PREFIX;
+import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.ENV_DEFAULT;
 import static redis.clients.jedis.params.SetParams.setParams;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
-import net.javacrumbs.shedlock.core.AbstractSimpleLock;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
+import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.commands.JedisCommands;
@@ -41,11 +39,7 @@ import redis.clients.jedis.util.Pool;
  */
 public class JedisLockProvider implements ExtensibleLockProvider {
 
-    private static final String KEY_PREFIX = "job-lock";
-    private static final String ENV_DEFAULT = "default";
-
-    private final JedisTemplate jedisTemplate;
-    private final String environment;
+    private final InternalRedisLockProvider internalRedisLockProvider;
 
     public JedisLockProvider(@NonNull Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
@@ -62,8 +56,24 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      *            same Redis
      */
     public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment) {
-        this.jedisTemplate = new JedisPoolTemplate(jedisPool);
-        this.environment = environment;
+        this(jedisPool, environment, false);
+    }
+
+    /**
+     * Creates JedisLockProvider
+     *
+     * @param jedisPool
+     *            Jedis connection pool
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
+     * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+     *                   is already held by somebody else, we don't release/extend the lock.
+     */
+    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment, boolean safeUpdate) {
+        this.internalRedisLockProvider = new InternalRedisLockProvider(
+                new JedisPoolTemplate(jedisPool), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     /**
@@ -77,125 +87,86 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      *            same Redis
      */
     public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment) {
-        this.jedisTemplate = new JedisCommandsTemplate(jedisCommands);
-        this.environment = environment;
+        this(jedisCommands, environment, false);
+    }
+
+    /**
+     * Creates JedisLockProvider
+     *
+     * @param jedisCommands
+     *            implementation of JedisCommands.
+     * @param environment
+     *            environment is part of the key and thus makes sure there is not
+     *            key conflict between multiple ShedLock instances running on the
+     *            same Redis
+     * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+     *                   is already held by somebody else, we don't release/extend the lock.
+     */
+    public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment, boolean safeUpdate) {
+        this.internalRedisLockProvider = new InternalRedisLockProvider(
+                new JedisCommandsTemplate(jedisCommands), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
-
-        String key = buildKey(lockConfiguration.getName(), this.environment);
-
-        String rez = jedisTemplate.set(key, buildValue(), setParams().nx().px(expireTime));
-
-        if ("OK".equals(rez)) {
-            return Optional.of(new RedisLock(key, this, lockConfiguration));
-        }
-
-        return Optional.empty();
+        return internalRedisLockProvider.lock(lockConfiguration);
     }
 
-    private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
-        long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
-
-        String key = buildKey(lockConfiguration.getName(), this.environment);
-
-        String rez = extendKeyExpiration(key, expireTime);
-
-        if ("OK".equals(rez)) {
-            return Optional.of(new RedisLock(key, this, lockConfiguration));
-        }
-
-        return Optional.empty();
-    }
-
-    private String extendKeyExpiration(String key, long expiration) {
-        return jedisTemplate.set(key, buildValue(), setParams().xx().px(expiration));
-    }
-
-    private void deleteKey(String key) {
-        jedisTemplate.del(key);
-    }
-
-    private static final class RedisLock extends AbstractSimpleLock {
-        private final String key;
-        private final JedisLockProvider jedisLockProvider;
-
-        private RedisLock(String key, JedisLockProvider jedisLockProvider, LockConfiguration lockConfiguration) {
-            super(lockConfiguration);
-            this.key = key;
-            this.jedisLockProvider = jedisLockProvider;
+    private record JedisPoolTemplate(Pool<Jedis> jedisPool) implements InternalRedisLockTemplate {
+        @Override
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().nx().px(expirationMs));
         }
 
         @Override
-        public void doUnlock() {
-            long keepLockFor = getMsUntil(lockConfiguration.getLockAtLeastUntil());
-
-            // lock at least until is in the past
-            if (keepLockFor <= 0) {
-                try {
-                    jedisLockProvider.deleteKey(key);
-                } catch (Exception e) {
-                    throw new LockException("Can not remove node", e);
-                }
-            } else {
-                jedisLockProvider.extendKeyExpiration(key, keepLockFor);
-            }
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().xx().px(expirationMs));
         }
 
-        @Override
-        @NonNull
-        protected Optional<SimpleLock> doExtend(@NonNull LockConfiguration newConfiguration) {
-            return jedisLockProvider.extend(newConfiguration);
-        }
-    }
-
-    private static long getMsUntil(Instant instant) {
-        return Duration.between(ClockProvider.now(), instant).toMillis();
-    }
-
-    static String buildKey(String lockName, String env) {
-        return String.format("%s:%s:%s", KEY_PREFIX, env, lockName);
-    }
-
-    private static String buildValue() {
-        return String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname());
-    }
-
-    private interface JedisTemplate {
-        String set(String key, String value, SetParams setParams);
-
-        void del(String key);
-    }
-
-    private record JedisPoolTemplate(Pool<Jedis> jedisPool) implements JedisTemplate {
-
-        @Override
-        public String set(String key, String value, SetParams setParams) {
+        private boolean set(String key, String value, SetParams params) {
             try (Jedis jedis = jedisPool.getResource()) {
-                return jedis.set(key, value, setParams);
+                return "OK".equals(jedis.set(key, value, params));
             }
         }
 
         @Override
-        public void del(String key) {
+        public Object eval(String script, String key, String... values) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.eval(script, List.of(key), List.of(values));
+            }
+        }
+
+        @Override
+        public void delete(String key) {
             try (Jedis jedis = jedisPool.getResource()) {
                 jedis.del(key);
             }
         }
     }
 
-    private record JedisCommandsTemplate(JedisCommands jedisCommands) implements JedisTemplate {
-
+    private record JedisCommandsTemplate(JedisCommands jedisCommands) implements InternalRedisLockTemplate {
         @Override
-        public String set(String key, String value, SetParams setParams) {
-            return jedisCommands.set(key, value, setParams);
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().nx().px(expirationMs));
         }
 
         @Override
-        public void del(String key) {
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, setParams().xx().px(expirationMs));
+        }
+
+        private boolean set(String key, String value, SetParams params) {
+            return "OK".equals(jedisCommands.set(key, value, params));
+        }
+
+        @Override
+        public Object eval(String script, String key, String... values) {
+            return jedisCommands.eval(script, List.of(key), List.of(values));
+        }
+
+        @Override
+        public void delete(String key) {
             jedisCommands.del(key);
         }
     }

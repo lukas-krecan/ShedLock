@@ -33,9 +33,16 @@ public class SpringRedisLockProviderIntegrationTest {
     public static final RedisContainer redis = new RedisContainer(PORT);
 
     @Nested
-    class Jedis extends AbstractRedisLockProviderIntegrationTest {
+    class Jedis extends AbstractSpringRedisLockProviderIntegrationTest {
         public Jedis() {
-            super(createJedisConnectionFactory());
+            super(createJedisConnectionFactory(), false);
+        }
+    }
+
+    @Nested
+    class JedisSafeUpdate extends AbstractSpringRedisLockProviderIntegrationTest {
+        public JedisSafeUpdate() {
+            super(createJedisConnectionFactory(), true);
         }
     }
 
@@ -47,15 +54,22 @@ public class SpringRedisLockProviderIntegrationTest {
     }
 
     @Nested
-    class Letucce extends AbstractRedisLockProviderIntegrationTest {
-        public Letucce() {
-            super(createLettuceConnectionFactory());
+    class LettuceSafeUpdate extends AbstractSpringRedisLockProviderIntegrationTest {
+        public LettuceSafeUpdate() {
+            super(createLettuceConnectionFactory(), true);
         }
     }
 
     @Nested
-    class ReactiveLetucce extends AbstractReactiveRedisLockProviderIntegrationTest {
-        public ReactiveLetucce() {
+    class Lettuce extends AbstractSpringRedisLockProviderIntegrationTest {
+        public Lettuce() {
+            super(createLettuceConnectionFactory(), false);
+        }
+    }
+
+    @Nested
+    class ReactiveLettuce extends AbstractReactiveRedisLockProviderIntegrationTest {
+        public ReactiveLettuce() {
             super(createLettuceConnectionFactory());
         }
     }
@@ -67,9 +81,9 @@ public class SpringRedisLockProviderIntegrationTest {
     }
 
     @Nested
-    class Redisson extends AbstractRedisLockProviderIntegrationTest {
+    class Redisson extends AbstractSpringRedisLockProviderIntegrationTest {
         public Redisson() {
-            super(createRedissonConnectionFactory());
+            super(createRedissonConnectionFactory(), false);
         }
     }
 

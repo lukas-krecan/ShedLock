@@ -13,14 +13,12 @@
  */
 package net.javacrumbs.shedlock.provider.redis.spring;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
+import net.javacrumbs.shedlock.provider.redis.testsupport.AbstractRedisIntegrationTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
+public abstract class AbstractSpringRedisLockProviderIntegrationTest extends AbstractRedisIntegrationTest {
 
     private final RedisLockProvider lockProvider;
     private final StringRedisTemplate redisTemplate;
@@ -28,10 +26,12 @@ public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractE
     private static final String ENV = "test";
     private static final String KEY_PREFIX = "test-prefix";
 
-    public AbstractRedisLockProviderIntegrationTest(RedisConnectionFactory connectionFactory) {
+    public AbstractSpringRedisLockProviderIntegrationTest(
+            RedisConnectionFactory connectionFactory, boolean safeUpdate) {
         lockProvider = new RedisLockProvider.Builder(connectionFactory)
                 .environment(ENV)
                 .keyPrefix(KEY_PREFIX)
+                .safeUpdate(safeUpdate)
                 .build();
 
         redisTemplate = new StringRedisTemplate(connectionFactory);
@@ -43,16 +43,11 @@ public abstract class AbstractRedisLockProviderIntegrationTest extends AbstractE
     }
 
     @Override
-    protected void assertUnlocked(String lockName) {
-        assertThat(redisTemplate.hasKey(buildKey(lockName))).isFalse();
+    protected String getLock(String lockName) {
+        return redisTemplate.opsForValue().get(buildKey(lockName));
     }
 
     private String buildKey(String lockName) {
-        return lockProvider.buildKey(lockName);
-    }
-
-    @Override
-    protected void assertLocked(String lockName) {
-        assertThat(redisTemplate.getExpire(buildKey(lockName))).isGreaterThan(0);
+        return buildKey(lockName, KEY_PREFIX, ENV);
     }
 }

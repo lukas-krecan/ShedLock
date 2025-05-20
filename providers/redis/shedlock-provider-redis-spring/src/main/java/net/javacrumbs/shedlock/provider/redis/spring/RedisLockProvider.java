@@ -14,24 +14,24 @@
 package net.javacrumbs.shedlock.provider.redis.spring;
 
 import static java.lang.Boolean.TRUE;
-import static net.javacrumbs.shedlock.support.Utils.getHostname;
-import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.DEFAULT_KEY_PREFIX;
+import static net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider.ENV_DEFAULT;
 import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_ABSENT;
+import static org.springframework.data.redis.connection.RedisStringCommands.SetOption.SET_IF_PRESENT;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import net.javacrumbs.shedlock.core.AbstractSimpleLock;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
+import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
 import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
+import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
@@ -40,12 +40,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  * mechanism. See https://redis.io/commands/set
  */
 public class RedisLockProvider implements ExtensibleLockProvider {
-    private static final String KEY_PREFIX_DEFAULT = "job-lock";
-    private static final String ENV_DEFAULT = "default";
-
-    private final StringRedisTemplate redisTemplate;
-    private final String environment;
-    private final String keyPrefix;
+    private final InternalRedisLockProvider internalRedisLockProvider;
 
     public RedisLockProvider(@NonNull RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
@@ -62,7 +57,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
      *            same Redis
      */
     public RedisLockProvider(@NonNull RedisConnectionFactory redisConn, @NonNull String environment) {
-        this(redisConn, environment, KEY_PREFIX_DEFAULT);
+        this(redisConn, environment, DEFAULT_KEY_PREFIX);
     }
 
     /**
@@ -96,87 +91,29 @@ public class RedisLockProvider implements ExtensibleLockProvider {
      */
     public RedisLockProvider(
             @NonNull StringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
-        this.redisTemplate = redisTemplate;
-        this.environment = environment;
-        this.keyPrefix = keyPrefix;
+        this(redisTemplate, environment, keyPrefix, false);
+    }
+
+    RedisLockProvider(
+            @NonNull StringRedisTemplate redisTemplate,
+            @NonNull String environment,
+            @NonNull String keyPrefix,
+            boolean safeUpdate) {
+        this.internalRedisLockProvider = new InternalRedisLockProvider(
+                new SpringRedisLockTemplate(redisTemplate), environment, keyPrefix, safeUpdate);
     }
 
     @Override
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
-        String key = buildKey(lockConfiguration.getName());
-        Expiration expiration = getExpiration(lockConfiguration.getLockAtMostUntil());
-        if (TRUE.equals(tryToSetExpiration(redisTemplate, key, expiration, SET_IF_ABSENT))) {
-            return Optional.of(new RedisLock(key, redisTemplate, lockConfiguration));
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private static Expiration getExpiration(Instant until) {
-        return Expiration.from(getMsUntil(until), TimeUnit.MILLISECONDS);
-    }
-
-    private static long getMsUntil(Instant until) {
-        return Duration.between(ClockProvider.now(), until).toMillis();
-    }
-
-    private static final class RedisLock extends AbstractSimpleLock {
-
-        private final String key;
-        private final StringRedisTemplate redisTemplate;
-
-        private RedisLock(String key, StringRedisTemplate redisTemplate, LockConfiguration lockConfiguration) {
-            super(lockConfiguration);
-            this.key = key;
-            this.redisTemplate = redisTemplate;
-        }
-
-        @Override
-        public void doUnlock() {
-            Expiration keepLockFor = getExpiration(lockConfiguration.getLockAtLeastUntil());
-            // lock at least until is in the past
-            if (keepLockFor.getExpirationTimeInMilliseconds() <= 0) {
-                try {
-                    redisTemplate.delete(key);
-                } catch (Exception e) {
-                    throw new LockException("Can not remove node", e);
-                }
-            } else {
-                tryToSetExpiration(this.redisTemplate, key, keepLockFor, SetOption.SET_IF_PRESENT);
-            }
-        }
-
-        @Override
-        public Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
-            Expiration expiration = getExpiration(newConfiguration.getLockAtMostUntil());
-            if (TRUE.equals(tryToSetExpiration(redisTemplate, key, expiration, SetOption.SET_IF_PRESENT))) {
-                return Optional.of(new RedisLock(key, redisTemplate, newConfiguration));
-            }
-            return Optional.empty();
-        }
-    }
-
-    String buildKey(String lockName) {
-        return String.format("%s:%s:%s", keyPrefix, environment, lockName);
-    }
-
-    private static Boolean tryToSetExpiration(
-            StringRedisTemplate template, String key, Expiration expiration, SetOption option) {
-        return template.execute(
-                connection -> {
-                    byte[] serializedKey = ((RedisSerializer<String>) template.getKeySerializer()).serialize(key);
-                    byte[] serializedValue = ((RedisSerializer<String>) template.getValueSerializer())
-                            .serialize(String.format("ADDED:%s@%s", toIsoString(ClockProvider.now()), getHostname()));
-                    return connection.set(serializedKey, serializedValue, expiration, option);
-                },
-                false);
+        return internalRedisLockProvider.lock(lockConfiguration);
     }
 
     public static class Builder {
         private final StringRedisTemplate redisTemplate;
         private String environment = ENV_DEFAULT;
-        private String keyPrefix = KEY_PREFIX_DEFAULT;
+        private String keyPrefix = DEFAULT_KEY_PREFIX;
+        private boolean safeUpdate = false;
 
         public Builder(@NonNull RedisConnectionFactory redisConnectionFactory) {
             this.redisTemplate = new StringRedisTemplate(redisConnectionFactory);
@@ -196,8 +133,59 @@ public class RedisLockProvider implements ExtensibleLockProvider {
             return this;
         }
 
+        /**
+         * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
+         *                  is already held by somebody else, we don't release/extend the lock.
+         */
+        public Builder safeUpdate(boolean safeUpdate) {
+            this.safeUpdate = safeUpdate;
+            return this;
+        }
+
         public RedisLockProvider build() {
-            return new RedisLockProvider(redisTemplate, environment, keyPrefix);
+            return new RedisLockProvider(redisTemplate, environment, keyPrefix, safeUpdate);
+        }
+    }
+
+    private record SpringRedisLockTemplate(StringRedisTemplate template) implements InternalRedisLockTemplate {
+
+        @Override
+        public boolean setIfAbsent(String key, String value, long expirationMs) {
+            return set(key, value, expirationMs, SET_IF_ABSENT);
+        }
+
+        @Override
+        public boolean setIfPresent(String key, String value, long expirationMs) {
+            return set(key, value, expirationMs, SET_IF_PRESENT);
+        }
+
+        private boolean set(String key, String value, long expirationMs, RedisStringCommands.SetOption setOption) {
+            return TRUE
+                    == template.execute(
+                            connection -> {
+                                byte[] serializedKey =
+                                        ((RedisSerializer<String>) template.getKeySerializer()).serialize(key);
+                                byte[] serializedValue =
+                                        ((RedisSerializer<String>) template.getValueSerializer()).serialize(value);
+                                return connection
+                                        .stringCommands()
+                                        .set(
+                                                serializedKey,
+                                                serializedValue,
+                                                Expiration.from(expirationMs, TimeUnit.MILLISECONDS),
+                                                setOption);
+                            },
+                            false);
+        }
+
+        @Override
+        public Object eval(String script, String key, String... values) {
+            return template.execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), (Object[]) values);
+        }
+
+        @Override
+        public void delete(String key) {
+            template.delete(key);
         }
     }
 }
