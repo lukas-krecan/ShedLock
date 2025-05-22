@@ -1,4 +1,7 @@
 # Release notes
+## 6.7.0 (2025-05-05)
+* safeUpdate mode for Redis Providers (thanks @shotmk)
+
 ## 6.6.0 (2025-05-05)
 * Redis lettuce provider (thanks @s4got10dev)
 * Dependency updates
