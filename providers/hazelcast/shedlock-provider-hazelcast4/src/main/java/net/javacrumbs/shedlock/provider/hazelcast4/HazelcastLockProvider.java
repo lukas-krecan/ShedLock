@@ -13,13 +13,14 @@
  */
 package net.javacrumbs.shedlock.provider.hazelcast4;
 
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -117,15 +118,14 @@ public class HazelcastLockProvider implements LockProvider {
     @NonNull
     public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
         log.trace("lock - Attempt : {}", lockConfiguration);
-        final Instant now = ClockProvider.now();
-        final String lockName = lockConfiguration.getName();
-        final IMap<String, HazelcastLock> store = getStore();
+        String lockName = lockConfiguration.getName();
+        IMap<String, HazelcastLock> store = getStore();
         try {
             // lock the map key entry
             store.lock(lockName, keyLockTime(lockConfiguration), TimeUnit.MILLISECONDS);
             // just one thread at a time, in the cluster, can run this code
             // each thread waits until the lock to be unlock
-            if (tryLock(lockConfiguration, now)) {
+            if (tryLock(lockConfiguration)) {
                 return Optional.of(new HazelcastSimpleLock(this, lockConfiguration));
             }
         } finally {
@@ -136,18 +136,18 @@ public class HazelcastLockProvider implements LockProvider {
     }
 
     private long keyLockTime(LockConfiguration lockConfiguration) {
-        Duration between = Duration.between(ClockProvider.now(), lockConfiguration.getLockAtMostUntil());
+        Duration between = Duration.between(now(), lockConfiguration.getLockAtMostUntil());
         return between.toMillis();
     }
 
-    private boolean tryLock(final LockConfiguration lockConfiguration, final Instant now) {
-        final String lockName = lockConfiguration.getName();
-        final HazelcastLock lock = getLock(lockName);
+    private boolean tryLock(LockConfiguration lockConfiguration) {
+        String lockName = lockConfiguration.getName();
+        HazelcastLock lock = getLock(lockName);
         if (isUnlocked(lock)) {
             log.debug("lock - lock obtained, it wasn't locked : conf={}", lockConfiguration);
             addNewLock(lockConfiguration);
             return true;
-        } else if (lock.isExpired(now)) {
+        } else if (lock.isExpired(now())) {
             log.debug(
                     "lock - lock obtained, it was locked but expired : oldLock={};  conf={}", lock, lockConfiguration);
             replaceLock(lockName, lockConfiguration);
@@ -162,30 +162,30 @@ public class HazelcastLockProvider implements LockProvider {
         return hazelcastInstance.getMap(lockStoreKey);
     }
 
-    HazelcastLock getLock(final String lockName) {
+    HazelcastLock getLock(String lockName) {
         return getStore().get(lockName);
     }
 
-    private void removeLock(final String lockName) {
+    private void removeLock(String lockName) {
         getStore().delete(lockName);
         log.debug("lock store - lock deleted : {}", lockName);
     }
 
-    private void addNewLock(final LockConfiguration lockConfiguration) {
-        final HazelcastLock lock = HazelcastLock.fromConfigurationWhereTtlIsUntilTime(lockConfiguration);
+    private void addNewLock(LockConfiguration lockConfiguration) {
+        HazelcastLock lock = HazelcastLock.fromConfigurationWhereTtlIsUntilTime(lockConfiguration);
         log.trace("lock store - new lock created from configuration : {}", lockConfiguration);
-        final String lockName = lockConfiguration.getName();
+        String lockName = lockConfiguration.getName();
         getStore().put(lockName, lock);
         log.debug("lock store - new lock added : {}", lock);
     }
 
-    private void replaceLock(final String lockName, final LockConfiguration lockConfiguration) {
+    private void replaceLock(String lockName, LockConfiguration lockConfiguration) {
         log.debug("lock store - replace lock : {}", lockName);
         removeLock(lockName);
         addNewLock(lockConfiguration);
     }
 
-    private boolean isUnlocked(final HazelcastLock lock) {
+    private boolean isUnlocked(HazelcastLock lock) {
         return lock == null;
     }
 
@@ -195,33 +195,28 @@ public class HazelcastLockProvider implements LockProvider {
      */
     public void unlock(String lockName) {
         log.trace("unlock - attempt : {}", lockName);
-        final Instant now = ClockProvider.now();
-        final IMap<String, HazelcastLock> store = getStore();
+        IMap<String, HazelcastLock> store = getStore();
         try {
             store.lock(lockName, lockLeaseTimeMs, TimeUnit.MILLISECONDS);
-            unlockProperly(getHazelcastLock(lockName), now);
+            unlockProperly(getLock(lockName));
         } finally {
             store.unlock(lockName);
         }
     }
 
-    private HazelcastLock getHazelcastLock(String lockName) {
-        return getLock(lockName);
-    }
-
-    private void unlockProperly(final HazelcastLock lock, final Instant now) {
+    private void unlockProperly(HazelcastLock lock) {
         if (isUnlocked(lock)) {
             log.debug("unlock - it is already unlocked");
             return;
         }
-        final String lockName = lock.getName();
-        final Instant lockAtLeastInstant = lock.getLockAtLeastUntil();
-        if (!now.isBefore(lockAtLeastInstant)) {
+        String lockName = lock.getName();
+        Instant lockAtLeastInstant = lock.getLockAtLeastUntil();
+        if (!now().isBefore(lockAtLeastInstant)) {
             removeLock(lockName);
             log.debug("unlock - done : {}", lock);
         } else {
             log.debug("unlock - it doesn't unlock, least time is not passed : {}", lock);
-            final HazelcastLock newLock = HazelcastLock.fromLockWhereTtlIsReduceToLeastTime(lock);
+            HazelcastLock newLock = HazelcastLock.fromLockWhereTtlIsReduceToLeastTime(lock);
             getStore().put(lockName, newLock);
         }
     }
