@@ -193,7 +193,12 @@ public class HazelcastLockProvider implements LockProvider {
      * Unlock the lock with its name. Don't use unless you know what you are doing, unlocking a lock held by an active
      * task may result in multiple concurrent task executions.
      */
-    public void unlock(String lockName) {
+    public void riskyUnlock(String lockName) {
+        log.info("riskyUnlock : {}", lockName);
+        unlock(lockName);
+    }
+
+    void unlock(String lockName) {
         log.trace("unlock - attempt : {}", lockName);
         IMap<String, HazelcastLock> store = getStore();
         try {
