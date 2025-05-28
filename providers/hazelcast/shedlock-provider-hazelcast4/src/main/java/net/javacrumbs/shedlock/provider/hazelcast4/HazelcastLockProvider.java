@@ -190,23 +190,23 @@ public class HazelcastLockProvider implements LockProvider {
     }
 
     /**
-     * Unlock the lock with its name.
-     *
-     * @param lockConfiguration
-     *            the name of the lock to unlock.
+     * Unlock the lock with its name. Don't use unless you know what you are doing, unlocking a lock held by an active
+     * task may result in multiple concurrent task executions.
      */
-    /* package */ void unlock(LockConfiguration lockConfiguration) {
-        String lockName = lockConfiguration.getName();
+    public void unlock(String lockName) {
         log.trace("unlock - attempt : {}", lockName);
         final Instant now = ClockProvider.now();
         final IMap<String, HazelcastLock> store = getStore();
         try {
             store.lock(lockName, lockLeaseTimeMs, TimeUnit.MILLISECONDS);
-            final HazelcastLock lock = getLock(lockName);
-            unlockProperly(lock, now);
+            unlockProperly(getHazelcastLock(lockName), now);
         } finally {
             store.unlock(lockName);
         }
+    }
+
+    private HazelcastLock getHazelcastLock(String lockName) {
+        return getLock(lockName);
     }
 
     private void unlockProperly(final HazelcastLock lock, final Instant now) {

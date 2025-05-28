@@ -27,7 +27,7 @@ class HazelcastSimpleLock extends AbstractSimpleLock {
     }
 
     @Override
-    public void doUnlock() {
-        lockProvider.unlock(lockConfiguration);
+    protected void doUnlock() {
+        lockProvider.unlock(lockConfiguration.getName());
     }
 }
