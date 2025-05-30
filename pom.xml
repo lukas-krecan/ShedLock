@@ -77,7 +77,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <spring-boot-current.version>3.4.6</spring-boot-current.version>
-        <junit.ver>5.12.2</junit.ver>
+        <junit.ver>5.13.0</junit.ver>
         <test-containers.ver>1.21.0</test-containers.ver>
         <kotlin.ver>2.1.21</kotlin.ver>
         <micronaut4.version>4.8.2</micronaut4.version>
