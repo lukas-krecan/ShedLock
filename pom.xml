@@ -18,6 +18,7 @@
 
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
+    <name>ShedLock</name>
     <packaging>pom</packaging>
     <version>6.7.1-SNAPSHOT</version>
     <modules>
@@ -164,6 +165,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
                     <excludeArtifacts>
                         <artifact>shedlock-springboot-future-test</artifact>
                         <artifact>shedlock-springboot-kotlin-test</artifact>
