@@ -1,5 +1,9 @@
 # Release notes
-## 6.7.0 (2025-05-05)
+## 6.8.0 (2025-05-31)
+* Added `riskyUnlock` to HazelcastLockProvider
+* Dependency updates
+
+## 6.7.0 (2025-05-22)
 * safeUpdate mode for Redis Providers (thanks @shotmk)
 
 ## 6.6.0 (2025-05-05)
