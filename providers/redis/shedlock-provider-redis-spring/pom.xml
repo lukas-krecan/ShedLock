@@ -50,7 +50,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.6.0.RELEASE</version>
+            <version>6.7.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
