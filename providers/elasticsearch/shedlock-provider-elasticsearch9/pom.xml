@@ -13,7 +13,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <elasticsearch.version>9.0.1</elasticsearch.version>
+        <elasticsearch.version>9.0.2</elasticsearch.version>
     </properties>
 
     <dependencies>
