@@ -14,7 +14,7 @@ import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
-class ExposedStorageAccessor(private val database: Database) : AbstractStorageAccessor() {
+internal class ExposedStorageAccessor(private val database: Database) : AbstractStorageAccessor() {
 
     private val now: Expression<LocalDateTime> = CurrentDateTime
 
