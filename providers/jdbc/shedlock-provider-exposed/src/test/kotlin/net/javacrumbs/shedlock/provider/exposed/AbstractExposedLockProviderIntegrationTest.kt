@@ -12,7 +12,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 @TestInstance(PER_CLASS)
 abstract class AbstractExposedLockProviderIntegrationTest(
     private val dvConfig: DbConfig,
-    private val database: Database
+    private val database: Database,
 ) : AbstractJdbcLockProviderIntegrationTest() {
 
     override fun getDbConfig(): DbConfig = dvConfig

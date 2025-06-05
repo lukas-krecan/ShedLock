@@ -6,14 +6,12 @@ import org.jetbrains.exposed.sql.DatabaseConfig
 import org.jetbrains.exposed.sql.ExperimentalKeywordApi
 
 @OptIn(ExperimentalKeywordApi::class)
-class H2ExposedLockProviderIntegrationTest : AbstractExposedLockProviderIntegrationTest(
-    dvConfig = DB_CONFIG,
-    database = Database.connect(
-        DB_CONFIG.dataSource,
-        databaseConfig = DatabaseConfig {
-            preserveKeywordCasing = false
-        })
-) {
+class H2ExposedLockProviderIntegrationTest :
+    AbstractExposedLockProviderIntegrationTest(
+        dvConfig = DB_CONFIG,
+        database =
+            Database.connect(DB_CONFIG.dataSource, databaseConfig = DatabaseConfig { preserveKeywordCasing = false }),
+    ) {
 
     private companion object {
         private val DB_CONFIG = H2Config()
