@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.Database
 
 class PostgresExposedLockProviderIntegrationTest :
     AbstractExposedLockProviderIntegrationTest(
-        dvConfig = DB_CONFIG,
+        dbConfig = DB_CONFIG,
         database = Database.connect(DB_CONFIG.dataSource),
     ) {
     private companion object {

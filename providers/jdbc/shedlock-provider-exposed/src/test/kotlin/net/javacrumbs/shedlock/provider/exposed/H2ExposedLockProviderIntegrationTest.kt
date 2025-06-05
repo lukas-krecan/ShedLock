@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.ExperimentalKeywordApi
 @OptIn(ExperimentalKeywordApi::class)
 class H2ExposedLockProviderIntegrationTest :
     AbstractExposedLockProviderIntegrationTest(
-        dvConfig = DB_CONFIG,
+        dbConfig = DB_CONFIG,
         database =
             Database.connect(DB_CONFIG.dataSource, databaseConfig = DatabaseConfig { preserveKeywordCasing = false }),
     ) {

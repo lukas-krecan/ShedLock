@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.Database
 
 class MsSqlExposedLockProviderIntegrationTest :
     AbstractExposedLockProviderIntegrationTest(
-        dvConfig = DB_CONFIG,
+        dbConfig = DB_CONFIG,
         database = Database.connect(DB_CONFIG.dataSource),
     ) {
 
