@@ -27,7 +27,7 @@ private class IntervalExpression(private val expression: Expression<LocalDateTim
                 queryBuilder.run {
                     append("(")
                     expression.toQueryBuilder(queryBuilder)
-                    append(" + INTERVAL '${duration.seconds}' SECOND")
+                    append(" + INTERVAL '${duration.toMillis() / 1000.0}' SECOND")
                     append(")")
                 }
             }
