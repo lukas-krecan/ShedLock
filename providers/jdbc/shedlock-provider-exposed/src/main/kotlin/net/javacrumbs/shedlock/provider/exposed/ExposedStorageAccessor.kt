@@ -1,7 +1,5 @@
 package net.javacrumbs.shedlock.provider.exposed
 
-import java.time.Duration
-import java.time.LocalDateTime
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor
 import org.jetbrains.exposed.sql.Case
@@ -13,6 +11,8 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.time.Duration
+import java.time.LocalDateTime
 
 internal class ExposedStorageAccessor(private val database: Database) : AbstractStorageAccessor() {
 
@@ -28,7 +28,9 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
                     it[lockedBy] = hostname
                 }
                 true
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                logger.debug("Exception thrown when inserting record", e);
+
                 false
             }
         }
