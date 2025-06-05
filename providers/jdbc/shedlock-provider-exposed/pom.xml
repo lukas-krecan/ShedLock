@@ -23,7 +23,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Kotlin 의존성 -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
