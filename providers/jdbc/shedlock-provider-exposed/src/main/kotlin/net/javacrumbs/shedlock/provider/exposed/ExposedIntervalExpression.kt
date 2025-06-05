@@ -17,20 +17,20 @@ private class IntervalExpression(
     override fun toQueryBuilder(queryBuilder: QueryBuilder) {
         when(currentDialect) {
             is SQLServerDialect -> {
-                queryBuilder.let {
-                    it.append("(DATEADD(millisecond, ")
-                    it.append(duration.toMillis().toString())
-                    it.append(", ")
+                queryBuilder.run {
+                    append("(DATEADD(millisecond, ")
+                    append(duration.toMillis().toString())
+                    append(", ")
                     expression.toQueryBuilder(queryBuilder)
-                    it.append("))")
+                    append("))")
                 }
             }
             else -> {
-                queryBuilder.let {
-                    it.append("(")
+                queryBuilder.run {
+                    append("(")
                     expression.toQueryBuilder(queryBuilder)
-                    it.append(" + INTERVAL '${duration.seconds}' SECOND")
-                    it.append(")")
+                    append(" + INTERVAL '${duration.seconds}' SECOND")
+                    append(")")
                 }
             }
         }
