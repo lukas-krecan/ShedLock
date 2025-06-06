@@ -2,13 +2,8 @@ package net.javacrumbs.shedlock.provider.exposed
 
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig
-import org.jetbrains.exposed.sql.Database
 
-class PostgresExposedLockProviderIntegrationTest :
-    AbstractExposedLockProviderIntegrationTest(
-        dbConfig = DB_CONFIG,
-        database = Database.connect(DB_CONFIG.dataSource),
-    ) {
+class PostgresExposedLockProviderIntegrationTest : AbstractExposedLockProviderIntegrationTest(dbConfig = DB_CONFIG) {
     private companion object {
         private val DB_CONFIG: DbConfig =
             object : PostgresConfig() {

@@ -1,5 +1,9 @@
 package net.javacrumbs.shedlock.provider.exposed
 
+import java.sql.SQLException
+import java.sql.SQLIntegrityConstraintViolationException
+import java.time.Duration
+import java.time.LocalDateTime
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor
 import net.javacrumbs.shedlock.support.LockException
@@ -12,11 +16,6 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import java.sql.SQLException
-import java.sql.SQLIntegrityConstraintViolationException
-import java.time.Duration
-import java.time.LocalDateTime
-
 
 internal class ExposedStorageAccessor(private val database: Database) : AbstractStorageAccessor() {
 
@@ -73,8 +72,8 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
             try {
                 Shedlock.update({
                     (Shedlock.name eq lockConfiguration.name) and
-                            (Shedlock.lockedBy eq hostname) and
-                            (Shedlock.lockUntil greater now)
+                        (Shedlock.lockedBy eq hostname) and
+                        (Shedlock.lockUntil greater now)
                 }) {
                     it[lockUntil] = nowPlus(lockConfiguration.lockAtMostFor)
                 } > 0
