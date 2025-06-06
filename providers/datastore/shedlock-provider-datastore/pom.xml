@@ -13,7 +13,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <datastore.ver>2.28.2</datastore.ver>
+        <datastore.ver>2.29.0</datastore.ver>
     </properties>
 
     <dependencies>
