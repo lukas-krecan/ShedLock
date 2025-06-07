@@ -1,4 +1,8 @@
 # Release notes
+## 6.9.0 (2025-06-07)
+* Added Exposed provider (thanks @hungrytech)
+* Dependency updates
+
 ## 6.8.0 (2025-05-31)
 * Added `riskyUnlock` to HazelcastLockProvider
 * Dependency updates
