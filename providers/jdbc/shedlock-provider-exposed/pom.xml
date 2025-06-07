@@ -10,6 +10,7 @@
 
     <artifactId>shedlock-provider-exposed</artifactId>
     <version>6.8.1-SNAPSHOT</version>
+    <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
         <kotlin.version>2.1.0</kotlin.version>
