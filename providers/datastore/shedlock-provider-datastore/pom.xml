@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>shedlock-provider-datastore</artifactId>
-    <version>6.9.1-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>

@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>micronaut4-jdbc-template</artifactId>
-    <version>6.9.1-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>

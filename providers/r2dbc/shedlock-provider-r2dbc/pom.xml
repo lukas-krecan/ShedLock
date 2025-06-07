@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>shedlock-provider-r2dbc</artifactId>
-    <version>6.9.1-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
