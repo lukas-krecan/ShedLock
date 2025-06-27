@@ -42,7 +42,7 @@ import org.opensearch.client.opensearch.core.GetRequest;
 import org.opensearch.client.opensearch.core.GetResponse;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.httpclient5.ApacheHttpClient5TransportBuilder;
-import org.opensearch.testcontainers.OpensearchContainer;
+import org.opensearch.testcontainers.OpenSearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -51,8 +51,8 @@ import org.testcontainers.utility.DockerImageName;
 public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
     @Container
-    private static final OpensearchContainer<?> container =
-            new OpensearchContainer<>(DockerImageName.parse("opensearchproject/opensearch:2"));
+    private static final OpenSearchContainer<?> container =
+            new OpenSearchContainer<>(DockerImageName.parse("opensearchproject/opensearch:2"));
 
     private OpenSearchClient openSearchClient;
     private OpenSearchLockProvider lockProvider;
