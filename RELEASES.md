@@ -1,6 +1,10 @@
 # Release notes
+## 6.9.2 (2025-07-07)
+* OpenSearchLockProvider constructor made public
+
 ## 6.9.1 (2025-07-07)
 * Ability to specify index in OpenSearchLockProvider
+* OpenSearchLockProvider constructor made public
 * Dependency updates
 
 ## 6.9.0 (2025-06-07)
