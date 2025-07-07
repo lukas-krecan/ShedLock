@@ -96,8 +96,12 @@ public class OpenSearchLockProvider implements LockProvider {
     private final String index;
 
     public OpenSearchLockProvider(@NonNull OpenSearchClient openSearchClient) {
+        this(openSearchClient, SCHEDLOCK_DEFAULT_INDEX);
+    }
+
+    public OpenSearchLockProvider(@NonNull OpenSearchClient openSearchClient, @NonNull String index) {
         this.openSearchClient = openSearchClient;
-        this.index = SCHEDLOCK_DEFAULT_INDEX;
+        this.index = index;
         this.hostname = getHostname();
     }
 
