@@ -1,4 +1,8 @@
 # Release notes
+## 6.9.1 (2025-07-07)
+* Ability to specify index in OpenSearchLockProvider
+* Dependency updates
+
 ## 6.9.0 (2025-06-07)
 * Added Exposed provider (thanks @hungrytech)
 * Dependency updates
