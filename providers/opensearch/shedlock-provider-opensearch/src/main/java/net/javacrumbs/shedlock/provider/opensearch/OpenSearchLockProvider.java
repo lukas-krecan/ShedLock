@@ -94,7 +94,7 @@ public class OpenSearchLockProvider implements LockProvider {
     private final String hostname;
     private final String index;
 
-    private OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index) {
+    public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index) {
         this.highLevelClient = highLevelClient;
         this.hostname = getHostname();
         this.index = index;
