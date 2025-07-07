@@ -5,7 +5,7 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>6.9.1-SNAPSHOT</version>
+        <version>6.9.1</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
