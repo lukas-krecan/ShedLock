@@ -7,10 +7,12 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Transaction;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.Nonnull;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
@@ -55,7 +57,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
 
     private boolean insert(String name, Instant until) {
         try {
-            DocumentReference docRef = firestore.collection(collectionName).document(name);
+            DocumentReference docRef = getDocument(name);
 
             // Try to create the document if it doesn't exist
             Map<String, Object> lockData = Map.of(
@@ -63,16 +65,14 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
                     fieldNames.lockedAt(), fromInstant(now()),
                     fieldNames.lockedBy(), hostname);
 
-            return firestore
-                    .runTransaction(transaction -> {
-                        DocumentSnapshot snapshot = transaction.get(docRef).get();
-                        if (!snapshot.exists()) {
-                            transaction.set(docRef, lockData);
-                            return true;
-                        }
-                        return false;
-                    })
-                    .get();
+            return runTransaction(transaction -> {
+                DocumentSnapshot snapshot = transaction.get(docRef).get();
+                if (!snapshot.exists()) {
+                    transaction.set(docRef, lockData);
+                    return true;
+                }
+                return false;
+            });
         } catch (InterruptedException | ExecutionException e) {
             log.debug("Error inserting lock record", e);
             return false;
@@ -81,56 +81,55 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
 
     private boolean updateExisting(String name, Instant until) {
         try {
-            DocumentReference docRef = firestore.collection(collectionName).document(name);
+            DocumentReference docRef = getDocument(name);
 
-            return firestore
-                    .runTransaction(transaction -> {
-                        DocumentSnapshot snapshot = transaction.get(docRef).get();
-                        if (snapshot.exists()) {
-                            Timestamp lockUntilTs = snapshot.getTimestamp(fieldNames.lockUntil());
-                            if (lockUntilTs != null && toInstant(lockUntilTs).isBefore(now())) {
-                                Map<String, Object> updates = Map.of(
-                                        fieldNames.lockUntil(), fromInstant(until),
-                                        fieldNames.lockedAt(), fromInstant(now()),
-                                        fieldNames.lockedBy(), hostname);
+            return runTransaction(transaction -> {
+                DocumentSnapshot snapshot = transaction.get(docRef).get();
+                if (snapshot.exists()) {
+                    Timestamp lockUntilTs = snapshot.getTimestamp(fieldNames.lockUntil());
+                    if (lockUntilTs != null && toInstant(lockUntilTs).isBefore(now())) {
+                        Map<String, Object> updates = Map.of(
+                                fieldNames.lockUntil(), fromInstant(until),
+                                fieldNames.lockedAt(), fromInstant(now()),
+                                fieldNames.lockedBy(), hostname);
 
-                                transaction.update(docRef, updates);
-                                return true;
-                            }
-                        }
-                        return false;
-                    })
-                    .get();
+                        transaction.update(docRef, updates);
+                        return true;
+                    }
+                }
+                return false;
+            });
         } catch (InterruptedException | ExecutionException e) {
             log.debug("Error updating lock record", e);
             return false;
         }
     }
 
+    private DocumentReference getDocument(String name) {
+        return firestore.collection(collectionName).document(name);
+    }
+
     private boolean updateOwn(String name, Instant until) {
         try {
-            DocumentReference docRef = firestore.collection(collectionName).document(name);
+            DocumentReference docRef = getDocument(name);
 
-            return firestore
-                    .runTransaction(transaction -> {
-                        DocumentSnapshot snapshot = transaction.get(docRef).get();
-                        if (snapshot.exists() && hostname.equals(snapshot.getString(fieldNames.lockedBy()))) {
+            return runTransaction(transaction -> {
+                DocumentSnapshot snapshot = transaction.get(docRef).get();
+                if (snapshot.exists() && hostname.equals(snapshot.getString(fieldNames.lockedBy()))) {
 
-                            Timestamp lockUntilTs = snapshot.getTimestamp(fieldNames.lockUntil());
-                            if (lockUntilTs != null) {
-                                Instant lockUntil = toInstant(lockUntilTs);
-                                Instant now = now();
-                                if (lockUntil.isAfter(now) || lockUntil.equals(now)) {
-                                    Map<String, Object> updates = Map.of(fieldNames.lockUntil(), fromInstant(until));
-
-                                    transaction.update(docRef, updates);
-                                    return true;
-                                }
-                            }
+                    Timestamp lockUntilTs = snapshot.getTimestamp(fieldNames.lockUntil());
+                    if (lockUntilTs != null) {
+                        Instant lockUntil = toInstant(lockUntilTs);
+                        Instant now = now();
+                        if (lockUntil.isAfter(now) || lockUntil.equals(now)) {
+                            Map<String, Object> updates = Map.of(fieldNames.lockUntil(), fromInstant(until));
+                            transaction.update(docRef, updates);
+                            return true;
                         }
-                        return false;
-                    })
-                    .get();
+                    }
+                }
+                return false;
+            });
         } catch (InterruptedException | ExecutionException e) {
             log.debug("Error updating own lock record", e);
             return false;
@@ -139,7 +138,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
 
     public Optional<Lock> findLock(String name) {
         try {
-            DocumentReference docRef = firestore.collection(collectionName).document(name);
+            DocumentReference docRef = getDocument(name);
             DocumentSnapshot snapshot = docRef.get().get();
 
             if (snapshot.exists()) {
@@ -156,12 +155,17 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private static Timestamp fromInstant(Instant instant) {
-        return Timestamp.of(java.sql.Timestamp.from(requireNonNull(instant)));
+    private <T> T runTransaction(@Nonnull final Transaction.Function<T> updateFunction)
+            throws ExecutionException, InterruptedException {
+        return firestore.runTransaction(updateFunction).get();
     }
 
-    private static Instant toInstant(Timestamp timestamp) {
-        return requireNonNull(timestamp).toSqlTimestamp().toInstant();
+    private static Timestamp fromInstant(@Nonnull Instant instant) {
+        return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
+    }
+
+    private static Instant toInstant(@Nonnull Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
     public record Lock(String name, Instant lockedAt, Instant lockedUntil, String lockedBy) {}
