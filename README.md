@@ -43,6 +43,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [In-Memory](#in-memory)
   - [Memcached](#memcached-using-spymemcached)
   - [Datastore](#datastore)
+  - [Firestore](#firestore)
   - [S3](#s3)
 + [Multi-tenancy](#multi-tenancy)
 + [Customization](#customization)
@@ -892,6 +893,45 @@ public LockProvider lockProvider(com.google.cloud.datastore.Datastore datastore)
 }
 
 ```
+
+#### Firestore
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-firestore</artifactId>
+    <version>6.9.2</version>
+</dependency>
+```
+
+and configure
+```java
+import net.javacrumbs.shedlock.provider.firestore.FirestoreLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.google.cloud.firestore.Firestore firestore) {
+    return new FirestoreLockProvider(firestore);
+}
+```
+
+For more fine-grained configuration, you can use the builder:
+
+```java
+@Bean
+public LockProvider lockProvider(com.google.cloud.firestore.Firestore firestore) {
+    return new FirestoreLockProvider(
+        FirestoreLockProvider.Configuration.builder()
+            .withFirestore(firestore)
+            .withCollectionName("custom_lock_collection")
+            .withFieldNames(new FirestoreLockProvider.FieldNames("custom_lock_until", "custom_locked_at", "custom_locked_by"))
+            .build()
+    );
+}
+```
+
 #### Spanner
 Import the project
 ```xml
