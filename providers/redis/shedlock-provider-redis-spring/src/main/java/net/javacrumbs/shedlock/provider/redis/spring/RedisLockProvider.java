@@ -27,7 +27,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -42,7 +41,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 public class RedisLockProvider implements ExtensibleLockProvider {
     private final InternalRedisLockProvider internalRedisLockProvider;
 
-    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn) {
+    public RedisLockProvider(RedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
@@ -56,7 +55,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      */
-    public RedisLockProvider(@NonNull RedisConnectionFactory redisConn, @NonNull String environment) {
+    public RedisLockProvider(RedisConnectionFactory redisConn, String environment) {
         this(redisConn, environment, DEFAULT_KEY_PREFIX);
     }
 
@@ -72,8 +71,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
      * @param keyPrefix
      *            prefix of the key in Redis.
      */
-    public RedisLockProvider(
-            @NonNull RedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
+    public RedisLockProvider(RedisConnectionFactory redisConn, String environment, String keyPrefix) {
         this(new StringRedisTemplate(redisConn), environment, keyPrefix);
     }
 
@@ -89,23 +87,17 @@ public class RedisLockProvider implements ExtensibleLockProvider {
      * @param keyPrefix
      *            prefix of the key in Redis.
      */
-    public RedisLockProvider(
-            @NonNull StringRedisTemplate redisTemplate, @NonNull String environment, @NonNull String keyPrefix) {
+    public RedisLockProvider(StringRedisTemplate redisTemplate, String environment, String keyPrefix) {
         this(redisTemplate, environment, keyPrefix, false);
     }
 
-    RedisLockProvider(
-            @NonNull StringRedisTemplate redisTemplate,
-            @NonNull String environment,
-            @NonNull String keyPrefix,
-            boolean safeUpdate) {
+    RedisLockProvider(StringRedisTemplate redisTemplate, String environment, String keyPrefix, boolean safeUpdate) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
                 new SpringRedisLockTemplate(redisTemplate), environment, keyPrefix, safeUpdate);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         return internalRedisLockProvider.lock(lockConfiguration);
     }
 
@@ -115,20 +107,20 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         private String keyPrefix = DEFAULT_KEY_PREFIX;
         private boolean safeUpdate = false;
 
-        public Builder(@NonNull RedisConnectionFactory redisConnectionFactory) {
+        public Builder(RedisConnectionFactory redisConnectionFactory) {
             this.redisTemplate = new StringRedisTemplate(redisConnectionFactory);
         }
 
-        public Builder(@NonNull StringRedisTemplate redisTemplate) {
+        public Builder(StringRedisTemplate redisTemplate) {
             this.redisTemplate = redisTemplate;
         }
 
-        public Builder environment(@NonNull String environment) {
+        public Builder environment(String environment) {
             this.environment = environment;
             return this;
         }
 
-        public Builder keyPrefix(@NonNull String keyPrefix) {
+        public Builder keyPrefix(String keyPrefix) {
             this.keyPrefix = keyPrefix;
             return this;
         }

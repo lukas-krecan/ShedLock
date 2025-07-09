@@ -17,7 +17,6 @@ import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.spanner.SpannerLockProvider.TableConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Accessor for managing lock records within a Google Spanner database.
@@ -57,7 +56,7 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
      * @return {@code true} if the lock was successfully inserted, otherwise {@code false}.
      */
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(
                 databaseClient.readWriteTransaction().run(tx -> findLock(tx, lockConfiguration.getName())
                         .map(lock -> false) // Lock already exists, so we return false.
@@ -74,7 +73,7 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
      * @return {@code true} if the lock was successfully updated, otherwise {@code false}.
      */
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(
                 databaseClient.readWriteTransaction().run(tx -> findLock(tx, lockConfiguration.getName())
                         .filter(lock -> lock.lockedUntil().compareTo(now()) <= 0)
@@ -104,7 +103,7 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
      * @return {@code true} if the lock was successfully extended, otherwise {@code false}.
      */
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(
                 databaseClient.readWriteTransaction().run(tx -> findLock(tx, lockConfiguration.getName())
                         .filter(lock -> hostname.equals(lock.lockedBy()))
@@ -127,7 +126,7 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
      * @param lockConfiguration The lock configuration to unlock.
      */
     @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
+    public void unlock(LockConfiguration lockConfiguration) {
         databaseClient.readWriteTransaction().run(tx -> {
             findLock(tx, lockConfiguration.getName())
                     .filter(lock -> hostname.equals(lock.lockedBy()))
@@ -153,7 +152,7 @@ public class SpannerStorageAccessor extends AbstractStorageAccessor {
                 .map(this::newLock);
     }
 
-    Lock newLock(@NonNull Struct row) {
+    Lock newLock(Struct row) {
         return new Lock(
                 row.getString(name), row.getString(lockedBy), row.getTimestamp(lockedAt), row.getTimestamp(lockUntil));
     }

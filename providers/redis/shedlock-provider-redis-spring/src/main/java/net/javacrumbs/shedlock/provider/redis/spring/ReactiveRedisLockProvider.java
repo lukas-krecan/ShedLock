@@ -12,7 +12,6 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -24,7 +23,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 public class ReactiveRedisLockProvider implements LockProvider {
     private final InternalRedisLockProvider internalRedisLockProvider;
 
-    public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn) {
+    public ReactiveRedisLockProvider(ReactiveRedisConnectionFactory redisConn) {
         this(redisConn, ENV_DEFAULT);
     }
 
@@ -38,7 +37,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      */
-    public ReactiveRedisLockProvider(@NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment) {
+    public ReactiveRedisLockProvider(ReactiveRedisConnectionFactory redisConn, String environment) {
         this(redisConn, environment, DEFAULT_KEY_PREFIX);
     }
 
@@ -54,8 +53,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
      * @param keyPrefix
      *            prefix of the key in Redis.
      */
-    public ReactiveRedisLockProvider(
-            @NonNull ReactiveRedisConnectionFactory redisConn, @NonNull String environment, @NonNull String keyPrefix) {
+    public ReactiveRedisLockProvider(ReactiveRedisConnectionFactory redisConn, String environment, String keyPrefix) {
         this(new ReactiveStringRedisTemplate(redisConn), environment, keyPrefix);
     }
 
@@ -71,17 +69,13 @@ public class ReactiveRedisLockProvider implements LockProvider {
      * @param keyPrefix
      *            prefix of the key in Redis.
      */
-    public ReactiveRedisLockProvider(
-            @NonNull ReactiveStringRedisTemplate redisTemplate,
-            @NonNull String environment,
-            @NonNull String keyPrefix) {
+    public ReactiveRedisLockProvider(ReactiveStringRedisTemplate redisTemplate, String environment, String keyPrefix) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
                 new ReactiveRedisLockTemplate(redisTemplate), environment, keyPrefix, false);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         return internalRedisLockProvider.lock(lockConfiguration);
     }
 
@@ -90,20 +84,20 @@ public class ReactiveRedisLockProvider implements LockProvider {
         private String environment = ENV_DEFAULT;
         private String keyPrefix = DEFAULT_KEY_PREFIX;
 
-        public Builder(@NonNull ReactiveRedisConnectionFactory redisConnectionFactory) {
+        public Builder(ReactiveRedisConnectionFactory redisConnectionFactory) {
             this.redisTemplate = new ReactiveStringRedisTemplate(redisConnectionFactory);
         }
 
-        public Builder(@NonNull ReactiveStringRedisTemplate redisTemplate) {
+        public Builder(ReactiveStringRedisTemplate redisTemplate) {
             this.redisTemplate = redisTemplate;
         }
 
-        public ReactiveRedisLockProvider.Builder environment(@NonNull String environment) {
+        public ReactiveRedisLockProvider.Builder environment(String environment) {
             this.environment = environment;
             return this;
         }
 
-        public ReactiveRedisLockProvider.Builder keyPrefix(@NonNull String keyPrefix) {
+        public ReactiveRedisLockProvider.Builder keyPrefix(String keyPrefix) {
             this.keyPrefix = keyPrefix;
             return this;
         }

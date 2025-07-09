@@ -22,7 +22,6 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
@@ -33,9 +32,11 @@ import org.neo4j.driver.Transaction;
 class Neo4jStorageAccessor extends AbstractStorageAccessor {
     private final String collectionName;
     private final Driver driver;
+
+    @Nullable
     private final String databaseName;
 
-    public Neo4jStorageAccessor(@NonNull Driver driver, @NonNull String collectionName, @Nullable String databaseName) {
+    public Neo4jStorageAccessor(Driver driver, String collectionName, @Nullable String databaseName) {
         this.collectionName = requireNonNull(collectionName, "collectionName can not be null");
         this.driver = requireNonNull(driver, "driver can not be null");
         this.databaseName = databaseName;
@@ -53,7 +54,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists
         String cypher = String.format(
                 "CYPHER runtime = slotted CREATE (lock:%s {name: $lockName, lock_until: $lockUntil, locked_at: $now, locked_by: $lockedBy })",
@@ -69,7 +70,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
                 this::handleInsertionException);
     }
 
-    private Map<String, Object> createParameterMap(@NonNull LockConfiguration lockConfiguration) {
+    private Map<String, Object> createParameterMap(LockConfiguration lockConfiguration) {
         return Map.of(
                 "lockName",
                 lockConfiguration.getName(),
@@ -82,7 +83,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         String cypher = String.format(
                 "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName AND lock.lock_until <= $now "
                         + "SET lock._LOCK_ = true WITH lock as l WHERE l.lock_until <= $now "
@@ -101,7 +102,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         String cypher = String.format(
                 "CYPHER runtime = slotted MATCH (lock:%s) "
                         + "WHERE lock.name = $lockName AND lock.locked_by = $lockedBy AND lock.lock_until > $now "
@@ -124,7 +125,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
+    public void unlock(LockConfiguration lockConfiguration) {
         String cypher = String.format(
                 "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName SET lock.lock_until = $lockUntil",
                 collectionName);

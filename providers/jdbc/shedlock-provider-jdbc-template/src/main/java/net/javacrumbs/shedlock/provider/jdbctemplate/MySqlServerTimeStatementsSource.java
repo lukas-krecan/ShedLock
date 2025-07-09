@@ -15,7 +15,6 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 class MySqlServerTimeStatementsSource extends SqlStatementsSource {
     private static final String now = "UTC_TIMESTAMP(3)";
@@ -51,8 +50,7 @@ class MySqlServerTimeStatementsSource extends SqlStatementsSource {
     }
 
     @Override
-    @NonNull
-    Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
+    Map<String, Object> params(LockConfiguration lockConfiguration) {
         return Map.of(
                 "name",
                 lockConfiguration.getName(),

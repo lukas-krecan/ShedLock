@@ -17,7 +17,6 @@ package net.javacrumbs.shedlock.provider.r2dbc;
 
 import io.r2dbc.spi.ConnectionFactory;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Lock provided by plain R2DBC SPI. It uses a table that contains lock_name and
@@ -37,11 +36,11 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
  * </ol>
  */
 public class R2dbcLockProvider extends StorageBasedLockProvider {
-    public R2dbcLockProvider(@NonNull ConnectionFactory connectionFactory) {
+    public R2dbcLockProvider(ConnectionFactory connectionFactory) {
         this(connectionFactory, "shedlock");
     }
 
-    public R2dbcLockProvider(@NonNull ConnectionFactory connectionFactory, @NonNull String tableName) {
+    public R2dbcLockProvider(ConnectionFactory connectionFactory, String tableName) {
         super(new R2dbcStorageAccessor(connectionFactory, tableName));
     }
 }

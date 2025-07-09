@@ -34,7 +34,6 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Arango Lock Provider needs existing collection <br>
@@ -60,7 +59,7 @@ public class ArangoLockProvider implements LockProvider {
      * @param arangoDatabase
      *            the arango database
      */
-    public ArangoLockProvider(@NonNull ArangoDatabase arangoDatabase) {
+    public ArangoLockProvider(ArangoDatabase arangoDatabase) {
         this(arangoDatabase.collection(COLLECTION_NAME));
     }
 
@@ -70,13 +69,12 @@ public class ArangoLockProvider implements LockProvider {
      * @param arangoCollection
      *            the arango collection
      */
-    public ArangoLockProvider(@NonNull ArangoCollection arangoCollection) {
+    public ArangoLockProvider(ArangoCollection arangoCollection) {
         this.arangoCollection = arangoCollection;
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String transactionId = null;
 
         try {

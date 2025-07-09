@@ -31,7 +31,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 /** StorageAccessor for cassandra. */
 /*
@@ -42,16 +42,23 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
 class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String hostname;
     private final CqlIdentifier table;
+
+    @Nullable
     private final CqlIdentifier keyspace;
+
     private final String lockName;
     private final String lockUntil;
     private final String lockedAt;
     private final String lockedBy;
     private final CqlSession cqlSession;
+
+    @Nullable
     private final ConsistencyLevel consistencyLevel;
+
+    @Nullable
     private final ConsistencyLevel serialConsistencyLevel;
 
-    CassandraStorageAccessor(@NonNull Configuration configuration) {
+    CassandraStorageAccessor(Configuration configuration) {
         requireNonNull(configuration, "configuration can not be null");
         this.hostname = Utils.getHostname();
         this.table = configuration.getTable();
@@ -66,7 +73,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         if (find(lockConfiguration.getName()).isPresent()) {
             return false;
         }
@@ -80,7 +87,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
         if (lock.isEmpty() || lock.get().lockUntil().isAfter(ClockProvider.now())) {
             return false;
@@ -95,12 +102,12 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
+    public void unlock(LockConfiguration lockConfiguration) {
         updateUntil(lockConfiguration.getName(), lockConfiguration.getUnlockTime());
     }
 
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         Optional<Lock> lock = find(lockConfiguration.getName());
         if (lock.isEmpty()
                 || lock.get().lockUntil().isBefore(ClockProvider.now())

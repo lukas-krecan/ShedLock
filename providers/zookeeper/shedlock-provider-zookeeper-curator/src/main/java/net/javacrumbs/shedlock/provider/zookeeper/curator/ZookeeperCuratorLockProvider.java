@@ -26,7 +26,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
@@ -47,18 +47,17 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperCuratorLockProvider.class);
 
-    public ZookeeperCuratorLockProvider(@NonNull CuratorFramework client) {
+    public ZookeeperCuratorLockProvider(CuratorFramework client) {
         this(client, DEFAULT_PATH);
     }
 
-    public ZookeeperCuratorLockProvider(@NonNull CuratorFramework client, @NonNull String path) {
+    public ZookeeperCuratorLockProvider(CuratorFramework client, String path) {
         this.client = requireNonNull(client);
         this.path = PathUtils.validatePath(path);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String nodePath = getNodePath(lockConfiguration.getName());
 
         try {
@@ -114,7 +113,7 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         return isLocked(data);
     }
 
-    private boolean isLocked(byte[] data) {
+    private boolean isLocked(@Nullable byte[] data) {
         if (data == null || data.length == 0) {
             // most likely created by previous version of the library
             return true;

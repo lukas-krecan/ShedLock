@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public class HazelcastLockProvider implements LockProvider {
      * @param hazelcastInstance
      *            The Hazelcast engine used by the application.
      */
-    public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance) {
+    public HazelcastLockProvider(HazelcastInstance hazelcastInstance) {
         this(hazelcastInstance, LOCK_STORE_KEY_DEFAULT);
     }
 
@@ -87,7 +87,7 @@ public class HazelcastLockProvider implements LockProvider {
      *            The key where the locks are stored (by default
      *            {@link #LOCK_STORE_KEY_DEFAULT}).
      */
-    public HazelcastLockProvider(@NonNull HazelcastInstance hazelcastInstance, @NonNull String lockStoreKey) {
+    public HazelcastLockProvider(HazelcastInstance hazelcastInstance, String lockStoreKey) {
         this(hazelcastInstance, lockStoreKey, DEFAULT_LOCK_LEASE_TIME);
     }
 
@@ -105,18 +105,14 @@ public class HazelcastLockProvider implements LockProvider {
      *            process dies while holding the lock, it is held forever.
      *            lockLeaseTime is used as a safety-net for such situations.
      */
-    public HazelcastLockProvider(
-            @NonNull HazelcastInstance hazelcastInstance,
-            @NonNull String lockStoreKey,
-            @NonNull Duration lockLeaseTime) {
+    public HazelcastLockProvider(HazelcastInstance hazelcastInstance, String lockStoreKey, Duration lockLeaseTime) {
         this.hazelcastInstance = hazelcastInstance;
         this.lockStoreKey = lockStoreKey;
         this.lockLeaseTimeMs = lockLeaseTime.toMillis();
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         log.trace("lock - Attempt : {}", lockConfiguration);
         String lockName = lockConfiguration.getName();
         IMap<String, HazelcastLock> store = getStore();
@@ -162,6 +158,7 @@ public class HazelcastLockProvider implements LockProvider {
         return hazelcastInstance.getMap(lockStoreKey);
     }
 
+    @Nullable
     HazelcastLock getLock(String lockName) {
         return getStore().get(lockName);
     }
@@ -185,7 +182,7 @@ public class HazelcastLockProvider implements LockProvider {
         addNewLock(lockConfiguration);
     }
 
-    private boolean isUnlocked(HazelcastLock lock) {
+    private boolean isUnlocked(@Nullable HazelcastLock lock) {
         return lock == null;
     }
 
@@ -209,7 +206,7 @@ public class HazelcastLockProvider implements LockProvider {
         }
     }
 
-    private void unlockProperly(HazelcastLock lock) {
+    private void unlockProperly(@Nullable HazelcastLock lock) {
         if (isUnlocked(lock)) {
             log.debug("unlock - it is already unlocked");
             return;

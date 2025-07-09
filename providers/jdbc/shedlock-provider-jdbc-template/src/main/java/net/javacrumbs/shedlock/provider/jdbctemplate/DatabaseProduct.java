@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 public enum DatabaseProduct {
     POSTGRES_SQL("PostgreSQL"::equalsIgnoreCase, PostgresSqlServerTimeStatementsSource::new),
@@ -42,8 +42,7 @@ public enum DatabaseProduct {
      *            java.sql.connection.getMetaData().getProductName().
      * @return The matching ProductName enum
      */
-    @NonNull
-    static DatabaseProduct matchProductName(final String productName) {
+    static DatabaseProduct matchProductName(@Nullable final String productName) {
         return Arrays.stream(DatabaseProduct.values())
                 .filter(databaseProduct -> databaseProduct.productMatcher.test(productName))
                 .findFirst()

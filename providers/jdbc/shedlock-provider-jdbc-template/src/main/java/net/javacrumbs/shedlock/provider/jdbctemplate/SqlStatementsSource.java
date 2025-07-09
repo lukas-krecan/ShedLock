@@ -23,7 +23,6 @@ import java.util.TimeZone;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -64,13 +63,12 @@ class SqlStatementsSource {
                     connection -> connection.getMetaData().getDatabaseProductName());
             return DatabaseProduct.matchProductName(jdbcProductName);
         } catch (Exception e) {
-            logger.debug("Can not determine database product name " + e.getMessage());
+            logger.debug("Can not determine database product name {}", e.getMessage());
             return DatabaseProduct.UNKNOWN;
         }
     }
 
-    @NonNull
-    Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
+    Map<String, Object> params(LockConfiguration lockConfiguration) {
         return Map.of(
                 "name",
                 lockConfiguration.getName(),
@@ -84,7 +82,6 @@ class SqlStatementsSource {
                 timestamp(lockConfiguration.getUnlockTime()));
     }
 
-    @NonNull
     private Object timestamp(Instant time) {
         TimeZone timeZone = configuration.getTimeZone();
         if (timeZone == null) {

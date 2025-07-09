@@ -101,7 +101,7 @@
                 <version>2.45.0</version>
                 <configuration>
                     <java>
-                        <palantirJavaFormat><version>2.38.0</version></palantirJavaFormat>
+                        <palantirJavaFormat><version>2.57.0</version></palantirJavaFormat>
                         <removeUnusedImports />
                     </java>
                     <kotlin>

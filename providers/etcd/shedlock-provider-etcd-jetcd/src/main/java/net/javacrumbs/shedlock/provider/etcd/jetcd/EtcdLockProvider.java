@@ -37,7 +37,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Uses etcd keys and the version of the key value pairs as locking mechanism.
@@ -60,18 +59,17 @@ public class EtcdLockProvider implements LockProvider {
 
     private final String environment;
 
-    public EtcdLockProvider(@NonNull Client client) {
+    public EtcdLockProvider(Client client) {
         this(client, ENV_DEFAULT);
     }
 
-    public EtcdLockProvider(@NonNull Client client, @NonNull String environment) {
+    public EtcdLockProvider(Client client, String environment) {
         this.etcdTemplate = new EtcdTemplate(client);
         this.environment = environment;
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String key = buildKey(lockConfiguration.getName());
         String value = buildValue();
 

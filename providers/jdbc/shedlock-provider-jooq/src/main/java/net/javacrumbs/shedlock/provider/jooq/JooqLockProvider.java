@@ -14,11 +14,10 @@
 package net.javacrumbs.shedlock.provider.jooq;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.jooq.DSLContext;
 
 public class JooqLockProvider extends StorageBasedLockProvider {
-    public JooqLockProvider(@NonNull DSLContext dslContext) {
+    public JooqLockProvider(DSLContext dslContext) {
         super(new JooqStorageAccessor(dslContext));
     }
 }

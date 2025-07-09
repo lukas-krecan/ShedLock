@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Common implementation of RedisLockProvider. Internal class, please don't use directly.
@@ -63,10 +62,7 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
         """;
 
     public InternalRedisLockProvider(
-            @NonNull InternalRedisLockTemplate redisLockTemplate,
-            @NonNull String environment,
-            @NonNull String keyPrefix,
-            boolean safeUpdate) {
+            InternalRedisLockTemplate redisLockTemplate, String environment, String keyPrefix, boolean safeUpdate) {
         this.redisLockTemplate = redisLockTemplate;
         this.environment = environment;
         this.keyPrefix = keyPrefix;
@@ -74,8 +70,7 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         long expireTime = getMsUntil(lockConfiguration.getLockAtMostUntil());
 
         String key = buildKey(lockConfiguration.getName(), keyPrefix, this.environment);
@@ -150,8 +145,7 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
-        @NonNull
-        protected Optional<SimpleLock> doExtend(@NonNull LockConfiguration newConfiguration) {
+        protected Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
             return lockProvider.extend(this, newConfiguration);
         }
     }

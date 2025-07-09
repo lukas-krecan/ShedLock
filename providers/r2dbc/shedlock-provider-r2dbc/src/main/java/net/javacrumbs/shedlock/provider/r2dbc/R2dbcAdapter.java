@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.function.Function;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 abstract class R2dbcAdapter {
     private static final String MSSQL_NAME = "Microsoft SQL Server";
@@ -14,16 +13,19 @@ abstract class R2dbcAdapter {
     private static final String MARIA_NAME = "MariaDB";
     private static final String ORACLE_NAME = "Oracle Database";
 
-    static R2dbcAdapter create(@NonNull String driver) {
+    static R2dbcAdapter create(String driver) {
         return switch (driver) {
-            case MSSQL_NAME -> new DefaultR2dbcAdapter(
-                    (index, name) -> "@" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
-            case MYSQL_NAME, JASYNC_MYSQL_NAME, MARIA_NAME -> new DefaultR2dbcAdapter(
-                    (index, name) -> "?", R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByIndex);
-            case ORACLE_NAME -> new DefaultR2dbcAdapter(
-                    (index, name) -> ":" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
-            default -> new DefaultR2dbcAdapter(
-                    (index, name) -> "$" + index, R2dbcAdapter::toInstant, R2dbcAdapter::bindByIndex);
+            case MSSQL_NAME ->
+                new DefaultR2dbcAdapter(
+                        (index, name) -> "@" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
+            case MYSQL_NAME, JASYNC_MYSQL_NAME, MARIA_NAME ->
+                new DefaultR2dbcAdapter((index, name) -> "?", R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByIndex);
+            case ORACLE_NAME ->
+                new DefaultR2dbcAdapter(
+                        (index, name) -> ":" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
+            default ->
+                new DefaultR2dbcAdapter(
+                        (index, name) -> "$" + index, R2dbcAdapter::toInstant, R2dbcAdapter::bindByIndex);
         };
     }
 
@@ -53,9 +55,7 @@ abstract class R2dbcAdapter {
         private final ValueBinder binder;
 
         private DefaultR2dbcAdapter(
-                @NonNull ParameterResolver parameterResolver,
-                @NonNull Function<Instant, Object> dateConverter,
-                @NonNull ValueBinder binder) {
+                ParameterResolver parameterResolver, Function<Instant, Object> dateConverter, ValueBinder binder) {
             this.parameterResolver = parameterResolver;
             this.dateConverter = dateConverter;
             this.binder = binder;
