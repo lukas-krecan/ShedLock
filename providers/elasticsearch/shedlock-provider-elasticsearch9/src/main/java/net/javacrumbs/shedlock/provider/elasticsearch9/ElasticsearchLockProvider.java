@@ -33,7 +33,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * It uses a collection that contains documents like this:
@@ -84,19 +83,18 @@ public class ElasticsearchLockProvider implements LockProvider {
     private final String hostname;
     private final String index;
 
-    private ElasticsearchLockProvider(@NonNull ElasticsearchClient client, @NonNull String index) {
+    private ElasticsearchLockProvider(ElasticsearchClient client, String index) {
         this.client = client;
         this.hostname = getHostname();
         this.index = index;
     }
 
-    public ElasticsearchLockProvider(@NonNull ElasticsearchClient client) {
+    public ElasticsearchLockProvider(ElasticsearchClient client) {
         this(client, SCHEDLOCK_DEFAULT_INDEX);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         try {
             Instant now = now();
             Instant lockAtMostUntil = lockConfiguration.getLockAtMostUntil();

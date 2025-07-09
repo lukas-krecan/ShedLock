@@ -19,7 +19,6 @@ import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -45,31 +44,29 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     private static final String DEFAULT_TABLE_NAME = "shedlock";
 
-    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate) {
+    public JdbcTemplateLockProvider(JdbcTemplate jdbcTemplate) {
         this(jdbcTemplate, (PlatformTransactionManager) null);
     }
 
     public JdbcTemplateLockProvider(
-            @NonNull JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager) {
+            JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager) {
         this(jdbcTemplate, transactionManager, DEFAULT_TABLE_NAME);
     }
 
-    public JdbcTemplateLockProvider(@NonNull JdbcTemplate jdbcTemplate, @NonNull String tableName) {
+    public JdbcTemplateLockProvider(JdbcTemplate jdbcTemplate, String tableName) {
         this(jdbcTemplate, null, tableName);
     }
 
-    public JdbcTemplateLockProvider(@NonNull DataSource dataSource) {
+    public JdbcTemplateLockProvider(DataSource dataSource) {
         this(new JdbcTemplate(dataSource));
     }
 
-    public JdbcTemplateLockProvider(@NonNull DataSource dataSource, @NonNull String tableName) {
+    public JdbcTemplateLockProvider(DataSource dataSource, String tableName) {
         this(new JdbcTemplate(dataSource), tableName);
     }
 
     public JdbcTemplateLockProvider(
-            @NonNull JdbcTemplate jdbcTemplate,
-            @Nullable PlatformTransactionManager transactionManager,
-            @NonNull String tableName) {
+            JdbcTemplate jdbcTemplate, @Nullable PlatformTransactionManager transactionManager, String tableName) {
         this(Configuration.builder()
                 .withJdbcTemplate(jdbcTemplate)
                 .withTransactionManager(transactionManager)
@@ -77,7 +74,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 .build());
     }
 
-    public JdbcTemplateLockProvider(@NonNull Configuration configuration) {
+    public JdbcTemplateLockProvider(Configuration configuration) {
         super(new JdbcTemplateStorageAccessor(configuration));
     }
 
@@ -94,13 +91,13 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         private final boolean throwUnexpectedException;
 
         Configuration(
-                @NonNull JdbcTemplate jdbcTemplate,
+                JdbcTemplate jdbcTemplate,
                 @Nullable DatabaseProduct databaseProduct,
                 @Nullable PlatformTransactionManager transactionManager,
-                @NonNull String tableName,
+                String tableName,
                 @Nullable TimeZone timeZone,
-                @NonNull ColumnNames columnNames,
-                @NonNull String lockedByValue,
+                ColumnNames columnNames,
+                String lockedByValue,
                 boolean useDbTime,
                 @Nullable Integer isolationLevel,
                 boolean throwUnexpectedException) {
@@ -177,7 +174,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private Integer isolationLevel;
             private boolean throwUnexpectedException = false;
 
-            public Builder withJdbcTemplate(@NonNull JdbcTemplate jdbcTemplate) {
+            public Builder withJdbcTemplate(JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
                 return this;
             }
@@ -187,7 +184,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withTableName(@NonNull String tableName) {
+            public Builder withTableName(String tableName) {
                 this.tableName = tableName;
                 return this;
             }

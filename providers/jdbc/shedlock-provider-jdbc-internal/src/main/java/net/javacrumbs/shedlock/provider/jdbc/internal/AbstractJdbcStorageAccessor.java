@@ -24,18 +24,17 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /** Internal class, please do not use. */
 public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccessor {
     private final String tableName;
 
-    public AbstractJdbcStorageAccessor(@NonNull String tableName) {
+    public AbstractJdbcStorageAccessor(String tableName) {
         this.tableName = requireNonNull(tableName, "tableName can not be null");
     }
 
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exist (not optimal, but the simplest
         // platform agnostic
         // way)
@@ -54,7 +53,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     }
 
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName
                 + " SET lock_until = ?, locked_at = ?, locked_by = ? WHERE name = ? AND lock_until <= ?";
         return executeCommand(
@@ -73,7 +72,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     }
 
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ? AND locked_by = ? AND lock_until > ? ";
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
@@ -91,7 +90,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     }
 
     @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
+    public void unlock(LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = ? WHERE name = ?";
         executeCommand(
                 sql,

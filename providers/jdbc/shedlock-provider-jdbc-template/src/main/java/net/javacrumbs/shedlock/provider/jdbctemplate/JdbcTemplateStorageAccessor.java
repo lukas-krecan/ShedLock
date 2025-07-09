@@ -19,7 +19,6 @@ import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -40,7 +39,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final Configuration configuration;
     private SqlStatementsSource sqlStatementsSource;
 
-    JdbcTemplateStorageAccessor(@NonNull Configuration configuration) {
+    JdbcTemplateStorageAccessor(Configuration configuration) {
         requireNonNull(configuration, "configuration can not be null");
         this.jdbcTemplate = new NamedParameterJdbcTemplate(configuration.getJdbcTemplate());
         this.configuration = configuration;
@@ -58,7 +57,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         try {
             String sql = sqlStatementsSource().getInsertStatement();
             return execute(sql, lockConfiguration);
@@ -75,7 +74,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         String sql = sqlStatementsSource().getUpdateStatement();
         try {
             return execute(sql, lockConfiguration);
@@ -92,7 +91,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         String sql = sqlStatementsSource().getExtendStatement();
 
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
@@ -100,7 +99,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
+    public void unlock(LockConfiguration lockConfiguration) {
         for (int i = 0; i < 10; i++) {
             try {
                 doUnlock(lockConfiguration);
@@ -122,8 +121,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         return transactionTemplate.execute(status -> jdbcTemplate.update(sql, params(lockConfiguration)) > 0);
     }
 
-    @NonNull
-    private Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
+    private Map<String, Object> params(LockConfiguration lockConfiguration) {
         return sqlStatementsSource().params(lockConfiguration);
     }
 

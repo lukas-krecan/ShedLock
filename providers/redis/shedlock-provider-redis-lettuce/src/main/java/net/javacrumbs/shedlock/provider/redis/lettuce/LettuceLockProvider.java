@@ -25,7 +25,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking
@@ -38,7 +37,7 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
 
     private final InternalRedisLockProvider internalRedisLockProvider;
 
-    public LettuceLockProvider(@NonNull StatefulRedisConnection<String, String> connection) {
+    public LettuceLockProvider(StatefulRedisConnection<String, String> connection) {
         this(connection, ENV_DEFAULT);
     }
 
@@ -50,8 +49,7 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
      *                    key conflict between multiple ShedLock instances running on the
      *                    same Redis
      */
-    public LettuceLockProvider(
-            @NonNull StatefulRedisConnection<String, String> connection, @NonNull String environment) {
+    public LettuceLockProvider(StatefulRedisConnection<String, String> connection, String environment) {
         this(connection, environment, false);
     }
 
@@ -66,16 +64,13 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
      *                   is already held by somebody else, we don't release/extend the lock.
      */
     public LettuceLockProvider(
-            @NonNull StatefulRedisConnection<String, String> connection,
-            @NonNull String environment,
-            boolean safeUpdate) {
+            StatefulRedisConnection<String, String> connection, String environment, boolean safeUpdate) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
                 new LettuceRedisLockTemplate(connection), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         return internalRedisLockProvider.lock(lockConfiguration);
     }
 

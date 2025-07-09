@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.jdbc.H2Config;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
@@ -84,7 +83,7 @@ public class MultiTenancyLockProviderIntegrationTest {
         private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
 
         @Override
-        public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+        public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
             String tenantName = getTenantName(lockConfiguration);
             return providers
                     .computeIfAbsent(tenantName, this::createLockProvider)

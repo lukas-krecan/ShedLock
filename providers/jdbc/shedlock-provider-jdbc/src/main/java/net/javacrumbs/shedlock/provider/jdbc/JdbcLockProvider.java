@@ -15,7 +15,6 @@ package net.javacrumbs.shedlock.provider.jdbc;
 
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Lock provided by plain JDBC. It uses a table that contains lock_name and
@@ -35,11 +34,11 @@ import net.javacrumbs.shedlock.support.annotation.NonNull;
  * </ol>
  */
 public class JdbcLockProvider extends StorageBasedLockProvider {
-    public JdbcLockProvider(@NonNull DataSource datasource) {
+    public JdbcLockProvider(DataSource datasource) {
         this(datasource, "shedlock");
     }
 
-    public JdbcLockProvider(@NonNull DataSource datasource, @NonNull String tableName) {
+    public JdbcLockProvider(DataSource datasource, String tableName) {
         super(new JdbcStorageAccessor(datasource, tableName));
     }
 }

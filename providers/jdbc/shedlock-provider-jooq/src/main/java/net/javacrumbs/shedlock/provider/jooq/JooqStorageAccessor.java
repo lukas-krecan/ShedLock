@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -28,7 +27,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         return dslContext.transactionResult(tx -> tx.dsl()
                         .insertInto(t)
                         .set(data(lockConfiguration))
@@ -38,7 +37,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         return dslContext.transactionResult(tx -> tx.dsl()
                         .update(t)
                         .set(data(lockConfiguration))
@@ -61,7 +60,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
     }
 
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         return dslContext.transactionResult(tx -> tx.dsl()
                         .update(t)
                         .set(t.LOCK_UNTIL, nowPlus(lockConfiguration.getLockAtMostFor()))

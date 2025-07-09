@@ -24,7 +24,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.params.SetParams;
@@ -41,7 +40,7 @@ public class JedisLockProvider implements ExtensibleLockProvider {
 
     private final InternalRedisLockProvider internalRedisLockProvider;
 
-    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool) {
+    public JedisLockProvider(Pool<Jedis> jedisPool) {
         this(jedisPool, ENV_DEFAULT);
     }
 
@@ -55,7 +54,7 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      */
-    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment) {
+    public JedisLockProvider(Pool<Jedis> jedisPool, String environment) {
         this(jedisPool, environment, false);
     }
 
@@ -71,7 +70,7 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
      *                   is already held by somebody else, we don't release/extend the lock.
      */
-    public JedisLockProvider(@NonNull Pool<Jedis> jedisPool, @NonNull String environment, boolean safeUpdate) {
+    public JedisLockProvider(Pool<Jedis> jedisPool, String environment, boolean safeUpdate) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
                 new JedisPoolTemplate(jedisPool), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
@@ -86,7 +85,7 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      *            key conflict between multiple ShedLock instances running on the
      *            same Redis
      */
-    public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment) {
+    public JedisLockProvider(JedisCommands jedisCommands, String environment) {
         this(jedisCommands, environment, false);
     }
 
@@ -102,14 +101,13 @@ public class JedisLockProvider implements ExtensibleLockProvider {
      * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
      *                   is already held by somebody else, we don't release/extend the lock.
      */
-    public JedisLockProvider(@NonNull JedisCommands jedisCommands, @NonNull String environment, boolean safeUpdate) {
+    public JedisLockProvider(JedisCommands jedisCommands, String environment, boolean safeUpdate) {
         this.internalRedisLockProvider = new InternalRedisLockProvider(
                 new JedisCommandsTemplate(jedisCommands), environment, DEFAULT_KEY_PREFIX, safeUpdate);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         return internalRedisLockProvider.lock(lockConfiguration);
     }
 

@@ -962,7 +962,7 @@ private static abstract class MultiTenancyLockProvider implements LockProvider {
     private final ConcurrentHashMap<String, LockProvider> providers = new ConcurrentHashMap<>();
 
     @Override
-    public @NonNull Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public  Optional<SimpleLock> lock( LockConfiguration lockConfiguration) {
         String tenantName = getTenantName(lockConfiguration);
         return providers.computeIfAbsent(tenantName, this::createLockProvider).lock(lockConfiguration);
     }

@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.FuzzTester;
 import org.junit.jupiter.api.AfterEach;
@@ -173,12 +172,10 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
         return getNeo4jTestUtils().getLockedUntil(lockName);
     }
 
-    @NonNull
     private LockConfiguration lockConfig(String myLock, Duration lockAtMostFor) {
         return new LockConfiguration(now(), myLock, lockAtMostFor, Duration.ZERO);
     }
 
-    @NonNull
     private Neo4jStorageAccessor getAccessor() {
         return new Neo4jStorageAccessor(getNeo4jTestUtils().getDriver(), "shedlock", null);
     }

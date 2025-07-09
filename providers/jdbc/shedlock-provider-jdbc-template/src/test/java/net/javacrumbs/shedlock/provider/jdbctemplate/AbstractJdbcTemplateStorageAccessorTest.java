@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.time.Duration;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -102,12 +101,10 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
         assertThat(testUtils.getLockedUntil(OTHER_LOCK)).isEqualTo(otherLockLockedUntil);
     }
 
-    @NonNull
     private LockConfiguration lockConfig(String myLock, Duration lockAtMostFor) {
         return new LockConfiguration(now(), myLock, lockAtMostFor, Duration.ZERO);
     }
 
-    @NonNull
     protected JdbcTemplateStorageAccessor getAccessor(boolean usingDbTime) {
         JdbcTemplateLockProvider.Configuration.Builder builder =
                 JdbcTemplateLockProvider.Configuration.builder().withJdbcTemplate(testUtils.getJdbcTemplate());

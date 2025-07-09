@@ -27,7 +27,6 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Distributed lock using CouchbaseDB
@@ -88,7 +87,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+        public boolean insertRecord(LockConfiguration lockConfiguration) {
             JsonObject content = JsonObject.create()
                     .put(LOCK_NAME, lockConfiguration.getName())
                     .put(LOCK_UNTIL, toIsoString(lockConfiguration.getLockAtMostUntil()))
@@ -108,7 +107,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+        public boolean updateRecord(LockConfiguration lockConfiguration) {
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
@@ -134,7 +133,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+        public boolean extend(LockConfiguration lockConfiguration) {
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 
@@ -158,7 +157,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         }
 
         @Override
-        public void unlock(@NonNull LockConfiguration lockConfiguration) {
+        public void unlock(LockConfiguration lockConfiguration) {
             GetResult result = collection.get(lockConfiguration.getName());
             JsonObject document = result.contentAsObject();
 

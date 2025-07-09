@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.InlineScript;
@@ -95,19 +94,18 @@ public class OpenSearchLockProvider implements LockProvider {
     private final String hostname;
     private final String index;
 
-    public OpenSearchLockProvider(@NonNull OpenSearchClient openSearchClient) {
+    public OpenSearchLockProvider(OpenSearchClient openSearchClient) {
         this(openSearchClient, SCHEDLOCK_DEFAULT_INDEX);
     }
 
-    public OpenSearchLockProvider(@NonNull OpenSearchClient openSearchClient, @NonNull String index) {
+    public OpenSearchLockProvider(OpenSearchClient openSearchClient, String index) {
         this.openSearchClient = openSearchClient;
         this.index = index;
         this.hostname = getHostname();
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         Instant now = now();
         UpdateRequest<Object, Object> updateRequest = createUpdateRequest(lockConfiguration, now);
 

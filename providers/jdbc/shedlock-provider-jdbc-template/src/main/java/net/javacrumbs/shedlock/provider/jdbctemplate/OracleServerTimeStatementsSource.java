@@ -15,7 +15,6 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 class OracleServerTimeStatementsSource extends SqlStatementsSource {
     private static final String now = "SYS_EXTRACT_UTC(SYSTIMESTAMP)";
@@ -57,8 +56,7 @@ class OracleServerTimeStatementsSource extends SqlStatementsSource {
     }
 
     @Override
-    @NonNull
-    Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
+    Map<String, Object> params(LockConfiguration lockConfiguration) {
         return Map.of(
                 "name",
                 lockConfiguration.getName(),

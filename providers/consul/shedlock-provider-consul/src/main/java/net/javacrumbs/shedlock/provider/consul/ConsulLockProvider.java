@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,11 +68,11 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
 
     private final Configuration configuration;
 
-    public ConsulLockProvider(@NonNull ConsulClient consulClient) {
+    public ConsulLockProvider(ConsulClient consulClient) {
         this(Configuration.builder().withConsulClient(consulClient).build());
     }
 
-    public ConsulLockProvider(@NonNull ConsulClient consulClient, Duration minSessionTtl) {
+    public ConsulLockProvider(ConsulClient consulClient, Duration minSessionTtl) {
         this(Configuration.builder()
                 .withConsulClient(consulClient)
                 .withMinSessionTtl(minSessionTtl)
@@ -81,7 +80,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
     }
 
     public ConsulLockProvider(
-            @NonNull ConsulClient consulClient,
+            ConsulClient consulClient,
             Duration minSessionTtl,
             String consulLockPostfix,
             Duration gracefulShutdownInterval) {
@@ -93,13 +92,12 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
                 .build());
     }
 
-    public ConsulLockProvider(@NonNull Configuration configuration) {
+    public ConsulLockProvider(Configuration configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String sessionId = createSession(lockConfiguration);
         return tryLock(sessionId, lockConfiguration);
     }

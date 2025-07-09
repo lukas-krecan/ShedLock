@@ -16,7 +16,6 @@ package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 import io.micronaut.transaction.TransactionOperations;
 import java.sql.Connection;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Lock provided by plain JDBC, using the Micronaut Data transaction manager. It
@@ -39,12 +38,11 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
 
     private static final String DEFAULT_TABLE_NAME = "shedlock";
 
-    public MicronautJdbcLockProvider(@NonNull TransactionOperations<Connection> transactionOperations) {
+    public MicronautJdbcLockProvider(TransactionOperations<Connection> transactionOperations) {
         this(transactionOperations, DEFAULT_TABLE_NAME);
     }
 
-    public MicronautJdbcLockProvider(
-            @NonNull TransactionOperations<Connection> transactionOperations, @NonNull String tableName) {
+    public MicronautJdbcLockProvider(TransactionOperations<Connection> transactionOperations, String tableName) {
         super(new MicronautJdbcStorageAccessor(transactionOperations, tableName));
     }
 }

@@ -15,7 +15,6 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     private static final String now = "timezone('utc', CURRENT_TIMESTAMP)";
@@ -32,7 +31,6 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
                 + ") DO UPDATE" + updateClause();
     }
 
-    @NonNull
     private String updateClause() {
         return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy()
                 + " = :lockedBy WHERE " + tableName() + "." + name() + " = :name AND " + tableName() + "." + lockUntil()
@@ -59,8 +57,7 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     }
 
     @Override
-    @NonNull
-    Map<String, Object> params(@NonNull LockConfiguration lockConfiguration) {
+    Map<String, Object> params(LockConfiguration lockConfiguration) {
         return Map.of(
                 "name",
                 lockConfiguration.getName(),

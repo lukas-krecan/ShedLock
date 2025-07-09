@@ -27,7 +27,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.DocWriteResponse;
 import org.opensearch.action.update.UpdateRequest;
@@ -94,19 +93,18 @@ public class OpenSearchLockProvider implements LockProvider {
     private final String hostname;
     private final String index;
 
-    public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient, @NonNull String index) {
+    public OpenSearchLockProvider(RestHighLevelClient highLevelClient, String index) {
         this.highLevelClient = highLevelClient;
         this.hostname = getHostname();
         this.index = index;
     }
 
-    public OpenSearchLockProvider(@NonNull RestHighLevelClient highLevelClient) {
+    public OpenSearchLockProvider(RestHighLevelClient highLevelClient) {
         this(highLevelClient, SCHEDLOCK_DEFAULT_INDEX);
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         try {
             Map<String, Object> lockObject =
                     lockObject(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now());
@@ -128,7 +126,7 @@ public class OpenSearchLockProvider implements LockProvider {
         }
     }
 
-    private UpdateRequest updateRequest(@NonNull LockConfiguration lockConfiguration) {
+    private UpdateRequest updateRequest(LockConfiguration lockConfiguration) {
         return new UpdateRequest().index(index).id(lockConfiguration.getName()).setRefreshPolicy(IMMEDIATE);
     }
 

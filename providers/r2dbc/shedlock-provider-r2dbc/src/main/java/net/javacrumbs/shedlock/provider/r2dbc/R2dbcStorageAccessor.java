@@ -22,7 +22,6 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Statement;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import reactor.core.publisher.Mono;
 
 class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
@@ -30,7 +29,7 @@ class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
     private final ConnectionFactory connectionFactory;
     private R2dbcAdapter adapter;
 
-    R2dbcStorageAccessor(@NonNull ConnectionFactory connectionFactory, @NonNull String tableName) {
+    R2dbcStorageAccessor(ConnectionFactory connectionFactory, String tableName) {
         super(tableName);
         this.connectionFactory = requireNonNull(connectionFactory, "dataSource can not be null");
     }

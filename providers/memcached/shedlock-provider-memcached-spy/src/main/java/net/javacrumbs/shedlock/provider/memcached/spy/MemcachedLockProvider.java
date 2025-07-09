@@ -12,7 +12,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.util.StringUtils;
@@ -40,7 +39,7 @@ public class MemcachedLockProvider implements LockProvider {
      * @param client
      *            Spy.memcached.MemcachedClient
      */
-    public MemcachedLockProvider(@NonNull MemcachedClient client) {
+    public MemcachedLockProvider(MemcachedClient client) {
         this(client, ENV_DEFAULT);
     }
 
@@ -53,14 +52,13 @@ public class MemcachedLockProvider implements LockProvider {
      *            is part of the key and thus makes sure there is not key conflict
      *            between multiple ShedLock instances running on the same memcached
      */
-    public MemcachedLockProvider(@NonNull MemcachedClient client, @NonNull String env) {
+    public MemcachedLockProvider(MemcachedClient client, String env) {
         this.client = client;
         this.env = env;
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         long expireTime = getSecondUntil(lockConfiguration.getLockAtMostUntil());
         String key = buildKey(lockConfiguration.getName(), this.env);
         OperationStatus status = client.add(key, (int) expireTime, buildValue()).getStatus();
@@ -91,8 +89,7 @@ public class MemcachedLockProvider implements LockProvider {
 
         private final MemcachedClient client;
 
-        private MemcachedLock(
-                @NonNull String key, @NonNull MemcachedClient client, @NonNull LockConfiguration lockConfiguration) {
+        private MemcachedLock(String key, MemcachedClient client, LockConfiguration lockConfiguration) {
             super(lockConfiguration);
             this.key = key;
             this.client = client;

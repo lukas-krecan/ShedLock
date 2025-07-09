@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 /**
  * Wraps a LockProvider and keeps track of active locks. You can use the getActiveLocks() method
@@ -29,8 +28,7 @@ public class TrackingLockProviderWrapper implements LockProvider {
     }
 
     @Override
-    @NonNull
-    public Optional<SimpleLock> lock(@NonNull LockConfiguration lockConfiguration) {
+    public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         Optional<SimpleLock> result = wrapped.lock(lockConfiguration);
         if (result.isPresent()) {
             SimpleLock wrappedLock = new SimpleLockWrapper(result.get(), lockConfiguration);
@@ -69,8 +67,7 @@ public class TrackingLockProviderWrapper implements LockProvider {
         }
 
         @Override
-        @NonNull
-        public Optional<SimpleLock> extend(@NonNull Duration lockAtMostFor, @NonNull Duration lockAtLeastFor) {
+        public Optional<SimpleLock> extend(Duration lockAtMostFor, Duration lockAtLeastFor) {
             return wrappedLock.extend(lockAtMostFor, lockAtLeastFor);
         }
 

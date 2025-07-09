@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
@@ -34,33 +33,33 @@ import reactor.core.publisher.Mono;
 abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
     private final String tableName;
 
-    public AbstractR2dbcStorageAccessor(@NonNull String tableName) {
+    public AbstractR2dbcStorageAccessor(String tableName) {
         this.tableName = requireNonNull(tableName, "tableName can not be null");
     }
 
     @Override
-    public boolean insertRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean insertRecord(LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(
                 Mono.from(insertRecordReactive(lockConfiguration)).block());
     }
 
     @Override
-    public boolean updateRecord(@NonNull LockConfiguration lockConfiguration) {
+    public boolean updateRecord(LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(
                 Mono.from(updateRecordReactive(lockConfiguration)).block());
     }
 
     @Override
-    public boolean extend(@NonNull LockConfiguration lockConfiguration) {
+    public boolean extend(LockConfiguration lockConfiguration) {
         return Boolean.TRUE.equals(Mono.from(extendReactive(lockConfiguration)).block());
     }
 
     @Override
-    public void unlock(@NonNull LockConfiguration lockConfiguration) {
+    public void unlock(LockConfiguration lockConfiguration) {
         Mono.from(unlockReactive(lockConfiguration)).block();
     }
 
-    public Publisher<Boolean> insertRecordReactive(@NonNull LockConfiguration lockConfiguration) {
+    public Publisher<Boolean> insertRecordReactive(LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exist (not optimal, but the simplest
         // platform agnostic
         // way)
@@ -81,7 +80,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
                 this::handleInsertionException);
     }
 
-    public Publisher<Boolean> updateRecordReactive(@NonNull LockConfiguration lockConfiguration) {
+    public Publisher<Boolean> updateRecordReactive(LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + ", locked_at = "
                 + toParameter(2, "locked_at") + ", locked_by = " + toParameter(3, "locked_by") + " WHERE name = "
                 + toParameter(4, "name") + " AND lock_until <= " + toParameter(5, "now");
@@ -101,7 +100,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
                 this::handleUpdateException);
     }
 
-    public Publisher<Boolean> extendReactive(@NonNull LockConfiguration lockConfiguration) {
+    public Publisher<Boolean> extendReactive(LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = "
                 + toParameter(2, "name") + " AND locked_by = " + toParameter(3, "locked_by") + " AND lock_until > "
                 + toParameter(4, "now");
@@ -122,7 +121,7 @@ abstract class AbstractR2dbcStorageAccessor extends AbstractStorageAccessor {
                 this::handleUnlockException);
     }
 
-    public Publisher<Void> unlockReactive(@NonNull LockConfiguration lockConfiguration) {
+    public Publisher<Void> unlockReactive(LockConfiguration lockConfiguration) {
         String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = "
                 + toParameter(2, "name");
         return executeCommand(
