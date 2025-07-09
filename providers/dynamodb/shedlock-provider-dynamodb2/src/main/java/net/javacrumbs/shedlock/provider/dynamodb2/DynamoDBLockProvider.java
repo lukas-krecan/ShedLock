@@ -26,6 +26,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.Utils;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -80,6 +81,8 @@ public class DynamoDBLockProvider implements LockProvider {
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
     private final String partitionKeyName;
+
+    @Nullable
     private final String sortKeyName;
 
     /**
@@ -114,7 +117,7 @@ public class DynamoDBLockProvider implements LockProvider {
      * @param sortKeyName      the sortKey name of table
      */
     public DynamoDBLockProvider(
-            DynamoDbClient dynamoDbClient, String tableName, String partitionKeyName, String sortKeyName) {
+            DynamoDbClient dynamoDbClient, String tableName, String partitionKeyName, @Nullable String sortKeyName) {
         this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
         this.tableName = requireNonNull(tableName, "tableName can not be null");
         this.partitionKeyName = requireNonNull(partitionKeyName, "partitionKeyName can not be null");

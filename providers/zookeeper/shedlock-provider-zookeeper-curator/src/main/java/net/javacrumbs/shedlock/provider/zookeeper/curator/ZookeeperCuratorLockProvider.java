@@ -26,6 +26,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.PathUtils;
 import org.apache.zookeeper.CreateMode;
@@ -112,7 +113,7 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         return isLocked(data);
     }
 
-    private boolean isLocked(byte[] data) {
+    private boolean isLocked(@Nullable byte[] data) {
         if (data == null || data.length == 0) {
             // most likely created by previous version of the library
             return true;

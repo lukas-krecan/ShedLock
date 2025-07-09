@@ -19,6 +19,7 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 /**
  * Cassandra Lock Provider needs a keyspace and uses a lock table <br>
@@ -53,17 +54,23 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         private final CqlIdentifier table;
         private final ColumnNames columnNames;
         private final CqlSession cqlSession;
+
+        @Nullable
         private final ConsistencyLevel consistencyLevel;
+
+        @Nullable
         private final ConsistencyLevel serialConsistencyLevel;
+
+        @Nullable
         private final CqlIdentifier keyspace;
 
         Configuration(
                 CqlSession cqlSession,
                 CqlIdentifier table,
                 ColumnNames columnNames,
-                ConsistencyLevel consistencyLevel,
-                ConsistencyLevel serialConsistencyLevel,
-                CqlIdentifier keyspace) {
+                @Nullable ConsistencyLevel consistencyLevel,
+                @Nullable ConsistencyLevel serialConsistencyLevel,
+                @Nullable CqlIdentifier keyspace) {
             this.table = requireNonNull(table, "table can not be null");
             this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
             this.cqlSession = requireNonNull(cqlSession, "cqlSession can not be null");
@@ -85,14 +92,17 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             return cqlSession;
         }
 
+        @Nullable
         public ConsistencyLevel getConsistencyLevel() {
             return consistencyLevel;
         }
 
+        @Nullable
         public ConsistencyLevel getSerialConsistencyLevel() {
             return serialConsistencyLevel;
         }
 
+        @Nullable
         public CqlIdentifier getKeyspace() {
             return keyspace;
         }
@@ -106,8 +116,14 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             private CqlIdentifier table = CqlIdentifier.fromCql(DEFAULT_TABLE);
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
             private CqlSession cqlSession;
+
+            @Nullable
             private ConsistencyLevel consistencyLevel = ConsistencyLevel.QUORUM;
+
+            @Nullable
             private ConsistencyLevel serialConsistencyLevel = ConsistencyLevel.SERIAL;
+
+            @Nullable
             private CqlIdentifier keyspace;
 
             public Builder withTableName(String table) {

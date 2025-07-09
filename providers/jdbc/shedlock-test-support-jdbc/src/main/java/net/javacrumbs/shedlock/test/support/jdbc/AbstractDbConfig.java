@@ -15,11 +15,15 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 abstract class AbstractDbConfig implements DbConfig {
+    @Nullable
     private HikariDataSource dataSource;
 
     protected static final String TEST_SCHEMA_NAME = "shedlock_test";
+
+    @Nullable
     private Integer transactionIsolation;
 
     @Override

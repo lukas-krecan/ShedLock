@@ -80,14 +80,25 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
     public static final class Configuration {
         private final JdbcTemplate jdbcTemplate;
+
+        @Nullable
         private final DatabaseProduct databaseProduct;
+
+        @Nullable
         private final PlatformTransactionManager transactionManager;
+
         private final String tableName;
+
+        @Nullable
         private final TimeZone timeZone;
+
         private final ColumnNames columnNames;
         private final String lockedByValue;
         private final boolean useDbTime;
+
+        @Nullable
         private final Integer isolationLevel;
+
         private final boolean throwUnexpectedException;
 
         Configuration(
@@ -121,10 +132,12 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return jdbcTemplate;
         }
 
+        @Nullable
         public DatabaseProduct getDatabaseProduct() {
             return databaseProduct;
         }
 
+        @Nullable
         public PlatformTransactionManager getTransactionManager() {
             return transactionManager;
         }
@@ -133,6 +146,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return tableName;
         }
 
+        @Nullable
         public TimeZone getTimeZone() {
             return timeZone;
         }
@@ -149,6 +163,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return useDbTime;
         }
 
+        @Nullable
         public Integer getIsolationLevel() {
             return isolationLevel;
         }
@@ -163,15 +178,26 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         public static final class Builder {
             private JdbcTemplate jdbcTemplate;
+
+            @Nullable
             private DatabaseProduct databaseProduct;
+
+            @Nullable
             private PlatformTransactionManager transactionManager;
+
             private String tableName = DEFAULT_TABLE_NAME;
+
+            @Nullable
             private TimeZone timeZone;
+
             private String lockedByValue = Utils.getHostname();
             private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
             private boolean dbUpperCase = false;
             private boolean useDbTime = false;
+
+            @Nullable
             private Integer isolationLevel;
+
             private boolean throwUnexpectedException = false;
 
             public Builder withJdbcTemplate(JdbcTemplate jdbcTemplate) {
@@ -179,7 +205,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withTransactionManager(PlatformTransactionManager transactionManager) {
+            public Builder withTransactionManager(@Nullable PlatformTransactionManager transactionManager) {
                 this.transactionManager = transactionManager;
                 return this;
             }

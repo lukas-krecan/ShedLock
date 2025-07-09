@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,7 +195,10 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
 
     public static final class Configuration {
         private final Duration minSessionTtl;
+
+        @Nullable
         private final String consulLockPrefix;
+
         private final String consulLockPostfix;
         private final ConsulClient consulClient;
         private final Duration gracefulShutdownInterval;
@@ -207,7 +211,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
                 ConsulClient consulClient,
                 Duration gracefulShutdownInterval,
                 String token,
-                String consulLockPrefix) {
+                @Nullable String consulLockPrefix) {
 
             this.minSessionTtl = minSessionTtl;
             this.consulLockPrefix = consulLockPrefix;
@@ -237,6 +241,7 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
             return token;
         }
 
+        @Nullable
         public String getConsulLockPrefix() {
             return consulLockPrefix;
         }
@@ -252,6 +257,8 @@ public class ConsulLockProvider implements LockProvider, AutoCloseable {
             private ConsulClient consulClient;
             private Duration gracefulShutdownInterval = DEFAULT_GRACEFUL_SHUTDOWN_INTERVAL;
             private String token;
+
+            @Nullable
             private String consulLockPrefix;
 
             public Builder withMinSessionTtl(Duration minSessionTtl) {

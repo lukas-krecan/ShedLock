@@ -32,6 +32,8 @@ import org.neo4j.driver.Transaction;
 class Neo4jStorageAccessor extends AbstractStorageAccessor {
     private final String collectionName;
     private final Driver driver;
+
+    @Nullable
     private final String databaseName;
 
     public Neo4jStorageAccessor(Driver driver, String collectionName, @Nullable String databaseName) {

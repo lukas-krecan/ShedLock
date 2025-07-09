@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,6 +158,7 @@ public class HazelcastLockProvider implements LockProvider {
         return hazelcastInstance.getMap(lockStoreKey);
     }
 
+    @Nullable
     HazelcastLock getLock(String lockName) {
         return getStore().get(lockName);
     }
@@ -180,7 +182,7 @@ public class HazelcastLockProvider implements LockProvider {
         addNewLock(lockConfiguration);
     }
 
-    private boolean isUnlocked(HazelcastLock lock) {
+    private boolean isUnlocked(@Nullable HazelcastLock lock) {
         return lock == null;
     }
 
@@ -204,7 +206,7 @@ public class HazelcastLockProvider implements LockProvider {
         }
     }
 
-    private void unlockProperly(HazelcastLock lock) {
+    private void unlockProperly(@Nullable HazelcastLock lock) {
         if (isUnlocked(lock)) {
             log.debug("unlock - it is already unlocked");
             return;

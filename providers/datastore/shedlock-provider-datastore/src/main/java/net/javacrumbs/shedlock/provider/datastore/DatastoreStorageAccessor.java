@@ -17,6 +17,7 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,10 +144,12 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
+    @Nullable
     private static String nullableString(Entity entity, String property) {
         return entity.contains(property) ? entity.getString(property) : null;
     }
 
+    @Nullable
     private static Instant nullableTimestamp(Entity entity, String property) {
         return entity.contains(property) ? toInstant(entity.getTimestamp(property)) : null;
     }
@@ -159,5 +162,6 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
         return requireNonNull(timestamp).toSqlTimestamp().toInstant();
     }
 
-    public record Lock(String name, Instant lockedAt, Instant lockedUntil, String lockedBy) {}
+    public record Lock(
+            String name, @Nullable Instant lockedAt, @Nullable Instant lockedUntil, @Nullable String lockedBy) {}
 }

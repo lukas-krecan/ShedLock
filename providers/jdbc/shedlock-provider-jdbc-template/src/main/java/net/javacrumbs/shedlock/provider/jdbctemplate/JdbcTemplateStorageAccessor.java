@@ -19,6 +19,7 @@ import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -37,6 +38,8 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
     private final Configuration configuration;
+
+    @Nullable
     private SqlStatementsSource sqlStatementsSource;
 
     JdbcTemplateStorageAccessor(Configuration configuration) {

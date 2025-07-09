@@ -24,6 +24,7 @@ import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 
 @Singleton
 public class SchedulerLockInterceptor implements MethodInterceptor<Object, Object> {
@@ -58,6 +59,7 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
     }
 
     @Override
+    @Nullable
     public Object intercept(MethodInvocationContext<Object, Object> context) {
         Class<?> returnType = context.getReturnType().getType();
         if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {

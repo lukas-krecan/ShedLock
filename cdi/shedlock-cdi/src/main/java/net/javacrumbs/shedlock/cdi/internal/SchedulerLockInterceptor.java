@@ -15,6 +15,7 @@ import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 @SchedulerLock(name = "?")
@@ -34,11 +35,13 @@ public class SchedulerLockInterceptor {
                 parseDuration(lockAtMostFor), lockAtLeastFor != null ? parseDuration(lockAtLeastFor) : Duration.ZERO);
     }
 
+    @Nullable
     private static String getConfigValue(String propertyName) {
         return ConfigProvider.getConfig().getConfigValue(propertyName).getValue();
     }
 
     @AroundInvoke
+    @Nullable
     Object lock(InvocationContext context) throws Throwable {
         Class<?> returnType = context.getMethod().getReturnType();
         if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {

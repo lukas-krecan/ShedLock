@@ -63,7 +63,7 @@ class SqlStatementsSource {
                     connection -> connection.getMetaData().getDatabaseProductName());
             return DatabaseProduct.matchProductName(jdbcProductName);
         } catch (Exception e) {
-            logger.debug("Can not determine database product name " + e.getMessage());
+            logger.debug("Can not determine database product name {}", e.getMessage());
             return DatabaseProduct.UNKNOWN;
         }
     }
