@@ -12,7 +12,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <opensearch.java.client.version>2.23.0</opensearch.java.client.version>
+        <opensearch.java.client.version>3.2.0</opensearch.java.client.version>
     </properties>
 
     <dependencies>
