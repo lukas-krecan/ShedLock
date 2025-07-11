@@ -36,7 +36,22 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-datastore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-etcd-jetcd</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-exposed</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-firestore</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
