@@ -16,12 +16,8 @@ private class IntervalExpression(private val expression: Expression<LocalDateTim
         when (currentDialect) {
             is SQLServerDialect -> {
                 queryBuilder.run {
-                    // SQL Server uses millisecond precision in datetime comparisons
-                    // Adding a small buffer (1ms less) to ensure time comparison behaves as expected
-                    val precisionAdjustedMillis = duration.toMillis() - 1
-
                     append("(DATEADD(millisecond, ")
-                    append(precisionAdjustedMillis.toString())
+                    append(duration.toMillis().toString())
                     append(", ")
                     expression.toQueryBuilder(queryBuilder)
                     append("))")
