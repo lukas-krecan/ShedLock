@@ -78,6 +78,62 @@
                         <nolog propertyName="redundantProperty2"/>
                     </nologs>
                 </plugin>
+                <plugin artifactId="spotless-maven-plugin" goal="check">
+                    <reconciles>
+                        <reconcile propertyName="skip" skipValue="true"/>
+                        <reconcile propertyName="ratchetFrom"/>
+                    </reconciles>
+                    <logs>
+                        <log propertyName="skip"/>
+                        <log propertyName="ratchetFrom"/>
+                    </logs>
+                </plugin>
+                <plugin artifactId="spotless-maven-plugin" goal="apply">
+                    <reconciles>
+                        <reconcile propertyName="skip" skipValue="true"/>
+                        <reconcile propertyName="ratchetFrom"/>
+                    </reconciles>
+                    <logs>
+                        <log propertyName="skip"/>
+                        <log propertyName="ratchetFrom"/>
+                    </logs>
+                </plugin>
+                <plugin artifactId="maven-javadoc-plugin" goal="javadoc">
+                    <reconciles>
+                        <reconcile propertyName="skip" skipValue="true"/>
+                        <reconcile propertyName="failOnError" skipValue="false"/>
+                        <reconcile propertyName="failOnWarnings" skipValue="false"/>
+                    </reconciles>
+                    <logs>
+                        <log propertyName="skip"/>
+                        <log propertyName="failOnError"/>
+                        <log propertyName="failOnWarnings"/>
+                    </logs>
+                </plugin>
+                <plugin artifactId="maven-javadoc-plugin" goal="jar">
+                    <reconciles>
+                        <reconcile propertyName="skip" skipValue="true"/>
+                        <reconcile propertyName="failOnError" skipValue="false"/>
+                        <reconcile propertyName="failOnWarnings" skipValue="false"/>
+                    </reconciles>
+                    <logs>
+                        <log propertyName="skip"/>
+                        <log propertyName="failOnError"/>
+                        <log propertyName="failOnWarnings"/>
+                    </logs>
+                </plugin>
+                <plugin artifactId="maven-javadoc-plugin" goal="test-javadoc">
+                    <reconciles>
+                        <reconcile propertyName="skip" skipValue="true"/>
+                        <reconcile propertyName="failOnError" skipValue="false"/>
+                        <reconcile propertyName="failOnWarnings" skipValue="false"/>
+                    </reconciles>
+                    <logs>
+                        <log propertyName="skip"/>
+                        <log propertyName="failOnError"/>
+                        <log propertyName="failOnWarnings"/>
+                    </logs>
+                </plugin>
             </plugins>
         </reconcile>
     </executionControl>
