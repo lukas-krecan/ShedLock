@@ -111,6 +111,15 @@
                         </ktfmt>
                     </kotlin>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-check</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -153,6 +162,15 @@
                 <configuration>
                     <failOnError>false</failOnError>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -184,6 +202,13 @@
                 </configuration>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.extensions</groupId>
+                <artifactId>maven-build-cache-extension</artifactId>
+                <version>1.2.0</version>
+            </extension>
+        </extensions>
     </build>
 
     <licenses>
