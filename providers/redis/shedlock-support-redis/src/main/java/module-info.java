@@ -8,6 +8,10 @@ module net.javacrumbs.shedlock.provider.redis.support {
     requires java.base;
     requires net.javacrumbs.shedlock.core;
 
-    // Export Redis support packages
-    exports net.javacrumbs.shedlock.provider.redis.support;
+    // Export Redis support packages only to other ShedLock Redis modules
+    exports net.javacrumbs.shedlock.provider.redis.support to
+            net.javacrumbs.shedlock.provider.redis.jedis,
+            net.javacrumbs.shedlock.provider.redis.lettuce,
+            net.javacrumbs.shedlock.provider.redis.spring,
+            net.javacrumbs.shedlock.test.support.redis;
 }
