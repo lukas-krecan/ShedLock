@@ -28,7 +28,22 @@
 
     <build>
         <plugins>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        --add-modules org.postgresql.jdbc
+                        --add-modules mysql.connector.j
+                        --add-modules mssql.jdbc
+                        --add-modules ojdbc8
+                        --add-modules com.h2database
+                        --add-modules hsqldb
+                        --add-modules derby
+                        --add-modules mariadb.java.client
+                    </argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
