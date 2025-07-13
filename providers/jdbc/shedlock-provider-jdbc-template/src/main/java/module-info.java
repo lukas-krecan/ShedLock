@@ -11,6 +11,9 @@ module net.javacrumbs.shedlock.provider.jdbctemplate {
     requires spring.tx;
     requires org.slf4j;
 
+    // Allow JDBC driver service loading
+    uses java.sql.Driver;
+
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.jdbctemplate;
 }
