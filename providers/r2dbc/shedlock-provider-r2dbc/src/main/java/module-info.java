@@ -9,6 +9,8 @@ module net.javacrumbs.shedlock.provider.r2dbc {
     requires net.javacrumbs.shedlock.core;
     requires r2dbc.spi;
     requires reactor.core;
+    requires org.reactivestreams;
+    requires org.slf4j;
 
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.r2dbc;
