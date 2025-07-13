@@ -10,6 +10,9 @@ module net.javacrumbs.shedlock.provider.jdbc {
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.jdbc.internal;
 
+    // Allow JDBC driver service loading
+    uses java.sql.Driver;
+
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.jdbc;
 }
