@@ -1,0 +1,23 @@
+/**
+ * ShedLock Spring integration module.
+ *
+ * This module provides Spring Framework integration for ShedLock,
+ * including annotations and AOP support for method-level locking.
+ */
+module net.javacrumbs.shedlock.spring {
+    requires java.base;
+    requires net.javacrumbs.shedlock.core;
+    requires spring.context;
+    requires spring.core;
+    requires spring.beans;
+    requires spring.aop;
+    requires spring.expression;
+
+    exports net.javacrumbs.shedlock.spring;
+    exports net.javacrumbs.shedlock.spring.annotation;
+
+    opens net.javacrumbs.shedlock.spring.aop to
+            spring.beans,
+            spring.core,
+            spring.context;
+}
