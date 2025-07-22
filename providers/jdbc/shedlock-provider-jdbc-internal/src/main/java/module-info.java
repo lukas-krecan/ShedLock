@@ -15,8 +15,5 @@ module net.javacrumbs.shedlock.provider.jdbc.internal {
 
     // Export provider packages only to other ShedLock modules
     exports net.javacrumbs.shedlock.provider.jdbc.internal to
-            net.javacrumbs.shedlock.provider.jdbc,
-            net.javacrumbs.shedlock.provider.jdbctemplate,
-            net.javacrumbs.shedlock.provider.jooq,
-            net.javacrumbs.shedlock.provider.r2dbc;
+            net.javacrumbs.shedlock.provider.jdbc;
 }
