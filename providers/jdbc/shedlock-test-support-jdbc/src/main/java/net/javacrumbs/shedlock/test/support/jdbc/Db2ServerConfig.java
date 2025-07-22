@@ -16,6 +16,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Db2Container;
+import org.testcontainers.utility.DockerImageName;
 
 public final class Db2ServerConfig extends AbstractDbConfig {
 
@@ -24,7 +25,7 @@ public final class Db2ServerConfig extends AbstractDbConfig {
 
     @Override
     protected void doStartDb() {
-        db2 = new Db2Container()
+        db2 = new Db2Container(DockerImageName.parse("icr.io/db2_community/db2"))
                 .acceptLicense()
                 .withLogConsumer(outputFrame -> logger.debug(outputFrame.getUtf8String()));
         db2.start();

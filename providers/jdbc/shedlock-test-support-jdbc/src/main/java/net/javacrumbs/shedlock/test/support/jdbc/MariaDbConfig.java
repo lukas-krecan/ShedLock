@@ -33,5 +33,9 @@ public class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDbConfig.
         return "UTC_TIMESTAMP(3)";
     }
 
-    static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {}
+    static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {
+        MyMariaDbContainer() {
+            super("mariadb:lts");
+        }
+    }
 }
