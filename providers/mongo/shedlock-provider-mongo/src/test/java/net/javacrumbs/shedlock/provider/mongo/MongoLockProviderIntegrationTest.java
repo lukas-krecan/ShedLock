@@ -45,7 +45,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     private static final String DB_NAME = "db";
 
     @Container
-    public static final MongoDBContainer container = new MongoDBContainer("mongo:4.4.29");
+    public static final MongoDBContainer container = new MongoDBContainer("mongo:6");
 
     private static MongoClient mongo;
 
