@@ -32,6 +32,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>23.8.0.25.04</version>
+        </dependency>
+
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.ver}</version>
@@ -52,7 +58,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                        --add-modules org.postgresql.jdbc,jcc,com.oracle.database.jdbc
+                        --add-modules ALL-DEFAULT
                     </argLine>
                 </configuration>
             </plugin>
