@@ -202,13 +202,13 @@
                 </configuration>
             </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.extensions</groupId>
-                <artifactId>maven-build-cache-extension</artifactId>
-                <version>1.2.0</version>
-            </extension>
-        </extensions>
+<!--        <extensions>-->
+<!--            <extension>-->
+<!--                <groupId>org.apache.maven.extensions</groupId>-->
+<!--                <artifactId>maven-build-cache-extension</artifactId>-->
+<!--                <version>1.2.0</version>-->
+<!--            </extension>-->
+<!--        </extensions>-->
     </build>
 
     <licenses>
