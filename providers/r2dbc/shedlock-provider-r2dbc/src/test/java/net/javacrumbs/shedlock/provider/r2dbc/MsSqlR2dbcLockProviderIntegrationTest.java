@@ -14,9 +14,7 @@
 package net.javacrumbs.shedlock.provider.r2dbc;
 
 import net.javacrumbs.shedlock.test.support.jdbc.MsSqlServerConfig;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled("Maven build does not finish when enabled")
 public class MsSqlR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     public MsSqlR2dbcLockProviderIntegrationTest() {
         super(new MsSqlServerConfig());
