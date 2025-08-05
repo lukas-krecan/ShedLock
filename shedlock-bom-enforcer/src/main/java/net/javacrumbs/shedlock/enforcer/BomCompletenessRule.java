@@ -101,7 +101,8 @@ public class BomCompletenessRule extends AbstractEnforcerRule {
             return parentModel.getModules().stream()
                     .filter(module -> !module.contains("test/")
                             && !module.contains("shedlock-test-support")
-                            && !module.equals("shedlock-bom"))
+                            && !module.equals("shedlock-bom")
+                            && !module.equals("shedlock-bom-enforcer"))
                     .map(module -> module.contains("/") ? module.substring(module.lastIndexOf('/') + 1) : module)
                     .collect(Collectors.toSet());
         }
