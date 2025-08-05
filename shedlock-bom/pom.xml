@@ -212,37 +212,18 @@
                         <phase>validate</phase>
                         <configuration>
                             <rules>
-                                <requireFilesExist>
-                                    <message>BOM verification script must exist</message>
-                                    <files>
-                                        <file>${project.parent.basedir}/verify-bom-completeness.sh</file>
-                                    </files>
-                                </requireFilesExist>
+                                <bomCompleteness implementation="net.javacrumbs.shedlock.enforcer.BomCompletenessRule"/>
                             </rules>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.4.1</version>
-                <executions>
-                    <execution>
-                        <id>verify-bom-completeness</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>bash</executable>
-                            <workingDirectory>${project.parent.basedir}</workingDirectory>
-                            <arguments>
-                                <argument>verify-bom-completeness.sh</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.javacrumbs.shedlock</groupId>
+                        <artifactId>shedlock-bom-enforcer</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
