@@ -199,6 +199,7 @@
                         <artifact>shedlock-test-support</artifact>
                         <artifact>shedlock-test-support-jdbc</artifact>
                         <artifact>shedlock-test-support-redis</artifact>
+                        <artifact>shedlock-bom-enforcer</artifact>
                     </excludeArtifacts>
                 </configuration>
             </plugin>
