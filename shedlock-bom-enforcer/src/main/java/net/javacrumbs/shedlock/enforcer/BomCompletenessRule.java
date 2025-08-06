@@ -4,12 +4,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.rtinfo.RuntimeInformation;
 
 /**
  * Custom Maven Enforcer Rule to validate that all modules from the parent POM
@@ -18,19 +22,19 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 @Named("bomCompleteness")
 public class BomCompletenessRule extends AbstractEnforcerRule {
 
+    private final MavenSession session;
+
+    @Inject
+    public BomCompletenessRule(MavenProject project, MavenSession session, RuntimeInformation runtimeInformation) {
+        this.session = Objects.requireNonNull(session);
+        Objects.requireNonNull(runtimeInformation);
+    }
+
     @Override
     public void execute() throws EnforcerRuleException {
         try {
-            // Use Maven project properties to get the correct paths
-            String projectBasedir = System.getProperty("maven.multiModuleProjectDirectory");
-            if (projectBasedir == null) {
-                projectBasedir = System.getProperty("user.dir");
-                // If we're running from a submodule, go up one level to find the parent
-                File currentDir = new File(projectBasedir);
-                if (currentDir.getName().equals("shedlock-bom")) {
-                    projectBasedir = currentDir.getParent();
-                }
-            }
+            // Use injected MavenProject to get the correct paths
+            File projectBasedir = new File(session.getExecutionRootDirectory());
 
             File parentPomFile = new File(projectBasedir, "pom.xml");
             File bomPomFile = new File(projectBasedir, "shedlock-bom/pom.xml");
