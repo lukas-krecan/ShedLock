@@ -44,6 +44,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Memcached](#memcached-using-spymemcached)
   - [Datastore](#datastore)
   - [S3](#s3)
+  - [Firestore](#Firestore)
 + [Multi-tenancy](#multi-tenancy)
 + [Customization](#customization)
 + [Duration specification](#duration-specification)
@@ -952,6 +953,30 @@ import net.javacrumbs.shedlock.provider.s3v2.S3LockProvider;
 public LockProvider lockProvider(S3Client s3Client) {
     return new S3LockProvider(s3Client, "BUCKET_NAME");
 }
+
+```
+#### Firestore
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-firestore</artifactId>
+    <version>6.9.2</version>
+</dependency>
+```
+
+and configure
+```java
+import net.javacrumbs.shedlock.provider.firestore.FirestoreLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.google.cloud.firestore.Firestore firestore) {
+    return new FirestoreLockProvider(firestore);
+}
+
 ```
 
 ## Multi-tenancy
