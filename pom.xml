@@ -72,6 +72,7 @@
         <module>providers/neo4j/shedlock-provider-neo4j</module>
         <module>providers/s3/shedlock-provider-s3</module>
         <module>providers/s3/shedlock-provider-s3v2</module>
+        <module>providers/firestore/shedlock-provider-firestore</module>
     </modules>
 
     <properties>
