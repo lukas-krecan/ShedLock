@@ -22,12 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.apache.hc.core5.http.HttpHost;
+import org.apache.http.HttpHost;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.opensearch.action.get.GetRequest;
@@ -51,7 +50,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
     private OpenSearchLockProvider lockProvider;
 
     @BeforeEach
-    public void setUp() throws URISyntaxException {
+    public void setUp() {
         highLevelClient = new RestHighLevelClient(RestClient.builder(HttpHost.create(container.getHttpHostAddress())));
         lockProvider = new OpenSearchLockProvider(highLevelClient);
     }
