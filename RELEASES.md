@@ -1,4 +1,10 @@
 # Release notes
+
+## 6.10.0 (2025-08-20)
+* Firestore provider added (thanks @rgopaluni)
+* Nullability annotations refactored
+* Dependency updates
+
 ## 6.9.2 (2025-07-07)
 * OpenSearchLockProvider constructor made public
 

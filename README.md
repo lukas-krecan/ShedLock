@@ -80,7 +80,7 @@ First of all, we have to import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-spring</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -181,7 +181,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-template</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -241,7 +241,7 @@ is in flux and may easily break.
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-r2dbc</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -264,7 +264,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jooq</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -297,7 +297,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-exposed</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -325,7 +325,7 @@ Add dependency
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-jdbc-micronaut</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -348,7 +348,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -375,7 +375,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-mongo-reactivestreams</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -404,7 +404,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-dynamodb2</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -431,7 +431,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-zookeeper-curator</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -455,7 +455,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -479,7 +479,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-spring</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -508,7 +508,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-jedis4</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -532,7 +532,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-hazelcast4</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -558,7 +558,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-redis-lettuce</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -580,7 +580,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-couchbase-javaclient3</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -607,7 +607,7 @@ I am really not sure if it's a good idea to use Elasticsearch as a lock provider
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-elasticsearch8</artifactId>
     <!--     <artifactId>shedlock-provider-elasticsearch9</artifactId> -->
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -632,7 +632,7 @@ Import the project
     <groupId>net.javacrumbs.shedlock</groupId>
     <!-- Use shedlock-provider-opensearch if you are still using RestHighLevelClient -->
     <artifactId>shedlock-provider-opensearch-java</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -660,7 +660,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-cassandra</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -695,7 +695,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-consul</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -720,7 +720,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-arangodb</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -746,7 +746,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-neo4j</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -771,7 +771,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-etcd-jetcd</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -795,7 +795,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-ignite</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -820,7 +820,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-inmemory</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -846,7 +846,7 @@ Import
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-memcached-spy</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -877,7 +877,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-datastore</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -901,7 +901,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-firestore</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -938,7 +938,7 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-spanner</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 Configure
@@ -978,7 +978,7 @@ Import the project
     <artifactId>shedlock-provider-s3v2</artifactId>
     <!-- Or for V1 driver: -->
     <!-- <artifactId>shedlock-provider-s3</artifactId> -->
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -1079,7 +1079,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-micronaut4</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
@@ -1116,7 +1116,7 @@ Import the project:
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-cdi</artifactId>
-    <version>6.9.2</version>
+    <version>6.10.0</version>
 </dependency>
 ```
 
