@@ -27,7 +27,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
     private final String collectionName;
     private final FirestoreLockProvider.FieldNames fieldNames;
 
-    public FirestoreStorageAccessor(FirestoreLockProvider.Configuration configuration) {
+    FirestoreStorageAccessor(FirestoreLockProvider.Configuration configuration) {
         requireNonNull(configuration);
         this.firestore = configuration.getFirestore();
         this.hostname = Utils.getHostname();
@@ -60,10 +60,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
             DocumentReference docRef = getDocument(name);
 
             // Try to create the document if it doesn't exist
-            Map<String, Object> lockData = Map.of(
-                    fieldNames.lockUntil(), fromInstant(until),
-                    fieldNames.lockedAt(), fromInstant(now()),
-                    fieldNames.lockedBy(), hostname);
+            Map<String, Object> lockData = getLockData(until);
 
             return runTransaction(transaction -> {
                 DocumentSnapshot snapshot = transaction.get(docRef).get();
@@ -88,11 +85,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
                 if (snapshot.exists()) {
                     Timestamp lockUntilTs = snapshot.getTimestamp(fieldNames.lockUntil());
                     if (lockUntilTs != null && toInstant(lockUntilTs).isBefore(now())) {
-                        Map<String, Object> updates = Map.of(
-                                fieldNames.lockUntil(), fromInstant(until),
-                                fieldNames.lockedAt(), fromInstant(now()),
-                                fieldNames.lockedBy(), hostname);
-
+                        Map<String, Object> updates = getLockData(until);
                         transaction.update(docRef, updates);
                         return true;
                     }
@@ -103,6 +96,13 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
             log.debug("Error updating lock record", e);
             return false;
         }
+    }
+
+    private Map<String, Object> getLockData(Instant until) {
+        return Map.of(
+            fieldNames.lockUntil(), fromInstant(until),
+            fieldNames.lockedAt(), fromInstant(now()),
+            fieldNames.lockedBy(), hostname);
     }
 
     private DocumentReference getDocument(String name) {
@@ -136,17 +136,17 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    public Optional<Lock> findLock(String name) {
+    Optional<Lock> findLock(String name) {
         try {
             DocumentReference docRef = getDocument(name);
             DocumentSnapshot snapshot = docRef.get().get();
 
             if (snapshot.exists()) {
                 return Optional.of(new Lock(
-                        snapshot.getId(),
-                        toInstant(snapshot.getTimestamp(fieldNames.lockedAt())),
-                        toInstant(snapshot.getTimestamp(fieldNames.lockUntil())),
-                        snapshot.getString(fieldNames.lockedBy())));
+                    snapshot.getId(),
+                    toInstant(snapshot.getTimestamp(fieldNames.lockedAt())),
+                    toInstant(snapshot.getTimestamp(fieldNames.lockUntil())),
+                    snapshot.getString(fieldNames.lockedBy())));
             }
             return Optional.empty();
         } catch (InterruptedException | ExecutionException e) {
@@ -168,5 +168,5 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
         return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
-    public record Lock(String name, Instant lockedAt, Instant lockedUntil, String lockedBy) {}
+    record Lock(String name, Instant lockedAt, Instant lockedUntil, String lockedBy) {}
 }
