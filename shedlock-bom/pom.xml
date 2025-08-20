@@ -3,7 +3,7 @@
     <parent>
         <artifactId>shedlock-parent</artifactId>
         <groupId>net.javacrumbs.shedlock</groupId>
-        <version>6.10.0</version>
+        <version>6.10.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
