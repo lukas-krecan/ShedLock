@@ -100,9 +100,9 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
 
     private Map<String, Object> getLockData(Instant until) {
         return Map.of(
-            fieldNames.lockUntil(), fromInstant(until),
-            fieldNames.lockedAt(), fromInstant(now()),
-            fieldNames.lockedBy(), hostname);
+                fieldNames.lockUntil(), fromInstant(until),
+                fieldNames.lockedAt(), fromInstant(now()),
+                fieldNames.lockedBy(), hostname);
     }
 
     private DocumentReference getDocument(String name) {
@@ -143,10 +143,10 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
 
             if (snapshot.exists()) {
                 return Optional.of(new Lock(
-                    snapshot.getId(),
-                    toInstant(snapshot.getTimestamp(fieldNames.lockedAt())),
-                    toInstant(snapshot.getTimestamp(fieldNames.lockUntil())),
-                    snapshot.getString(fieldNames.lockedBy())));
+                        snapshot.getId(),
+                        toInstant(snapshot.getTimestamp(fieldNames.lockedAt())),
+                        toInstant(snapshot.getTimestamp(fieldNames.lockUntil())),
+                        snapshot.getString(fieldNames.lockedBy())));
             }
             return Optional.empty();
         } catch (InterruptedException | ExecutionException e) {
