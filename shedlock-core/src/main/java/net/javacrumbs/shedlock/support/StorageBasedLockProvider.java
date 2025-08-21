@@ -74,29 +74,15 @@ public class StorageBasedLockProvider implements ExtensibleLockProvider {
                 // we were able to create the record, we have the lock
                 return true;
             }
-            // we were not able to create the record, it already exists, let's put it to the
-            // cache so we
-            // do not try again
-            lockRecordRegistry.addLockRecord(name);
         }
 
         // let's try to update the record, if successful, we have the lock
-        try {
-            return storageAccessor.updateRecord(lockConfiguration);
-        } catch (Exception e) {
-            // There are some users that start the app before they have the DB ready.
-            // If they use JDBC, insertRecord returns false, the record is stored in the
-            // recordRegistry
-            // and the insert is not attempted again. We are assuming that the DB still does
-            // not exist
-            // when update is attempted. Unlike insert, update throws the exception, and we
-            // clear the
-            // cache here.
-            if (tryToCreateLockRecord) {
-                lockRecordRegistry.removeLockRecord(name);
-            }
-            throw e;
+        boolean result = storageAccessor.updateRecord(lockConfiguration);
+        if (tryToCreateLockRecord && result) {
+            // Insert failed but update succeeded, we need to update the record registry
+            lockRecordRegistry.addLockRecord(name);
         }
+        return result;
     }
 
     private static class StorageLock extends AbstractSimpleLock {
