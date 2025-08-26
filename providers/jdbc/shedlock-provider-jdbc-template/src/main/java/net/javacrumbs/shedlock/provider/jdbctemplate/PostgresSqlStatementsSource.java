@@ -24,4 +24,9 @@ class PostgresSqlStatementsSource extends SqlStatementsSource {
                 + " = :lockUntil, " + lockedAt() + " = :now, " + lockedBy() + " = :lockedBy " + "WHERE " + tableName()
                 + "." + lockUntil() + " <= :now";
     }
+
+    @Override
+    public String getUpdateStatement() {
+        return getInsertStatement();
+    }
 }

@@ -37,8 +37,7 @@ class OracleServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getUpdateStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now
-                + ", " + lockedBy() + " = :lockedBy WHERE " + name() + " = :name AND " + lockUntil() + " <= " + now;
+        return getInsertStatement();
     }
 
     @Override
