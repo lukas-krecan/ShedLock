@@ -18,9 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class LockRecordRegistryTest {
+class CachingLockRecordRegistryTest {
     private static final String NAME = "name";
-    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
+    private final CachingLockRecordRegistry lockRecordRegistry = new CachingLockRecordRegistry();
 
     @Test
     void unusedKeysShouldBeGarbageCollected() {

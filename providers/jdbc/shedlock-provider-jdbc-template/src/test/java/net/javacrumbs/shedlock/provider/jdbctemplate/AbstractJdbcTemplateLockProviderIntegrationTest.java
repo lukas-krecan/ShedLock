@@ -85,6 +85,28 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
     }
 
     @Nested
+    class DbTimeAlwaysTryCreateLockRecord extends AbstractJdbcLockProviderIntegrationTest {
+        @Override
+        protected DbConfig getDbConfig() {
+            return dbConfig;
+        }
+
+        @Override
+        protected StorageBasedLockProvider getLockProvider() {
+            return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
+                    .withJdbcTemplate(new JdbcTemplate(getDatasource()))
+                    .usingDbTime()
+                    .alwaysTryToCreateLockRecord()
+                    .build());
+        }
+
+        @Override
+        protected boolean useDbTime() {
+            return true;
+        }
+    }
+
+    @Nested
     class StorageAccessor extends AbstractJdbcTemplateStorageAccessorTest {
         StorageAccessor() {
             super(dbConfig);

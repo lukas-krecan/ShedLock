@@ -13,12 +13,21 @@
  */
 package net.javacrumbs.shedlock.support;
 
-interface LockRecordRegistry {
-    void addLockRecord(String lockName);
+/**
+ * Lock record registry that does not store anything.
+ */
+class DummyLockRecordRegistry implements LockRecordRegistry {
+    @Override
+    public void addLockRecord(String lockName) {}
 
-    void removeLockRecord(String lockName);
+    @Override
+    public void removeLockRecord(String lockName) {}
 
-    boolean lockRecordRecentlyCreated(String lockName);
+    @Override
+    public boolean lockRecordRecentlyCreated(String lockName) {
+        return false;
+    }
 
-    void clear();
+    @Override
+    public void clear() {}
 }
