@@ -8,7 +8,6 @@ module net.javacrumbs.shedlock.provider.hazelcast4 {
     requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires com.hazelcast.core;
-    requires org.slf4j;
 
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.hazelcast4;

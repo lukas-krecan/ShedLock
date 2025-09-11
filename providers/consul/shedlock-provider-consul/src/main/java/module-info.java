@@ -7,7 +7,6 @@
 module net.javacrumbs.shedlock.provider.consul {
     requires java.base;
     requires net.javacrumbs.shedlock.core;
-    requires org.slf4j;
     requires consul.api;
 
     // Export provider packages

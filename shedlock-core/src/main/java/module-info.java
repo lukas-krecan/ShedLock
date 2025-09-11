@@ -9,7 +9,7 @@
  */
 module net.javacrumbs.shedlock.core {
     requires java.base;
-    requires org.slf4j;
+    requires transitive org.slf4j;
     requires static jsr305; // For JSR-305 annotations
 
     // Export main API packages

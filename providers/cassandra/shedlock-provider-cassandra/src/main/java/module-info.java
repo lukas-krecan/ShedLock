@@ -9,7 +9,6 @@ module net.javacrumbs.shedlock.provider.cassandra {
     requires net.javacrumbs.shedlock.core;
     requires java.driver.core;
     requires java.driver.query.builder;
-    requires org.slf4j;
 
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.cassandra;
