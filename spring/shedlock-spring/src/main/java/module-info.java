@@ -18,4 +18,9 @@ module net.javacrumbs.shedlock.spring {
     // Export Spring integration packages
     exports net.javacrumbs.shedlock.spring;
     exports net.javacrumbs.shedlock.spring.annotation;
+
+    opens net.javacrumbs.shedlock.spring.aop to
+            spring.beans,
+            spring.core,
+            spring.context;
 }
