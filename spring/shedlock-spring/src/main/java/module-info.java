@@ -13,9 +13,7 @@ module net.javacrumbs.shedlock.spring {
     requires spring.aop;
     requires spring.expression;
     requires org.slf4j;
-    // AspectJ is optional and doesn't have proper module support
 
-    // Export Spring integration packages
     exports net.javacrumbs.shedlock.spring;
     exports net.javacrumbs.shedlock.spring.annotation;
 

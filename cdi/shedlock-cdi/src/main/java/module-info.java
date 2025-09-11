@@ -13,5 +13,4 @@ module net.javacrumbs.shedlock.cdi {
 
     // Export CDI integration packages
     exports net.javacrumbs.shedlock.cdi;
-// Internal package is not exported as it's implementation detail
 }
