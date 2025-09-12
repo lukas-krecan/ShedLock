@@ -7,7 +7,7 @@
 module net.javacrumbs.shedlock.provider.ignite {
     requires java.base;
     requires net.javacrumbs.shedlock.core;
-    requires ignite.core;
+    requires ignite.api;
 
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.ignite;
