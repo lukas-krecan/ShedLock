@@ -16,35 +16,80 @@ package net.javacrumbs.shedlock.provider.ignite;
 import static net.javacrumbs.shedlock.provider.ignite.IgniteLockProvider.DEFAULT_SHEDLOCK_CACHE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
-import org.apache.ignite.Ignition;
+import org.apache.ignite.IgniteServer;
+import org.apache.ignite.InitParameters;
+import org.apache.ignite.table.KeyValueView;
+import org.apache.ignite.table.Table;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Test for {@link IgniteLockProvider}. */
 public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegrationTest {
     private static Ignite ignite;
-    private static IgniteCache<String, LockValue> cache;
+    private static KeyValueView<String, LockValue> keyValueView;
+    private static Table table;
+    private static IgniteServer node;
+    private static final String TEST_NODE_NAME = "ignite-node";
 
     @BeforeAll
-    public static void startIgnite() {
-        ignite = Ignition.start();
-        cache = ignite.getOrCreateCache(DEFAULT_SHEDLOCK_CACHE_NAME);
+    public static void startIgnite(@TempDir Path tempDir) {
+        try {
+            node = IgniteServer.start(
+                    TEST_NODE_NAME,
+                    Paths.get(Thread.currentThread()
+                            .getContextClassLoader()
+                            .getResource("ignite-config.conf")
+                            .toURI()),
+                    tempDir);
+
+            InitParameters initParameters = InitParameters.builder()
+                    .clusterName("cluster")
+                    .metaStorageNodeNames(TEST_NODE_NAME)
+                    .build();
+
+            node.initCluster(initParameters);
+
+            ignite = node.api();
+
+            table = ignite.tables().table(DEFAULT_SHEDLOCK_CACHE_NAME);
+            if (table == null) {
+                ignite.sql()
+                        .execute(
+                                null,
+                                "CREATE TABLE IF NOT EXISTS " + DEFAULT_SHEDLOCK_CACHE_NAME + " ("
+                                        + "name VARCHAR PRIMARY KEY, "
+                                        + "locked_at TIMESTAMP, "
+                                        + "lock_until TIMESTAMP, "
+                                        + "locked_by VARCHAR"
+                                        + ")");
+                table = ignite.tables().table(DEFAULT_SHEDLOCK_CACHE_NAME);
+            }
+            keyValueView = table.keyValueView(String.class, LockValue.class);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to initialize Ignite", e);
+        }
     }
 
     @AfterAll
     public static void stopIgnite() {
-        ignite.close();
+        if (node != null) {
+            node.shutdown();
+        }
     }
 
     @BeforeEach
     public void cleanDb() {
-        cache.clear();
+        ignite.sql().execute(null, "DELETE FROM " + DEFAULT_SHEDLOCK_CACHE_NAME);
     }
 
     @Override
@@ -54,9 +99,9 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
 
     @Override
     protected void assertUnlocked(String lockName) {
-        LockValue val = cache.get(lockName);
+        LockValue val = keyValueView.get(null, lockName);
 
-        Instant now = Instant.now();
+        LocalDateTime now = now();
 
         assertThat(val).isNotNull();
         assertThat(val.getLockUntil()).isBeforeOrEqualTo(now);
@@ -64,11 +109,15 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
         assertThat(val.getLockedBy()).isNotEmpty();
     }
 
+    private static LocalDateTime now() {
+        return Instant.now().atZone(ZoneId.of("UTC")).toLocalDateTime();
+    }
+
     @Override
     protected void assertLocked(String lockName) {
-        LockValue val = cache.get(lockName);
+        LockValue val = keyValueView.get(null, lockName);
 
-        Instant now = Instant.now();
+        LocalDateTime now = now();
 
         assertThat(val).isNotNull();
         assertThat(val.getLockUntil()).isAfter(now);
