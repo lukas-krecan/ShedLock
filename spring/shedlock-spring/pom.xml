@@ -69,15 +69,11 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.spring
-                            </Automatic-Module-Name>
-                        </manifestEntries>
-                    </archive>
+                    <argLine>
+                        --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.aop.multiplelockproviders=spring.core,spring.beans,spring.context  --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.it=spring.core,spring.beans,spring.context  --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.proxytest=spring.core,spring.beans,spring.context
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>

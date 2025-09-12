@@ -155,11 +155,13 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
     }
 
     private static Timestamp fromInstant(Instant instant) {
-        return Timestamp.of(java.sql.Timestamp.from(requireNonNull(instant)));
+        requireNonNull(instant);
+        return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
     }
 
     private static Instant toInstant(Timestamp timestamp) {
-        return requireNonNull(timestamp).toSqlTimestamp().toInstant();
+        requireNonNull(timestamp);
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
     public record Lock(
