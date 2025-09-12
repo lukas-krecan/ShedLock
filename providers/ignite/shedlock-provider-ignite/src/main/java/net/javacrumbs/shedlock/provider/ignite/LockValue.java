@@ -13,20 +13,28 @@
  */
 package net.javacrumbs.shedlock.provider.ignite;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import org.apache.ignite.catalog.annotations.Column;
+import org.apache.ignite.catalog.annotations.Table;
 
 /** Value object for ShedLock cache. */
 // Don't convert to record, does not work
+@Table
 class LockValue {
     /** Locked at time. */
-    private final Instant lockedAt;
+    @Column("locked_at")
+    private LocalDateTime lockedAt;
 
     /** Locked until time. */
-    private final Instant lockUntil;
+    @Column("lock_until")
+    private LocalDateTime lockUntil;
 
     /** Locked by hostname. */
-    private final String lockedBy;
+    @Column("locked_by")
+    private String lockedBy;
 
+    @SuppressWarnings("NullAway")
+    LockValue() {}
     /**
      * @param lockedAt
      *            Locked at time.
@@ -35,13 +43,13 @@ class LockValue {
      * @param lockedBy
      *            Locked by hostname.
      */
-    public LockValue(Instant lockedAt, Instant lockUntil, String lockedBy) {
+    LockValue(LocalDateTime lockedAt, LocalDateTime lockUntil, String lockedBy) {
         this.lockedAt = lockedAt;
         this.lockUntil = lockUntil;
         this.lockedBy = lockedBy;
     }
 
-    LockValue withLockUntil(Instant lockUntil) {
+    LockValue withLockUntil(LocalDateTime lockUntil) {
         return new LockValue(lockedAt, lockUntil, lockedBy);
     }
 
@@ -49,7 +57,7 @@ class LockValue {
      * Returns locked at time.
      * @return Locked at time.
      */
-    public Instant getLockedAt() {
+    public LocalDateTime getLockedAt() {
         return lockedAt;
     }
 
@@ -57,7 +65,7 @@ class LockValue {
      * Returns locked until time.
      * @return Locked until time.
      */
-    public Instant getLockUntil() {
+    public LocalDateTime getLockUntil() {
         return lockUntil;
     }
 

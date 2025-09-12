@@ -16,13 +16,17 @@ package net.javacrumbs.shedlock.provider.ignite;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
+import org.apache.ignite.table.KeyValueView;
+import org.apache.ignite.table.Table;
+import org.apache.ignite.table.mapper.Mapper;
 
 /**
  * Distributed lock using Apache Ignite.
@@ -36,9 +40,9 @@ import org.apache.ignite.IgniteCache;
  *
  * <ol>
  * <li>If there is no locks with given name, try to use
- * {@link IgniteCache#putIfAbsent}.
+ * {@link KeyValueView#putIfAbsent}.
  * <li>If there is a lock with given name, and its lockUntil is before or equal
- * {@code now}, try to use {@link IgniteCache#replace}.
+ * {@code now}, try to use {@link KeyValueView#replace}.
  * <li>Otherwise, return {@link Optional#empty}.
  * </ol>
  *
@@ -46,7 +50,7 @@ import org.apache.ignite.IgniteCache;
  *
  * <ol>
  * <li>If there is a lock with given name and hostname, and its lockUntil is
- * after {@code now}, try to use {@link IgniteCache#replace} to set lockUntil to
+ * after {@code now}, try to use {@link KeyValueView#replace} to set lockUntil to
  * {@link LockConfiguration#getLockAtMostUntil}.
  * <li>Otherwise, return {@link Optional#empty}.
  * </ol>
@@ -55,7 +59,7 @@ import org.apache.ignite.IgniteCache;
  *
  * <ol>
  * <li>If there is a lock with given name and hostname, try to use
- * {@link IgniteCache#replace} to set lockUntil to
+ * {@link KeyValueView#replace} to set lockUntil to
  * {@link LockConfiguration#getUnlockTime}.
  * </ol>
  */
@@ -63,8 +67,10 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
     /** Default ShedLock cache name. */
     public static final String DEFAULT_SHEDLOCK_CACHE_NAME = "shedLock";
 
-    /** ShedLock cache. */
-    private final IgniteCache<String, LockValue> cache;
+    public static final ZoneId UTC = ZoneId.of("UTC");
+
+    /** ShedLock key-value view. */
+    private final KeyValueView<String, LockValue> keyValueView;
 
     /**
      * @param ignite
@@ -77,29 +83,34 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
     /**
      * @param ignite
      *            Ignite instance.
-     * @param shedLockCacheName
-     *            ShedLock cache name to use instead of default.
+     * @param shedLockTableName
+     *            ShedLock table name to use instead of default.
      */
-    public IgniteLockProvider(Ignite ignite, String shedLockCacheName) {
-        this.cache = ignite.getOrCreateCache(shedLockCacheName);
+    public IgniteLockProvider(Ignite ignite, String shedLockTableName) {
+        Table table = ignite.tables().table(shedLockTableName);
+        if (table == null) {
+            throw new IllegalArgumentException("Table '" + shedLockTableName + "' does not exist. "
+                    + "Please create the table first or use the default table name.");
+        }
+        this.keyValueView = table.keyValueView(Mapper.of(String.class), Mapper.of(LockValue.class));
     }
 
     /** {@inheritDoc} */
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockCfg) {
-        Instant now = Instant.now();
+        LocalDateTime now = now();
         String key = lockCfg.getName();
 
-        LockValue newVal = new LockValue(now, lockCfg.getLockAtMostUntil(), getHostname());
-        LockValue oldVal = cache.get(key);
+        LockValue newVal = new LockValue(now, toLocalDateTime(lockCfg.getLockAtMostUntil()), getHostname());
+        LockValue oldVal = keyValueView.get(null, key);
 
         if (oldVal == null) {
-            if (cache.putIfAbsent(key, newVal)) return Optional.of(new IgniteLock(lockCfg, this));
+            if (keyValueView.putIfAbsent(null, key, newVal)) return Optional.of(new IgniteLock(lockCfg, this));
 
             return Optional.empty();
         }
 
-        if (!now.isBefore(oldVal.getLockUntil()) && cache.replace(key, oldVal, newVal))
+        if (!now.isBefore(oldVal.getLockUntil()) && keyValueView.replace(null, key, oldVal, newVal))
             return Optional.of(new IgniteLock(lockCfg, this));
 
         return Optional.empty();
@@ -107,7 +118,7 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
 
     /**
      * If there is a lock with given name and hostname, try to use
-     * {@link IgniteCache#replace} to set lockUntil to
+     * {@link KeyValueView#replace} to set lockUntil to
      * {@link LockConfiguration#getLockAtMostUntil}.
      *
      * @param lockCfg
@@ -115,38 +126,46 @@ public class IgniteLockProvider implements ExtensibleLockProvider {
      * @return New lock if succeed extended. Empty, otherwise.
      */
     private Optional<SimpleLock> extend(LockConfiguration lockCfg) {
-        Instant now = Instant.now();
+        LocalDateTime now = now();
 
         String key = lockCfg.getName();
-        LockValue oldVal = cache.get(key);
+        LockValue oldVal = keyValueView.get(null, key);
 
         if (oldVal == null
                 || !oldVal.getLockedBy().equals(getHostname())
                 || !oldVal.getLockUntil().isAfter(now)) return Optional.empty();
 
-        LockValue newVal = oldVal.withLockUntil(lockCfg.getLockAtMostUntil());
+        LockValue newVal = oldVal.withLockUntil(toLocalDateTime(lockCfg.getLockAtMostUntil()));
 
-        if (cache.replace(key, oldVal, newVal)) return Optional.of(new IgniteLock(lockCfg, this));
+        if (keyValueView.replace(null, key, oldVal, newVal)) return Optional.of(new IgniteLock(lockCfg, this));
 
         return Optional.empty();
     }
 
+    private static LocalDateTime now() {
+        return toLocalDateTime(Instant.now());
+    }
+
     /**
      * If there is a lock with given name and hostname, try to use
-     * {@link IgniteCache#replace} to set lockUntil to {@code now}.
+     * {@link KeyValueView#replace} to set lockUntil to {@code now}.
      *
      * @param lockCfg
      *            Lock configuration.
      */
     private void unlock(LockConfiguration lockCfg) {
         String key = lockCfg.getName();
-        LockValue oldVal = cache.get(key);
+        LockValue oldVal = keyValueView.get(null, key);
 
         if (oldVal != null && oldVal.getLockedBy().equals(getHostname())) {
-            LockValue newVal = oldVal.withLockUntil(lockCfg.getUnlockTime());
+            LockValue newVal = oldVal.withLockUntil(toLocalDateTime(lockCfg.getUnlockTime()));
 
-            cache.replace(key, oldVal, newVal);
+            keyValueView.replace(null, key, oldVal, newVal);
         }
+    }
+
+    private static LocalDateTime toLocalDateTime(Instant instant) {
+        return LocalDateTime.ofInstant(instant, UTC);
     }
 
     /** Ignite lock. */
