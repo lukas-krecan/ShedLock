@@ -75,7 +75,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
     }
 
     public JdbcTemplateLockProvider(Configuration configuration) {
-        super(new JdbcTemplateStorageAccessor(configuration));
+        super(new JdbcTemplateStorageAccessor(configuration), configuration.alwaysTryToCreateLockRecord());
     }
 
     public static final class Configuration {
@@ -101,6 +101,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
         private final boolean throwUnexpectedException;
 
+        private final boolean alwaysTryToCreateLockRecord;
+
         Configuration(
                 JdbcTemplate jdbcTemplate,
                 @Nullable DatabaseProduct databaseProduct,
@@ -111,7 +113,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 String lockedByValue,
                 boolean useDbTime,
                 @Nullable Integer isolationLevel,
-                boolean throwUnexpectedException) {
+                boolean throwUnexpectedException,
+                boolean alwaysTryToCreateLockRecord) {
 
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.databaseProduct = databaseProduct;
@@ -126,6 +129,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             }
             this.useDbTime = useDbTime;
             this.throwUnexpectedException = throwUnexpectedException;
+            this.alwaysTryToCreateLockRecord = alwaysTryToCreateLockRecord;
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -172,6 +176,10 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return throwUnexpectedException;
         }
 
+        public boolean alwaysTryToCreateLockRecord() {
+            return alwaysTryToCreateLockRecord;
+        }
+
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -199,6 +207,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             private Integer isolationLevel;
 
             private boolean throwUnexpectedException = false;
+
+            private boolean alwaysTryToCreateLockRecord = false;
 
             public Builder withJdbcTemplate(JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -269,6 +279,17 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
+            /**
+             * Will not cache existence of the lock record and will always try to create it. Should help to overcome
+             * wierd cases when the lock table keeps being cleared for unknown reasons. With this setting, the insert will always
+             * be attempted. Under normal circumstances the insert will fail and then update will be executed. Whe using DB time
+             * on Postgres and Oracle, the insert will succeed if the lock will be available.
+             */
+            public Builder alwaysTryToCreateLockRecord() {
+                this.alwaysTryToCreateLockRecord = true;
+                return this;
+            }
+
             public JdbcTemplateLockProvider.Configuration build() {
                 return new JdbcTemplateLockProvider.Configuration(
                         jdbcTemplate,
@@ -280,7 +301,8 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                         lockedByValue,
                         useDbTime,
                         isolationLevel,
-                        throwUnexpectedException);
+                        throwUnexpectedException,
+                        alwaysTryToCreateLockRecord);
             }
         }
     }

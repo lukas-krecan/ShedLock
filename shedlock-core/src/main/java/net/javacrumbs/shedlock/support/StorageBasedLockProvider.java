@@ -39,10 +39,19 @@ import net.javacrumbs.shedlock.core.SimpleLock;
  */
 public class StorageBasedLockProvider implements ExtensibleLockProvider {
     private final StorageAccessor storageAccessor;
-    private final LockRecordRegistry lockRecordRegistry = new LockRecordRegistry();
+    private final LockRecordRegistry lockRecordRegistry;
 
     protected StorageBasedLockProvider(StorageAccessor storageAccessor) {
+        this(storageAccessor, false);
+    }
+
+    protected StorageBasedLockProvider(StorageAccessor storageAccessor, boolean alwaysTryToCreateLockRecord) {
         this.storageAccessor = storageAccessor;
+        if (alwaysTryToCreateLockRecord) {
+            lockRecordRegistry = new DummyLockRecordRegistry();
+        } else {
+            lockRecordRegistry = new CachingLockRecordRegistry();
+        }
     }
 
     /** Clears cache of existing lock records. */
