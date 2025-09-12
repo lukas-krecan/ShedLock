@@ -141,11 +141,6 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-consul</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-arangodb</artifactId>
                 <version>${project.version}</version>
             </dependency>
