@@ -49,9 +49,7 @@
         <module>providers/r2dbc/shedlock-provider-r2dbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
-        <module>providers/elasticsearch/shedlock-provider-elasticsearch8</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch9</module>
-        <module>providers/opensearch/shedlock-provider-opensearch</module>
         <module>providers/opensearch/shedlock-provider-opensearch-java</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
@@ -70,7 +68,6 @@
         <module>providers/datastore/shedlock-provider-datastore</module>
         <module>providers/spanner/shedlock-provider-spanner</module>
         <module>providers/neo4j/shedlock-provider-neo4j</module>
-        <module>providers/s3/shedlock-provider-s3</module>
         <module>providers/s3/shedlock-provider-s3v2</module>
         <module>providers/firestore/shedlock-provider-firestore</module>
     </modules>
