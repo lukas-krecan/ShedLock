@@ -22,7 +22,7 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Statement;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Mono;
 
 class R2dbcStorageAccessor extends AbstractR2dbcStorageAccessor {
