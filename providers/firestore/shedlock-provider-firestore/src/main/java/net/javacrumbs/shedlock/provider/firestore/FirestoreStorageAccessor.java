@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import javax.annotation.Nonnull;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
@@ -157,16 +156,16 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private <T> T runTransaction(@Nonnull final Transaction.Function<T> updateFunction)
+    private <T> T runTransaction(final Transaction.Function<T> updateFunction)
             throws ExecutionException, InterruptedException {
         return firestore.runTransaction(updateFunction).get();
     }
 
-    private static Timestamp fromInstant(@Nonnull Instant instant) {
+    private static Timestamp fromInstant(Instant instant) {
         return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
     }
 
-    private static Instant toInstant(@Nonnull Timestamp timestamp) {
+    private static Instant toInstant(Timestamp timestamp) {
         return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
