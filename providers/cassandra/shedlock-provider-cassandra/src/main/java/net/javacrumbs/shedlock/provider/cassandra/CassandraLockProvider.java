@@ -19,7 +19,7 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Cassandra Lock Provider needs a keyspace and uses a lock table <br>

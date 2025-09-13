@@ -16,7 +16,7 @@ package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
