@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Optional;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class LockExtender {
     // Using deque here instead of a simple thread local to be able to handle nested
