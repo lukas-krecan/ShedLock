@@ -4,16 +4,15 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.cloud.firestore.Firestore;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.NonNull;
 
 public class FirestoreLockProvider extends StorageBasedLockProvider {
 
-    public FirestoreLockProvider(@NonNull Firestore firestore) {
+    public FirestoreLockProvider(Firestore firestore) {
         super(new FirestoreStorageAccessor(
                 Configuration.builder().withFirestore(firestore).build()));
     }
 
-    public FirestoreLockProvider(@NonNull Configuration configuration) {
+    public FirestoreLockProvider(Configuration configuration) {
         super(new FirestoreStorageAccessor(configuration));
     }
 
@@ -22,28 +21,24 @@ public class FirestoreLockProvider extends StorageBasedLockProvider {
         private final FieldNames fieldNames;
         private final Firestore firestore;
 
-        Configuration(@NonNull String collectionName, @NonNull FieldNames fieldNames, @NonNull Firestore firestore) {
+        Configuration(String collectionName, FieldNames fieldNames, Firestore firestore) {
             this.collectionName = requireNonNull(collectionName);
             this.fieldNames = requireNonNull(fieldNames);
             this.firestore = requireNonNull(firestore);
         }
 
-        @NonNull
         public String getCollectionName() {
             return collectionName;
         }
 
-        @NonNull
         public FieldNames getFieldNames() {
             return fieldNames;
         }
 
-        @NonNull
         public Firestore getFirestore() {
             return firestore;
         }
 
-        @NonNull
         public static Builder builder() {
             return new Builder();
         }
