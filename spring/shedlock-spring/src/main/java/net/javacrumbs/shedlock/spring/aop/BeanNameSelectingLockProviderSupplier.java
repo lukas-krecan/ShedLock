@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.spring.annotation.LockProviderToUse;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.core.annotation.AnnotationUtils;

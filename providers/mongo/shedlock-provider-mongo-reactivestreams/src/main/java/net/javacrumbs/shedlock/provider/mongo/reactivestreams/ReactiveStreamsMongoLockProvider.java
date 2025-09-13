@@ -33,9 +33,9 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
 
 /**
