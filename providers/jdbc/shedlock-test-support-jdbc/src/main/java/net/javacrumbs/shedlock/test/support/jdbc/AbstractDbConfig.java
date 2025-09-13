@@ -15,7 +15,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 abstract class AbstractDbConfig implements DbConfig {
     @Nullable

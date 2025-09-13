@@ -10,11 +10,10 @@
 module net.javacrumbs.shedlock.core {
     requires java.base;
     requires transitive org.slf4j;
-    requires static jsr305; // For JSR-305 annotations
+    requires transitive static org.jspecify;
 
     // Export main API packages
     exports net.javacrumbs.shedlock.core;
     exports net.javacrumbs.shedlock.support;
-    exports net.javacrumbs.shedlock.support.annotation;
     exports net.javacrumbs.shedlock.util;
 }
