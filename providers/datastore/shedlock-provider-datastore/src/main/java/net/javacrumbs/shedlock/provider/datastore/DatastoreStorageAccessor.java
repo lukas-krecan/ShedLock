@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatastoreStorageAccessor extends AbstractStorageAccessor {
+class DatastoreStorageAccessor extends AbstractStorageAccessor {
     private static final Logger log = LoggerFactory.getLogger(DatastoreStorageAccessor.class);
 
     private final Datastore datastore;
