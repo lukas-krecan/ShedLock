@@ -13,7 +13,7 @@
  */
 package net.javacrumbs.shedlock.core;
 
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface LockingTaskExecutor {
     /** Executes task if it's not already running. */

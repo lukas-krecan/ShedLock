@@ -14,7 +14,7 @@
 package net.javacrumbs.shedlock.provider.neo4j;
 
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.neo4j.driver.Driver;
 
 /**
