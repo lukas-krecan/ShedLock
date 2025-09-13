@@ -23,7 +23,7 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
  * This class is responsible for inserting, updating, extending, and unlocking
  * lock records using Spanner's transactions.
  */
-public class SpannerStorageAccessor extends AbstractStorageAccessor {
+class SpannerStorageAccessor extends AbstractStorageAccessor {
 
     private final String table;
     private final String name;
