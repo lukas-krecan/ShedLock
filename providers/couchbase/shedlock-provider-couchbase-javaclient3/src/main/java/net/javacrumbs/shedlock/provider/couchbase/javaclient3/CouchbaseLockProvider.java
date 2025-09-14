@@ -60,7 +60,7 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
  * <li>When unlocking, lock_until is set to now.
  * </ol>
  */
-public class CouchbaseLockProvider extends StorageBasedLockProvider {
+class CouchbaseLockProvider extends StorageBasedLockProvider {
     private static final String LOCK_NAME = "name";
     static final String LOCK_UNTIL = "lockedUntil";
     static final String LOCKED_AT = "lockedAt";

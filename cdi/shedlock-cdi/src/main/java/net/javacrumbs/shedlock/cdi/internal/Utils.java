@@ -2,7 +2,7 @@ package net.javacrumbs.shedlock.cdi.internal;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class Utils {
 

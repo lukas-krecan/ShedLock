@@ -76,6 +76,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
+                            <!-- Not migrated to JPMS as microprofile-config-api is a filename-based automodule -->
                             <Automatic-Module-Name>
                                 net.javacrumbs.shedlock.cdi
                             </Automatic-Module-Name>
