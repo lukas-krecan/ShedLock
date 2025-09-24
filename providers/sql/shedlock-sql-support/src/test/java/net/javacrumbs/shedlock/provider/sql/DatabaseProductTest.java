@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.jdbctemplate;
+package net.javacrumbs.shedlock.provider.sql;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
