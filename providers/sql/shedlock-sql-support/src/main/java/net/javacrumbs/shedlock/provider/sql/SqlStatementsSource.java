@@ -53,15 +53,13 @@ public class SqlStatementsSource {
     }
 
     private Object timestamp(Instant time) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(Date.from(time));
         TimeZone timeZone = configuration.getTimeZone();
-        if (timeZone == null) {
-            return new Date(time.toEpochMilli());
-        } else {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(Date.from(time));
+        if (timeZone != null) {
             calendar.setTimeZone(timeZone);
-            return calendar;
         }
+        return calendar;
     }
 
     public String getInsertStatement() {

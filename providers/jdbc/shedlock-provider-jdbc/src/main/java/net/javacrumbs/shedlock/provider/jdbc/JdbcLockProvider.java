@@ -13,8 +13,17 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
+import static java.util.Objects.requireNonNull;
+
+import java.sql.Connection;
+import java.util.TimeZone;
 import javax.sql.DataSource;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
+import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lock provided by plain JDBC. It uses a table that contains lock_name and
@@ -39,6 +48,83 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
     }
 
     public JdbcLockProvider(DataSource datasource, String tableName) {
-        super(new JdbcStorageAccessor(datasource, tableName));
+        this(new Configuration.Builder(datasource).withTableName(tableName).build());
+    }
+
+    public JdbcLockProvider(Configuration configuration) {
+        super(new JdbcStorageAccessor(configuration));
+    }
+
+    public static final class Configuration extends SqlConfiguration {
+        private final DataSource dataSource;
+
+        private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+
+        Configuration(
+                DataSource dataSource,
+                @Nullable DatabaseProduct databaseProduct,
+                String tableName,
+                @Nullable TimeZone timeZone,
+                ColumnNames columnNames,
+                String lockedByValue,
+                boolean useDbTime,
+                @Nullable Integer isolationLevel,
+                boolean throwUnexpectedException) {
+
+            super(
+                    databaseProduct,
+                    tableName,
+                    timeZone,
+                    columnNames,
+                    lockedByValue,
+                    useDbTime,
+                    isolationLevel,
+                    throwUnexpectedException);
+            this.dataSource = requireNonNull(dataSource, "dataSource can not be null");
+        }
+
+        public DataSource getDataSource() {
+            return dataSource;
+        }
+
+        @Override
+        public DatabaseProduct getDatabaseProduct() {
+            if (super.getDatabaseProduct() != null) {
+                return super.getDatabaseProduct();
+            }
+
+            try (Connection connection = dataSource.getConnection()) {
+                String jdbcProductName = connection.getMetaData().getDatabaseProductName();
+                return DatabaseProduct.matchProductName(jdbcProductName);
+            } catch (Exception e) {
+                logger.debug("Can not determine database product name {}", e.getMessage());
+                return DatabaseProduct.UNKNOWN;
+            }
+        }
+
+        public static Configuration.Builder builder(DataSource dataSource) {
+            return new Configuration.Builder(dataSource);
+        }
+
+        public static final class Builder extends SqlConfigurationBuilder<Builder> {
+            private final DataSource dataSource;
+
+            public Builder(DataSource dataSource) {
+                this.dataSource = dataSource;
+            }
+
+            public Configuration build() {
+                return new Configuration(
+                        dataSource,
+                        databaseProduct,
+                        dbUpperCase ? tableName.toUpperCase() : tableName,
+                        timeZone,
+                        dbUpperCase ? columnNames.toUpperCase() : columnNames,
+                        lockedByValue,
+                        useDbTime,
+                        isolationLevel,
+                        throwUnexpectedException);
+            }
+        }
     }
 }

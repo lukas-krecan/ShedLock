@@ -13,8 +13,6 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
-import static java.util.Objects.requireNonNull;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -25,9 +23,9 @@ import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccesso
 class JdbcStorageAccessor extends AbstractJdbcStorageAccessor {
     private final DataSource dataSource;
 
-    JdbcStorageAccessor(DataSource dataSource, String tableName) {
-        super(tableName);
-        this.dataSource = requireNonNull(dataSource, "dataSource can not be null");
+    JdbcStorageAccessor(JdbcLockProvider.Configuration configuration) {
+        super(configuration);
+        dataSource = configuration.getDataSource();
     }
 
     @Override

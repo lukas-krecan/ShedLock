@@ -13,14 +13,12 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 
 public class HsqlJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
     private static final HsqlConfig dbConfig = new HsqlConfig();
 
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public HsqlJdbcLockProviderIntegrationTest() {
+        super(dbConfig);
     }
 }
