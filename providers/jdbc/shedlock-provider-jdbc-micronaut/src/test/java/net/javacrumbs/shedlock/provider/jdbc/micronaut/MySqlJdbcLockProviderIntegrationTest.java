@@ -13,14 +13,12 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
 
 public class MySqlJdbcLockProviderIntegrationTest extends AbstractMicronautJdbcTest {
     private static final MySqlConfig dbConfig = new MySqlConfig();
 
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public MySqlJdbcLockProviderIntegrationTest() {
+        super(dbConfig);
     }
 }

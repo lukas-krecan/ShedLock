@@ -13,14 +13,12 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 
 public class PostgresJdbcLockProviderIntegrationTest extends AbstractMicronautJdbcTest {
     private static final PostgresConfig dbConfig = new PostgresConfig();
 
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public PostgresJdbcLockProviderIntegrationTest() {
+        super(dbConfig);
     }
 }
