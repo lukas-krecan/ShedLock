@@ -1,9 +1,8 @@
-package net.javacrumbs.shedlock.provider.jdbctemplate;
+package net.javacrumbs.shedlock.provider.sql;
 
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import org.jspecify.annotations.Nullable;
 
 public enum DatabaseProduct {
@@ -21,15 +20,16 @@ public enum DatabaseProduct {
 
     private final Predicate<String> productMatcher;
 
-    private final Function<Configuration, SqlStatementsSource> serverTimeStatementsSource;
+    private final Function<SqlConfiguration, SqlStatementsSource> serverTimeStatementsSource;
 
     DatabaseProduct(
-            Predicate<String> productMatcher, Function<Configuration, SqlStatementsSource> serverTimeStatementsSource) {
+            Predicate<String> productMatcher,
+            Function<SqlConfiguration, SqlStatementsSource> serverTimeStatementsSource) {
         this.productMatcher = productMatcher;
         this.serverTimeStatementsSource = serverTimeStatementsSource;
     }
 
-    SqlStatementsSource getDbTimeStatementSource(Configuration configuration) {
+    SqlStatementsSource getDbTimeStatementSource(SqlConfiguration configuration) {
         return serverTimeStatementsSource.apply(configuration);
     }
 
@@ -37,12 +37,10 @@ public enum DatabaseProduct {
      * Searches for the right DatabaseProduct based on the ProductName returned from
      * JDBC Connection Metadata
      *
-     * @param productName
-     *            Obtained from the JDBC connection. See
-     *            java.sql.connection.getMetaData().getProductName().
+     * @param productName Obtained from the JDBC connection. See java.sql.connection.getMetaData().getProductName().
      * @return The matching ProductName enum
      */
-    static DatabaseProduct matchProductName(@Nullable final String productName) {
+    public static DatabaseProduct matchProductName(@Nullable final String productName) {
         return Arrays.stream(DatabaseProduct.values())
                 .filter(databaseProduct -> databaseProduct.productMatcher.test(productName))
                 .findFirst()

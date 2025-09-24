@@ -13,14 +13,12 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
-import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.HsqlConfig;
 
 public class HsqlJdbcLockProviderIntegrationTest extends AbstractMicronautJdbcTest {
     private static final HsqlConfig dbConfig = new HsqlConfig();
 
-    @Override
-    protected DbConfig getDbConfig() {
-        return dbConfig;
+    public HsqlJdbcLockProviderIntegrationTest() {
+        super(dbConfig);
     }
 }
