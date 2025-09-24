@@ -27,6 +27,7 @@ import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
@@ -59,8 +60,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
 
             DataSource datasource = dbConfig.getDataSource();
 
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
-            jdbcTemplate.execute(dbConfig.getCreateTableStatement());
+            var testUtils = new JdbcTestUtils(dbConfig);
 
             TimeZone utc = TimeZone.getTimeZone("UTC");
             JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
@@ -84,6 +84,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
                 });
             } finally {
                 TimeZone.setDefault(originalTimezone);
+                testUtils.clean();
             }
         }
     }

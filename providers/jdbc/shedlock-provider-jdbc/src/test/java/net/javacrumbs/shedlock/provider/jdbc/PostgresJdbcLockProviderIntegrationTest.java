@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,13 +40,12 @@ public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
      */
     @Test
     void shouldForceUtcTime() {
+        var testUtils = new JdbcTestUtils(dbConfig);
+
         Instant lockUntil = Instant.parse("2020-04-10T17:30:00Z");
         Instant now = lockUntil.minusSeconds(10);
 
         DataSource datasource = dbConfig.getDataSource();
-
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
-        jdbcTemplate.execute(dbConfig.getCreateTableStatement());
 
         JdbcLockProvider provider = new JdbcLockProvider(JdbcLockProvider.Configuration.builder(datasource)
                 .forceUtcTimeZone()
@@ -66,6 +66,7 @@ public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
             });
         } finally {
             TimeZone.setDefault(originalTimezone);
+            testUtils.clean();
         }
     }
 }
