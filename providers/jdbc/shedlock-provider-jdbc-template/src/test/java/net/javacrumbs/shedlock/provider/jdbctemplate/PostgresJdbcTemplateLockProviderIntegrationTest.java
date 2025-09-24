@@ -27,6 +27,7 @@ import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
@@ -47,39 +48,43 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
             ClockProvider.setClock(Clock.systemDefaultZone());
         }
 
+        /*
+         * If we have a TIMESTAMP WITHOUT TIMEZONE column in Postgres, the timezone value is ignored from the timestamp string
+         * (timestamp is sent as string see the last line of PgPreparedStatement.setTimestamp). withTimeZone allows to set the
+         * UTC timezone so it works well.
+         */
         @Test
         void shouldHonorTimezone() {
-            TimeZone timezone = TimeZone.getTimeZone("America/Los_Angeles");
-
             Instant lockUntil = Instant.parse("2020-04-10T17:30:00Z");
             Instant now = lockUntil.minusSeconds(10);
 
-            TimeZone originalTimezone = TimeZone.getDefault();
-
             DataSource datasource = dbConfig.getDataSource();
 
-            TimeZone.setDefault(timezone);
+            var testUtils = new JdbcTestUtils(dbConfig);
 
+            TimeZone utc = TimeZone.getTimeZone("UTC");
+            JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
+                    .withJdbcTemplate(new JdbcTemplate(datasource))
+                    .forceUtcTimeZone()
+                    .withIsolationLevel(Connection.TRANSACTION_SERIALIZABLE)
+                    .build());
+
+            TimeZone originalTimezone = TimeZone.getDefault();
             try {
-                JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
-                jdbcTemplate.execute(
-                        "CREATE TABLE shedlock_tz(name VARCHAR(64), lock_until TIMESTAMP WITH TIME ZONE, locked_at TIMESTAMP WITH TIME ZONE, locked_by  VARCHAR(255), PRIMARY KEY (name))");
-
-                JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
-                        .withJdbcTemplate(new JdbcTemplate(datasource))
-                        .withTableName("shedlock_tz")
-                        .withTimeZone(timezone)
-                        .withIsolationLevel(Connection.TRANSACTION_SERIALIZABLE)
-                        .build());
-
+                TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
+                // We have set UTC so the default local timezone is ignored
+                // https://github.com/lukas-krecan/ShedLock/issues/91
                 provider.lock(new LockConfiguration(now, "timezone_test", Duration.ofSeconds(10), Duration.ZERO));
-                new JdbcTemplate(datasource).query("SELECT * FROM shedlock_tz where name='timezone_test'", rs -> {
+
+                TimeZone.setDefault(utc);
+
+                new JdbcTemplate(datasource).query("SELECT * FROM shedlock where name='timezone_test'", rs -> {
                     Timestamp timestamp = rs.getTimestamp("lock_until");
-                    assertThat(timestamp.getTimezoneOffset()).isEqualTo(7 * 60);
                     assertThat(timestamp.toInstant()).isEqualTo(lockUntil);
                 });
             } finally {
                 TimeZone.setDefault(originalTimezone);
+                testUtils.clean();
             }
         }
     }

@@ -1,31 +1,18 @@
-/**
- * Copyright 2009 the original author or authors.
- *
- * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain a copy of the License at
- *
- * <p>http://www.apache.org/licenses/LICENSE-2.0
- *
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package net.javacrumbs.shedlock.provider.jdbctemplate;
+package net.javacrumbs.shedlock.provider.sql;
 
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 
-class HsqlServerTimeStatementsSource extends SqlStatementsSource {
+class H2ServerTimeStatementsSource extends SqlStatementsSource {
     private static final String now = "CURRENT_TIMESTAMP(3)";
     private static final String lockAtMostFor = "TIMESTAMPADD(MICROSECOND, :lockAtMostForMicros, " + now + ")";
 
-    HsqlServerTimeStatementsSource(JdbcTemplateLockProvider.Configuration configuration) {
+    H2ServerTimeStatementsSource(SqlConfiguration configuration) {
         super(configuration);
     }
 
     @Override
-    String getInsertStatement() {
+    public String getInsertStatement() {
         return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy()
                 + ") VALUES(:name, " + lockAtMostFor + ", " + now + ", :lockedBy)";
     }
@@ -51,7 +38,7 @@ class HsqlServerTimeStatementsSource extends SqlStatementsSource {
     }
 
     @Override
-    Map<String, Object> params(LockConfiguration lockConfiguration) {
+    public Map<String, Object> params(LockConfiguration lockConfiguration) {
         return Map.of(
                 "name",
                 lockConfiguration.getName(),
