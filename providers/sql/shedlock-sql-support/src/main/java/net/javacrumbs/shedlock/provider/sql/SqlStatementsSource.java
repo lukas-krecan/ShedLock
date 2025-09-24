@@ -1,19 +1,5 @@
-/**
- * Copyright 2009 the original author or authors.
- *
- * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain a copy of the License at
- *
- * <p>http://www.apache.org/licenses/LICENSE-2.0
- *
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package net.javacrumbs.shedlock.provider.jdbctemplate;
+package net.javacrumbs.shedlock.provider.sql;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
@@ -22,22 +8,20 @@ import java.util.Objects;
 import java.util.TimeZone;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.ConnectionCallback;
 
-class SqlStatementsSource {
-    protected final Configuration configuration;
+public class SqlStatementsSource {
+    protected final SqlConfiguration configuration;
 
     private static final Logger logger = LoggerFactory.getLogger(SqlStatementsSource.class);
 
-    SqlStatementsSource(Configuration configuration) {
+    SqlStatementsSource(SqlConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    static SqlStatementsSource create(Configuration configuration) {
-        DatabaseProduct databaseProduct = getDatabaseProduct(configuration);
+    public static SqlStatementsSource create(SqlConfiguration configuration) {
+        DatabaseProduct databaseProduct = configuration.getDatabaseProduct();
 
         if (configuration.getUseDbTime()) {
             var statementsSource = databaseProduct.getDbTimeStatementSource(configuration);
@@ -54,21 +38,7 @@ class SqlStatementsSource {
         }
     }
 
-    private static DatabaseProduct getDatabaseProduct(final Configuration configuration) {
-        if (configuration.getDatabaseProduct() != null) {
-            return configuration.getDatabaseProduct();
-        }
-        try {
-            String jdbcProductName = configuration.getJdbcTemplate().execute((ConnectionCallback<String>)
-                    connection -> connection.getMetaData().getDatabaseProductName());
-            return DatabaseProduct.matchProductName(jdbcProductName);
-        } catch (Exception e) {
-            logger.debug("Can not determine database product name {}", e.getMessage());
-            return DatabaseProduct.UNKNOWN;
-        }
-    }
-
-    Map<String, Object> params(LockConfiguration lockConfiguration) {
+    public Map<String, Object> params(LockConfiguration lockConfiguration) {
         return Map.of(
                 "name",
                 lockConfiguration.getName(),
@@ -83,18 +53,16 @@ class SqlStatementsSource {
     }
 
     private Object timestamp(Instant time) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(Date.from(time));
         TimeZone timeZone = configuration.getTimeZone();
-        if (timeZone == null) {
-            return Timestamp.from(time);
-        } else {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(Date.from(time));
+        if (timeZone != null) {
             calendar.setTimeZone(timeZone);
-            return calendar;
         }
+        return calendar;
     }
 
-    String getInsertStatement() {
+    public String getInsertStatement() {
         return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy()
                 + ") VALUES(:name, :lockUntil, :now, :lockedBy)";
     }
