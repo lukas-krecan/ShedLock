@@ -14,12 +14,17 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.provider.sql.SqlConfiguration.DEFAULT_TABLE_NAME;
 
 import java.util.TimeZone;
 import javax.sql.DataSource;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
+import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import net.javacrumbs.shedlock.support.Utils;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -41,8 +46,6 @@ import org.springframework.transaction.PlatformTransactionManager;
  * </ol>
  */
 public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
-
-    private static final String DEFAULT_TABLE_NAME = "shedlock";
 
     public JdbcTemplateLockProvider(JdbcTemplate jdbcTemplate) {
         this(jdbcTemplate, (PlatformTransactionManager) null);
@@ -78,32 +81,18 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         super(new JdbcTemplateStorageAccessor(configuration));
     }
 
-    public static final class Configuration {
+    public static final class Configuration extends SqlConfiguration {
         private final JdbcTemplate jdbcTemplate;
-
-        @Nullable
-        private final DatabaseProduct databaseProduct;
 
         @Nullable
         private final PlatformTransactionManager transactionManager;
 
-        private final String tableName;
-
-        @Nullable
-        private final TimeZone timeZone;
-
-        private final ColumnNames columnNames;
-        private final String lockedByValue;
-        private final boolean useDbTime;
-
-        @Nullable
-        private final Integer isolationLevel;
-
-        private final boolean throwUnexpectedException;
+        private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
         Configuration(
                 JdbcTemplate jdbcTemplate,
                 @Nullable DatabaseProduct databaseProduct,
+                boolean dbUpperCase,
                 @Nullable PlatformTransactionManager transactionManager,
                 String tableName,
                 @Nullable TimeZone timeZone,
@@ -113,19 +102,18 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 @Nullable Integer isolationLevel,
                 boolean throwUnexpectedException) {
 
+            super(
+                    databaseProduct,
+                    dbUpperCase,
+                    tableName,
+                    timeZone,
+                    columnNames,
+                    lockedByValue,
+                    useDbTime,
+                    isolationLevel,
+                    throwUnexpectedException);
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
-            this.databaseProduct = databaseProduct;
             this.transactionManager = transactionManager;
-            this.tableName = requireNonNull(tableName, "tableName can not be null");
-            this.timeZone = timeZone;
-            this.columnNames = requireNonNull(columnNames, "columnNames can not be null");
-            this.lockedByValue = requireNonNull(lockedByValue, "lockedByValue can not be null");
-            this.isolationLevel = isolationLevel;
-            if (useDbTime && timeZone != null) {
-                throw new IllegalArgumentException("Can not set both useDbTime and timeZone");
-            }
-            this.useDbTime = useDbTime;
-            this.throwUnexpectedException = throwUnexpectedException;
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -133,72 +121,38 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         }
 
         @Nullable
-        public DatabaseProduct getDatabaseProduct() {
-            return databaseProduct;
-        }
-
-        @Nullable
         public PlatformTransactionManager getTransactionManager() {
             return transactionManager;
         }
 
-        public String getTableName() {
-            return tableName;
-        }
+        @Override
+        public DatabaseProduct getDatabaseProduct() {
+            if (super.getDatabaseProduct() != null) {
+                return super.getDatabaseProduct();
+            }
 
-        @Nullable
-        public TimeZone getTimeZone() {
-            return timeZone;
-        }
-
-        public ColumnNames getColumnNames() {
-            return columnNames;
-        }
-
-        public String getLockedByValue() {
-            return lockedByValue;
-        }
-
-        public boolean getUseDbTime() {
-            return useDbTime;
-        }
-
-        @Nullable
-        public Integer getIsolationLevel() {
-            return isolationLevel;
-        }
-
-        public boolean isThrowUnexpectedException() {
-            return throwUnexpectedException;
+            try {
+                String jdbcProductName = getJdbcTemplate().execute((ConnectionCallback<String>)
+                        connection -> connection.getMetaData().getDatabaseProductName());
+                return DatabaseProduct.matchProductName(jdbcProductName);
+            } catch (Exception e) {
+                logger.debug("Can not determine database product name {}", e.getMessage());
+                return DatabaseProduct.UNKNOWN;
+            }
         }
 
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
 
-        public static final class Builder {
+        public static final class Builder extends SqlConfigurationBuilder<Builder> {
             private JdbcTemplate jdbcTemplate;
-
-            @Nullable
-            private DatabaseProduct databaseProduct;
 
             @Nullable
             private PlatformTransactionManager transactionManager;
 
-            private String tableName = DEFAULT_TABLE_NAME;
-
             @Nullable
             private TimeZone timeZone;
-
-            private String lockedByValue = Utils.getHostname();
-            private ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
-            private boolean dbUpperCase = false;
-            private boolean useDbTime = false;
-
-            @Nullable
-            private Integer isolationLevel;
-
-            private boolean throwUnexpectedException = false;
 
             public Builder withJdbcTemplate(JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
@@ -210,62 +164,22 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withTableName(String tableName) {
-                this.tableName = tableName;
-                return this;
-            }
-
+            /**
+             * @deprecated use forceUtcTimeZone()
+             */
+            @Deprecated(forRemoval = true)
             public Builder withTimeZone(TimeZone timeZone) {
                 this.timeZone = timeZone;
                 return this;
             }
 
-            public Builder withColumnNames(ColumnNames columnNames) {
-                this.columnNames = columnNames;
-                return this;
-            }
-
-            public Builder withDbUpperCase(final boolean dbUpperCase) {
-                this.dbUpperCase = dbUpperCase;
-                return this;
-            }
-
             /**
-             * This is only needed if your database product can't be automatically detected.
-             *
-             * @param databaseProduct
-             *            Database product
-             * @return ConfigurationBuilder
+             * Enforces UTC times. When the useDbTime() is not set, the timestamps are sent to the DB in the JVM default timezone.
+             * If your server is not in UTC and you are not using TIMEZONE WITH TIMESTAMP or an equivalent, the TZ information
+             * may be lost. For example in Postgres.
              */
-            public Builder withDatabaseProduct(final DatabaseProduct databaseProduct) {
-                this.databaseProduct = databaseProduct;
-                return this;
-            }
-
-            /**
-             * Value stored in 'locked_by' column. Please use only for debugging purposes.
-             */
-            public Builder withLockedByValue(String lockedBy) {
-                this.lockedByValue = lockedBy;
-                return this;
-            }
-
-            public Builder usingDbTime() {
-                this.useDbTime = true;
-                return this;
-            }
-
-            /**
-             * Sets the isolation level for ShedLock. See {@link java.sql.Connection} for
-             * constant definitions. for constant definitions
-             */
-            public Builder withIsolationLevel(int isolationLevel) {
-                this.isolationLevel = isolationLevel;
-                return this;
-            }
-
-            public Builder withThrowUnexpectedException(boolean throwUnexpectedException) {
-                this.throwUnexpectedException = throwUnexpectedException;
+            public Builder forceUtcTimeZone() {
+                this.timeZone = TimeZone.getTimeZone("UTC");
                 return this;
             }
 
@@ -273,10 +187,11 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return new JdbcTemplateLockProvider.Configuration(
                         jdbcTemplate,
                         databaseProduct,
+                        dbUpperCase,
                         transactionManager,
-                        dbUpperCase ? tableName.toUpperCase() : tableName,
+                        tableName,
                         timeZone,
-                        dbUpperCase ? columnNames.toUpperCase() : columnNames,
+                        columnNames,
                         lockedByValue,
                         useDbTime,
                         isolationLevel,
@@ -285,38 +200,9 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         }
     }
 
-    public static final class ColumnNames {
-        private final String name;
-        private final String lockUntil;
-        private final String lockedAt;
-        private final String lockedBy;
-
+    public static final class ColumnNames extends SqlConfiguration.ColumnNames {
         public ColumnNames(String name, String lockUntil, String lockedAt, String lockedBy) {
-            this.name = requireNonNull(name, "'name' column name can not be null");
-            this.lockUntil = requireNonNull(lockUntil, "'lockUntil' column name can not be null");
-            this.lockedAt = requireNonNull(lockedAt, "'lockedAt' column name can not be null");
-            this.lockedBy = requireNonNull(lockedBy, "'lockedBy' column name can not be null");
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getLockUntil() {
-            return lockUntil;
-        }
-
-        public String getLockedAt() {
-            return lockedAt;
-        }
-
-        public String getLockedBy() {
-            return lockedBy;
-        }
-
-        private ColumnNames toUpperCase() {
-            return new ColumnNames(
-                    name.toUpperCase(), lockUntil.toUpperCase(), lockedAt.toUpperCase(), lockedBy.toUpperCase());
+            super(name, lockUntil, lockedAt, lockedBy);
         }
     }
 }

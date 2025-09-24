@@ -11,6 +11,9 @@ module net.javacrumbs.shedlock.provider.jdbc.micronaut {
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.jdbc.internal;
     requires io.micronaut.data.micronaut_data_tx;
+    requires net.javacrumbs.shedlock.provider.sql;
+    requires org.slf4j;
+    requires org.jspecify;
 
     // Export the main provider package for public use
     exports net.javacrumbs.shedlock.provider.jdbc.micronaut;

@@ -9,6 +9,8 @@ module net.javacrumbs.shedlock.provider.jdbctemplate {
     requires net.javacrumbs.shedlock.core;
     requires spring.jdbc;
     requires spring.tx;
+    requires net.javacrumbs.shedlock.provider.sql;
+    requires org.slf4j;
 
     // Allow JDBC driver service loading
     uses java.sql.Driver;
