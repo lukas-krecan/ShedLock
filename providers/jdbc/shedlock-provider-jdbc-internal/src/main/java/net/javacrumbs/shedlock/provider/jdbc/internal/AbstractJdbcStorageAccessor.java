@@ -13,16 +13,13 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.internal;
 
-import static java.sql.Types.TIMESTAMP;
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.jdbc.internal.NamedSqlTranslator.translate;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.function.BiFunction;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -137,12 +134,13 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     private static void setParameters(PreparedStatement statement, List<Object> parameters) throws SQLException {
         for (int i = 0; i < parameters.size(); i++) {
             Object value = parameters.get(i);
-            if (value instanceof Calendar) {
-                // FIXME: Zones
-                value = new Timestamp(((Calendar) value).getTimeInMillis());
+            int paramIndex = i + 1;
+            if (value instanceof Calendar cal) {
+                statement.setTimestamp(
+                        paramIndex, new java.sql.Timestamp(cal.getTime().getTime()), cal);
+            } else {
+                statement.setObject(paramIndex, value);
             }
-            statement.setObject(i + 1, value);
-
         }
     }
 
