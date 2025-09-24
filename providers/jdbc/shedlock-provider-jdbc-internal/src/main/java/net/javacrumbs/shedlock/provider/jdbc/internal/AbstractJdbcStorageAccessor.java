@@ -95,7 +95,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
     @Override
     public void unlock(LockConfiguration lockConfiguration) {
         SqlStatementsSource sqlStatementsSource = sqlStatementsSource();
-        String sql = sqlStatementsSource.getUpdateStatement();
+        String sql = sqlStatementsSource.getUnlockStatement();
         SqlStatement sqlStatement = translate(sql, sqlStatementsSource.params(lockConfiguration));
 
         executeCommand(
