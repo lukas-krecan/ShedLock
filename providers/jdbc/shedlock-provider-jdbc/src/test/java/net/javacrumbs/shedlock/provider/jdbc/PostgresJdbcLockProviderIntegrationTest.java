@@ -38,7 +38,7 @@ public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
      * UTC timezone so it works well.
      */
     @Test
-    void shouldHonorTimezone() {
+    void shouldForceUtcTime() {
         Instant lockUntil = Instant.parse("2020-04-10T17:30:00Z");
         Instant now = lockUntil.minusSeconds(10);
 
@@ -47,10 +47,8 @@ public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
         jdbcTemplate.execute(dbConfig.getCreateTableStatement());
 
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-
         JdbcLockProvider provider = new JdbcLockProvider(JdbcLockProvider.Configuration.builder(datasource)
-                .withTimeZone(utc)
+                .forceUtcTimeZone()
                 .build());
 
         TimeZone originalTimezone = TimeZone.getDefault();
@@ -60,7 +58,7 @@ public class PostgresJdbcLockProviderIntegrationTest extends AbstractJdbcTest {
             // https://github.com/lukas-krecan/ShedLock/issues/91
             provider.lock(new LockConfiguration(now, "timezone_test", Duration.ofSeconds(10), Duration.ZERO));
 
-            TimeZone.setDefault(utc);
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
             new JdbcTemplate(datasource).query("SELECT * FROM shedlock where name='timezone_test'", rs -> {
                 Timestamp timestamp = rs.getTimestamp("lock_until");

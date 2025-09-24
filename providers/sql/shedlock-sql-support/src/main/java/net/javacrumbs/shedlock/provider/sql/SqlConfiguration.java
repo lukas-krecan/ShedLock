@@ -88,15 +88,12 @@ public abstract class SqlConfiguration {
         return throwUnexpectedException;
     }
 
-    public abstract static class SqlConfigurationBuilder<T extends SqlConfigurationBuilder> {
+    public abstract static class SqlConfigurationBuilder<T extends SqlConfigurationBuilder<T>> {
 
         @Nullable
         protected DatabaseProduct databaseProduct;
 
         protected String tableName = DEFAULT_TABLE_NAME;
-
-        @Nullable
-        protected TimeZone timeZone;
 
         protected String lockedByValue = Utils.getHostname();
         protected ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
@@ -110,11 +107,6 @@ public abstract class SqlConfiguration {
 
         public T withTableName(String tableName) {
             this.tableName = tableName;
-            return getThis();
-        }
-
-        public T withTimeZone(TimeZone timeZone) {
-            this.timeZone = timeZone;
             return getThis();
         }
 

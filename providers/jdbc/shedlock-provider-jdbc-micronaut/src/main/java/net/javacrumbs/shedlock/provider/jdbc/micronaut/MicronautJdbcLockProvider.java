@@ -20,7 +20,6 @@ import static net.javacrumbs.shedlock.provider.sql.SqlConfiguration.DEFAULT_TABL
 import io.micronaut.transaction.TransactionDefinition;
 import io.micronaut.transaction.TransactionOperations;
 import java.sql.Connection;
-import java.util.TimeZone;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -70,7 +69,6 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
                 TransactionOperations<Connection> transactionOperations,
                 @Nullable DatabaseProduct databaseProduct,
                 String tableName,
-                @Nullable TimeZone timeZone,
                 ColumnNames columnNames,
                 String lockedByValue,
                 boolean useDbTime,
@@ -80,7 +78,7 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
             super(
                     databaseProduct,
                     tableName,
-                    timeZone,
+                    null,
                     columnNames,
                     lockedByValue,
                     useDbTime,
@@ -127,7 +125,6 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
                         transactionOperations,
                         databaseProduct,
                         dbUpperCase ? tableName.toUpperCase() : tableName,
-                        timeZone,
                         dbUpperCase ? columnNames.toUpperCase() : columnNames,
                         lockedByValue,
                         useDbTime,

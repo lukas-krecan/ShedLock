@@ -65,7 +65,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
             TimeZone utc = TimeZone.getTimeZone("UTC");
             JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()
                     .withJdbcTemplate(new JdbcTemplate(datasource))
-                    .withTimeZone(utc)
+                    .forceUtcTimeZone()
                     .withIsolationLevel(Connection.TRANSACTION_SERIALIZABLE)
                     .build());
 

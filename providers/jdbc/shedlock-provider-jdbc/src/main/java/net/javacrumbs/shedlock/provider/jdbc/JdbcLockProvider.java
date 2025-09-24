@@ -64,7 +64,7 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
                 DataSource dataSource,
                 @Nullable DatabaseProduct databaseProduct,
                 String tableName,
-                @Nullable TimeZone timeZone,
+                boolean forceUtcTimeZone,
                 ColumnNames columnNames,
                 String lockedByValue,
                 boolean useDbTime,
@@ -74,7 +74,7 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
             super(
                     databaseProduct,
                     tableName,
-                    timeZone,
+                    forceUtcTimeZone ? TimeZone.getTimeZone("UTC") : null,
                     columnNames,
                     lockedByValue,
                     useDbTime,
@@ -109,6 +109,8 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
         public static final class Builder extends SqlConfigurationBuilder<Builder> {
             private final DataSource dataSource;
 
+            private boolean forceUtcTimeZone;
+
             public Builder(DataSource dataSource) {
                 this.dataSource = dataSource;
             }
@@ -118,12 +120,22 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
                         dataSource,
                         databaseProduct,
                         dbUpperCase ? tableName.toUpperCase() : tableName,
-                        timeZone,
+                        forceUtcTimeZone,
                         dbUpperCase ? columnNames.toUpperCase() : columnNames,
                         lockedByValue,
                         useDbTime,
                         isolationLevel,
                         throwUnexpectedException);
+            }
+
+            /**
+             * Enforces UTC times. When the useDbTime() is not set, the timestamps are sent to the DB in the JVM default timezone.
+             * If your server is not in UTC and you are not using TIMEZONE WITH TIMESTAMP or an equivalent, the TZ information
+             * may be lost. For example in Postgres.
+             */
+            public Builder forceUtcTimeZone() {
+                this.forceUtcTimeZone = true;
+                return this;
             }
         }
     }

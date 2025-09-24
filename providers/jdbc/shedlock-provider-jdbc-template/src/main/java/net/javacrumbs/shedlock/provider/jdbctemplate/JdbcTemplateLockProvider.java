@@ -149,6 +149,9 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             @Nullable
             private PlatformTransactionManager transactionManager;
 
+            @Nullable
+            private TimeZone timeZone;
+
             public Builder withJdbcTemplate(JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
                 return this;
@@ -156,6 +159,25 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
             public Builder withTransactionManager(@Nullable PlatformTransactionManager transactionManager) {
                 this.transactionManager = transactionManager;
+                return this;
+            }
+
+            /**
+             * @deprecated use forceUtcTimeZone()
+             */
+            @Deprecated(forRemoval = true)
+            public Builder withTimeZone(TimeZone timeZone) {
+                this.timeZone = timeZone;
+                return this;
+            }
+
+            /**
+             * Enforces UTC times. When the useDbTime() is not set, the timestamps are sent to the DB in the JVM default timezone.
+             * If your server is not in UTC and you are not using TIMEZONE WITH TIMESTAMP or an equivalent, the TZ information
+             * may be lost. For example in Postgres.
+             */
+            public Builder forceUtcTimeZone() {
+                this.timeZone = TimeZone.getTimeZone("UTC");
                 return this;
             }
 
