@@ -61,11 +61,13 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
 
             // Try to create the document if it doesn't exist
             Map<String, Object> lockData = getLockData(until);
+            log.debug("Inserting lock {}", docRef);
 
             return runTransaction(transaction -> {
                 DocumentSnapshot snapshot = transaction.get(docRef).get();
                 if (!snapshot.exists()) {
                     transaction.set(docRef, lockData);
+                    log.debug("Lock inserted {}", docRef);
                     return true;
                 }
                 return false;

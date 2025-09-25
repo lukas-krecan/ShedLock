@@ -26,4 +26,5 @@
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
+    <logger name="net.javacrumbs" level="DEBUG" />
 </configuration>
