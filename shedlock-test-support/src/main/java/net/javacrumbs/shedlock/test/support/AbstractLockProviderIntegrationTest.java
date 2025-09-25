@@ -26,7 +26,6 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractLockProviderIntegrationTest {
@@ -113,7 +112,6 @@ public abstract class AbstractLockProviderIntegrationTest {
     }
 
     @Test
-    @Disabled
     public void fuzzTestShouldPass() throws ExecutionException, InterruptedException {
         new FuzzTester(getLockProvider()).doFuzzTest();
     }
