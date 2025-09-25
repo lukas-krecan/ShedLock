@@ -43,12 +43,6 @@ class SpannerLockProviderIntegrationTest extends AbstractSpannerStorageBasedLock
         assertThat(lock.lockedBy()).isNotEmpty();
     }
 
-    @Disabled
-    @Override
-    public void fuzzTestShouldPass() {
-        // Spanner is failing with Transaction not found
-    }
-
     private SpannerStorageAccessor.Lock findLock(String lockName) {
         return nonTransactionFindLock(lockName).get();
     }
