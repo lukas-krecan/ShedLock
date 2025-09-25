@@ -38,9 +38,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                 boolean forceUtcTimeZone,
                 ColumnNames columnNames,
                 String lockedByValue,
-                boolean useDbTime,
-                @Nullable Integer isolationLevel,
-                boolean throwUnexpectedException) {
+                boolean useDbTime) {
             super(
                     databaseProduct,
                     dbUpperCase,
@@ -48,9 +46,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                     forceUtcTimeZone ? TimeZone.getTimeZone("UTC") : null,
                     columnNames,
                     lockedByValue,
-                    useDbTime,
-                    isolationLevel,
-                    throwUnexpectedException);
+                    useDbTime);
             this.pool = requireNonNull(pool, "pool can not be null");
         }
 
@@ -72,6 +68,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
 
             public Configuration build() {
                 // Default to PostgreSQL if not specified, since Vert.x Pool does not expose DB metadata
+                // FIXME
                 var dbProduct = databaseProduct != null ? databaseProduct : DatabaseProduct.POSTGRES_SQL;
                 return new Configuration(
                         pool,
@@ -81,9 +78,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                         forceUtcTimeZone,
                         columnNames,
                         lockedByValue,
-                        useDbTime,
-                        isolationLevel,
-                        throwUnexpectedException);
+                        useDbTime);
             }
 
             /**
