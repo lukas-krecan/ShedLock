@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>shedlock-parent</artifactId>
+        <groupId>net.javacrumbs.shedlock</groupId>
+        <version>6.10.1-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>shedlock-provider-vertx-sqlclient</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-sql-support</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-internal</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-sql-client</artifactId>
+            <version>4.5.10</version>
+        </dependency>
+
+        <!-- test -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-test-support-jdbc</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-pg-client</artifactId>
+            <version>4.5.10</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Needed for SCRAM-SHA authentication used by Postgres when connecting with Vert.x PgClient -->
+        <dependency>
+            <groupId>com.ongres.scram</groupId>
+            <artifactId>client</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ongres.scram</groupId>
+            <artifactId>common</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.ver}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
