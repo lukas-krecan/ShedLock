@@ -25,11 +25,6 @@ public abstract class SqlConfiguration {
     private final String lockedByValue;
     private final boolean useDbTime;
 
-    @Nullable
-    private final Integer isolationLevel;
-
-    private final boolean throwUnexpectedException;
-
     protected SqlConfiguration(
             @Nullable DatabaseProduct databaseProduct,
             boolean dbUpperCase,
@@ -37,9 +32,7 @@ public abstract class SqlConfiguration {
             @Nullable TimeZone timeZone,
             ColumnNames columnNames,
             String lockedByValue,
-            boolean useDbTime,
-            @Nullable Integer isolationLevel,
-            boolean throwUnexpectedException) {
+            boolean useDbTime) {
         this.databaseProduct = databaseProduct;
         requireNonNull(tableName, "tableName can not be null");
         this.tableName = dbUpperCase ? tableName.toUpperCase() : tableName;
@@ -47,12 +40,10 @@ public abstract class SqlConfiguration {
         requireNonNull(columnNames, "columnNames can not be null");
         this.columnNames = dbUpperCase ? columnNames.toUpperCase() : columnNames;
         this.lockedByValue = requireNonNull(lockedByValue, "lockedByValue can not be null");
-        this.isolationLevel = isolationLevel;
         if (useDbTime && timeZone != null) {
             throw new IllegalArgumentException("Can not set both useDbTime and timeZone");
         }
         this.useDbTime = useDbTime;
-        this.throwUnexpectedException = throwUnexpectedException;
     }
 
     @Nullable
@@ -81,15 +72,6 @@ public abstract class SqlConfiguration {
         return useDbTime;
     }
 
-    @Nullable
-    public Integer getIsolationLevel() {
-        return isolationLevel;
-    }
-
-    public boolean isThrowUnexpectedException() {
-        return throwUnexpectedException;
-    }
-
     public abstract static class SqlConfigurationBuilder<T extends SqlConfigurationBuilder<T>> {
 
         @Nullable
@@ -101,11 +83,6 @@ public abstract class SqlConfiguration {
         protected ColumnNames columnNames = new ColumnNames("name", "lock_until", "locked_at", "locked_by");
         protected boolean dbUpperCase = false;
         protected boolean useDbTime = false;
-
-        @Nullable
-        protected Integer isolationLevel;
-
-        protected boolean throwUnexpectedException = false;
 
         public T withTableName(String tableName) {
             this.tableName = tableName;
@@ -144,20 +121,6 @@ public abstract class SqlConfiguration {
 
         public T usingDbTime() {
             this.useDbTime = true;
-            return getThis();
-        }
-
-        /**
-         * Sets the isolation level for ShedLock. See {@link java.sql.Connection} for
-         * constant definitions. for constant definitions
-         */
-        public T withIsolationLevel(int isolationLevel) {
-            this.isolationLevel = isolationLevel;
-            return getThis();
-        }
-
-        public T withThrowUnexpectedException(boolean throwUnexpectedException) {
-            this.throwUnexpectedException = throwUnexpectedException;
             return getThis();
         }
 

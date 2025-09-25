@@ -68,9 +68,7 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
                 boolean forceUtcTimeZone,
                 ColumnNames columnNames,
                 String lockedByValue,
-                boolean useDbTime,
-                @Nullable Integer isolationLevel,
-                boolean throwUnexpectedException) {
+                boolean useDbTime) {
 
             super(
                     databaseProduct,
@@ -79,9 +77,7 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
                     forceUtcTimeZone ? TimeZone.getTimeZone("UTC") : null,
                     columnNames,
                     lockedByValue,
-                    useDbTime,
-                    isolationLevel,
-                    throwUnexpectedException);
+                    useDbTime);
             this.dataSource = requireNonNull(dataSource, "dataSource can not be null");
         }
 
@@ -126,9 +122,7 @@ public class JdbcLockProvider extends StorageBasedLockProvider {
                         forceUtcTimeZone,
                         columnNames,
                         lockedByValue,
-                        useDbTime,
-                        isolationLevel,
-                        throwUnexpectedException);
+                        useDbTime);
             }
 
             /**
