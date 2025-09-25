@@ -16,8 +16,6 @@ package net.javacrumbs.shedlock.provider.ignite;
 import static net.javacrumbs.shedlock.provider.ignite.IgniteLockProvider.DEFAULT_SHEDLOCK_CACHE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -39,19 +37,18 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
     private static IgniteServer node;
 
     @BeforeAll
-    public static void startIgnite() throws IOException, URISyntaxException {
-        node = IgniteServer.start(
-                "node",
-                Paths.get(Thread.currentThread()
-                        .getContextClassLoader()
-                        .getResource("ignite-config.conf")
-                        .toURI()),
-                Files.createTempDirectory("igniteWork").toAbsolutePath());
-
-        ignite = node.api();
-
-        // Create table if it doesn't exist
+    public static void startIgnite() {
         try {
+            node = IgniteServer.start(
+                    "node",
+                    Paths.get(Thread.currentThread()
+                            .getContextClassLoader()
+                            .getResource("ignite-config.conf")
+                            .toURI()),
+                    Files.createTempDirectory("igniteWork").toAbsolutePath());
+
+            ignite = node.api();
+
             table = ignite.tables().table(DEFAULT_SHEDLOCK_CACHE_NAME);
             if (table == null) {
                 ignite.sql()
@@ -66,14 +63,16 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
                 table = ignite.tables().table(DEFAULT_SHEDLOCK_CACHE_NAME);
             }
             keyValueView = table.keyValueView(String.class, LockValue.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize Ignite table", e);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to initialize Ignite", e);
         }
     }
 
     @AfterAll
     public static void stopIgnite() {
-        node.shutdown();
+        if (node != null) {
+            node.shutdown();
+        }
     }
 
     @BeforeEach
