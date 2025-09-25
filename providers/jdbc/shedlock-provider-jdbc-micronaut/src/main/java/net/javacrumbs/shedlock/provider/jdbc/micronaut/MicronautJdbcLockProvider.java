@@ -72,20 +72,9 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
                 String tableName,
                 ColumnNames columnNames,
                 String lockedByValue,
-                boolean useDbTime,
-                @Nullable Integer isolationLevel,
-                boolean throwUnexpectedException) {
+                boolean useDbTime) {
 
-            super(
-                    databaseProduct,
-                    dbUpperCase,
-                    tableName,
-                    null,
-                    columnNames,
-                    lockedByValue,
-                    useDbTime,
-                    isolationLevel,
-                    throwUnexpectedException);
+            super(databaseProduct, dbUpperCase, tableName, null, columnNames, lockedByValue, useDbTime);
             this.transactionOperations = requireNonNull(transactionOperations, "transactionOperations can not be null");
         }
 
@@ -130,9 +119,7 @@ public class MicronautJdbcLockProvider extends StorageBasedLockProvider {
                         tableName,
                         columnNames,
                         lockedByValue,
-                        useDbTime,
-                        isolationLevel,
-                        throwUnexpectedException);
+                        useDbTime);
             }
         }
     }
