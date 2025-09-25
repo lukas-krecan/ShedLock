@@ -17,11 +17,11 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.Utils;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatastoreStorageAccessor extends AbstractStorageAccessor {
+class DatastoreStorageAccessor extends AbstractStorageAccessor {
     private static final Logger log = LoggerFactory.getLogger(DatastoreStorageAccessor.class);
 
     private final Datastore datastore;
@@ -155,11 +155,13 @@ public class DatastoreStorageAccessor extends AbstractStorageAccessor {
     }
 
     private static Timestamp fromInstant(Instant instant) {
-        return Timestamp.of(java.sql.Timestamp.from(requireNonNull(instant)));
+        requireNonNull(instant);
+        return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
     }
 
     private static Instant toInstant(Timestamp timestamp) {
-        return requireNonNull(timestamp).toSqlTimestamp().toInstant();
+        requireNonNull(timestamp);
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
     public record Lock(

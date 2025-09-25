@@ -71,6 +71,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
+                            <!-- Not migrated to JPMS as firestore is a filename-based automodule -->
                             <Automatic-Module-Name>
                                 net.javacrumbs.shedlock.provider.firestore
                             </Automatic-Module-Name>

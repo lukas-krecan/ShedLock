@@ -65,6 +65,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
+                            <!-- Not migrated to JPMS as opensearch is a filename-based automodule -->
                             <Automatic-Module-Name>
                                 net.javacrumbs.shedlock.provider.opensearch.java
                             </Automatic-Module-Name>

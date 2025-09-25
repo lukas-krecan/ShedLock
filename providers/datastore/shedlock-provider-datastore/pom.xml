@@ -71,6 +71,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
+                            <!-- Not migrated to JPMS as datastore is a filename-based automodule -->
                             <Automatic-Module-Name>
                                 net.javacrumbs.shedlock.provider.datastore
                             </Automatic-Module-Name>

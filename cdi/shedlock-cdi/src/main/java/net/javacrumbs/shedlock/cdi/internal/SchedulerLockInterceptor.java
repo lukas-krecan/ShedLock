@@ -15,8 +15,8 @@ import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.jspecify.annotations.Nullable;
 
 @SchedulerLock(name = "?")
 @Priority(3001)

@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.concurrent.ScheduledFuture;
 import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockableRunnable;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;

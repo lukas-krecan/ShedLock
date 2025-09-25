@@ -63,6 +63,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
+                            <!-- Not migrated to JPMS as spanner is a filename-based automodule -->
                             <Automatic-Module-Name>
                                 net.javacrumbs.shedlock.provider.spanner
                             </Automatic-Module-Name>

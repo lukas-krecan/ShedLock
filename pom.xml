@@ -40,6 +40,7 @@
         <module>providers/etcd/shedlock-provider-etcd-jetcd</module>
         <module>providers/hazelcast/shedlock-provider-hazelcast4</module>
         <module>providers/jdbc/shedlock-test-support-jdbc</module>
+        <module>providers/sql/shedlock-sql-support</module>
         <module>providers/jdbc/shedlock-provider-jdbc-internal</module>
         <module>providers/jdbc/shedlock-provider-jdbc</module>
         <module>providers/jdbc/shedlock-provider-jooq</module>
@@ -49,9 +50,7 @@
         <module>providers/r2dbc/shedlock-provider-r2dbc</module>
         <module>providers/mongo/shedlock-provider-mongo</module>
         <module>providers/mongo/shedlock-provider-mongo-reactivestreams</module>
-        <module>providers/elasticsearch/shedlock-provider-elasticsearch8</module>
         <module>providers/elasticsearch/shedlock-provider-elasticsearch9</module>
-        <module>providers/opensearch/shedlock-provider-opensearch</module>
         <module>providers/opensearch/shedlock-provider-opensearch-java</module>
         <module>providers/couchbase/shedlock-provider-couchbase-javaclient3</module>
         <module>providers/zookeeper/shedlock-provider-zookeeper-curator</module>
@@ -62,7 +61,6 @@
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
-        <module>providers/consul/shedlock-provider-consul</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
         <module>providers/ignite/shedlock-provider-ignite</module>
         <module>providers/inmemory/shedlock-provider-inmemory</module>
@@ -70,7 +68,6 @@
         <module>providers/datastore/shedlock-provider-datastore</module>
         <module>providers/spanner/shedlock-provider-spanner</module>
         <module>providers/neo4j/shedlock-provider-neo4j</module>
-        <module>providers/s3/shedlock-provider-s3</module>
         <module>providers/s3/shedlock-provider-s3v2</module>
         <module>providers/firestore/shedlock-provider-firestore</module>
     </modules>
@@ -161,6 +158,7 @@
                 <version>3.12.0</version>
                 <configuration>
                     <failOnError>false</failOnError>
+                    <doclint>all,-missing</doclint>
                 </configuration>
                 <executions>
                     <execution>
@@ -217,6 +215,15 @@
             <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <dependencyManagement>
         <dependencies>

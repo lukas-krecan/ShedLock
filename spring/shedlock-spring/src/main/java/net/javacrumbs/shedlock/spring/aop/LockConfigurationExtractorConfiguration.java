@@ -15,7 +15,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import java.time.Duration;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
-import net.javacrumbs.shedlock.support.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;

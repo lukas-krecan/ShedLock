@@ -2,8 +2,8 @@ package net.javacrumbs.shedlock.provider.redis.testsupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import net.javacrumbs.shedlock.support.annotation.Nullable;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The fix for this use-case only exists in Redis LockProvider implementations.

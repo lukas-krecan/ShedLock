@@ -13,8 +13,6 @@
  */
 package net.javacrumbs.shedlock.provider.jdbc.micronaut;
 
-import static java.util.Objects.requireNonNull;
-
 import io.micronaut.transaction.TransactionDefinition;
 import io.micronaut.transaction.TransactionOperations;
 import java.sql.Connection;
@@ -22,15 +20,16 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.function.BiFunction;
 import net.javacrumbs.shedlock.provider.jdbc.internal.AbstractJdbcStorageAccessor;
+import net.javacrumbs.shedlock.provider.jdbc.micronaut.MicronautJdbcLockProvider.Configuration;
 
 class MicronautJdbcStorageAccessor extends AbstractJdbcStorageAccessor {
     private final TransactionOperations<Connection> transactionOperations;
 
     private final TransactionDefinition.Propagation propagation = TransactionDefinition.Propagation.REQUIRES_NEW;
 
-    MicronautJdbcStorageAccessor(TransactionOperations<Connection> transactionOperations, String tableName) {
-        super(tableName);
-        this.transactionOperations = requireNonNull(transactionOperations, "transactionManager can not be null");
+    MicronautJdbcStorageAccessor(Configuration configuration) {
+        super(configuration);
+        this.transactionOperations = configuration.getTransactionOperations();
     }
 
     @Override
