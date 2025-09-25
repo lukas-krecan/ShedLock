@@ -72,6 +72,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
 
             public Configuration build() {
                 // Default to PostgreSQL if not specified, since Vert.x Pool does not expose DB metadata
+                // FIXME
                 var dbProduct = databaseProduct != null ? databaseProduct : DatabaseProduct.POSTGRES_SQL;
                 return new Configuration(
                         pool,

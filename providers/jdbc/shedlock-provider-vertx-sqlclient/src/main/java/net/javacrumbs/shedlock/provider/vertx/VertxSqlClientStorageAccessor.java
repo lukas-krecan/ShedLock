@@ -76,6 +76,7 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     }
 
     private SqlStatementsSource sqlStatementsSource() {
+        // TODO: Simplify
         SqlStatementsSource local = sqlStatementsSource;
         if (local == null) {
             synchronized (this) {
@@ -106,11 +107,11 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private static Tuple toTuple(List<Object> params) {
+    private Tuple toTuple(List<Object> params) {
         Tuple t = Tuple.tuple();
         for (Object p : params) {
             if (p instanceof Calendar cal) {
-                OffsetDateTime odt = OffsetDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault());
+                OffsetDateTime odt = OffsetDateTime.ofInstant(cal.toInstant(), cal.getTimeZone().toZoneId());
                 t.addValue(odt);
             } else {
                 t.addValue(p);
