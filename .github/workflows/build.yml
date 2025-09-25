@@ -30,6 +30,8 @@ jobs:
           key: maven-full-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             maven-
+      - name: Run spotless check
+        run: ./mvnw spotless:check
       - name: Build with Maven
         env:
           # Kotlin needs access to java.util
