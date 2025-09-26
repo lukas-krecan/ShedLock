@@ -8,7 +8,6 @@
  * - Support utilities for building lock providers
  */
 module net.javacrumbs.shedlock.core {
-    requires java.base;
     requires transitive org.slf4j;
     requires transitive static org.jspecify;
 

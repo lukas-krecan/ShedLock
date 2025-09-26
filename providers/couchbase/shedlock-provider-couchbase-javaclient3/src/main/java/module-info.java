@@ -5,7 +5,6 @@
  * using the Couchbase Java Client 3.x library.
  */
 module net.javacrumbs.shedlock.provider.couchbase.javaclient3 {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires com.couchbase.client.java;
     requires com.couchbase.client.core;

@@ -5,7 +5,6 @@
  * using the Jedis Redis client library.
  */
 module net.javacrumbs.shedlock.provider.redis.jedis4 {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.redis.support;
     requires redis.clients.jedis;

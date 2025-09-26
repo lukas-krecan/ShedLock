@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import java.util.TimeZone;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -25,7 +24,7 @@ class JdbcTemplateLockProviderTest {
     @Test
     void shouldNotEnableBothTimezoneAndServerTime() {
         assertThatThrownBy(() -> JdbcTemplateLockProvider.Configuration.builder()
-                        .withTimeZone(TimeZone.getTimeZone("Europe/Prague"))
+                        .forceUtcTimeZone()
                         .withJdbcTemplate(mock(JdbcTemplate.class))
                         .usingDbTime()
                         .build())

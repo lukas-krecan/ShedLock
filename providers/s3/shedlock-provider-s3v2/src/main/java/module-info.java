@@ -5,7 +5,6 @@
  * using the AWS SDK for Java v2.
  */
 module net.javacrumbs.shedlock.provider.s3v2 {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires software.amazon.awssdk.services.s3;
     requires software.amazon.awssdk.core;

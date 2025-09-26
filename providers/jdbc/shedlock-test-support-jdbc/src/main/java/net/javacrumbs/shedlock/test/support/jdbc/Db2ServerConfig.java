@@ -20,7 +20,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public final class Db2ServerConfig extends AbstractDbConfig {
 
-    private Db2Container db2;
+    private Db2Container db2 = new Db2Container(DockerImageName.parse("icr.io/db2_community/db2")).acceptLicense();
     private static final Logger logger = LoggerFactory.getLogger(Db2ServerConfig.class);
 
     @Override

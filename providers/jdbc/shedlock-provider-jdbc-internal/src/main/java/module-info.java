@@ -5,16 +5,15 @@
  * that serves as a base for other JDBC providers.
  */
 module net.javacrumbs.shedlock.provider.jdbc.internal {
-    requires java.base;
     requires java.sql;
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.sql;
+    requires org.jspecify;
+    requires org.slf4j;
 
     // Allow JDBC driver service loading
     uses java.sql.Driver;
 
-    // Export provider packages only to other ShedLock modules
-    exports net.javacrumbs.shedlock.provider.jdbc.internal to
-            net.javacrumbs.shedlock.provider.jdbc,
-            net.javacrumbs.shedlock.provider.jdbc.micronaut;
+    // Export provider package
+    exports net.javacrumbs.shedlock.provider.jdbc.internal;
 }

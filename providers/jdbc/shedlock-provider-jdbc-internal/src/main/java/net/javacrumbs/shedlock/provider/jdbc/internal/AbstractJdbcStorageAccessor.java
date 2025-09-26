@@ -99,8 +99,8 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
                 sqlStatement.sql(),
                 statement -> {
                     setParameters(statement, sqlStatement.parameters());
-                    statement.executeUpdate();
-                    return null;
+                    int updated = statement.executeUpdate();
+                    return updated;
                 },
                 this::handleUnlockException);
     }
@@ -136,8 +136,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             Object value = parameters.get(i);
             int paramIndex = i + 1;
             if (value instanceof Calendar cal) {
-                statement.setTimestamp(
-                        paramIndex, new java.sql.Timestamp(cal.getTime().getTime()), cal);
+                statement.setTimestamp(paramIndex, new java.sql.Timestamp(cal.getTimeInMillis()), cal);
             } else {
                 statement.setObject(paramIndex, value);
             }

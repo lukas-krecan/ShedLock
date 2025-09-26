@@ -5,7 +5,6 @@
  * using AWS SDK v2.
  */
 module net.javacrumbs.shedlock.provider.dynamodb2 {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires software.amazon.awssdk.services.dynamodb;
     requires software.amazon.awssdk.core;

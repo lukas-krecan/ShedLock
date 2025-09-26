@@ -5,7 +5,6 @@
  * using the MongoDB Java driver.
  */
 module net.javacrumbs.shedlock.provider.mongo {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires org.mongodb.driver.sync.client;
     requires org.mongodb.bson;

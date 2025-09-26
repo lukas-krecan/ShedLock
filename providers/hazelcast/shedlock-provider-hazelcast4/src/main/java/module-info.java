@@ -5,7 +5,6 @@
  * using Hazelcast distributed data structures.
  */
 module net.javacrumbs.shedlock.provider.hazelcast4 {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires com.hazelcast.core;
 

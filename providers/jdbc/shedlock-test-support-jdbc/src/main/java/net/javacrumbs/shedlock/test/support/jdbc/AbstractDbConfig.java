@@ -31,7 +31,7 @@ abstract class AbstractDbConfig implements DbConfig {
         if (dataSource == null) {
             startDb();
         }
-        return dataSource;
+        return java.util.Objects.requireNonNull(dataSource, "DataSource not initialized");
     }
 
     @Override
@@ -51,7 +51,9 @@ abstract class AbstractDbConfig implements DbConfig {
 
     @Override
     public final void shutdownDb() {
-        dataSource.close();
+        if (dataSource != null) {
+            dataSource.close();
+        }
         doShutdownDb();
     }
 

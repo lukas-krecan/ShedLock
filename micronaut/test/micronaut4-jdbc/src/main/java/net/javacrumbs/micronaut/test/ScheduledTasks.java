@@ -17,7 +17,7 @@ import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 
 import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.javacrumbs.shedlock.micronaut.SchedulerLock;
 
@@ -30,7 +30,7 @@ public class ScheduledTasks {
     public void reportCurrentTime() {
         assertLocked();
         called.set(true);
-        System.out.println(new Date());
+        System.out.println(Instant.now());
     }
 
     boolean wasCalled() {

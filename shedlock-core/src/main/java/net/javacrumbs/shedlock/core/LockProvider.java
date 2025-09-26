@@ -19,6 +19,9 @@ import java.util.Optional;
 public interface LockProvider {
 
     /**
+     * Attempts to acquire a lock for the given configuration.
+     *
+     * @param lockConfiguration the lock configuration
      * @return If empty optional has been returned, lock could not be acquired. The
      *         lock has to be released by the callee.
      */

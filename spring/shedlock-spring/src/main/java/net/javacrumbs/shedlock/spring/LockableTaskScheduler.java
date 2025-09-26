@@ -30,6 +30,7 @@ import org.springframework.scheduling.Trigger;
  * Wraps a all tasks to {@link LockableRunnable} and delegates all calls to a
  * {@link TaskScheduler}.
  */
+@SuppressWarnings("deprecation")
 public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     private final TaskScheduler taskScheduler;
     private final LockManager lockManager;
