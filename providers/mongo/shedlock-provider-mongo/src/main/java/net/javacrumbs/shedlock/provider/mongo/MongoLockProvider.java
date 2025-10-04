@@ -21,6 +21,8 @@ import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
 import com.mongodb.MongoServerException;
+import com.mongodb.ReadConcern;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -104,6 +106,8 @@ public class MongoLockProvider implements ExtensibleLockProvider {
             // 3. The lock document exists and lockUtil > now - Duplicate key exception is
             // thrown
             getCollection()
+                .withReadConcern(ReadConcern.MAJORITY)
+                .withWriteConcern(WriteConcern.MAJORITY)
                     .findOneAndUpdate(
                             and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
                             update,
