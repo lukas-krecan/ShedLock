@@ -361,7 +361,7 @@ import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 
 @Bean
 public LockProvider lockProvider(MongoClient mongo) {
-    return new MongoLockProvider(mongo.getDatabase(databaseName))
+    return new MongoLockProvider(mongo.getDatabase(databaseName));
 }
 ```
 
@@ -388,7 +388,7 @@ import net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMon
 
 @Bean
 public LockProvider lockProvider(MongoClient mongo) {
-    return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(databaseName))
+    return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(databaseName));
 }
 ```
 
