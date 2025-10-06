@@ -106,8 +106,6 @@ public class MongoLockProvider implements ExtensibleLockProvider {
             // 3. The lock document exists and lockUtil > now - Duplicate key exception is
             // thrown
             getCollection()
-                    .withReadConcern(ReadConcern.MAJORITY)
-                    .withWriteConcern(WriteConcern.MAJORITY)
                     .findOneAndUpdate(
                             and(eq(ID, lockConfiguration.getName()), lte(LOCK_UNTIL, now)),
                             update,
@@ -147,7 +145,7 @@ public class MongoLockProvider implements ExtensibleLockProvider {
     }
 
     private MongoCollection<Document> getCollection() {
-        return collection;
+        return collection.withReadConcern(ReadConcern.MAJORITY).withWriteConcern(WriteConcern.MAJORITY);
     }
 
     private Instant now() {

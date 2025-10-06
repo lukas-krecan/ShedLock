@@ -21,6 +21,8 @@ import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
 import com.mongodb.MongoServerException;
+import com.mongodb.ReadConcern;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -165,7 +167,7 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
     }
 
     private MongoCollection<Document> getCollection() {
-        return collection;
+        return collection.withReadConcern(ReadConcern.MAJORITY).withWriteConcern(WriteConcern.MAJORITY);
     }
 
     private Instant now() {
