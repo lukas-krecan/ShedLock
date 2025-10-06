@@ -21,6 +21,8 @@ import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
 import com.mongodb.MongoServerException;
+import com.mongodb.ReadConcern;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -80,11 +82,14 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
 
     /** Uses Mongo to coordinate locks */
     public ReactiveStreamsMongoLockProvider(MongoDatabase mongoDatabase) {
-        this(mongoDatabase.getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME));
+        this(mongoDatabase
+                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
+                .withWriteConcern(WriteConcern.MAJORITY)
+                .withReadConcern(ReadConcern.MAJORITY));
     }
 
     /**
-     * Uses Mongo to coordinate locks
+     * Uses Mongo to coordinate locks. Please, make sure that the collection has WriteConcern.MAJORITY set.
      *
      * @param collection
      *            Mongo collection to be used
