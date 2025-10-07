@@ -140,10 +140,24 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.1</version>
                     <configuration>
-                        <source>${jdk.version}</source>
-                        <target>${jdk.version}</target>
-                        <encoding>UTF-8</encoding>
+                        <release>${jdk.version}</release>
+                        <fork>true</fork>
+                        <encoding>${project.build.sourceEncoding}</encoding>
                         <compilerArgs>
+                            <arg>-Werror</arg>
+                            <arg>-XDcompilePolicy=simple</arg>
+                            <arg>--should-stop=ifError=FLOW</arg>
+                            <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=net.javacrumbs.jsonunit -Xep:BadImport:OFF -Xep:ImmutableEnumChecker:OFF</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                             <arg>-parameters</arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
@@ -158,9 +172,14 @@
                                 <version>${micronaut4.validation.version}</version>
                             </path>
                             <path>
-                                <groupId>io.micronaut.data</groupId>
-                                <artifactId>micronaut-data-processor</artifactId>
-                                <version>${micronaut4-data.version}</version>
+                                <groupId>com.google.errorprone</groupId>
+                                <artifactId>error_prone_core</artifactId>
+                                <version>2.42.0</version>
+                            </path>
+                            <path>
+                                <groupId>com.uber.nullaway</groupId>
+                                <artifactId>nullaway</artifactId>
+                                <version>0.12.10</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
@@ -171,7 +190,23 @@
                                 <goal>testCompile</goal>
                             </goals>
                             <configuration>
+                                <release>${jdk.version}</release>
+                                <encoding>${project.build.sourceEncoding}</encoding>
                                 <compilerArgs>
+                                    <arg>-Werror</arg>
+                                    <arg>-XDcompilePolicy=simple</arg>
+                                    <arg>--should-stop=ifError=FLOW</arg>
+                                    <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=net.javacrumbs.jsonunit -Xep:BadImport:OFF -Xep:ImmutableEnumChecker:OFF</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                                    <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                                    <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                                    <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                                     <arg>-parameters</arg>
                                 </compilerArgs>
                                 <annotationProcessorPaths>
@@ -184,6 +219,16 @@
                                         <groupId>io.micronaut.validation</groupId>
                                         <artifactId>micronaut-validation</artifactId>
                                         <version>${micronaut4.validation.version}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>com.google.errorprone</groupId>
+                                        <artifactId>error_prone_core</artifactId>
+                                        <version>2.42.0</version>
+                                    </path>
+                                    <path>
+                                        <groupId>com.uber.nullaway</groupId>
+                                        <artifactId>nullaway</artifactId>
+                                        <version>0.12.10</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>
