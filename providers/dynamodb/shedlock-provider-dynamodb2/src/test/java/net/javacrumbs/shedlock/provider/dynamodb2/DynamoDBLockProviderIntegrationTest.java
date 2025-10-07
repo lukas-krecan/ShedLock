@@ -26,7 +26,6 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
 public class DynamoDBLockProviderIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
-    private static final String ID = "_id2";
 
     @BeforeAll
     static void createLockTable() {

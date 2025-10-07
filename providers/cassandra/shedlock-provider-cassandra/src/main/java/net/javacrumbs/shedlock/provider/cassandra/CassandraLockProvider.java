@@ -170,7 +170,12 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
 
             public CassandraLockProvider.Configuration build() {
                 return new CassandraLockProvider.Configuration(
-                        cqlSession, table, columnNames, consistencyLevel, serialConsistencyLevel, keyspace);
+                        requireNonNull(cqlSession, "cqlSession can not be null"),
+                        table,
+                        columnNames,
+                        consistencyLevel,
+                        serialConsistencyLevel,
+                        keyspace);
             }
         }
     }
