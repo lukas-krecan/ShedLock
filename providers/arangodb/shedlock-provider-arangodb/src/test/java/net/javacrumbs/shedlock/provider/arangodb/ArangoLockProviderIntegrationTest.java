@@ -72,8 +72,7 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
 
         if (arangoDatabase.getCollections().stream()
                 .anyMatch(collectionEntity -> collectionEntity.getName().equals(COLLECTION_NAME))) {
-            ArangoCollection collection = arangoDatabase.collection(COLLECTION_NAME);
-            collection.drop();
+            arangoDatabase.collection(COLLECTION_NAME).drop();
         }
     }
 
