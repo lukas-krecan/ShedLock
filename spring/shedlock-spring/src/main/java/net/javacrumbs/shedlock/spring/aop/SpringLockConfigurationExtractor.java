@@ -112,7 +112,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     @Override
     public Optional<LockConfiguration> getLockConfiguration(Object target, Method method, Object[] parameterValues) {
         AnnotationData annotation = findAnnotation(target, method);
-        if (shouldLock(annotation)) {
+        if (annotation != null && shouldLock(annotation)) {
             return Optional.of(getLockConfiguration(annotation, method, parameterValues));
         } else {
             return Optional.empty();

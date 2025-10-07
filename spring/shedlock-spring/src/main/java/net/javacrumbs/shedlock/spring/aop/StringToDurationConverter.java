@@ -29,10 +29,13 @@ package net.javacrumbs.shedlock.spring.aop;
  * limitations under the License.
  */
 
+import static java.util.Objects.requireNonNull;
+
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,8 +91,7 @@ class StringToDurationConverter implements Converter<String, Duration> {
     }
 
     private ChronoUnit getUnit(String value) {
-        ChronoUnit unit = UNITS.get(value.toLowerCase());
-        Assert.state(unit != null, "Unknown unit '" + value + "'");
-        return unit;
+        ChronoUnit unit = UNITS.get(value.toLowerCase(Locale.ROOT));
+        return requireNonNull(unit, "Unknown unit '" + value + "'");
     }
 }

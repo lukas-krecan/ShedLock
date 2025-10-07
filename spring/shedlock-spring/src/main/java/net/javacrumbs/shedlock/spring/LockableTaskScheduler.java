@@ -102,8 +102,8 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
 
     @Override
     public void destroy() throws Exception {
-        if (taskScheduler instanceof DisposableBean) {
-            ((DisposableBean) taskScheduler).destroy();
+        if (taskScheduler instanceof DisposableBean disposableBean) {
+            disposableBean.destroy();
         }
     }
 }
