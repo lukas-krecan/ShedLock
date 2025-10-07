@@ -8,7 +8,7 @@ module net.javacrumbs.shedlock.provider.jdbc {
     requires java.sql;
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.jdbc.internal;
-    requires org.jspecify;
+    requires static org.jspecify;
     requires org.slf4j;
     requires net.javacrumbs.shedlock.provider.sql;
 

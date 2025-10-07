@@ -9,7 +9,7 @@ module net.javacrumbs.shedlock.test.support {
     requires org.assertj.core;
     requires org.junit.jupiter.api;
     requires org.slf4j;
-    requires org.jspecify;
+    requires static org.jspecify;
 
     // Export test support packages
     exports net.javacrumbs.shedlock.test.support;
