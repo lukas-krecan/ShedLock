@@ -17,9 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.util.TimeZone;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import java.util.TimeZone;
 
 class JdbcTemplateLockProviderTest {
     @SuppressWarnings("removal")

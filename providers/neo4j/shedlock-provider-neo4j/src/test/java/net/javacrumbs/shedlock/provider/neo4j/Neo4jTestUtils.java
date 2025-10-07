@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -37,7 +38,7 @@ public final class Neo4jTestUtils {
     }
 
     public <T> T executeTransactionally(
-            String query, Map<String, Object> parameters, Function<Result, T> resultTransformer) {
+            String query, Map<String, Object> parameters, @Nullable Function<Result, T> resultTransformer) {
         T transformedResult = null;
         try (Session session = driver.session()) {
             Transaction transaction = session.beginTransaction();
