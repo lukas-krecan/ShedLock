@@ -13,11 +13,11 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
+import static java.util.Objects.requireNonNull;
+
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.jspecify.annotations.Nullable;
-
-import static java.util.Objects.requireNonNull;
 
 abstract class AbstractDbConfig implements DbConfig {
     @Nullable
