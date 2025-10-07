@@ -28,6 +28,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
@@ -73,8 +74,8 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     @Override
     protected void assertUnlocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        Instant lockUntil = ((Date) lockDocument.get(LOCK_UNTIL)).toInstant();
-        Instant lockedAt = ((Date) lockDocument.get(LOCKED_AT)).toInstant();
+        Instant lockUntil = ((Date) Objects.requireNonNull(lockDocument.get(LOCK_UNTIL))).toInstant();
+        Instant lockedAt = ((Date) Objects.requireNonNull(lockDocument.get(LOCKED_AT))).toInstant();
         assertThat(lockUntil).isBeforeOrEqualTo(now());
         assertThat(lockedAt).isBeforeOrEqualTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
@@ -87,8 +88,8 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     @Override
     protected void assertLocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        Instant lockUntil = ((Date) lockDocument.get(LOCK_UNTIL)).toInstant();
-        Instant lockedAt = ((Date) lockDocument.get(LOCKED_AT)).toInstant();
+        Instant lockUntil = ((Date) Objects.requireNonNull(lockDocument.get(LOCK_UNTIL))).toInstant();
+        Instant lockedAt = ((Date) Objects.requireNonNull(lockDocument.get(LOCKED_AT))).toInstant();
         assertThat(lockUntil).isAfter(now());
         assertThat(lockedAt).isBeforeOrEqualTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
