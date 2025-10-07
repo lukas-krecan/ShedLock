@@ -56,6 +56,7 @@ public class ArangoLockProvider implements LockProvider {
     /**
      * Instantiates a new Arango lock provider.
      *
+     * @param arangoDatabase
      *            the arango database
      */
     public ArangoLockProvider(ArangoDatabase arangoDatabase) {
@@ -65,6 +66,7 @@ public class ArangoLockProvider implements LockProvider {
     /**
      * Instantiates a new Arango lock provider.
      *
+     * @param arangoCollection
      *            the arango collection
      */
     public ArangoLockProvider(ArangoCollection arangoCollection) {
