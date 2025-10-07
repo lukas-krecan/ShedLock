@@ -122,8 +122,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     /**
      * Find existing row by primary key lock.name
      *
-     * @param name
-     *            lock name
+     * @param name lock name
      * @return optional lock row or empty
      */
     Optional<Lock> find(String name) {
@@ -149,10 +148,8 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     /**
      * Insert new lock row
      *
-     * @param name
-     *            lock name
-     * @param until
-     *            new until instant value
+     * @param name lock name
+     * @param until new until instant value
      */
     private boolean insert(String name, Instant until) {
         return execute(QueryBuilder.insertInto(keyspace, table)
@@ -167,10 +164,8 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     /**
      * Update existing lock row
      *
-     * @param name
-     *            lock name
-     * @param until
-     *            new until instant value
+     * @param name lock name
+     * @param until new until instant value
      */
     private boolean update(String name, Instant until) {
         return execute(QueryBuilder.update(keyspace, table)
@@ -187,10 +182,8 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     /**
      * Updates lock.until field where lockConfiguration.name
      *
-     * @param name
-     *            lock name
-     * @param until
-     *            new until instant value
+     * @param name lock name
+     * @param until new until instant value
      */
     private boolean updateUntil(String name, Instant until) {
         return execute(QueryBuilder.update(keyspace, table)

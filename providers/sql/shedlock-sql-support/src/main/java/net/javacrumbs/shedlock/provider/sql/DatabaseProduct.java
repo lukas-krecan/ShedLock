@@ -36,7 +36,6 @@ public enum DatabaseProduct {
      * Searches for the right DatabaseProduct based on the ProductName returned from
      * JDBC Connection Metadata
      *
-     * @param productName Obtained from the JDBC connection. See java.sql.connection.getMetaData().getProductName().
      * @return The matching ProductName enum
      */
     public static DatabaseProduct matchProductName(final String productName) {

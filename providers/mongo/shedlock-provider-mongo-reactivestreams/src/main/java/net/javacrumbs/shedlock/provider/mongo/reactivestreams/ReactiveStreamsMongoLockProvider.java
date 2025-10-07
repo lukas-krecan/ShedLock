@@ -154,8 +154,8 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
         subscriber.await();
         Throwable error = subscriber.getError();
         if (error != null) {
-            if (error instanceof RuntimeException) {
-                throw (RuntimeException) error;
+            if (error instanceof RuntimeException runtimeException) {
+                throw runtimeException;
             } else {
                 throw new LockException("Error when executing Mongo statement", error);
             }

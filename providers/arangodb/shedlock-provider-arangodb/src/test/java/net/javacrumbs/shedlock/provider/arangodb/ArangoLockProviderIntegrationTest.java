@@ -51,7 +51,7 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
 
     private static ArangoDB arango;
     private static ArangoDatabase arangoDatabase;
-    private static ArangoCollection arangoCollection;
+    private ArangoCollection arangoCollection;
 
     @BeforeAll
     static void beforeAll() {
@@ -72,8 +72,8 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
 
         if (arangoDatabase.getCollections().stream()
                 .anyMatch(collectionEntity -> collectionEntity.getName().equals(COLLECTION_NAME))) {
-            arangoCollection = arangoDatabase.collection(COLLECTION_NAME);
-            arangoCollection.drop();
+            ArangoCollection collection = arangoDatabase.collection(COLLECTION_NAME);
+            collection.drop();
         }
     }
 

@@ -115,6 +115,8 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         public static final class Builder {
             private CqlIdentifier table = CqlIdentifier.fromCql(DEFAULT_TABLE);
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
+
+            @Nullable
             private CqlSession cqlSession;
 
             @Nullable

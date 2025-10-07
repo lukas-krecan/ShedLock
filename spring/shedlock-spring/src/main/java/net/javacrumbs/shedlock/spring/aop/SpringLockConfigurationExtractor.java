@@ -243,18 +243,18 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     private static class SimpleParameterNameDiscoverer implements ParameterNameDiscoverer {
         @Override
         @Nullable
-        public String[] getParameterNames(Method method) {
+        public String @Nullable [] getParameterNames(Method method) {
             return getParameterNames(method.getParameters());
         }
 
         @Override
         @Nullable
-        public String[] getParameterNames(Constructor<?> ctor) {
+        public String @Nullable [] getParameterNames(Constructor<?> ctor) {
             return getParameterNames(ctor.getParameters());
         }
 
         @Nullable
-        private String[] getParameterNames(Parameter[] parameters) {
+        private String @Nullable [] getParameterNames(Parameter[] parameters) {
             String[] parameterNames = new String[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
                 Parameter param = parameters[i];

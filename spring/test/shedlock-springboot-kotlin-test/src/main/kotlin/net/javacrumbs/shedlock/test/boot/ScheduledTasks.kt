@@ -12,7 +12,7 @@
  */
 package net.javacrumbs.shedlock.test.boot
 
-import java.util.Date
+import java.time.Instant
 import net.javacrumbs.shedlock.core.LockAssert.assertLocked
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
@@ -24,6 +24,6 @@ class ScheduledTasks {
     @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "\${lock.at.most.for}")
     fun reportCurrentTime() {
         assertLocked()
-        println(Date())
+        println(Instant.now())
     }
 }
