@@ -5,7 +5,7 @@
  * using the Jedis Redis client library.
  */
 @SuppressWarnings("module")
-module net.javacrumbs.shedlock.provider.redis.jedis.v4 {
+module net.javacrumbs.shedlock.provider.redis.jedis4 {
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.redis.support;
     requires redis.clients.jedis;
