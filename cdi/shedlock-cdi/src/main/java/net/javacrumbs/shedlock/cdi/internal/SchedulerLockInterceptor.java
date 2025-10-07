@@ -32,10 +32,7 @@ public class SchedulerLockInterceptor {
         String lockAtLeastFor = getConfigValue("shedlock.defaults.lock-at-least-for");
         Objects.requireNonNull(lockAtMostFor, "shedlock.defaults.lock-at-most-for parameter is mandatory");
         this.lockConfigurationExtractor = new CdiLockConfigurationExtractor(
-                parseDuration(lockAtMostFor),
-                (lockAtLeastFor != null && !lockAtLeastFor.trim().isEmpty())
-                        ? parseDuration(lockAtLeastFor)
-                        : Duration.ZERO);
+                parseDuration(lockAtMostFor), lockAtLeastFor != null ? parseDuration(lockAtLeastFor) : Duration.ZERO);
     }
 
     @Nullable

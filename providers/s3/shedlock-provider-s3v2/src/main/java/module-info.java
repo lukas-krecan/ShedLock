@@ -4,6 +4,7 @@
  * This module provides AWS S3-based lock provider implementation
  * using the AWS SDK for Java v2.
  */
+@SuppressWarnings("module")
 module net.javacrumbs.shedlock.provider.s3v2 {
     requires net.javacrumbs.shedlock.core;
     requires software.amazon.awssdk.services.s3;

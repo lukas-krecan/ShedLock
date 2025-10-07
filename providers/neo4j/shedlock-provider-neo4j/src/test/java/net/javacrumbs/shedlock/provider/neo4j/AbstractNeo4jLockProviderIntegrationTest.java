@@ -14,6 +14,7 @@
 package net.javacrumbs.shedlock.provider.neo4j;
 
 import static java.lang.Thread.sleep;
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -182,7 +183,7 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
         return new Neo4jStorageAccessor(getNeo4jTestUtils().getDriver(), "shedlock", null);
     }
 
-    protected @Nullable LockInfo getLockInfo(String lockName) {
-        return getNeo4jTestUtils().getLockInfo(lockName);
+    protected LockInfo getLockInfo(String lockName) {
+        return requireNonNull(getNeo4jTestUtils().getLockInfo(lockName));
     }
 }

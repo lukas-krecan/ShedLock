@@ -18,6 +18,7 @@ import static java.util.Collections.singletonMap;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 import org.neo4j.driver.Driver;
@@ -37,7 +38,7 @@ public final class Neo4jTestUtils {
         executeTransactionally(query, new HashMap<>(), null);
     }
 
-    public @Nullable<T> T executeTransactionally(
+    public @Nullable <T> T executeTransactionally(
             String query, Map<String, Object> parameters, @Nullable Function<Result, T> resultTransformer) {
         try (Session session = driver.session()) {
             T transformedResult = null;
@@ -64,14 +65,14 @@ public final class Neo4jTestUtils {
 
     public @Nullable LockInfo getLockInfo(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
-        return executeTransactionally(
+        return Objects.requireNonNull(executeTransactionally(
                         "MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ",
                         parameters,
                         result -> result.stream()
                                 .findFirst()
                                 .map(it -> new LockInfo(
                                         it.get("lock.name").asString(),
-                                        Instant.parse(it.get("lock.lock_until").asString()))))
+                                        Instant.parse(it.get("lock.lock_until").asString())))))
                 .orElse(null);
     }
 
