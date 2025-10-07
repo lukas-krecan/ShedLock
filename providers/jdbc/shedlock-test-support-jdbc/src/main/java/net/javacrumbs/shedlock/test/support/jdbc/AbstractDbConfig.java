@@ -17,6 +17,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.jspecify.annotations.Nullable;
 
+import static java.util.Objects.requireNonNull;
+
 abstract class AbstractDbConfig implements DbConfig {
     @Nullable
     private HikariDataSource dataSource;
@@ -31,7 +33,7 @@ abstract class AbstractDbConfig implements DbConfig {
         if (dataSource == null) {
             startDb();
         }
-        return java.util.Objects.requireNonNull(dataSource, "DataSource not initialized");
+        return requireNonNull(dataSource, "DataSource not initialized");
     }
 
     @Override

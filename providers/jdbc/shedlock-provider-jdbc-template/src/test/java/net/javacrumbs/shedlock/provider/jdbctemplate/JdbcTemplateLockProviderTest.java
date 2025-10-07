@@ -19,12 +19,14 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.TimeZone;
 
 class JdbcTemplateLockProviderTest {
+    @SuppressWarnings("removal")
     @Test
     void shouldNotEnableBothTimezoneAndServerTime() {
         assertThatThrownBy(() -> JdbcTemplateLockProvider.Configuration.builder()
-                        .forceUtcTimeZone()
+                        .withTimeZone(TimeZone.getTimeZone("Europe/Prague"))
                         .withJdbcTemplate(mock(JdbcTemplate.class))
                         .usingDbTime()
                         .build())

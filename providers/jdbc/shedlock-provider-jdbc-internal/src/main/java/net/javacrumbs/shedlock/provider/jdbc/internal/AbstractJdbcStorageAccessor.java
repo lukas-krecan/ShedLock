@@ -99,8 +99,7 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
                 sqlStatement.sql(),
                 statement -> {
                     setParameters(statement, sqlStatement.parameters());
-                    int updated = statement.executeUpdate();
-                    return updated;
+                    return statement.executeUpdate();
                 },
                 this::handleUnlockException);
     }
