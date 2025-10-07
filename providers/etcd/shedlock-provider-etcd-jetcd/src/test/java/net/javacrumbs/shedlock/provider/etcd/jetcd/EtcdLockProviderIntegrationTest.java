@@ -13,6 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.etcd.jetcd;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -23,6 +24,7 @@ import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KV;
 import io.etcd.jetcd.launcher.Etcd;
 import io.etcd.jetcd.launcher.EtcdCluster;
+import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
@@ -58,8 +60,8 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     }
 
     @AfterEach
-    public void clear() {
-        kvClient.delete(buildKey(LOCK_NAME1));
+    public void clear() throws ExecutionException, InterruptedException {
+        kvClient.delete(buildKey(LOCK_NAME1)).get();
     }
 
     private void warmUpLeaseClient(Client client) {
@@ -104,7 +106,7 @@ public class EtcdLockProviderIntegrationTest extends AbstractLockProviderIntegra
     }
 
     private ByteSequence buildKey(String lockName) {
-        return ByteSequence.from(lockProvider.buildKey(lockName).getBytes());
+        return ByteSequence.from(lockProvider.buildKey(lockName).getBytes(UTF_8));
     }
 
     @Override
