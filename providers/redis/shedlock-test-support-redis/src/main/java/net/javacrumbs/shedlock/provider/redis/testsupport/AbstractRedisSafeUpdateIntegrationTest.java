@@ -28,7 +28,7 @@ public abstract class AbstractRedisSafeUpdateIntegrationTest extends AbstractRed
         SimpleLock lock1 = lock(ofSeconds(lockDurationSeconds));
         sleepFor(ofSeconds(lockDurationSeconds + 1));
         lock(ofSeconds(lockDurationSeconds));
-        lock1.extend(ofSeconds(lockDurationSeconds * 5), ZERO);
+        lock1.extend(ofSeconds(lockDurationSeconds * 5L), ZERO);
         sleepFor(ofSeconds(lockDurationSeconds + 1));
         assertUnlocked(LOCK_NAME1);
     }
