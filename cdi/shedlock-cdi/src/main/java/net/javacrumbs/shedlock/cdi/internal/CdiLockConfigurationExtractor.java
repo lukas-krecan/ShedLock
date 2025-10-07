@@ -56,7 +56,7 @@ class CdiLockConfigurationExtractor {
 
     private Duration getValue(String stringValueFromAnnotation, Duration defaultValue) {
         if (!stringValueFromAnnotation.isEmpty()) {
-            return requireNonNull(parseDuration(stringValueFromAnnotation));
+            return parseDuration(stringValueFromAnnotation);
         } else {
             return defaultValue;
         }
