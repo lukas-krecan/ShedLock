@@ -37,21 +37,21 @@ public final class Neo4jTestUtils {
         executeTransactionally(query, new HashMap<>(), null);
     }
 
-    public <T> T executeTransactionally(
+    public @Nullable<T> T executeTransactionally(
             String query, Map<String, Object> parameters, @Nullable Function<Result, T> resultTransformer) {
-        T transformedResult = null;
         try (Session session = driver.session()) {
+            T transformedResult = null;
             Transaction transaction = session.beginTransaction();
             Result result = transaction.run(query, parameters);
             if (resultTransformer != null) {
                 transformedResult = resultTransformer.apply(result);
             }
             transaction.commit();
+            return transformedResult;
         }
-        return transformedResult;
     }
 
-    public Instant getLockedUntil(String lockName) {
+    public @Nullable Instant getLockedUntil(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
         return executeTransactionally(
                 "MATCH (lock:shedlock) WHERE lock.name = $lockName return lock.lock_until",
@@ -62,7 +62,7 @@ public final class Neo4jTestUtils {
                         .orElse(null));
     }
 
-    public LockInfo getLockInfo(String lockName) {
+    public @Nullable LockInfo getLockInfo(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
         return executeTransactionally(
                         "MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ",

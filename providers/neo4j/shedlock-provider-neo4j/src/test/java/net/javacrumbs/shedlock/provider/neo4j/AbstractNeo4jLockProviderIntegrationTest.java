@@ -25,9 +25,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.neo4j.Neo4jTestUtils.LockInfo;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.FuzzTester;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.neo4j.driver.Session;
@@ -168,7 +170,7 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
         assertThat(getLockedUntil(OTHER_LOCK)).isEqualTo(otherLockLockedUntil);
     }
 
-    private Instant getLockedUntil(String lockName) {
+    private @Nullable Instant getLockedUntil(String lockName) {
         return getNeo4jTestUtils().getLockedUntil(lockName);
     }
 
@@ -180,7 +182,7 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
         return new Neo4jStorageAccessor(getNeo4jTestUtils().getDriver(), "shedlock", null);
     }
 
-    protected Neo4jTestUtils.LockInfo getLockInfo(String lockName) {
+    protected @Nullable LockInfo getLockInfo(String lockName) {
         return getNeo4jTestUtils().getLockInfo(lockName);
     }
 }
