@@ -4,7 +4,8 @@
  * This module provides Couchbase-based lock provider implementation
  * using the Couchbase Java Client 3.x library.
  */
-module net.javacrumbs.shedlock.provider.couchbase.javaclient3x {
+@SuppressWarnings("module")
+module net.javacrumbs.shedlock.provider.couchbase.javaclient3 {
     requires net.javacrumbs.shedlock.core;
     requires com.couchbase.client.java;
     requires com.couchbase.client.core;

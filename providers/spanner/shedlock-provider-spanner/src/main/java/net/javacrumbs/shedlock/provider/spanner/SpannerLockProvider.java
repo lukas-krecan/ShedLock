@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import com.google.cloud.spanner.DatabaseClient;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.support.Utils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A lock provider for Google Cloud Spanner.
