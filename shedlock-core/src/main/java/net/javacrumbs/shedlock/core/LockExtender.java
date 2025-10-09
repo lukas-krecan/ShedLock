@@ -1,15 +1,15 @@
 package net.javacrumbs.shedlock.core;
 
 import java.time.Duration;
+import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 public final class LockExtender {
     // Using deque here instead of a simple thread local to be able to handle nested
     // locks.
-    private static final ThreadLocal<Deque<SimpleLock>> activeLocks = ThreadLocal.withInitial(LinkedList::new);
+    private static final ThreadLocal<Deque<SimpleLock>> activeLocks = ThreadLocal.withInitial(ArrayDeque::new);
 
     private LockExtender() {}
 

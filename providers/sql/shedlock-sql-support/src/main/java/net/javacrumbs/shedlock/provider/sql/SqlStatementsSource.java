@@ -24,6 +24,9 @@ public class SqlStatementsSource {
         DatabaseProduct databaseProduct = configuration.getDatabaseProduct();
 
         if (configuration.getUseDbTime()) {
+            if (databaseProduct == null) {
+                throw new IllegalStateException("DatabaseProduct must be set when using DB time");
+            }
             var statementsSource = databaseProduct.getDbTimeStatementSource(configuration);
             logger.debug("Using {}", statementsSource.getClass().getSimpleName());
             return statementsSource;

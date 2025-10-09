@@ -115,6 +115,8 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         public static final class Builder {
             private CqlIdentifier table = CqlIdentifier.fromCql(DEFAULT_TABLE);
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
+
+            @Nullable
             private CqlSession cqlSession;
 
             @Nullable
@@ -168,7 +170,12 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
 
             public CassandraLockProvider.Configuration build() {
                 return new CassandraLockProvider.Configuration(
-                        cqlSession, table, columnNames, consistencyLevel, serialConsistencyLevel, keyspace);
+                        requireNonNull(cqlSession, "cqlSession can not be null"),
+                        table,
+                        columnNames,
+                        consistencyLevel,
+                        serialConsistencyLevel,
+                        keyspace);
             }
         }
     }

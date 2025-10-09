@@ -13,8 +13,8 @@
  */
 package net.javacrumbs.shedlock.core;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
 
 /**
  * Asserts lock presence. The Spring ecosystem is so complicated, so one can not
@@ -51,7 +51,7 @@ public final class LockAssert {
 
     private static Deque<String> activeLocks() {
         if (activeLocksTL.get() == null) {
-            activeLocksTL.set(new LinkedList<>());
+            activeLocksTL.set(new ArrayDeque<>());
         }
         return activeLocksTL.get();
     }

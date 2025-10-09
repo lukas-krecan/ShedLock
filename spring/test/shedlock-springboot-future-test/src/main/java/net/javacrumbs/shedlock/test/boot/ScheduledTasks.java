@@ -18,7 +18,7 @@ import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 import static net.javacrumbs.shedlock.core.LockExtender.extendActiveLock;
 
 import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -30,6 +30,6 @@ public class ScheduledTasks {
     public void reportCurrentTime() {
         assertLocked();
         extendActiveLock(Duration.ofMillis(5), ZERO);
-        System.out.println(new Date());
+        System.out.println(Instant.now());
     }
 }

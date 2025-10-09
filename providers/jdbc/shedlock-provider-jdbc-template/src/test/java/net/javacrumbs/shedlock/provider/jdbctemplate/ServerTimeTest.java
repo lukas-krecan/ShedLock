@@ -49,7 +49,7 @@ public interface ServerTimeTest {
                 .isBetween(atUtc(time.minusSeconds(10)), atUtc(time.plusSeconds(10)));
 
         time = Instant.now();
-        getLockProvider().lock(new LockConfiguration(now(), LOCK_NAME, Duration.ofSeconds(120), Duration.ZERO));
+        getLockProvider().lock(new LockConfiguration(now(), LOCK_NAME, Duration.ofMinutes(2), Duration.ZERO));
         assertThat(getTestUtils().getLockedUntil(LOCK_NAME).toLocalDateTime())
                 .isBetween(atUtc(time.plusSeconds(110)), atUtc(time.plusSeconds(130)));
     }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -127,78 +128,72 @@
                         <argument>-XX:TieredStopAtLevel=1</argument>
                         <argument>-Dcom.sun.management.jmxremote</argument>
                         <argument>-classpath</argument>
-                        <classpath />
+                        <classpath/>
                         <argument>${exec.mainClass}</argument>
                     </arguments>
                 </configuration>
             </plugin>
-        </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.1</version>
-                    <configuration>
-                        <source>${jdk.version}</source>
-                        <target>${jdk.version}</target>
-                        <encoding>UTF-8</encoding>
-                        <compilerArgs>
-                            <arg>-parameters</arg>
-                        </compilerArgs>
-                        <annotationProcessorPaths>
-                            <path>
-                                <groupId>io.micronaut</groupId>
-                                <artifactId>micronaut-inject-java</artifactId>
-                                <version>${micronaut4.version}</version>
-                            </path>
-                            <path>
-                                <groupId>io.micronaut.validation</groupId>
-                                <artifactId>micronaut-validation</artifactId>
-                                <version>${micronaut4.validation.version}</version>
-                            </path>
-                            <path>
-                                <groupId>io.micronaut.data</groupId>
-                                <artifactId>micronaut-data-processor</artifactId>
-                                <version>${micronaut4-data.version}</version>
-                            </path>
-                        </annotationProcessorPaths>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>test-compile</id>
-                            <goals>
-                                <goal>testCompile</goal>
-                            </goals>
-                            <configuration>
-                                <compilerArgs>
-                                    <arg>-parameters</arg>
-                                </compilerArgs>
-                                <annotationProcessorPaths>
-                                    <path>
-                                        <groupId>io.micronaut</groupId>
-                                        <artifactId>micronaut-inject-java</artifactId>
-                                        <version>${micronaut4.version}</version>
-                                    </path>
-                                    <path>
-                                        <groupId>io.micronaut.validation</groupId>
-                                        <artifactId>micronaut-validation</artifactId>
-                                        <version>${micronaut4.validation.version}</version>
-                                    </path>
-                                </annotationProcessorPaths>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <!-- ErrorProne seems to be incompatible with Micronaut annotation processor -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>io.micronaut</groupId>
+                            <artifactId>micronaut-inject-java</artifactId>
+                            <version>${micronaut4.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.micronaut.validation</groupId>
+                            <artifactId>micronaut-validation</artifactId>
+                            <version>${micronaut4.validation.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.micronaut.data</groupId>
+                            <artifactId>micronaut-data-processor</artifactId>
+                            <version>${micronaut4-data.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                            </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>io.micronaut</groupId>
+                                    <artifactId>micronaut-inject-java</artifactId>
+                                    <version>${micronaut4.version}</version>
+                                </path>
+                                <path>
+                                    <groupId>io.micronaut.validation</groupId>
+                                    <artifactId>micronaut-validation</artifactId>
+                                    <version>${micronaut4.validation.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

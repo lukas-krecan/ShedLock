@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.cloud.firestore.Firestore;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.jspecify.annotations.Nullable;
 
 public class FirestoreLockProvider extends StorageBasedLockProvider {
 
@@ -46,7 +47,7 @@ public class FirestoreLockProvider extends StorageBasedLockProvider {
         public static final class Builder {
             private String collectionName = "shedlock";
             private FieldNames fieldNames = new FieldNames("lockUntil", "lockedAt", "lockedBy");
-            private Firestore firestore;
+            private @Nullable Firestore firestore;
 
             public Builder withCollectionName(String collectionName) {
                 this.collectionName = collectionName;
@@ -64,7 +65,8 @@ public class FirestoreLockProvider extends StorageBasedLockProvider {
             }
 
             public Configuration build() {
-                return new Configuration(this.collectionName, this.fieldNames, this.firestore);
+                return new Configuration(
+                        this.collectionName, this.fieldNames, requireNonNull(this.firestore, "firestore is required"));
             }
         }
     }

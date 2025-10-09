@@ -18,7 +18,9 @@ import static java.util.Collections.singletonMap;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Result;
 import org.neo4j.driver.Session;
@@ -36,21 +38,21 @@ public final class Neo4jTestUtils {
         executeTransactionally(query, new HashMap<>(), null);
     }
 
-    public <T> T executeTransactionally(
-            String query, Map<String, Object> parameters, Function<Result, T> resultTransformer) {
-        T transformedResult = null;
+    public @Nullable <T> T executeTransactionally(
+            String query, Map<String, Object> parameters, @Nullable Function<Result, T> resultTransformer) {
         try (Session session = driver.session()) {
+            T transformedResult = null;
             Transaction transaction = session.beginTransaction();
             Result result = transaction.run(query, parameters);
             if (resultTransformer != null) {
                 transformedResult = resultTransformer.apply(result);
             }
             transaction.commit();
+            return transformedResult;
         }
-        return transformedResult;
     }
 
-    public Instant getLockedUntil(String lockName) {
+    public @Nullable Instant getLockedUntil(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
         return executeTransactionally(
                 "MATCH (lock:shedlock) WHERE lock.name = $lockName return lock.lock_until",
@@ -61,16 +63,16 @@ public final class Neo4jTestUtils {
                         .orElse(null));
     }
 
-    public LockInfo getLockInfo(String lockName) {
+    public @Nullable LockInfo getLockInfo(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
-        return executeTransactionally(
+        return Objects.requireNonNull(executeTransactionally(
                         "MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ",
                         parameters,
                         result -> result.stream()
                                 .findFirst()
                                 .map(it -> new LockInfo(
                                         it.get("lock.name").asString(),
-                                        Instant.parse(it.get("lock.lock_until").asString()))))
+                                        Instant.parse(it.get("lock.lock_until").asString())))))
                 .orElse(null);
     }
 

@@ -31,7 +31,10 @@ import org.junit.jupiter.api.Test;
 class StorageBasedLockProviderTest {
     private static final LockConfiguration LOCK_CONFIGURATION =
             new LockConfiguration(now(), "name", Duration.of(5, ChronoUnit.MINUTES), Duration.ZERO);
-    private static final LockException LOCK_EXCEPTION = new LockException("Test");
+
+    private static LockException lockException() {
+        return new LockException("Test");
+    }
 
     private final StorageAccessor storageAccessor = mock(StorageAccessor.class);
 
@@ -75,23 +78,26 @@ class StorageBasedLockProviderTest {
 
     @Test
     void shouldRethrowExceptionFromInsert() {
-        when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
-        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+        LockException ex = lockException();
+        when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenThrow(ex);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(ex);
     }
 
     @Test
     void shouldRethrowExceptionFromUpdate() {
         when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
-        when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
-        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+        LockException ex = lockException();
+        when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(ex);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(ex);
     }
 
     @Test
     void shouldNotCacheRecordIfUpdateFailed() {
         when(storageAccessor.insertRecord(LOCK_CONFIGURATION)).thenReturn(false);
-        when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(LOCK_EXCEPTION);
-        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
-        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(LOCK_EXCEPTION);
+        LockException ex = lockException();
+        when(storageAccessor.updateRecord(LOCK_CONFIGURATION)).thenThrow(ex);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(ex);
+        assertThatThrownBy(() -> lockProvider.lock(LOCK_CONFIGURATION)).isSameAs(ex);
         verify(storageAccessor, times(2)).insertRecord(LOCK_CONFIGURATION);
     }
 }

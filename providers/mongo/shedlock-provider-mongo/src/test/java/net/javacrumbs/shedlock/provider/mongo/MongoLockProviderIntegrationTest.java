@@ -26,7 +26,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
+import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
@@ -72,20 +74,24 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
     @Override
     protected void assertUnlocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isBeforeOrEqualTo(now());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualTo(now());
+        Instant lockUntil = ((Date) Objects.requireNonNull(lockDocument.get(LOCK_UNTIL))).toInstant();
+        Instant lockedAt = ((Date) Objects.requireNonNull(lockDocument.get(LOCKED_AT))).toInstant();
+        assertThat(lockUntil).isBeforeOrEqualTo(now());
+        assertThat(lockedAt).isBeforeOrEqualTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 
-    private Date now() {
-        return new Date();
+    private Instant now() {
+        return Instant.now();
     }
 
     @Override
     protected void assertLocked(String lockName) {
         Document lockDocument = getLockDocument(lockName);
-        assertThat((Date) lockDocument.get(LOCK_UNTIL)).isAfter(now());
-        assertThat((Date) lockDocument.get(LOCKED_AT)).isBeforeOrEqualTo(now());
+        Instant lockUntil = ((Date) Objects.requireNonNull(lockDocument.get(LOCK_UNTIL))).toInstant();
+        Instant lockedAt = ((Date) Objects.requireNonNull(lockDocument.get(LOCKED_AT))).toInstant();
+        assertThat(lockUntil).isAfter(now());
+        assertThat(lockedAt).isBeforeOrEqualTo(now());
         assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
     }
 

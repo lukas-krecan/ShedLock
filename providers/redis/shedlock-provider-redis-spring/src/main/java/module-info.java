@@ -5,7 +5,6 @@
  * using Spring Data Redis.
  */
 module net.javacrumbs.shedlock.provider.redis.spring {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.redis.support;
     requires spring.data.redis;

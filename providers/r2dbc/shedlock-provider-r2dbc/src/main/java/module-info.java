@@ -5,7 +5,6 @@
  * using reactive database connectivity.
  */
 module net.javacrumbs.shedlock.provider.r2dbc {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires r2dbc.spi;
     requires reactor.core;

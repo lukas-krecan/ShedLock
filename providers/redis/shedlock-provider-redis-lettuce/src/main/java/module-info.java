@@ -5,7 +5,6 @@
  * using the Lettuce Redis client library.
  */
 module net.javacrumbs.shedlock.provider.redis.lettuce {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.redis.support;
     requires lettuce.core;

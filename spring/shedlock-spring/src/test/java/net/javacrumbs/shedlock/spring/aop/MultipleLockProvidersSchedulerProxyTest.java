@@ -30,6 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = MultipleLockProvidersSchedulerProxyTest.SchedulerWrapperConfig.class)
 @LockProviderToUse("lockProvider")
+@SuppressWarnings("removal")
 public class MultipleLockProvidersSchedulerProxyTest extends AbstractSchedulerProxyTest {
 
     @Override

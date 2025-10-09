@@ -13,6 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.elasticsearch9;
 
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCK_UNTIL;
@@ -25,7 +26,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import java.io.IOException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -66,14 +67,18 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
                 GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
         try {
             GetResponse<Map> response = client.get(request, Map.class);
-            Map source = response.source();
-            assertThat(new Date((Long) source.get(LOCK_UNTIL))).isBeforeOrEqualTo(now());
-            assertThat(new Date((Long) source.get(LOCKED_AT))).isBeforeOrEqualTo(now());
+            Map source = requireNonNull(response.source());
+            assertThat(getInstant(source, LOCK_UNTIL)).isBeforeOrEqualTo(now());
+            assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
             assertThat((String) source.get(LOCKED_BY)).isNotBlank();
             assertThat((String) source.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded ES failed.");
         }
+    }
+
+    private static Instant getInstant(Map source, String key) {
+        return Instant.ofEpochMilli((Long) requireNonNull(source.get(key)));
     }
 
     @Override
@@ -82,9 +87,9 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
                 GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
         try {
             GetResponse<Map> response = client.get(request, Map.class);
-            Map source = response.source();
-            assertThat(new Date((Long) source.get(LOCK_UNTIL))).isAfter(now());
-            assertThat(new Date((Long) source.get(LOCKED_AT))).isBeforeOrEqualTo(now());
+            Map source = requireNonNull(response.source());
+            assertThat(getInstant(source, LOCK_UNTIL)).isAfter(now());
+            assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
             assertThat((String) source.get(LOCKED_BY)).isNotBlank();
             assertThat((String) source.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
@@ -92,7 +97,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         }
     }
 
-    private Date now() {
-        return new Date();
+    private Instant now() {
+        return Instant.now();
     }
 }

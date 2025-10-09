@@ -126,6 +126,8 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         }
 
         /**
+         * When enabled, the lock will not be released or extended when the lock is held by somebody else.
+         *
          * @param safeUpdate When set to true and the lock is held for more than lockAtMostFor, and the lock
          *                  is already held by somebody else, we don't release/extend the lock.
          */
@@ -152,22 +154,20 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         }
 
         private boolean set(String key, String value, long expirationMs, RedisStringCommands.SetOption setOption) {
-            return TRUE
-                    == template.execute(
-                            connection -> {
-                                byte[] serializedKey =
-                                        ((RedisSerializer<String>) template.getKeySerializer()).serialize(key);
-                                byte[] serializedValue =
-                                        ((RedisSerializer<String>) template.getValueSerializer()).serialize(value);
-                                return connection
-                                        .stringCommands()
-                                        .set(
-                                                serializedKey,
-                                                serializedValue,
-                                                Expiration.from(expirationMs, TimeUnit.MILLISECONDS),
-                                                setOption);
-                            },
-                            false);
+            return TRUE.equals(template.execute(
+                    connection -> {
+                        byte[] serializedKey = ((RedisSerializer<String>) template.getKeySerializer()).serialize(key);
+                        byte[] serializedValue =
+                                ((RedisSerializer<String>) template.getValueSerializer()).serialize(value);
+                        return connection
+                                .stringCommands()
+                                .set(
+                                        serializedKey,
+                                        serializedValue,
+                                        Expiration.from(expirationMs, TimeUnit.MILLISECONDS),
+                                        setOption);
+                    },
+                    false));
         }
 
         @Override

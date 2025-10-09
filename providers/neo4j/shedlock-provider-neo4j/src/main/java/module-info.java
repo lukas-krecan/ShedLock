@@ -5,7 +5,6 @@
  * using the Neo4j Java driver.
  */
 module net.javacrumbs.shedlock.provider.neo4j {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires org.neo4j.driver;
 

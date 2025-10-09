@@ -21,11 +21,11 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @SpringBootTest
 class IntegrationTest {
-    @MockBean private lateinit var lockProvider: LockProvider
+    @MockitoBean private lateinit var lockProvider: LockProvider
 
     @Test
     fun testScheduler() {

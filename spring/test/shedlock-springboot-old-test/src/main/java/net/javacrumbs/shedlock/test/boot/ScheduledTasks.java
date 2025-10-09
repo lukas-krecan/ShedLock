@@ -15,7 +15,7 @@ package net.javacrumbs.shedlock.test.boot;
 
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 
-import java.util.Date;
+import java.time.Instant;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -26,6 +26,6 @@ public class ScheduledTasks {
     @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "${lock.at.most.for}")
     public void reportCurrentTime() {
         assertLocked();
-        System.out.println(new Date());
+        System.out.println(Instant.now());
     }
 }

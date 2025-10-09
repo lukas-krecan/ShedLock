@@ -5,7 +5,6 @@
  * for testing and single-instance applications.
  */
 module net.javacrumbs.shedlock.provider.inmemory {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
 
     // Export provider packages

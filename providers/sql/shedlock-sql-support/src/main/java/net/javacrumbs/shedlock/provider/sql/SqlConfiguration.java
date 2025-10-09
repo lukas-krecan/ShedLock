@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Provider-agnostic configuration contract for SQL statement generation.
  */
+@SuppressWarnings("StringCaseLocaleUsage")
 public abstract class SqlConfiguration {
 
     public static final String DEFAULT_TABLE_NAME = "shedlock";

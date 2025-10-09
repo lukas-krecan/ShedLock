@@ -112,20 +112,18 @@ public class ReactiveRedisLockProvider implements LockProvider {
 
         @Override
         public boolean setIfAbsent(String key, String value, long expirationMs) {
-            return TRUE
-                    == redisTemplate
-                            .opsForValue()
-                            .setIfAbsent(key, value, Duration.ofMillis(expirationMs))
-                            .block();
+            return TRUE.equals(redisTemplate
+                    .opsForValue()
+                    .setIfAbsent(key, value, Duration.ofMillis(expirationMs))
+                    .block());
         }
 
         @Override
         public boolean setIfPresent(String key, String value, long expirationMs) {
-            return TRUE
-                    == redisTemplate
-                            .opsForValue()
-                            .setIfPresent(key, value, Duration.ofMillis(expirationMs))
-                            .block();
+            return TRUE.equals(redisTemplate
+                    .opsForValue()
+                    .setIfPresent(key, value, Duration.ofMillis(expirationMs))
+                    .block());
         }
 
         @Override

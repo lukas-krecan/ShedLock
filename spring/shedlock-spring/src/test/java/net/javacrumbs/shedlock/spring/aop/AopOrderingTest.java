@@ -69,7 +69,7 @@ public class AopOrderingTest {
     void shouldCallAspectsInTheRightOrder() {
         testBean.normalMethod();
         assertThat(aspectsCalled).containsExactly("first", "last");
-        assertThat(testBean.wasMethodCalled());
+        assertThat(testBean.wasMethodCalled()).isTrue();
     }
 
     @Configuration

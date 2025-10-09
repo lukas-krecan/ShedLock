@@ -13,13 +13,16 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import static java.util.Objects.requireNonNull;
+
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
 abstract class AbstractLockConfiguration implements ImportAware {
-    protected AnnotationAttributes annotationAttributes;
+    protected @Nullable AnnotationAttributes annotationAttributes;
 
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
@@ -32,6 +35,6 @@ abstract class AbstractLockConfiguration implements ImportAware {
     }
 
     protected int getOrder() {
-        return annotationAttributes.getNumber("order");
+        return requireNonNull(annotationAttributes).getNumber("order");
     }
 }

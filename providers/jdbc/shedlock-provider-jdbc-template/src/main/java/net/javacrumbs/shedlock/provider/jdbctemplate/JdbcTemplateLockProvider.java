@@ -152,6 +152,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         }
 
         public static final class Builder extends SqlConfigurationBuilder<Builder> {
+            @Nullable
             private JdbcTemplate jdbcTemplate;
 
             @Nullable
@@ -210,7 +211,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
             public JdbcTemplateLockProvider.Configuration build() {
                 return new JdbcTemplateLockProvider.Configuration(
-                        jdbcTemplate,
+                        requireNonNull(jdbcTemplate, "jdbcTemplate can not be null"),
                         databaseProduct,
                         dbUpperCase,
                         transactionManager,

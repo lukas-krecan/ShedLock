@@ -7,6 +7,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 /*
  * Just to make the build to pass
  */
+@SuppressWarnings("DefaultPackage")
 public class QuarkusProdConfig {
     @Produces
     @Singleton

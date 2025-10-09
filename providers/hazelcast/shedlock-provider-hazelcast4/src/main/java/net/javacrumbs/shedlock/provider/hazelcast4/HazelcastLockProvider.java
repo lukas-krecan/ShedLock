@@ -139,7 +139,7 @@ public class HazelcastLockProvider implements LockProvider {
     private boolean tryLock(LockConfiguration lockConfiguration) {
         String lockName = lockConfiguration.getName();
         HazelcastLock lock = getLock(lockName);
-        if (isUnlocked(lock)) {
+        if (lock == null) {
             log.debug("lock - lock obtained, it wasn't locked : conf={}", lockConfiguration);
             addNewLock(lockConfiguration);
             return true;
@@ -182,10 +182,6 @@ public class HazelcastLockProvider implements LockProvider {
         addNewLock(lockConfiguration);
     }
 
-    private boolean isUnlocked(@Nullable HazelcastLock lock) {
-        return lock == null;
-    }
-
     /**
      * Unlock the lock with its name. Don't use unless you know what you are doing, unlocking a lock held by an active
      * task may result in multiple concurrent task executions.
@@ -207,7 +203,7 @@ public class HazelcastLockProvider implements LockProvider {
     }
 
     private void unlockProperly(@Nullable HazelcastLock lock) {
-        if (isUnlocked(lock)) {
+        if (lock == null) {
             log.debug("unlock - it is already unlocked");
             return;
         }

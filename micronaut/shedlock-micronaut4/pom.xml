@@ -92,13 +92,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <source>${jdk.version}</source>
-                        <target>${jdk.version}</target>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                        <compilerArgs>
+                        <compilerArgs combine.children="append">
                             <arg>-parameters</arg>
                         </compilerArgs>
-                        <annotationProcessorPaths>
+                        <annotationProcessorPaths combine.children="append">
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
