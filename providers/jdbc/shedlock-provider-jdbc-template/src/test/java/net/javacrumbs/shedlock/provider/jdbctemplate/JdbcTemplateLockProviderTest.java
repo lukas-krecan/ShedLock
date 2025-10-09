@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 class JdbcTemplateLockProviderTest {
+    @SuppressWarnings("removal")
     @Test
     void shouldNotEnableBothTimezoneAndServerTime() {
         assertThatThrownBy(() -> JdbcTemplateLockProvider.Configuration.builder()

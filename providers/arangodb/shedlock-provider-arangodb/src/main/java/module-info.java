@@ -5,7 +5,6 @@
  * using the ArangoDB Java driver.
  */
 module net.javacrumbs.shedlock.provider.arangodb {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires com.arangodb.core;
 

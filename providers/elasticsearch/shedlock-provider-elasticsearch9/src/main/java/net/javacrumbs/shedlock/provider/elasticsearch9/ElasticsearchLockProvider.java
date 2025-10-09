@@ -118,7 +118,7 @@ public class ElasticsearchLockProvider implements LockProvider {
                 return Optional.empty();
             }
         } catch (IOException | ElasticsearchException e) {
-            if ((e instanceof ElasticsearchException && ((ElasticsearchException) e).status() == 409)) {
+            if ((e instanceof ElasticsearchException ex && ex.status() == 409)) {
                 return Optional.empty();
             } else {
                 throw new LockException("Unexpected exception occurred", e);

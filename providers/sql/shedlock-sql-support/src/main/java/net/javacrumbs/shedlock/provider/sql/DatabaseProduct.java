@@ -3,7 +3,6 @@ package net.javacrumbs.shedlock.provider.sql;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.jspecify.annotations.Nullable;
 
 public enum DatabaseProduct {
     POSTGRES_SQL("PostgreSQL"::equalsIgnoreCase, PostgresSqlServerTimeStatementsSource::new),
@@ -40,7 +39,7 @@ public enum DatabaseProduct {
      * @param productName Obtained from the JDBC connection. See java.sql.connection.getMetaData().getProductName().
      * @return The matching ProductName enum
      */
-    public static DatabaseProduct matchProductName(@Nullable final String productName) {
+    public static DatabaseProduct matchProductName(final String productName) {
         return Arrays.stream(DatabaseProduct.values())
                 .filter(databaseProduct -> databaseProduct.productMatcher.test(productName))
                 .findFirst()

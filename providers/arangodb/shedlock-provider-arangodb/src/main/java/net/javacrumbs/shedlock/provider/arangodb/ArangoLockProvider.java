@@ -159,7 +159,7 @@ public class ArangoLockProvider implements LockProvider {
         private final ArangoCollection arangoCollection;
         private final BaseDocument document;
 
-        public ArangoLock(
+        ArangoLock(
                 final ArangoCollection arangoCollection,
                 final BaseDocument document,
                 final LockConfiguration lockConfiguration) {

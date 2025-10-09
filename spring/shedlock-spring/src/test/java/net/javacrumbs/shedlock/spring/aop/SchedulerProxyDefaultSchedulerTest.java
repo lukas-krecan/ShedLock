@@ -32,6 +32,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 /** Test creation of default task scheduler */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SchedulerProxyDefaultSchedulerTest.SchedulerWrapperConfig.class)
+@SuppressWarnings("removal")
 public class SchedulerProxyDefaultSchedulerTest extends AbstractSchedulerProxyTest {
 
     @Override

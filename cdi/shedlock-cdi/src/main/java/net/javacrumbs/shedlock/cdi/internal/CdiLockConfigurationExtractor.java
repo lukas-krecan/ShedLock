@@ -47,14 +47,14 @@ class CdiLockConfigurationExtractor {
     }
 
     Duration getLockAtMostFor(SchedulerLock annotation) {
-        return getValue(annotation.lockAtMostFor(), this.defaultLockAtMostFor, "lockAtMostFor");
+        return getValue(annotation.lockAtMostFor(), this.defaultLockAtMostFor);
     }
 
     Duration getLockAtLeastFor(SchedulerLock annotation) {
-        return getValue(annotation.lockAtLeastFor(), this.defaultLockAtLeastFor, "lockAtLeastFor");
+        return getValue(annotation.lockAtLeastFor(), this.defaultLockAtLeastFor);
     }
 
-    private Duration getValue(String stringValueFromAnnotation, Duration defaultValue, String paramName) {
+    private Duration getValue(String stringValueFromAnnotation, Duration defaultValue) {
         if (!stringValueFromAnnotation.isEmpty()) {
             return parseDuration(stringValueFromAnnotation);
         } else {

@@ -38,7 +38,7 @@ abstract class AbstractR2dbcTest extends AbstractJdbcLockProviderIntegrationTest
                         .build());
 
         ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(cf)
-                .maxIdleTime(Duration.ofMillis(1000))
+                .maxIdleTime(Duration.ofSeconds(1))
                 .maxSize(20)
                 .build();
 

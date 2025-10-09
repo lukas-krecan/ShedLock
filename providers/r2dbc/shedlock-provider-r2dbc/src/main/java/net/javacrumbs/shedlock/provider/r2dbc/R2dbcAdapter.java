@@ -72,8 +72,8 @@ abstract class R2dbcAdapter {
         }
 
         private Object normalizeValue(Object value) {
-            if (value instanceof Instant) {
-                return dateConverter.apply((Instant) value);
+            if (value instanceof Instant instant) {
+                return dateConverter.apply(instant);
             } else {
                 return value;
             }
