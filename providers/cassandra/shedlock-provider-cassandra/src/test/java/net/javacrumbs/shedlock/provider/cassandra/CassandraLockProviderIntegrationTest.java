@@ -27,7 +27,7 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.containers.CassandraContainer;
+import org.testcontainers.cassandra.CassandraContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -43,7 +43,7 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
     private static CqlSession session;
 
     @Container
-    public static final MyCassandraContainer cassandra = new MyCassandraContainer()
+    public static final CassandraContainer cassandra = new CassandraContainer("cassandra:4")
             .withInitScript("shedlock.cql")
             .withEnv("CASSANDRA_DC", "local")
             .withEnv("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch");
@@ -96,11 +96,5 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
                 .withTableName(DEFAULT_TABLE)
                 .build());
         return cassandraStorageAccessor.find(lockName).get();
-    }
-
-    private static class MyCassandraContainer extends CassandraContainer<MyCassandraContainer> {
-        MyCassandraContainer() {
-            super("cassandra:4");
-        }
     }
 }
