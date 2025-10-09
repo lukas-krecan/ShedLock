@@ -88,10 +88,8 @@ public class DynamoDBLockProvider implements LockProvider {
     /**
      * Uses DynamoDB to coordinate locks
      *
-     * @param dynamoDbClient
-     *            v2 of DynamoDB client
-     * @param tableName
-     *            the lock table name
+     * @param dynamoDbClient v2 of DynamoDB client
+     * @param tableName the lock table name
      */
     public DynamoDBLockProvider(DynamoDbClient dynamoDbClient, String tableName) {
         this(dynamoDbClient, tableName, ID);

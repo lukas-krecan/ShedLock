@@ -34,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SchedulerProxyTest.SchedulerWrapperConfig.class)
+@SuppressWarnings("removal")
 public class SchedulerProxyTest extends AbstractSchedulerProxyTest {
 
     @Test

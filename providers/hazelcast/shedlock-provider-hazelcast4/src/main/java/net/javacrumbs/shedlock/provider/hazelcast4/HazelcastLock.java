@@ -56,7 +56,6 @@ class HazelcastLock implements Serializable {
      * Instantiate {@link HazelcastLock} with {@link LockConfiguration} and
      * Hazelcast member UUID.
      *
-     * @param configuration
      * @return the new instance of {@link HazelcastLock}.
      */
     static HazelcastLock fromConfigurationWhereTtlIsUntilTime(final LockConfiguration configuration) {
@@ -70,7 +69,6 @@ class HazelcastLock implements Serializable {
     /**
      * Copy an existing {@link HazelcastLock} and change its time to live.
      *
-     * @param lock
      * @return the new instance of {@link HazelcastLock}.
      */
     static HazelcastLock fromLockWhereTtlIsReduceToLeastTime(final HazelcastLock lock) {

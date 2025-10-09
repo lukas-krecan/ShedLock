@@ -21,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration(classes = SchedulerIntegrationTest.AopSchedulerConfig.class)
+@SuppressWarnings("removal")
 public class SchedulerIntegrationTest extends AbstractSchedulerTest {
 
     @Configuration

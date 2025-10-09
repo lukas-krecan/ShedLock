@@ -5,7 +5,6 @@
  * using MongoDB Reactive Streams driver.
  */
 module net.javacrumbs.shedlock.provider.mongo.reactivestreams {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires org.mongodb.driver.reactivestreams;
     requires org.mongodb.bson;

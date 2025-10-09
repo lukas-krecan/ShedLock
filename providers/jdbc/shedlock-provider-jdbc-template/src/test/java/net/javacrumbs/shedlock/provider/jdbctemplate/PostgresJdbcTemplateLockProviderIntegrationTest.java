@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.TimeZone;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.ClockProvider;
@@ -45,7 +46,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
     class TimezoneTest {
         @AfterEach
         void resetClock() {
-            ClockProvider.setClock(Clock.systemDefaultZone());
+            ClockProvider.setClock(Clock.system(ZoneId.systemDefault()));
         }
 
         /*

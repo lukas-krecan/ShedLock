@@ -113,7 +113,7 @@ public class ZookeeperCuratorLockProvider implements LockProvider {
         return isLocked(data);
     }
 
-    private boolean isLocked(@Nullable byte[] data) {
+    private boolean isLocked(byte @Nullable [] data) {
         if (data == null || data.length == 0) {
             // most likely created by previous version of the library
             return true;

@@ -46,6 +46,7 @@ class LockValue {
     }
 
     /**
+     * Returns locked at time.
      * @return Locked at time.
      */
     public Instant getLockedAt() {
@@ -53,6 +54,7 @@ class LockValue {
     }
 
     /**
+     * Returns locked until time.
      * @return Locked until time.
      */
     public Instant getLockUntil() {
@@ -60,6 +62,7 @@ class LockValue {
     }
 
     /**
+     * Returns locked by hostname.
      * @return Locked by hostname.
      */
     public String getLockedBy() {
