@@ -99,7 +99,7 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
     }
 
     private static class MyCassandraContainer extends CassandraContainer<MyCassandraContainer> {
-        public MyCassandraContainer() {
+        MyCassandraContainer() {
             super("cassandra:4");
         }
     }

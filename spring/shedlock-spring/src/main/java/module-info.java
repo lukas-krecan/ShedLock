@@ -5,7 +5,6 @@
  * including annotations and AOP support for method-level locking.
  */
 module net.javacrumbs.shedlock.spring {
-    requires java.base;
     requires net.javacrumbs.shedlock.core;
     requires spring.context;
     requires spring.core;

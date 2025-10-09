@@ -5,7 +5,6 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceId;
@@ -45,7 +44,7 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
     @BeforeAll
     public static void setUpSpanner() {
         Spanner spanner = createSpannerService();
-        InstanceId instanceId = createInstance(spanner);
+        createInstance(spanner);
         DatabaseId databaseId = createDatabase(spanner);
         databaseClient = spanner.getDatabaseClient(databaseId);
         Configuration configuration =
@@ -72,7 +71,7 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
         InstanceId instanceId = InstanceId.of(PROJECT_NAME, INSTANCE_NAME);
         InstanceAdminClient insAdminClient = spanner.getInstanceAdminClient();
         try {
-            Instance instance = insAdminClient
+            insAdminClient
                     .createInstance(InstanceInfo.newBuilder(instanceId)
                             .setNodeCount(1)
                             .setDisplayName("Test instance")

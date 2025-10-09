@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.cloud.datastore.Datastore;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.jspecify.annotations.Nullable;
 
 public class DatastoreLockProvider extends StorageBasedLockProvider {
 
@@ -46,7 +47,7 @@ public class DatastoreLockProvider extends StorageBasedLockProvider {
         public static final class Builder {
             private String entityName = "lock";
             private FieldNames fieldNames = new FieldNames("lock_until", "locked_at", "locked_by");
-            private Datastore datastore;
+            private @Nullable Datastore datastore;
 
             public Builder withEntityName(String entityName) {
                 this.entityName = entityName;
@@ -64,7 +65,7 @@ public class DatastoreLockProvider extends StorageBasedLockProvider {
             }
 
             public Configuration build() {
-                return new Configuration(this.entityName, this.fieldNames, this.datastore);
+                return new Configuration(entityName, fieldNames, requireNonNull(datastore));
             }
         }
     }

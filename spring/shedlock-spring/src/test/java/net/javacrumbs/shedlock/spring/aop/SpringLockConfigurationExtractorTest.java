@@ -17,6 +17,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -237,13 +238,18 @@ public class SpringLockConfigurationExtractorTest {
     private void doTestFindAnnotationOnProxy(Class<?> config) throws NoSuchMethodException {
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(config)) {
             BeanInterface bean = context.getBean(BeanInterface.class);
-            assertThat(extractor.findAnnotation(bean, bean.getClass().getMethod("method")))
-                    .isNotNull();
+            assertThat(findAnnotation(bean, "method")).isNotNull();
         }
     }
 
     private SpringLockConfigurationExtractor.AnnotationData getAnnotation(String method) throws NoSuchMethodException {
-        return extractor.findAnnotation(this, this.getClass().getMethod(method));
+        return findAnnotation(this, method);
+    }
+
+    private SpringLockConfigurationExtractor.AnnotationData findAnnotation(Object bean, String method)
+            throws NoSuchMethodException {
+        return requireNonNull(SpringLockConfigurationExtractor.findAnnotation(
+                bean, bean.getClass().getMethod(method)));
     }
 
     @Target(METHOD)

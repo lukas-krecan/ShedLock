@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.s3v2;
 
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
 import java.nio.ByteBuffer;
@@ -50,7 +51,7 @@ class S3StorageAccessor extends AbstractStorageAccessor {
 
             Instant lockUntil = Instant.parse(metadata.get(LOCK_UNTIL));
             Instant lockedAt = Instant.parse(metadata.get(LOCKED_AT));
-            String lockedBy = metadata.get(LOCKED_BY);
+            String lockedBy = requireNonNull(metadata.get(LOCKED_BY));
             String eTag = metadataResponse.eTag();
 
             logger.debug("Lock found. action: {}, name: {}, lockUntil: {}, e-tag: {}", action, name, lockUntil, eTag);

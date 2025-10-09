@@ -14,7 +14,7 @@
 package net.javacrumbs.shedlock.provider.opensearch.java;
 
 import static java.time.Instant.now;
-import static java.time.Instant.ofEpochMilli;
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCK_UNTIL;
@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
@@ -78,13 +78,17 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
             GetResponse<Object> objectGetResponse = openSearchClient.get(getRequest, Object.class);
             Map<String, Object> sourceData = (Map<String, Object>) objectGetResponse.source();
             assert sourceData != null;
-            assertThat(new Date((Long) sourceData.get(LOCK_UNTIL))).isBeforeOrEqualTo(now());
-            assertThat(new Date((Long) sourceData.get(LOCKED_AT))).isBeforeOrEqualTo(now());
+            assertThat(getInstant(sourceData, LOCK_UNTIL)).isBeforeOrEqualTo(now());
+            assertThat(getInstant(sourceData, LOCKED_AT)).isBeforeOrEqualTo(now());
             assertThat((String) sourceData.get(LOCKED_BY)).isNotBlank();
             assertThat((String) sourceData.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded OS failed.");
         }
+    }
+
+    private static Instant getInstant(Map<String, Object> sourceData, String lockUntil) {
+        return Instant.ofEpochMilli((Long) requireNonNull(sourceData.get(lockUntil)));
     }
 
     @Override
@@ -98,8 +102,8 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
             Map<String, Object> sourceData = (Map<String, Object>) getResponse.source();
 
             assert sourceData != null;
-            assertThat(ofEpochMilli((Long) sourceData.get(LOCK_UNTIL))).isAfter(now());
-            assertThat(ofEpochMilli((Long) sourceData.get(LOCKED_AT))).isBeforeOrEqualTo(now());
+            assertThat(getInstant(sourceData, LOCK_UNTIL)).isAfter(now());
+            assertThat(getInstant(sourceData, LOCKED_AT)).isBeforeOrEqualTo(now());
             assertThat((String) sourceData.get(LOCKED_BY)).isNotBlank();
             assertThat((String) sourceData.get(NAME)).isEqualTo(lockName);
         } catch (IOException e) {

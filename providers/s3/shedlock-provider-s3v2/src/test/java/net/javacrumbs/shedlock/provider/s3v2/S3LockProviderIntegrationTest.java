@@ -92,7 +92,7 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
     }
 
     private static class MyLocalStackS3Container extends LocalStackContainer {
-        public MyLocalStackS3Container() {
+        private MyLocalStackS3Container() {
             super(DockerImageName.parse("localstack/localstack:s3-latest"));
         }
     }

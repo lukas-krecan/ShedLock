@@ -13,10 +13,12 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import static java.util.Objects.requireNonNull;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.DEFAULT_TASK_SCHEDULER_BEAN_NAME;
 
 import java.util.concurrent.ScheduledExecutorService;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -34,13 +36,14 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 /** Registers default TaskScheduler if none found. */
 class RegisterDefaultTaskSchedulerPostProcessor
         implements BeanDefinitionRegistryPostProcessor, Ordered, BeanFactoryAware {
-    private BeanFactory beanFactory;
+    private @Nullable BeanFactory beanFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(RegisterDefaultTaskSchedulerPostProcessor.class);
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        ListableBeanFactory listableBeanFactory = (ListableBeanFactory) this.beanFactory;
+        BeanFactory beanFactory = requireNonNull(this.beanFactory, "BeanFactory not set");
+        ListableBeanFactory listableBeanFactory = (ListableBeanFactory) beanFactory;
         if (BeanFactoryUtils.beanNamesForTypeIncludingAncestors(listableBeanFactory, TaskScheduler.class).length == 0) {
             String[] scheduledExecutorsBeanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
                     listableBeanFactory, ScheduledExecutorService.class);

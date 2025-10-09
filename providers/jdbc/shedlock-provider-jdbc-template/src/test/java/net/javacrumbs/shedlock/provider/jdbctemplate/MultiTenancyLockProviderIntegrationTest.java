@@ -90,9 +90,9 @@ public class MultiTenancyLockProviderIntegrationTest {
                     .lock(lockConfiguration);
         }
 
-        protected abstract LockProvider createLockProvider(String tenantName);
+        abstract LockProvider createLockProvider(String tenantName);
 
-        protected abstract String getTenantName(LockConfiguration lockConfiguration);
+        abstract String getTenantName(LockConfiguration lockConfiguration);
     }
 
     private static class SampleLockProvider extends MultiTenancyLockProvider {

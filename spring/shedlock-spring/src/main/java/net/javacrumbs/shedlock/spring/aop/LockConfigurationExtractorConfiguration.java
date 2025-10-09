@@ -13,6 +13,8 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import static java.util.Objects.requireNonNull;
+
 import java.time.Duration;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import org.jspecify.annotations.Nullable;
@@ -63,11 +65,12 @@ class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration
     }
 
     private Duration toDuration(String string) {
-        return durationConverter.convert(resolver.resolveStringValue(string));
+        String resolved = resolver != null ? resolver.resolveStringValue(string) : string;
+        return durationConverter.convert(resolved);
     }
 
     protected String getStringFromAnnotation(String name) {
-        return annotationAttributes.getString(name);
+        return requireNonNull(annotationAttributes).getString(name);
     }
 
     @Override

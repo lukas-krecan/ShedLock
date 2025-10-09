@@ -24,7 +24,6 @@ import org.reactivestreams.Subscription;
  * Subscriber that expects a single result and allows locking until complete or
  * error
  *
- * @param <T>
  */
 class SingleLockableSubscriber<T> implements Subscriber<T> {
 
