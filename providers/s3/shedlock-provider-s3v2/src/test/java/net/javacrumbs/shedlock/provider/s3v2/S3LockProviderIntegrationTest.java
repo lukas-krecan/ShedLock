@@ -56,12 +56,12 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
         var listObjectsResponse = s3Client.listObjects(
                 ListObjectsRequest.builder().bucket(BUCKET_NAME).build());
 
-        listObjectsResponse.contents().forEach(s3Object -> {
-            s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
-                    .key(s3Object.key())
-                    .build());
-        });
+        listObjectsResponse
+                .contents()
+                .forEach(s3Object -> s3Client.deleteObject(DeleteObjectRequest.builder()
+                        .bucket(BUCKET_NAME)
+                        .key(s3Object.key())
+                        .build()));
     }
 
     @Override
