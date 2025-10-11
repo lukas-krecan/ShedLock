@@ -46,7 +46,7 @@ public abstract class AbstractDynamoDBLockProviderIntegrationTest extends Abstra
 
     protected static final String TABLE_NAME = "Shedlock";
 
-    @SuppressWarnings("NullAway")
+    @SuppressWarnings("NullAway.Init")
     protected static DynamoDbClient dynamodb;
 
     protected static void waitForTableBeingActive() {

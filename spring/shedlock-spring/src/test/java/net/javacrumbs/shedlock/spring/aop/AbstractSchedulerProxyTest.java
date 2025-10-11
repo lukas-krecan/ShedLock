@@ -54,7 +54,7 @@ public abstract class AbstractSchedulerProxyTest {
     private final SimpleLock simpleLock = mock(SimpleLock.class);
 
     @Value("${default.lock_at_least_for}")
-    @SuppressWarnings("NullAway")
+    @SuppressWarnings("NullAway.Init")
     private String defaultLockAtLeastFor;
 
     @BeforeEach
