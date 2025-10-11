@@ -39,10 +39,10 @@ public class HazelcastLockProviderClusterTest {
 
     private final String LOCK_NAME_2 = UUID.randomUUID().toString();
 
-    @SuppressWarnings("NullAway")
+    @SuppressWarnings("NullAway.Init")
     private static HazelcastLockProvider lockProvider1;
 
-    @SuppressWarnings("NullAway")
+    @SuppressWarnings("NullAway.Init")
     private static HazelcastLockProvider lockProvider2;
 
     @BeforeEach
