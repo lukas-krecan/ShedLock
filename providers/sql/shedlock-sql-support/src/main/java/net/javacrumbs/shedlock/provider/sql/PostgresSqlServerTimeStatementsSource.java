@@ -1,5 +1,7 @@
 package net.javacrumbs.shedlock.provider.sql;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 
@@ -51,8 +53,12 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
                 "lockedBy",
                 configuration.getLockedByValue(),
                 "lockAtMostForInterval",
-                lockConfiguration.getLockAtMostFor().toMillis() / 1000d,
+                toSeconds(lockConfiguration.getLockAtMostFor()),
                 "lockAtLeastForInterval",
-                lockConfiguration.getLockAtLeastFor().toMillis() / 1000d);
+                toSeconds((lockConfiguration.getLockAtLeastFor())));
+    }
+
+    private static BigDecimal toSeconds(Duration duration) {
+        return BigDecimal.valueOf(duration.toMillis()).scaleByPowerOfTen(-3);
     }
 }
