@@ -6,13 +6,11 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
@@ -30,7 +28,9 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(sqlStatementsSource().getInsertStatement(), sqlStatementsSource().params(lockConfiguration));
+        NamedSql.Statement stmt = translate(
+                sqlStatementsSource().getInsertStatement(),
+                sqlStatementsSource().params(lockConfiguration));
         try {
             int updated = executeUpdate(stmt.sql(), stmt.parameters());
             return updated > 0;
@@ -43,7 +43,9 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(sqlStatementsSource().getUpdateStatement(), sqlStatementsSource().params(lockConfiguration));
+        NamedSql.Statement stmt = translate(
+                sqlStatementsSource().getUpdateStatement(),
+                sqlStatementsSource().params(lockConfiguration));
         try {
             int updated = executeUpdate(stmt.sql(), stmt.parameters());
             return updated > 0;
@@ -55,7 +57,9 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean extend(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(sqlStatementsSource().getExtendStatement(), sqlStatementsSource().params(lockConfiguration));
+        NamedSql.Statement stmt = translate(
+                sqlStatementsSource().getExtendStatement(),
+                sqlStatementsSource().params(lockConfiguration));
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         try {
             int updated = executeUpdate(stmt.sql(), stmt.parameters());
@@ -67,7 +71,9 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public void unlock(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(sqlStatementsSource().getUnlockStatement(), sqlStatementsSource().params(lockConfiguration));
+        NamedSql.Statement stmt = translate(
+                sqlStatementsSource().getUnlockStatement(),
+                sqlStatementsSource().params(lockConfiguration));
         try {
             executeUpdate(stmt.sql(), stmt.parameters());
         } catch (Exception e) {
@@ -93,7 +99,11 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         Tuple tuple = toTuple(params);
         try {
             // block to keep compatibility with synchronous ShedLock contracts
-            RowSet<?> rs = pool.preparedQuery(sql).execute(tuple).toCompletionStage().toCompletableFuture().get(30, TimeUnit.SECONDS);
+            RowSet<?> rs = pool.preparedQuery(sql)
+                    .execute(tuple)
+                    .toCompletionStage()
+                    .toCompletableFuture()
+                    .get(30, TimeUnit.SECONDS);
             return rs.rowCount();
         } catch (CompletionException ce) {
             // unwrap
@@ -111,7 +121,8 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         Tuple t = Tuple.tuple();
         for (Object p : params) {
             if (p instanceof Calendar cal) {
-                OffsetDateTime odt = OffsetDateTime.ofInstant(cal.toInstant(), cal.getTimeZone().toZoneId());
+                OffsetDateTime odt = OffsetDateTime.ofInstant(
+                        cal.toInstant(), cal.getTimeZone().toZoneId());
                 t.addValue(odt);
             } else {
                 t.addValue(p);

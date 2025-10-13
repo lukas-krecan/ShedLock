@@ -60,10 +60,9 @@ public class PostgresVertxSqlClientLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new VertxSqlClientLockProvider(
-                    VertxSqlClientLockProvider.Configuration.builder(pool)
-                            .usingDbTime()
-                            .build());
+            return new VertxSqlClientLockProvider(VertxSqlClientLockProvider.Configuration.builder(pool)
+                    .usingDbTime()
+                    .build());
         }
 
         @Override
