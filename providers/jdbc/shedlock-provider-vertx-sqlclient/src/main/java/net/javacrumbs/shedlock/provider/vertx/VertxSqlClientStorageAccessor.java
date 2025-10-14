@@ -2,10 +2,7 @@ package net.javacrumbs.shedlock.provider.vertx;
 
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Tuple;
-import java.time.OffsetDateTime;
-import java.util.Calendar;
-import java.util.List;
+import io.vertx.sqlclient.templates.SqlTemplate;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +15,6 @@ import org.jspecify.annotations.Nullable;
 class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     private final VertxSqlClientLockProvider.Configuration configuration;
     private final SqlClient sqlClient;
-    private final NamedSql namedSql;
 
     @Nullable
     private SqlStatementsSource sqlStatementsSource;
@@ -26,11 +22,6 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     VertxSqlClientStorageAccessor(VertxSqlClientLockProvider.Configuration configuration) {
         this.configuration = configuration;
         this.sqlClient = configuration.getSqlClient();
-        this.namedSql = switch (configuration.getDatabaseProduct()) {
-            case POSTGRES_SQL -> new NamedSql(i -> "\\$" + i);
-            case MY_SQL -> new NamedSql(i -> "?");
-            default -> throw new IllegalArgumentException("Unsupported database product");
-        };
     }
 
     @Override
@@ -89,7 +80,7 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     }
 
     private NamedSql.Statement translate(String statement, Map<String, Object> params) {
-        return namedSql.translate(statement, params);
+        return NamedSql.translate(statement, params);
     }
 
     private SqlStatementsSource sqlStatementsSource() {
@@ -101,18 +92,17 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private int executeUpdate(String sql, List<Object> params) {
-        Tuple tuple = toTuple(params);
+    private int executeUpdate(String sql, Map<String, Object> params) {
         try {
             // block to keep compatibility with synchronous ShedLock contracts
-            RowSet<?> rs = sqlClient
-                    .preparedQuery(sql)
-                    .execute(tuple)
+            RowSet<?> rs = SqlTemplate.forQuery(sqlClient, sql)
+                    .execute(params)
                     .toCompletionStage()
                     .toCompletableFuture()
                     .get(30, TimeUnit.SECONDS);
             return rs.rowCount();
         } catch (CompletionException ce) {
+            // FIXME:
             // unwrap
             Throwable cause = ce.getCause();
             if (cause instanceof RuntimeException re) throw re;
@@ -122,20 +112,6 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Tuple toTuple(List<Object> params) {
-        Tuple t = Tuple.tuple();
-        for (Object p : params) {
-            if (p instanceof Calendar cal) {
-                OffsetDateTime odt = OffsetDateTime.ofInstant(
-                        cal.toInstant(), cal.getTimeZone().toZoneId());
-                t.addValue(odt);
-            } else {
-                t.addValue(p);
-            }
-        }
-        return t;
     }
 
     private static Throwable unwrap(Throwable e) {

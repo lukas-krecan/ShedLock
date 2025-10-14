@@ -55,6 +55,11 @@
             <version>4.5.10</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-sql-client-templates</artifactId>
+            <version>5.0.4</version>
+        </dependency>
         <!-- Needed for SCRAM-SHA authentication used by Postgres when connecting with Vert.x PgClient -->
         <dependency>
             <groupId>com.ongres.scram</groupId>

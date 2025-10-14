@@ -1,35 +1,34 @@
 package net.javacrumbs.shedlock.provider.vertx;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+
+import java.time.OffsetDateTime;
+import java.util.Calendar;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 class NamedSql {
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile(":[a-zA-Z]+");
 
-    private final Function<Integer, String> parameterPlaceholderSource;
-
-    NamedSql(Function<Integer, String> parameterPlaceholderSource) {
-        this.parameterPlaceholderSource = parameterPlaceholderSource;
+    static Statement translate(String namedSql, Map<String, Object> namedParameters) {
+        String sql = NAMED_PARAMETER_PATTERN
+                .matcher(namedSql)
+                .replaceAll(result -> "#{" + result.group().substring(1) + "}");
+        return new Statement(
+                sql,
+                namedParameters.entrySet().stream()
+                        .map(entry -> Map.entry(entry.getKey(), translate(entry.getValue())))
+                        .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
-    Statement translate(String namedSql, Map<String, Object> namedParameters) {
-        List<Object> parameters = new ArrayList<>();
-        AtomicInteger counter = new AtomicInteger(0);
-        String sql = NAMED_PARAMETER_PATTERN.matcher(namedSql).replaceAll(result -> {
-            String key = result.group().substring(1);
-            if (!namedParameters.containsKey(key)) {
-                throw new IllegalStateException("Parameter " + key + " not found");
-            }
-            parameters.add(namedParameters.get(key));
-            return parameterPlaceholderSource.apply(counter.incrementAndGet());
-        });
-        return new Statement(sql, Collections.unmodifiableList(parameters));
+    private static Object translate(Object value) {
+        if (value instanceof Calendar cal) {
+            // Check if it makes sense to return OffsetDateTime instead of LocalDateTime
+            return OffsetDateTime.ofInstant(cal.toInstant(), cal.getTimeZone().toZoneId());
+        } else {
+            return value;
+        }
     }
 
-    record Statement(String sql, List<Object> parameters) {}
+    record Statement(String sql, Map<String, Object> parameters) {}
 }
