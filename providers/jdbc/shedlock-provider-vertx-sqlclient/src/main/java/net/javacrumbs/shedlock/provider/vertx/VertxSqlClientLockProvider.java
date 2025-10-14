@@ -2,12 +2,11 @@ package net.javacrumbs.shedlock.provider.vertx;
 
 import static java.util.Objects.requireNonNull;
 
-import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlClient;
 import java.util.TimeZone;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Lock provider using Vert.x SQL Client (io.vertx.sqlclient.Pool).
@@ -15,25 +14,17 @@ import org.jspecify.annotations.Nullable;
  * It reuses shedlock-sql-support for SQL generation and parameter handling.
  */
 public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
-    public VertxSqlClientLockProvider(Pool pool) {
-        this(pool, "shedlock");
-    }
-
-    public VertxSqlClientLockProvider(Pool pool, String tableName) {
-        this(Configuration.builder(pool).withTableName(tableName).build());
-    }
-
     public VertxSqlClientLockProvider(Configuration configuration) {
         super(new VertxSqlClientStorageAccessor(configuration));
     }
 
     public static final class Configuration extends SqlConfiguration {
-        private final Pool pool;
+        private final SqlClient sqlClient;
 
         Configuration(
-                Pool pool,
+                SqlClient sqlClient,
                 boolean dbUpperCase,
-                @Nullable DatabaseProduct databaseProduct,
+                DatabaseProduct databaseProduct,
                 String tableName,
                 boolean forceUtcTimeZone,
                 ColumnNames columnNames,
@@ -47,33 +38,30 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                     columnNames,
                     lockedByValue,
                     useDbTime);
-            this.pool = requireNonNull(pool, "pool can not be null");
+            this.sqlClient = requireNonNull(sqlClient, "sqlClient can not be null");
         }
 
-        public Pool getPool() {
-            return pool;
+        public SqlClient getSqlClient() {
+            return sqlClient;
         }
 
-        public static Configuration.Builder builder(Pool pool) {
-            return new Configuration.Builder(pool);
+        public static Configuration.Builder builder(SqlClient sqlClient, DatabaseProduct databaseProduct) {
+            return new Configuration.Builder(sqlClient).withDatabaseProduct(databaseProduct);
         }
 
         public static final class Builder extends SqlConfigurationBuilder<Builder> {
-            private final Pool pool;
+            private final SqlClient sqlClient;
             private boolean forceUtcTimeZone;
 
-            public Builder(Pool pool) {
-                this.pool = pool;
+            public Builder(SqlClient sqlClient) {
+                this.sqlClient = sqlClient;
             }
 
             public Configuration build() {
-                // Default to PostgreSQL if not specified, since Vert.x Pool does not expose DB metadata
-                // FIXME
-                var dbProduct = databaseProduct != null ? databaseProduct : DatabaseProduct.POSTGRES_SQL;
                 return new Configuration(
-                        pool,
+                        sqlClient,
                         dbUpperCase,
-                        dbProduct,
+                        databaseProduct,
                         tableName,
                         forceUtcTimeZone,
                         columnNames,

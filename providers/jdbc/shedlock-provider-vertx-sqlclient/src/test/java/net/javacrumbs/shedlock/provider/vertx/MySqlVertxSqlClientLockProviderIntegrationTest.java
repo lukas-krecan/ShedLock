@@ -1,24 +1,23 @@
 package net.javacrumbs.shedlock.provider.vertx;
 
-import io.vertx.pgclient.PgBuilder;
-import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.mysqlclient.MySQLBuilder;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import java.net.URI;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
-import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
+import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
 
-public class PostgresVertxSqlClientLockProviderIntegrationTest
-        extends AbstractVertxSqlClientLockProviderIntegrationTest {
+public class MySqlVertxSqlClientLockProviderIntegrationTest extends AbstractVertxSqlClientLockProviderIntegrationTest {
 
-    public PostgresVertxSqlClientLockProviderIntegrationTest() {
-        super(new PostgresConfig());
+    public MySqlVertxSqlClientLockProviderIntegrationTest() {
+        super(new MySqlConfig());
     }
 
     @Override
     protected DatabaseProduct databaseProduct() {
-        return DatabaseProduct.POSTGRES_SQL;
+        return DatabaseProduct.MY_SQL;
     }
 
     protected SqlClient createPool(DbConfig cfg) {
@@ -32,14 +31,21 @@ public class PostgresVertxSqlClientLockProviderIntegrationTest
             db = db.substring(1);
         }
 
-        PgConnectOptions connectOptions = new PgConnectOptions()
+        MySQLConnectOptions connectOptions = new MySQLConnectOptions()
+                .setPort(3306)
                 .setHost(uri.getHost())
                 .setPort(uri.getPort())
                 .setDatabase(db)
                 .setUser(cfg.getUsername())
                 .setPassword(cfg.getPassword());
 
+        // Pool options
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
-        return PgBuilder.client().with(poolOptions).connectingTo(connectOptions).build();
+
+        // Create the client pool
+        return MySQLBuilder.client()
+                .with(poolOptions)
+                .connectingTo(connectOptions)
+                .build();
     }
 }

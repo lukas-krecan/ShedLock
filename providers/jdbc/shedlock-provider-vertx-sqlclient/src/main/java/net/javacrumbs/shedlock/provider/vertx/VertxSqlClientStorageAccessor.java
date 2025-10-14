@@ -1,29 +1,36 @@
 package net.javacrumbs.shedlock.provider.vertx;
 
-import static net.javacrumbs.shedlock.provider.vertx.NamedSql.translate;
-
-import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jspecify.annotations.Nullable;
 
 class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     private final VertxSqlClientLockProvider.Configuration configuration;
-    private final Pool pool;
+    private final SqlClient sqlClient;
+    private final NamedSql namedSql;
 
-    private volatile SqlStatementsSource sqlStatementsSource;
+    @Nullable
+    private SqlStatementsSource sqlStatementsSource;
 
     VertxSqlClientStorageAccessor(VertxSqlClientLockProvider.Configuration configuration) {
         this.configuration = configuration;
-        this.pool = configuration.getPool();
+        this.sqlClient = configuration.getSqlClient();
+        this.namedSql = switch (configuration.getDatabaseProduct()) {
+            case POSTGRES_SQL -> new NamedSql(i -> "$" + i);
+            case MY_SQL -> new NamedSql(i -> "?");
+            default -> throw new IllegalArgumentException("Unsupported database product");
+        };
     }
 
     @Override
@@ -81,25 +88,25 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
+    private NamedSql.Statement translate(String statement, Map<String, Object> params) {
+        return namedSql.translate(statement, params);
+    }
+
     private SqlStatementsSource sqlStatementsSource() {
-        // TODO: Simplify
-        SqlStatementsSource local = sqlStatementsSource;
-        if (local == null) {
-            synchronized (this) {
-                if (sqlStatementsSource == null) {
-                    sqlStatementsSource = SqlStatementsSource.create(configuration);
-                }
-                local = sqlStatementsSource;
+        synchronized (configuration) {
+            if (sqlStatementsSource == null) {
+                sqlStatementsSource = SqlStatementsSource.create(configuration);
             }
+            return sqlStatementsSource;
         }
-        return local;
     }
 
     private int executeUpdate(String sql, List<Object> params) {
         Tuple tuple = toTuple(params);
         try {
             // block to keep compatibility with synchronous ShedLock contracts
-            RowSet<?> rs = pool.preparedQuery(sql)
+            RowSet<?> rs = sqlClient
+                    .preparedQuery(sql)
                     .execute(tuple)
                     .toCompletionStage()
                     .toCompletableFuture()

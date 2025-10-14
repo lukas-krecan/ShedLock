@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.vertx;
 
-import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlClient;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
@@ -12,7 +13,9 @@ import org.junit.jupiter.api.TestInstance;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
     private final DbConfig dbConfig;
-    private Pool pool;
+
+    @SuppressWarnings("NullAway.Init")
+    private SqlClient sqlClient;
 
     protected AbstractVertxSqlClientLockProviderIntegrationTest(DbConfig dbConfig) {
         this.dbConfig = dbConfig;
@@ -21,14 +24,12 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
     @BeforeAll
     public void startDb() {
         dbConfig.startDb();
-        pool = createPool(dbConfig);
+        sqlClient = createPool(dbConfig);
     }
 
     @AfterAll
     public void stopDb() {
-        if (pool != null) {
-            pool.close();
-        }
+        sqlClient.close();
         dbConfig.shutdownDb();
     }
 
@@ -41,7 +42,9 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new VertxSqlClientLockProvider(pool);
+            return new VertxSqlClientLockProvider(
+                    VertxSqlClientLockProvider.Configuration.builder(sqlClient, databaseProduct())
+                            .build());
         }
 
         @Override
@@ -49,6 +52,8 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
             return false;
         }
     }
+
+    protected abstract DatabaseProduct databaseProduct();
 
     @Nested
     class DbTime extends AbstractJdbcLockProviderIntegrationTest {
@@ -59,9 +64,10 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new VertxSqlClientLockProvider(VertxSqlClientLockProvider.Configuration.builder(pool)
-                    .usingDbTime()
-                    .build());
+            return new VertxSqlClientLockProvider(
+                    VertxSqlClientLockProvider.Configuration.builder(sqlClient, databaseProduct())
+                            .usingDbTime()
+                            .build());
         }
 
         @Override
@@ -70,5 +76,5 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
         }
     }
 
-    protected abstract Pool createPool(DbConfig cfg);
+    protected abstract SqlClient createPool(DbConfig cfg);
 }
