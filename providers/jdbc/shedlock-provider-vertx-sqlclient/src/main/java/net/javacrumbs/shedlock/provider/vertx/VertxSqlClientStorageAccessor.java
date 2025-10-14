@@ -27,7 +27,7 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         this.configuration = configuration;
         this.sqlClient = configuration.getSqlClient();
         this.namedSql = switch (configuration.getDatabaseProduct()) {
-            case POSTGRES_SQL -> new NamedSql(i -> "$" + i);
+            case POSTGRES_SQL -> new NamedSql(i -> "\\$" + i);
             case MY_SQL -> new NamedSql(i -> "?");
             default -> throw new IllegalArgumentException("Unsupported database product");
         };
