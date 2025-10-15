@@ -1,17 +1,18 @@
 package net.javacrumbs.shedlock.provider.vertx;
 
-import io.vertx.pgclient.PgBuilder;
-import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.core.Vertx;
+import io.vertx.jdbcclient.JDBCConnectOptions;
+import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 
-public class PostgresVertxSqlClientLockProviderIntegrationTest
+public class PostgresOverJdbcVertxSqlClientLockProviderIntegrationTest
         extends AbstractVertxSqlClientLockProviderIntegrationTest {
 
-    public PostgresVertxSqlClientLockProviderIntegrationTest() {
+    public PostgresOverJdbcVertxSqlClientLockProviderIntegrationTest() {
         super(new PostgresConfig());
     }
 
@@ -22,14 +23,11 @@ public class PostgresVertxSqlClientLockProviderIntegrationTest
 
     @Override
     protected SqlClient createPool(DbConfig cfg) {
-        PgConnectOptions connectOptions = new PgConnectOptions()
-                .setHost(cfg.getHost())
-                .setPort(cfg.getPort())
-                .setDatabase(cfg.getDatabaseName())
+        JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                .setJdbcUrl(cfg.getJdbcUrl())
                 .setUser(cfg.getUsername())
                 .setPassword(cfg.getPassword());
-
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
-        return PgBuilder.client().with(poolOptions).connectingTo(connectOptions).build();
+        PoolOptions poolOptions = new PoolOptions().setMaxSize(16);
+        return JDBCPool.pool(Vertx.builder().build(), connectOptions, poolOptions);
     }
 }

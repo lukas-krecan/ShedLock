@@ -54,6 +54,21 @@ public final class Db2ServerConfig extends AbstractDbConfig {
     }
 
     @Override
+    public String getHost() {
+        return db2.getHost();
+    }
+
+    @Override
+    public int getPort() {
+        return db2.getFirstMappedPort();
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return db2.getDatabaseName();
+    }
+
+    @Override
     public String getCreateTableStatement() {
         return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL PRIMARY KEY, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL)";
     }

@@ -39,6 +39,12 @@
             <version>${vertx.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-sql-client-templates</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
@@ -60,8 +66,15 @@
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-sql-client-templates</artifactId>
+            <artifactId>vertx-jdbc-client</artifactId>
             <version>${vertx.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-mssql-client</artifactId>
+            <version>${vertx.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -70,4 +83,23 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <!-- Not migrated to JPMS as Vertx does not work with JPMS -->
+                            <Automatic-Module-Name>
+                                net.javacrumbs.shedlock.provider.vertx.sqlclient
+                            </Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
