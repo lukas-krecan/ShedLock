@@ -15,20 +15,16 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jspecify.annotations.Nullable;
 
 class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile(":[a-zA-Z]+");
-
-    private final VertxSqlClientLockProvider.Configuration configuration;
     private final SqlClient sqlClient;
 
-    @Nullable
-    private SqlStatementsSource sqlStatementsSource;
+    private final SqlStatementsSource sqlStatementsSource;
 
     VertxSqlClientStorageAccessor(VertxSqlClientLockProvider.Configuration configuration) {
-        this.configuration = configuration;
         this.sqlClient = configuration.getSqlClient();
+        this.sqlStatementsSource = SqlStatementsSource.create(configuration);
     }
 
     @Override
@@ -85,12 +81,7 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     }
 
     private SqlStatementsSource sqlStatementsSource() {
-        synchronized (configuration) {
-            if (sqlStatementsSource == null) {
-                sqlStatementsSource = SqlStatementsSource.create(configuration);
-            }
-            return sqlStatementsSource;
-        }
+        return sqlStatementsSource;
     }
 
     private int executeUpdate(String sql, LockConfiguration lockConfiguration) {

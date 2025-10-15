@@ -26,7 +26,6 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                 boolean dbUpperCase,
                 DatabaseProduct databaseProduct,
                 String tableName,
-                boolean forceUtcTimeZone,
                 ColumnNames columnNames,
                 String lockedByValue,
                 boolean useDbTime) {
@@ -34,7 +33,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                     databaseProduct,
                     dbUpperCase,
                     tableName,
-                    forceUtcTimeZone ? TimeZone.getTimeZone("UTC") : null,
+                    useDbTime ? null : TimeZone.getTimeZone("UTC"),
                     columnNames,
                     lockedByValue,
                     useDbTime);
@@ -51,7 +50,6 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
 
         public static final class Builder extends SqlConfigurationBuilder<Builder> {
             private final SqlClient sqlClient;
-            private boolean forceUtcTimeZone;
 
             public Builder(SqlClient sqlClient) {
                 this.sqlClient = sqlClient;
@@ -63,18 +61,9 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                         dbUpperCase,
                         requireNonNull(databaseProduct),
                         tableName,
-                        forceUtcTimeZone,
                         columnNames,
                         lockedByValue,
                         useDbTime);
-            }
-
-            /**
-             * Enforces UTC times when sending timestamps to the DB.
-             */
-            public Builder forceUtcTimeZone() {
-                this.forceUtcTimeZone = true;
-                return this;
             }
         }
     }

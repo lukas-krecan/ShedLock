@@ -4,7 +4,6 @@ import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
-import java.net.URI;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
@@ -22,12 +21,10 @@ public class MySqlVertxSqlClientLockProviderIntegrationTest extends AbstractVert
 
     @Override
     protected SqlClient createPool(DbConfig cfg) {
-        URI uri = getDbUri(cfg);
-
         MySQLConnectOptions connectOptions = new MySQLConnectOptions()
-                .setHost(uri.getHost())
-                .setPort(uri.getPort())
-                .setDatabase(getDb(uri))
+                .setHost(cfg.getHost())
+                .setPort(cfg.getPort())
+                .setDatabase(cfg.getDatabaseName())
                 .setUser(cfg.getUsername())
                 .setPassword(cfg.getPassword());
 
