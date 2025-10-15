@@ -26,6 +26,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -66,8 +67,8 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         GetRequest request =
                 GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
         try {
-            GetResponse<Map> response = client.get(request, Map.class);
-            Map source = requireNonNull(response.source());
+            GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
+            Map<String, Object> source = requireNonNull(response.source());
             assertThat(getInstant(source, LOCK_UNTIL)).isBeforeOrEqualTo(now());
             assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
             assertThat((String) source.get(LOCKED_BY)).isNotBlank();
@@ -77,7 +78,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         }
     }
 
-    private static Instant getInstant(Map source, String key) {
+    private static Instant getInstant(Map<String, Object> source, String key) {
         return Instant.ofEpochMilli((Long) requireNonNull(source.get(key)));
     }
 
@@ -86,8 +87,8 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         GetRequest request =
                 GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
         try {
-            GetResponse<Map> response = client.get(request, Map.class);
-            Map source = requireNonNull(response.source());
+            GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
+            Map<String, Object> source = requireNonNull(response.source());
             assertThat(getInstant(source, LOCK_UNTIL)).isAfter(now());
             assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
             assertThat((String) source.get(LOCKED_BY)).isNotBlank();
