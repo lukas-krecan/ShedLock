@@ -10,7 +10,7 @@ module net.javacrumbs.shedlock.provider.jdbc.micronaut {
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.jdbc.internal;
     requires io.micronaut.data.micronaut_data_tx;
-    requires net.javacrumbs.shedlock.provider.sql;
+    requires transitive net.javacrumbs.shedlock.provider.sql;
     requires org.slf4j;
     requires static org.jspecify;
 
