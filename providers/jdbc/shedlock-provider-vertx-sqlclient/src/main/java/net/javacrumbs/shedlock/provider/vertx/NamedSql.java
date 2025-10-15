@@ -2,7 +2,6 @@ package net.javacrumbs.shedlock.provider.vertx;
 
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
-import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -23,8 +22,7 @@ class NamedSql {
 
     private static Object translate(Object value) {
         if (value instanceof Calendar cal) {
-            // Check if it makes sense to return OffsetDateTime instead of LocalDateTime
-            return OffsetDateTime.ofInstant(cal.toInstant(), cal.getTimeZone().toZoneId());
+            return cal.toInstant().atZone(cal.getTimeZone().toZoneId()).toLocalDateTime();
         } else {
             return value;
         }

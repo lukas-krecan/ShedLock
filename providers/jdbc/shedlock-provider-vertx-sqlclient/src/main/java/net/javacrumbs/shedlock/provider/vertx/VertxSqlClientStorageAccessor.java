@@ -102,15 +102,10 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
                     .get(30, TimeUnit.SECONDS);
             return rs.rowCount();
         } catch (CompletionException ce) {
-            // FIXME:
-            // unwrap
             Throwable cause = ce.getCause();
-            if (cause instanceof RuntimeException re) throw re;
-            throw new RuntimeException(cause);
-        } catch (RuntimeException re) {
-            throw re;
+            throw new LockException(cause);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new LockException(e);
         }
     }
 

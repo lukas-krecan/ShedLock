@@ -7,6 +7,7 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import java.time.ZoneOffset;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
+import net.javacrumbs.shedlock.provider.vertx.VertxSqlClientLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
@@ -48,9 +49,9 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new VertxSqlClientLockProvider(
-                    VertxSqlClientLockProvider.Configuration.builder(sqlClient, databaseProduct())
-                            .build());
+            return new VertxSqlClientLockProvider(Configuration.builder(sqlClient, databaseProduct())
+                    .forceUtcTimeZone()
+                    .build());
         }
 
         @Override
@@ -92,10 +93,9 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new VertxSqlClientLockProvider(
-                    VertxSqlClientLockProvider.Configuration.builder(sqlClient, databaseProduct())
-                            .usingDbTime()
-                            .build());
+            return new VertxSqlClientLockProvider(Configuration.builder(sqlClient, databaseProduct())
+                    .usingDbTime()
+                    .build());
         }
 
         @Override
