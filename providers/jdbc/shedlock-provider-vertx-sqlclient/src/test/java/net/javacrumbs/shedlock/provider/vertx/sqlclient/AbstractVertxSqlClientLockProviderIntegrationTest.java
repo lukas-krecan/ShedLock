@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.vertx;
+package net.javacrumbs.shedlock.provider.vertx.sqlclient;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -8,7 +8,7 @@ import io.vertx.sqlclient.SqlClient;
 import java.net.URI;
 import java.time.ZoneOffset;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
-import net.javacrumbs.shedlock.provider.vertx.VertxSqlClientLockProvider.Configuration;
+import net.javacrumbs.shedlock.provider.vertx.sqlclient.VertxSqlClientLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;

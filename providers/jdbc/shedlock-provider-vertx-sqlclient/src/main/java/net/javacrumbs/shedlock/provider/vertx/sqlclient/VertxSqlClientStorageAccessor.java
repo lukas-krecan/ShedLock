@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.vertx;
+package net.javacrumbs.shedlock.provider.vertx.sqlclient;
 
 import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toUnmodifiableMap;

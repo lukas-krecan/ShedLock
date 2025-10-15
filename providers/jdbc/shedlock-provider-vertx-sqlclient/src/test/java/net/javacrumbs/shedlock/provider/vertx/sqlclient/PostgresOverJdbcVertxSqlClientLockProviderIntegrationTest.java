@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.vertx;
+package net.javacrumbs.shedlock.provider.vertx.sqlclient;
 
 import io.vertx.core.Vertx;
 import io.vertx.jdbcclient.JDBCConnectOptions;
