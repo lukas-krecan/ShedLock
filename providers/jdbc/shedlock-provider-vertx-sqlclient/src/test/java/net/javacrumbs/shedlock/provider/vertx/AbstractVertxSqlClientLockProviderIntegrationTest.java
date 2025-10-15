@@ -5,6 +5,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
+import java.net.URI;
 import java.time.ZoneOffset;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.provider.vertx.VertxSqlClientLockProvider.Configuration;
@@ -12,6 +13,7 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -102,6 +104,21 @@ public abstract class AbstractVertxSqlClientLockProviderIntegrationTest {
         protected boolean useDbTime() {
             return true;
         }
+    }
+
+    protected URI getDbUri(DbConfig cfg) {
+        String jdbcUrl = cfg.getJdbcUrl();
+        // Expected format: jdbc:postgresql://host:port/database[?params]
+        String url = jdbcUrl.startsWith("jdbc:") ? jdbcUrl.substring(5) : jdbcUrl;
+        return URI.create(url);
+    }
+
+    protected @Nullable String getDb(URI uri) {
+        String db = uri.getPath();
+        if (db != null && db.startsWith("/")) {
+            db = db.substring(1);
+        }
+        return db;
     }
 
     protected abstract SqlClient createPool(DbConfig cfg);

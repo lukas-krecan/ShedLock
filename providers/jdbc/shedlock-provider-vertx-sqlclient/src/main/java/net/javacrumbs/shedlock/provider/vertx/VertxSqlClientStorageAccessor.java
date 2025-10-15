@@ -1,11 +1,16 @@
 package net.javacrumbs.shedlock.provider.vertx;
 
+import static java.util.Objects.requireNonNullElse;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.templates.SqlTemplate;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
@@ -13,6 +18,8 @@ import net.javacrumbs.shedlock.support.LockException;
 import org.jspecify.annotations.Nullable;
 
 class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
+    private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile(":[a-zA-Z]+");
+
     private final VertxSqlClientLockProvider.Configuration configuration;
     private final SqlClient sqlClient;
 
@@ -26,11 +33,9 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(
-                sqlStatementsSource().getInsertStatement(),
-                sqlStatementsSource().params(lockConfiguration));
+        String stmt = translate(sqlStatementsSource().getInsertStatement());
         try {
-            int updated = executeUpdate(stmt.sql(), stmt.parameters());
+            int updated = executeUpdate(stmt, lockConfiguration);
             return updated > 0;
         } catch (Exception e) {
             // same semantics as JDBC implementation - ignore errors on insert and return false
@@ -41,11 +46,9 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(
-                sqlStatementsSource().getUpdateStatement(),
-                sqlStatementsSource().params(lockConfiguration));
+        String stmt = translate(sqlStatementsSource().getUpdateStatement());
         try {
-            int updated = executeUpdate(stmt.sql(), stmt.parameters());
+            int updated = executeUpdate(stmt, lockConfiguration);
             return updated > 0;
         } catch (Exception e) {
             logger.debug("Unexpected exception when updating lock record", e);
@@ -55,12 +58,10 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean extend(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(
-                sqlStatementsSource().getExtendStatement(),
-                sqlStatementsSource().params(lockConfiguration));
+        String stmt = translate(sqlStatementsSource().getExtendStatement());
         logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         try {
-            int updated = executeUpdate(stmt.sql(), stmt.parameters());
+            int updated = executeUpdate(stmt, lockConfiguration);
             return updated > 0;
         } catch (Exception e) {
             throw new LockException("Unexpected exception when unlocking", unwrap(e));
@@ -69,18 +70,18 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public void unlock(LockConfiguration lockConfiguration) {
-        NamedSql.Statement stmt = translate(
-                sqlStatementsSource().getUnlockStatement(),
-                sqlStatementsSource().params(lockConfiguration));
+        String stmt = translate(sqlStatementsSource().getUnlockStatement());
         try {
-            executeUpdate(stmt.sql(), stmt.parameters());
+            executeUpdate(stmt, lockConfiguration);
         } catch (Exception e) {
             throw new LockException("Unexpected exception when unlocking", unwrap(e));
         }
     }
 
-    private NamedSql.Statement translate(String statement, Map<String, Object> params) {
-        return NamedSql.translate(statement, params);
+    private String translate(String statement) {
+        return NAMED_PARAMETER_PATTERN
+                .matcher(statement)
+                .replaceAll(result -> "#{" + result.group().substring(1) + "}");
     }
 
     private SqlStatementsSource sqlStatementsSource() {
@@ -92,7 +93,8 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    private int executeUpdate(String sql, Map<String, Object> params) {
+    private int executeUpdate(String sql, LockConfiguration lockConfiguration) {
+        Map<String, Object> params = translateParams(sqlStatementsSource().params(lockConfiguration));
         try {
             // block to keep compatibility with synchronous ShedLock contracts
             RowSet<?> rs = SqlTemplate.forQuery(sqlClient, sql)
@@ -103,9 +105,23 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
             return rs.rowCount();
         } catch (CompletionException ce) {
             Throwable cause = ce.getCause();
-            throw new LockException(cause);
+            throw new LockException(requireNonNullElse(cause, ce));
         } catch (Exception e) {
             throw new LockException(e);
+        }
+    }
+
+    private Map<String, Object> translateParams(Map<String, Object> params) {
+        return params.entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), translate(entry.getValue())))
+                .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private static Object translate(Object value) {
+        if (value instanceof Calendar cal) {
+            return cal.toInstant().atZone(cal.getTimeZone().toZoneId()).toLocalDateTime();
+        } else {
+            return value;
         }
     }
 

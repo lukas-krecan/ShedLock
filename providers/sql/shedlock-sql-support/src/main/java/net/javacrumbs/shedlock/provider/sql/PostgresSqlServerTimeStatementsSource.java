@@ -55,7 +55,7 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
                 "lockAtMostForInterval",
                 toSeconds(lockConfiguration.getLockAtMostFor()),
                 "lockAtLeastForInterval",
-                toSeconds((lockConfiguration.getLockAtLeastFor())));
+                toSeconds(lockConfiguration.getLockAtLeastFor()));
     }
 
     private static BigDecimal toSeconds(Duration duration) {

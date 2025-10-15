@@ -20,22 +20,14 @@ public class MySqlVertxSqlClientLockProviderIntegrationTest extends AbstractVert
         return DatabaseProduct.MY_SQL;
     }
 
+    @Override
     protected SqlClient createPool(DbConfig cfg) {
-        String jdbcUrl = cfg.getJdbcUrl();
-        // Expected format: jdbc:postgresql://host:port/database[?params]
-        String url = jdbcUrl.startsWith("jdbc:") ? jdbcUrl.substring(5) : jdbcUrl;
-        URI uri = URI.create(url);
-
-        String db = uri.getPath();
-        if (db != null && db.startsWith("/")) {
-            db = db.substring(1);
-        }
+        URI uri = getDbUri(cfg);
 
         MySQLConnectOptions connectOptions = new MySQLConnectOptions()
-                .setPort(3306)
                 .setHost(uri.getHost())
                 .setPort(uri.getPort())
-                .setDatabase(db)
+                .setDatabase(getDb(uri))
                 .setUser(cfg.getUsername())
                 .setPassword(cfg.getPassword());
 

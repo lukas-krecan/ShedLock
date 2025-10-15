@@ -6,6 +6,9 @@
         <version>6.10.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
+    <properties>
+        <vertx.version>5.0.4</vertx.version>
+    </properties>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-vertx-sqlclient</artifactId>
@@ -33,7 +36,7 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-sql-client</artifactId>
-            <version>4.5.10</version>
+            <version>${vertx.version}</version>
         </dependency>
 
         <!-- test -->
@@ -46,32 +49,19 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-pg-client</artifactId>
-            <version>4.5.10</version>
+            <version>${vertx.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mysql-client</artifactId>
-            <version>4.5.10</version>
+            <version>${vertx.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-sql-client-templates</artifactId>
-            <version>5.0.4</version>
-        </dependency>
-        <!-- Needed for SCRAM-SHA authentication used by Postgres when connecting with Vert.x PgClient -->
-        <dependency>
-            <groupId>com.ongres.scram</groupId>
-            <artifactId>client</artifactId>
-            <version>2.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.ongres.scram</groupId>
-            <artifactId>common</artifactId>
-            <version>2.1</version>
-            <scope>test</scope>
+            <version>${vertx.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

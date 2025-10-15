@@ -61,7 +61,7 @@ public class VertxSqlClientLockProvider extends StorageBasedLockProvider {
                 return new Configuration(
                         sqlClient,
                         dbUpperCase,
-                        databaseProduct,
+                        requireNonNull(databaseProduct),
                         tableName,
                         forceUtcTimeZone,
                         columnNames,
