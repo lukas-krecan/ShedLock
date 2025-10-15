@@ -107,7 +107,7 @@
             <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
-                <version>2.1.0-Beta</version>
+                <version>2.1.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
