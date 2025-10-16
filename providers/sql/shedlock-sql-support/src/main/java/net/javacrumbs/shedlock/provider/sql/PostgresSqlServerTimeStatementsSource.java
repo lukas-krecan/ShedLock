@@ -1,11 +1,13 @@
 package net.javacrumbs.shedlock.provider.sql;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 
 class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     private static final String now = "timezone('utc', CURRENT_TIMESTAMP)";
-    private static final String lockAtMostFor = now + " + cast(:lockAtMostForInterval as interval)";
+    private static final String lockAtMostFor = now + " + make_interval(secs => :lockAtMostForInterval)";
 
     PostgresSqlServerTimeStatementsSource(SqlConfiguration configuration) {
         super(configuration);
@@ -31,7 +33,7 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getUnlockStatement() {
-        String lockAtLeastFor = lockedAt() + " + cast(:lockAtLeastForInterval as interval)";
+        String lockAtLeastFor = lockedAt() + " + make_interval(secs => :lockAtLeastForInterval)";
         return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > " + now
                 + " THEN " + lockAtLeastFor + " ELSE " + now + " END WHERE " + name() + " = :name AND " + lockedBy()
                 + " = :lockedBy";
@@ -51,8 +53,12 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
                 "lockedBy",
                 configuration.getLockedByValue(),
                 "lockAtMostForInterval",
-                lockConfiguration.getLockAtMostFor().toMillis() + " milliseconds",
+                toSeconds(lockConfiguration.getLockAtMostFor()),
                 "lockAtLeastForInterval",
-                lockConfiguration.getLockAtLeastFor().toMillis() + " milliseconds");
+                toSeconds(lockConfiguration.getLockAtLeastFor()));
+    }
+
+    private static BigDecimal toSeconds(Duration duration) {
+        return BigDecimal.valueOf(duration.toMillis()).scaleByPowerOfTen(-3);
     }
 }

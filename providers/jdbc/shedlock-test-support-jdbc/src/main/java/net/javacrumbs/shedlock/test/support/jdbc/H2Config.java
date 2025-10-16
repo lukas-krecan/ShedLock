@@ -31,6 +31,21 @@ public class H2Config extends AbstractDbConfig {
     }
 
     @Override
+    public String getHost() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getPort() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getDatabaseName() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String nowExpression() {
         return "CURRENT_TIMESTAMP(3)";
     }
