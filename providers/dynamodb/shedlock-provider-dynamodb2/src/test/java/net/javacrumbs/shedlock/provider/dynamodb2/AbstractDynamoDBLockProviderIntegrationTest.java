@@ -27,6 +27,7 @@ import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -41,8 +42,8 @@ public abstract class AbstractDynamoDBLockProviderIntegrationTest extends Abstra
     protected static final String ID = "_id2";
 
     @Container
-    static final DynamoDbContainer dynamoDbContainer =
-            new DynamoDbContainer(DockerImageName.parse("amazon/dynamodb-local:2.6.1")).withExposedPorts(8000);
+    static final LocalStackContainer dynamoDbContainer =
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"));
 
     protected static final String TABLE_NAME = "Shedlock";
 
