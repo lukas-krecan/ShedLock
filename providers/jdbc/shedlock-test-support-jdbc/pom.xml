@@ -69,37 +69,37 @@
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>mysql</artifactId>
+            <artifactId>testcontainers-mysql</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>db2</artifactId>
+            <artifactId>testcontainers-db2</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>mariadb</artifactId>
+            <artifactId>testcontainers-mariadb</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>oracle-xe</artifactId>
+            <artifactId>testcontainers-oracle-xe</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>mssqlserver</artifactId>
+            <artifactId>testcontainers-mssqlserver</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>
 

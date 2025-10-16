@@ -53,7 +53,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @BeforeAll
     public static void startCouchbase() {
-        container = new CouchbaseContainer().withBucket(new BucketDefinition(BUCKET_NAME));
+        container = new CouchbaseContainer("couchbase/server:7.6.7").withBucket(new BucketDefinition(BUCKET_NAME));
         container.start();
 
         Set<SeedNode> seedNodes = new HashSet<>(List.of(SeedNode.create(
