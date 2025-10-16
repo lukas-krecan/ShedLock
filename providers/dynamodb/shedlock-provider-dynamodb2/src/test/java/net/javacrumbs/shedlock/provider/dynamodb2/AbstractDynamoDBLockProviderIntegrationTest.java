@@ -24,7 +24,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.localstack.LocalStackContainer;
@@ -101,10 +100,4 @@ public abstract class AbstractDynamoDBLockProviderIntegrationTest extends Abstra
     }
 
     protected abstract Map<String, AttributeValue> getLockItem(String lockName);
-
-    private static class DynamoDbContainer extends GenericContainer<DynamoDbContainer> {
-        DynamoDbContainer(DockerImageName dockerImageName) {
-            super(dockerImageName);
-        }
-    }
 }
