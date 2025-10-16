@@ -49,4 +49,19 @@ abstract class AbstractContainerBasedDbConfig<T extends JdbcDatabaseContainer<T>
     public String getPassword() {
         return container.getPassword();
     }
+
+    @Override
+    public String getHost() {
+        return container.getHost();
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return container.getDatabaseName();
+    }
+
+    @Override
+    public int getPort() {
+        return container.getFirstMappedPort();
+    }
 }
