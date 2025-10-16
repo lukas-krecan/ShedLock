@@ -64,7 +64,7 @@ public final class JdbcTestUtils {
         private final Instant lockUntil;
         private final Instant dbTime;
 
-        LockInfo(String name, Instant lockUntil, Instant dbTime) {
+        public LockInfo(String name, Instant lockUntil, Instant dbTime) {
             this.name = name;
             this.lockUntil = lockUntil;
             this.dbTime = dbTime;
