@@ -66,6 +66,9 @@ class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration
 
     private Duration toDuration(String string) {
         String resolved = resolver != null ? resolver.resolveStringValue(string) : string;
+        if (resolved == null) {
+            resolved = string;
+        }
         return durationConverter.convert(resolved);
     }
 

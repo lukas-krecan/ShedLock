@@ -17,7 +17,7 @@ class BeanNameSelectingLockProviderSupplier implements LockProviderSupplier {
     }
 
     @Override
-    public LockProvider supply(Object target, Method method, Object[] parameterValues) {
+    public LockProvider supply(@Nullable Object target, Method method, @Nullable Object[] parameterValues) {
         LockProviderToUse annotation = findAnnotation(target, method);
         if (annotation == null) {
             throw noUniqueBeanDefinitionException();
@@ -35,14 +35,16 @@ class BeanNameSelectingLockProviderSupplier implements LockProviderSupplier {
     }
 
     @Nullable
-    private LockProviderToUse findAnnotation(Object target, Method method) {
+    private LockProviderToUse findAnnotation(@Nullable Object target, Method method) {
         LockProviderToUse annotation = AnnotationUtils.findAnnotation(method, LockProviderToUse.class);
         if (annotation != null) {
             return annotation;
         }
-        annotation = AnnotationUtils.findAnnotation(target.getClass(), LockProviderToUse.class);
-        if (annotation != null) {
-            return annotation;
+        if (target != null) {
+            annotation = AnnotationUtils.findAnnotation(target.getClass(), LockProviderToUse.class);
+            if (annotation != null) {
+                return annotation;
+            }
         }
         return method.getDeclaringClass().getPackage().getAnnotation(LockProviderToUse.class);
     }

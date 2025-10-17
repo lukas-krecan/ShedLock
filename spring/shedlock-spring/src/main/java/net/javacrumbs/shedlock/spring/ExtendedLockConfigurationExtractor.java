@@ -17,8 +17,10 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockConfigurationExtractor;
+import org.jspecify.annotations.Nullable;
 
 public interface ExtendedLockConfigurationExtractor extends LockConfigurationExtractor {
     /** Extracts lock configuration for given method */
-    Optional<LockConfiguration> getLockConfiguration(Object object, Method method, Object[] parameterValues);
+    Optional<LockConfiguration> getLockConfiguration(
+            @Nullable Object object, Method method, @Nullable Object[] parameterValues);
 }

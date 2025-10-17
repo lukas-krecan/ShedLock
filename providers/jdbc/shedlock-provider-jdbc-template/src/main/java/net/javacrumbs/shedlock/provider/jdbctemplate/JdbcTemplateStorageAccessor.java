@@ -50,7 +50,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         PlatformTransactionManager transactionManager = configuration.getTransactionManager() != null
                 ? configuration.getTransactionManager()
                 : new DataSourceTransactionManager(
-                        configuration.getJdbcTemplate().getDataSource());
+                        requireNonNull(configuration.getJdbcTemplate().getDataSource(), "DataSource can't be null"));
 
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);

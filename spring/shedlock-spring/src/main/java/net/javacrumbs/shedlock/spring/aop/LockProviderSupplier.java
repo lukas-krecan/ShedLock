@@ -2,6 +2,7 @@ package net.javacrumbs.shedlock.spring.aop;
 
 import java.lang.reflect.Method;
 import net.javacrumbs.shedlock.core.LockProvider;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.ListableBeanFactory;
 
 /**
@@ -9,7 +10,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  */
 @FunctionalInterface
 interface LockProviderSupplier {
-    LockProvider supply(Object target, Method method, Object[] parameterValues);
+    LockProvider supply(@Nullable Object target, Method method, @Nullable Object[] parameterValues);
 
     static LockProviderSupplier create(ListableBeanFactory beanFactory) {
         // Only fetching beanNames as the beans might not have been initialized yet.
