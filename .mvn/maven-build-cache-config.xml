@@ -98,6 +98,13 @@
                         <log propertyName="ratchetFrom"/>
                     </logs>
                 </plugin>
+                <plugin artifactId="maven-surefire-plugin" goal="test">
+                    <reconciles>
+                        <reconcile propertyName="skipTests" skipValue="true"/>
+                        <reconcile propertyName="skip" skipValue="true"/>
+                        <reconcile propertyName="skipExec" skipValue="true"/>
+                    </reconciles>
+                </plugin>
                 <plugin artifactId="maven-javadoc-plugin" goal="javadoc">
                     <reconciles>
                         <reconcile propertyName="skip" skipValue="true"/>
