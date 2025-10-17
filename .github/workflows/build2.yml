@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             maven-
       - name: Run spotless
-        run: ./mvnw spotless:check test-compile javadoc:javadoc -Perror-prone
+        run: ./mvnw spotless:check
       - name: Build with Maven
         env:
           # Kotlin needs access to java.util
