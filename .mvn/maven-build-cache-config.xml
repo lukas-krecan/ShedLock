@@ -103,6 +103,7 @@
                         <reconcile propertyName="skipTests" skipValue="true"/>
                         <reconcile propertyName="skip" skipValue="true"/>
                         <reconcile propertyName="skipExec" skipValue="true"/>
+                        <reconcile propertyName="testFailureIgnore" skipValue="true"/>
                     </reconciles>
                 </plugin>
                 <plugin artifactId="maven-javadoc-plugin" goal="javadoc">
