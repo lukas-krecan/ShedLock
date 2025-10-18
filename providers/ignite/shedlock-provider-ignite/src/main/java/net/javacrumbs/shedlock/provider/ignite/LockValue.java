@@ -19,13 +19,18 @@ import java.time.Instant;
 // Don't convert to record, does not work
 class LockValue {
     /** Locked at time. */
-    private final Instant lockedAt;
+    private Instant lockedAt;
 
     /** Locked until time. */
-    private final Instant lockUntil;
+    private Instant lockUntil;
 
     /** Locked by hostname. */
-    private final String lockedBy;
+    private String lockedBy;
+
+    /**
+     * Default constructor for Ignite serialization.
+     */
+    public LockValue() {}
 
     /**
      * @param lockedAt
@@ -67,5 +72,29 @@ class LockValue {
      */
     public String getLockedBy() {
         return lockedBy;
+    }
+
+    /**
+     * Sets locked at time.
+     * @param lockedAt Locked at time.
+     */
+    public void setLockedAt(Instant lockedAt) {
+        this.lockedAt = lockedAt;
+    }
+
+    /**
+     * Sets locked until time.
+     * @param lockUntil Locked until time.
+     */
+    public void setLockUntil(Instant lockUntil) {
+        this.lockUntil = lockUntil;
+    }
+
+    /**
+     * Sets locked by hostname.
+     * @param lockedBy Locked by hostname.
+     */
+    public void setLockedBy(String lockedBy) {
+        this.lockedBy = lockedBy;
     }
 }

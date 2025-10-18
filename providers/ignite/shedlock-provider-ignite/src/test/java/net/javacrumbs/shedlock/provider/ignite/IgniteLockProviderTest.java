@@ -19,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.List;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteServer;
+import org.apache.ignite.InitParameters;
 import org.apache.ignite.table.KeyValueView;
 import org.apache.ignite.table.Table;
 import org.junit.jupiter.api.AfterAll;
@@ -46,6 +48,14 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
                             .getResource("ignite-config.conf")
                             .toURI()),
                     Files.createTempDirectory("igniteWork").toAbsolutePath());
+
+            InitParameters initParameters = InitParameters.builder()
+                    .metaStorageNodeNames(List.of("node"))
+                    .cmgNodeNames(List.of("node"))
+                    .clusterName("cluster")
+                    .build();
+
+            node.initCluster(initParameters);
 
             ignite = node.api();
 
