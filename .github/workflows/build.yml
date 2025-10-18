@@ -1,5 +1,4 @@
-name: CI-SQL
-# Runs only SQL tests
+name: CI
 
 on:
   push:
@@ -31,13 +30,13 @@ jobs:
           key: maven-sql-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             maven-
-      - name: Run spotless
+      - name: Run spotless check
         run: ./mvnw spotless:check
       - name: Build with Maven
         env:
           # Kotlin needs access to java.util
           MAVEN_OPTS: --add-opens java.base/java.util=ALL-UNNAMED
-        run:  ./mvnw validate -Perror-prone -Pskip-other-tests
+        run:  ./mvnw validate test package -Perror-prone
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
         if: always() # always run even if the previous step fails
