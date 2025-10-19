@@ -17,7 +17,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-@Disabled
 class FirestoreLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     @Container
