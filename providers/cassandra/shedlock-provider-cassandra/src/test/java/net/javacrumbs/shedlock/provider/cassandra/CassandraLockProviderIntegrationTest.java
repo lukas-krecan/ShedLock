@@ -16,6 +16,7 @@ package net.javacrumbs.shedlock.provider.cassandra;
 import static com.datastax.oss.driver.api.core.CqlIdentifier.fromCql;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.DEFAULT_TABLE;
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -25,6 +26,7 @@ import java.net.InetSocketAddress;
 import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.cassandra.CassandraContainer;
@@ -39,11 +41,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  */
 @Testcontainers
 public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
-    public static final CqlIdentifier KEYSPACE = fromCql("shedlock");
+    private static final CqlIdentifier KEYSPACE = fromCql("shedlock");
     private static CqlSession session;
+    private static final String DOCKER_IMAGE_NAME = "cassandra:4";
 
     @Container
-    public static final CassandraContainer cassandra = new CassandraContainer("cassandra:4")
+    static final CassandraContainer cassandra = new CassandraContainer(DOCKER_IMAGE_NAME)
             .withInitScript("shedlock.cql")
             .withEnv("CASSANDRA_DC", "local")
             .withEnv("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch");
@@ -58,6 +61,11 @@ public class CassandraLockProviderIntegrationTest extends AbstractStorageBasedLo
                 .addContactPoint(containerEndPoint)
                 .withLocalDatacenter("local")
                 .build();
+    }
+
+    @AfterAll
+    public static void removeImage() {
+        removeImageInCi(DOCKER_IMAGE_NAME);
     }
 
     @AfterEach

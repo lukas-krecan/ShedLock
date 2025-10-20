@@ -10,6 +10,8 @@ module net.javacrumbs.shedlock.test.support {
     requires org.junit.jupiter.api;
     requires org.slf4j;
     requires static org.jspecify;
+    requires com.github.dockerjava.api;
+    requires testcontainers;
 
     // Export test support packages
     exports net.javacrumbs.shedlock.test.support;
