@@ -1,4 +1,3 @@
-@SuppressWarnings("module")
 module net.javacrumbs.shedlock.provider.sql {
     requires net.javacrumbs.shedlock.core;
     requires static org.jspecify;

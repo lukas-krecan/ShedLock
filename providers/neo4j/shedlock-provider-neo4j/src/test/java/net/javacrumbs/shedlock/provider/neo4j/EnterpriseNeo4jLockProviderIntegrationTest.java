@@ -16,9 +16,9 @@ package net.javacrumbs.shedlock.provider.neo4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
-import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.neo4j.Neo4jContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
@@ -38,7 +38,7 @@ public class EnterpriseNeo4jLockProviderIntegrationTest extends AbstractNeo4jLoc
         return testUtils;
     }
 
-    private static class MyNeo4jContainer extends Neo4jContainer<MyNeo4jContainer> {
+    private static class MyNeo4jContainer extends Neo4jContainer {
         MyNeo4jContainer() {
             super(DockerImageName.parse("neo4j").withTag("5.22.0-enterprise"));
             addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "eval");

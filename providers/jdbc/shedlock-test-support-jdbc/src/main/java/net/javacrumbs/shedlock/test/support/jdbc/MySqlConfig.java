@@ -13,11 +13,11 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 
-public class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfig.MyMySQLContainer> {
+public class MySqlConfig extends AbstractContainerBasedDbConfig<MySQLContainer> {
     public MySqlConfig() {
-        super(new MyMySQLContainer()
+        super(new MySQLContainer("mysql:8.2")
                 .withDatabaseName(TEST_SCHEMA_NAME)
                 .withUsername("SA")
                 .withPassword("pass")
@@ -32,11 +32,5 @@ public class MySqlConfig extends AbstractContainerBasedDbConfig<MySqlConfig.MyMy
     @Override
     public String nowExpression() {
         return "UTC_TIMESTAMP(3)";
-    }
-
-    static class MyMySQLContainer extends MySQLContainer<MyMySQLContainer> {
-        MyMySQLContainer() {
-            super("mysql:8.2");
-        }
     }
 }

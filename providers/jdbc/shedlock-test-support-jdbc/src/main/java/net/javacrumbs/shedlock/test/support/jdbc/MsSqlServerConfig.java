@@ -13,17 +13,19 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import static org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT;
+import static org.testcontainers.mssqlserver.MSSQLServerContainer.MS_SQL_SERVER_PORT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.mssqlserver.MSSQLServerContainer;
 
-public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSqlServerConfig.MyMSSQLServerContainer> {
+public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MSSQLServerContainer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MsSqlServerConfig.class);
 
     public MsSqlServerConfig() {
-        super(new MyMSSQLServerContainer());
+        super(new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
+                .withLogConsumer(it -> LOGGER.info(it.getUtf8String()))
+                .acceptLicense());
     }
 
     @Override
@@ -39,13 +41,5 @@ public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MsSq
     @Override
     public String nowExpression() {
         return "SYSUTCDATETIME()";
-    }
-
-    static class MyMSSQLServerContainer extends MSSQLServerContainer<MyMSSQLServerContainer> {
-        MyMSSQLServerContainer() {
-            super("mcr.microsoft.com/mssql/server:2022-latest");
-            withLogConsumer(it -> LOGGER.info(it.getUtf8String()));
-            acceptLicense();
-        }
     }
 }

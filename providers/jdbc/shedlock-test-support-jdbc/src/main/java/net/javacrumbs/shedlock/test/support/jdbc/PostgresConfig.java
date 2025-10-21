@@ -13,11 +13,11 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
-public class PostgresConfig extends AbstractContainerBasedDbConfig<PostgresConfig.MyPostgreSQLContainer> {
+public class PostgresConfig extends AbstractContainerBasedDbConfig<PostgreSQLContainer> {
     public PostgresConfig() {
-        super(new MyPostgreSQLContainer()
+        super(new PostgreSQLContainer("postgres:17-alpine")
                 .withDatabaseName(TEST_SCHEMA_NAME)
                 .withUsername("SA")
                 .withPassword("pass"));
@@ -26,11 +26,5 @@ public class PostgresConfig extends AbstractContainerBasedDbConfig<PostgresConfi
     @Override
     public String nowExpression() {
         return "timezone('utc', CURRENT_TIMESTAMP)";
-    }
-
-    static class MyPostgreSQLContainer extends PostgreSQLContainer<MyPostgreSQLContainer> {
-        MyPostgreSQLContainer() {
-            super("postgres:17-alpine");
-        }
     }
 }

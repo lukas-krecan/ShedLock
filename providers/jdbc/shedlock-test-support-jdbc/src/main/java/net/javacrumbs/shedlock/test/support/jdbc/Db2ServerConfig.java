@@ -15,7 +15,7 @@ package net.javacrumbs.shedlock.test.support.jdbc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.Db2Container;
+import org.testcontainers.db2.Db2Container;
 import org.testcontainers.utility.DockerImageName;
 
 public final class Db2ServerConfig extends AbstractDbConfig {
