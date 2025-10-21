@@ -13,11 +13,11 @@
  */
 package net.javacrumbs.shedlock.test.support.jdbc;
 
-import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.mariadb.MariaDBContainer;
 
-public class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDbConfig.MyMariaDbContainer> {
+public class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDBContainer> {
     public MariaDbConfig() {
-        super(new MyMariaDbContainer()
+        super(new MariaDBContainer("mariadb:lts")
                 .withDatabaseName(TEST_SCHEMA_NAME)
                 .withUsername("SA")
                 .withPassword("pass"));
@@ -31,11 +31,5 @@ public class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDbConfig.
     @Override
     public String nowExpression() {
         return "UTC_TIMESTAMP(3)";
-    }
-
-    static class MyMariaDbContainer extends MariaDBContainer<MyMariaDbContainer> {
-        MyMariaDbContainer() {
-            super("mariadb:lts");
-        }
     }
 }

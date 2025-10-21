@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.provider.spanner.SpannerLockProvider.Configuration;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.containers.SpannerEmulatorContainer;
+import org.testcontainers.gcloud.SpannerEmulatorContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
