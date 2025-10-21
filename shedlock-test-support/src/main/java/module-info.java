@@ -9,7 +9,6 @@ module net.javacrumbs.shedlock.test.support {
     requires org.assertj.core;
     requires org.junit.jupiter.api;
     requires org.slf4j;
-    requires static org.jspecify;
     requires com.github.dockerjava.api;
     requires testcontainers;
 

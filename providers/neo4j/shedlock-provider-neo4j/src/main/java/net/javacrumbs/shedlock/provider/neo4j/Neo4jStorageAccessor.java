@@ -134,7 +134,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
                 lockConfiguration.getName(),
                 "lockUntil",
                 lockConfiguration.getUnlockTime().toString());
-        executeCommand(cypher, statement -> null, parameters, this::handleUnlockException);
+        executeCommand(cypher, statement -> 0, parameters, this::handleUnlockException);
     }
 
     private <T> T executeCommand(

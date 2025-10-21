@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Scheduled;
 
 public abstract class AbstractSchedulerConfig {
-    private static final Logger logger = LoggerFactory.getLogger(ProxyIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractSchedulerConfig.class);
 
     @Bean
     public LockProvider lockProvider() {

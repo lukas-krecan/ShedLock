@@ -8,7 +8,6 @@ module net.javacrumbs.shedlock.provider.redis.spring {
     requires net.javacrumbs.shedlock.core;
     requires net.javacrumbs.shedlock.provider.redis.support;
     requires spring.data.redis;
-    requires spring.context;
     requires reactor.core;
     requires spring.tx;
 
