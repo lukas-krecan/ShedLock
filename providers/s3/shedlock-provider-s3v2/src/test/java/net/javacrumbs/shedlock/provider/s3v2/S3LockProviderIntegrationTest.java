@@ -9,9 +9,9 @@ import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderInte
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
@@ -30,7 +30,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     @Container
-    static final MyLocalStackS3Container localStackS3 = new MyLocalStackS3Container();
+    static final LocalStackContainer localStackS3 =
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"));
 
     private static S3Client s3Client;
     private static final String BUCKET_NAME = "my-bucket";
@@ -89,11 +90,5 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
         return new S3StorageAccessor(s3Client, BUCKET_NAME, OBJECT_PREFIX)
                 .find(lockName, "test")
                 .get();
-    }
-
-    private static class MyLocalStackS3Container extends LocalStackContainer {
-        private MyLocalStackS3Container() {
-            super(DockerImageName.parse("localstack/localstack:latest"));
-        }
     }
 }

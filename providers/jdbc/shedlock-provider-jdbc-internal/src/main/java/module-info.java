@@ -9,7 +9,6 @@ module net.javacrumbs.shedlock.provider.jdbc.internal {
     requires net.javacrumbs.shedlock.core;
     requires transitive net.javacrumbs.shedlock.provider.sql;
     requires static org.jspecify;
-    requires org.slf4j;
 
     // Allow JDBC driver service loading
     uses java.sql.Driver;

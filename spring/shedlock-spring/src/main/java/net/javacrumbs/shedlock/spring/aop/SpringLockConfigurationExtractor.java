@@ -104,7 +104,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
             return getLockConfiguration(
                     scheduledMethodRunnable.getTarget(), scheduledMethodRunnable.getMethod(), new Object[] {});
         } else {
-            logger.debug("Unknown task type " + task);
+            logger.debug("Unknown task type {}", task);
         }
         return Optional.empty();
     }
