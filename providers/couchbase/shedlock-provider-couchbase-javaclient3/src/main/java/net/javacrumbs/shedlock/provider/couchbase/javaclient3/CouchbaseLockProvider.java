@@ -26,6 +26,7 @@ import java.time.Instant;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 
 /**
@@ -98,6 +99,8 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
                 collection.insert(lockConfiguration.getName(), content);
             } catch (DocumentExistsException e) {
                 return false;
+            } catch (Exception e) {
+                throw new LockException("Error on insert", e);
             }
             return true;
         }
@@ -128,6 +131,8 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
                         ReplaceOptions.replaceOptions().cas(result.cas()));
             } catch (CasMismatchException e) {
                 return false;
+            } catch (Exception e) {
+                throw new LockException("Error on update", e);
             }
             return true;
         }
