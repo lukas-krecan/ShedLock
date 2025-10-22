@@ -43,4 +43,8 @@ public interface DbConfig {
     default String getR2dbcUrl() {
         return getJdbcUrl().replace("jdbc", "r2dbc");
     }
+
+    default boolean failIfKeyNameTooLong(boolean dbTime) {
+        return true;
+    }
 }
