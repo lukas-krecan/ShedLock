@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -61,7 +62,7 @@ class S3StorageAccessor extends AbstractStorageAccessor {
                 logger.debug("Lock not found. action: {}, name: {}", action, name);
                 return Optional.empty();
             }
-            throw e;
+            throw new LockException(e);
         }
     }
 
@@ -89,10 +90,11 @@ class S3StorageAccessor extends AbstractStorageAccessor {
         } catch (AwsServiceException e) {
             if (e.statusCode() == PRECONDITION_FAILED) {
                 logger.debug("Lock already in use. name: {}", name);
+                return false;
             } else {
                 logger.warn("Failed to create lock. name: {}", name, e);
             }
-            return false;
+            throw new LockException(e);
         }
     }
 
@@ -176,10 +178,11 @@ class S3StorageAccessor extends AbstractStorageAccessor {
         } catch (AwsServiceException e) {
             if (e.statusCode() == PRECONDITION_FAILED) {
                 logger.debug("Lock not exists to {}. name: {}, e-tag {}", action, name, eTag);
+                return false;
             } else {
                 logger.warn("Failed to {} lock. name: {}", action, name, e);
+                throw new LockException(e);
             }
-            return false;
         }
     }
 
