@@ -13,6 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.MsSqlServerConfig;
 import org.junit.jupiter.api.Disabled;
 
@@ -20,5 +21,10 @@ import org.junit.jupiter.api.Disabled;
 public class MsSqlR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     public MsSqlR2dbcLockProviderIntegrationTest() {
         super(new MsSqlServerConfig());
+    }
+
+    @Override
+    protected DatabaseProduct databaseProduct() {
+        return DatabaseProduct.SQL_SERVER;
     }
 }

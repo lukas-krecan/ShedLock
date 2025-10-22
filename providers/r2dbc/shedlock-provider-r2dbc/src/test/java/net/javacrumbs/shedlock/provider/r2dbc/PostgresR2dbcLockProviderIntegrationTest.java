@@ -13,10 +13,16 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 
 public class PostgresR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     public PostgresR2dbcLockProviderIntegrationTest() {
         super(new PostgresConfig());
+    }
+
+    @Override
+    protected DatabaseProduct databaseProduct() {
+        return DatabaseProduct.POSTGRES_SQL;
     }
 }

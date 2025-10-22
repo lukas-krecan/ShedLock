@@ -13,6 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.MariaDbConfig;
 import org.junit.jupiter.api.Disabled;
 
@@ -21,5 +22,10 @@ public class MariaR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
 
     public MariaR2dbcLockProviderIntegrationTest() {
         super(new MariaDbConfig());
+    }
+
+    @Override
+    protected DatabaseProduct databaseProduct() {
+        return DatabaseProduct.MARIA_DB;
     }
 }

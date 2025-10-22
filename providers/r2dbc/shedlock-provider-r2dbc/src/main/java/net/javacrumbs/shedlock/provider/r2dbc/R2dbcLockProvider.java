@@ -15,7 +15,12 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import static java.util.Objects.requireNonNull;
+
 import io.r2dbc.spi.ConnectionFactory;
+import java.util.TimeZone;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
+import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 
 /**
@@ -37,10 +42,64 @@ import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
  */
 public class R2dbcLockProvider extends StorageBasedLockProvider {
     public R2dbcLockProvider(ConnectionFactory connectionFactory) {
-        this(connectionFactory, "shedlock");
+        this(Configuration.builder(connectionFactory).build());
     }
 
     public R2dbcLockProvider(ConnectionFactory connectionFactory, String tableName) {
-        super(new R2dbcStorageAccessor(connectionFactory, tableName));
+        this(Configuration.builder(connectionFactory).withTableName(tableName).build());
+    }
+
+    public R2dbcLockProvider(Configuration configuration) {
+        super(new R2dbcStorageAccessor(configuration));
+    }
+
+    public static final class Configuration extends SqlConfiguration {
+        private final ConnectionFactory connectionFactory;
+
+        Configuration(
+                ConnectionFactory connectionFactory,
+                boolean dbUpperCase,
+                DatabaseProduct databaseProduct,
+                String tableName,
+                ColumnNames columnNames,
+                String lockedByValue,
+                boolean useDbTime) {
+            super(
+                    databaseProduct,
+                    dbUpperCase,
+                    tableName,
+                    useDbTime ? null : TimeZone.getTimeZone("UTC"),
+                    columnNames,
+                    lockedByValue,
+                    useDbTime);
+            this.connectionFactory = requireNonNull(connectionFactory, "connectionFactory can not be null");
+        }
+
+        public ConnectionFactory getConnectionFactory() {
+            return connectionFactory;
+        }
+
+        public static Configuration.Builder builder(ConnectionFactory connectionFactory) {
+            return new Configuration.Builder(connectionFactory);
+        }
+
+        public static final class Builder extends SqlConfigurationBuilder<Builder> {
+            private final ConnectionFactory connectionFactory;
+
+            public Builder(ConnectionFactory connectionFactory) {
+                this.connectionFactory = connectionFactory;
+            }
+
+            public Configuration build() {
+                return new Configuration(
+                        connectionFactory,
+                        dbUpperCase,
+                        databaseProduct,
+                        tableName,
+                        columnNames,
+                        lockedByValue,
+                        useDbTime);
+            }
+        }
     }
 }
