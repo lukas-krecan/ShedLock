@@ -6,6 +6,7 @@
  */
 module net.javacrumbs.shedlock.provider.r2dbc {
     requires net.javacrumbs.shedlock.core;
+    requires net.javacrumbs.shedlock.provider.sql;
     requires r2dbc.spi;
     requires reactor.core;
     requires org.reactivestreams;

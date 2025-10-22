@@ -24,6 +24,12 @@
         </dependency>
 
         <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-sql-support</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-spi</artifactId>
             <version>${r2dbc.version}</version>

@@ -15,34 +15,38 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
-import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Statement;
 import java.time.Duration;
-import java.time.Instant;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import net.javacrumbs.shedlock.core.ClockProvider;
+import java.util.regex.Pattern;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
 import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Mono;
 
 class R2dbcStorageAccessor extends AbstractStorageAccessor {
+    private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile(":[a-zA-Z]+");
 
     private final ConnectionFactory connectionFactory;
-    private final String tableName;
+    private final SqlStatementsSource sqlStatementsSource;
 
     @Nullable
     private R2dbcAdapter adapter;
 
-    R2dbcStorageAccessor(ConnectionFactory connectionFactory, String tableName) {
-        this.tableName = requireNonNull(tableName, "tableName can not be null");
-        this.connectionFactory = requireNonNull(connectionFactory, "dataSource can not be null");
+    R2dbcStorageAccessor(R2dbcLockProvider.Configuration configuration) {
+        this.connectionFactory = configuration.getConnectionFactory();
+        this.sqlStatementsSource = SqlStatementsSource.create(configuration);
     }
 
     protected <T> Mono<T> executeCommand(
@@ -75,22 +79,103 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(LockConfiguration lockConfiguration) {
-        return Boolean.TRUE.equals(block(insertRecordReactive(lockConfiguration)));
+        String stmt = sqlStatementsSource().getInsertStatement();
+        try {
+            return Boolean.TRUE.equals(block(executeUpdate(stmt, lockConfiguration)));
+        } catch (Exception e) {
+            Throwable cause = unwrap(e);
+            if (cause instanceof R2dbcDataIntegrityViolationException) {
+                return false;
+            }
+            logger.debug("Exception thrown when inserting record", cause);
+            throw new LockException("Unexpected exception when locking", cause);
+        }
     }
 
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
-        return Boolean.TRUE.equals(block(updateRecordReactive(lockConfiguration)));
+        String stmt = sqlStatementsSource().getUpdateStatement();
+        try {
+            return Boolean.TRUE.equals(block(executeUpdate(stmt, lockConfiguration)));
+        } catch (Exception e) {
+            logger.debug("Unexpected exception when updating lock record", e);
+            throw new LockException("Unexpected exception when locking", unwrap(e));
+        }
     }
 
     @Override
     public boolean extend(LockConfiguration lockConfiguration) {
-        return Boolean.TRUE.equals(block(extendReactive(lockConfiguration)));
+        String stmt = sqlStatementsSource().getExtendStatement();
+        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
+        try {
+            return Boolean.TRUE.equals(block(executeUpdate(stmt, lockConfiguration)));
+        } catch (Exception e) {
+            throw new LockException("Unexpected exception when extending", unwrap(e));
+        }
     }
 
     @Override
     public void unlock(LockConfiguration lockConfiguration) {
-        block(unlockReactive(lockConfiguration));
+        String stmt = sqlStatementsSource().getUnlockStatement();
+        try {
+            block(executeUpdate(stmt, lockConfiguration));
+        } catch (Exception e) {
+            throw new LockException("Unexpected exception when unlocking", unwrap(e));
+        }
+    }
+
+    private String translate(String statement, java.util.List<String> parameterNames) {
+        AtomicInteger index = new AtomicInteger(1);
+        return NAMED_PARAMETER_PATTERN.matcher(statement).replaceAll(result -> {
+            String paramName = result.group().substring(1);
+            parameterNames.add(paramName);
+            return java.util.regex.Matcher.quoteReplacement(toParameter(index.getAndIncrement(), paramName));
+        });
+    }
+
+    private SqlStatementsSource sqlStatementsSource() {
+        return sqlStatementsSource;
+    }
+
+    private Mono<Boolean> executeUpdate(String sql, LockConfiguration lockConfiguration) {
+        Map<String, Object> params = translateParams(sqlStatementsSource().params(lockConfiguration));
+        java.util.List<String> parameterNames = new java.util.ArrayList<>();
+        String translatedSql = translate(sql, parameterNames);
+        return executeCommand(
+                translatedSql,
+                statement -> {
+                    bindParams(statement, params, parameterNames);
+                    return Mono.from(statement.execute())
+                            .flatMap(it -> Mono.from(it.getRowsUpdated()))
+                            .map(it -> it > 0);
+                },
+                (s, t) -> Mono.error(new LockException("Unexpected exception when executing SQL", t)));
+    }
+
+    private void bindParams(Statement statement, Map<String, Object> params, java.util.List<String> parameterNames) {
+        AtomicInteger index = new AtomicInteger(0);
+        parameterNames.forEach(name -> bind(statement, index.getAndIncrement(), name, params.get(name)));
+    }
+
+    private Map<String, Object> translateParams(Map<String, Object> params) {
+        return params.entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), translate(entry.getValue())))
+                .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private static Object translate(Object value) {
+        if (value instanceof Calendar cal) {
+            return cal.toInstant();
+        } else {
+            return value;
+        }
+    }
+
+    private static Throwable unwrap(Throwable e) {
+        if (e.getCause() != null && e.getCause() instanceof LockException) {
+            return e.getCause();
+        }
+        return e;
     }
 
     private <T> @Nullable T block(Mono<T> mono) {
@@ -102,99 +187,5 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
             }
             throw new LockException("Unexpected exception when executing r2dbc operation", e);
         }
-    }
-
-    Mono<Boolean> insertRecordReactive(LockConfiguration lockConfiguration) {
-        // Try to insert if the record does not exist (not optimal, but the simplest
-        // platform agnostic
-        // way)
-        String sql = "INSERT INTO " + tableName + "(name, lock_until, locked_at, locked_by) VALUES("
-                + toParameter(1, "name") + ", " + toParameter(2, "lock_until") + ", " + toParameter(3, "locked_at")
-                + ", " + toParameter(4, "locked_by") + ")";
-        return executeCommand(
-                sql,
-                statement -> {
-                    bind(statement, 0, "name", lockConfiguration.getName());
-                    bind(statement, 1, "lock_until", lockConfiguration.getLockAtMostUntil());
-                    bind(statement, 2, "locked_at", ClockProvider.now());
-                    bind(statement, 3, "locked_by", getHostname());
-                    return Mono.from(statement.execute())
-                            .flatMap(it -> Mono.from(it.getRowsUpdated()))
-                            .map(it -> it > 0);
-                },
-                this::handleInsertionException);
-    }
-
-    Mono<Boolean> updateRecordReactive(LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + ", locked_at = "
-                + toParameter(2, "locked_at") + ", locked_by = " + toParameter(3, "locked_by") + " WHERE name = "
-                + toParameter(4, "name") + " AND lock_until <= " + toParameter(5, "now");
-        return executeCommand(
-                sql,
-                statement -> {
-                    Instant now = ClockProvider.now();
-                    bind(statement, 0, "lock_until", lockConfiguration.getLockAtMostUntil());
-                    bind(statement, 1, "locked_at", now);
-                    bind(statement, 2, "locked_by", getHostname());
-                    bind(statement, 3, "name", lockConfiguration.getName());
-                    bind(statement, 4, "now", now);
-                    return Mono.from(statement.execute())
-                            .flatMap(it -> Mono.from(it.getRowsUpdated()))
-                            .map(it -> it > 0);
-                },
-                this::handleUpdateException);
-    }
-
-    Mono<Boolean> extendReactive(LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = "
-                + toParameter(2, "name") + " AND locked_by = " + toParameter(3, "locked_by") + " AND lock_until > "
-                + toParameter(4, "now");
-
-        logger.debug("Extending lock={} until={}", lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
-
-        return executeCommand(
-                sql,
-                statement -> {
-                    bind(statement, 0, "lock_until", lockConfiguration.getLockAtMostUntil());
-                    bind(statement, 1, "name", lockConfiguration.getName());
-                    bind(statement, 2, "locked_by", getHostname());
-                    bind(statement, 3, "now", ClockProvider.now());
-                    return Mono.from(statement.execute())
-                            .flatMap(it -> Mono.from(it.getRowsUpdated()))
-                            .map(it -> it > 0);
-                },
-                this::handleUnlockException);
-    }
-
-    Mono<Void> unlockReactive(LockConfiguration lockConfiguration) {
-        String sql = "UPDATE " + tableName + " SET lock_until = " + toParameter(1, "lock_until") + " WHERE name = "
-                + toParameter(2, "name");
-        return executeCommand(
-                sql,
-                statement -> {
-                    bind(statement, 0, "lock_until", lockConfiguration.getUnlockTime());
-                    bind(statement, 1, "name", lockConfiguration.getName());
-                    return Mono.from(statement.execute())
-                            .flatMap(it -> Mono.from(it.getRowsUpdated()))
-                            .then();
-                },
-                (s, t) -> handleUnlockException(s, t).then());
-    }
-
-    Mono<Boolean> handleInsertionException(String sql, Throwable e) {
-        if (e instanceof R2dbcDataIntegrityViolationException) {
-            // lock record already exists
-            return Mono.just(false);
-        } else {
-            return Mono.error(new LockException("Unexpected exception when locking", e));
-        }
-    }
-
-    Mono<Boolean> handleUpdateException(String sql, Throwable e) {
-        return Mono.error(new LockException("Unexpected exception when locking", e));
-    }
-
-    Mono<Boolean> handleUnlockException(String sql, Throwable e) {
-        return Mono.error(new LockException("Unexpected exception when unlocking", e));
     }
 }
