@@ -1,15 +1,17 @@
 package net.javacrumbs.shedlock.provider.vertx.sqlclient;
 
-import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
+import io.vertx.sqlclient.DatabaseException;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
@@ -34,9 +36,15 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
             int updated = executeUpdate(stmt, lockConfiguration);
             return updated > 0;
         } catch (Exception e) {
-            // same semantics as JDBC implementation - ignore errors on insert and return false
-            logger.debug("Exception thrown when inserting record", e);
-            return false;
+            Throwable cause = unwrap(e);
+            if (cause instanceof DatabaseException dbException) {
+                if ("23000".equals(dbException.getSqlState())) {
+                    // Duplicate key
+                    return false;
+                }
+            }
+            logger.debug("Exception thrown when inserting record", cause);
+            throw new LockException("Unexpected exception when locking", cause);
         }
     }
 
@@ -84,22 +92,16 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         return sqlStatementsSource;
     }
 
-    private int executeUpdate(String sql, LockConfiguration lockConfiguration) {
+    private int executeUpdate(String sql, LockConfiguration lockConfiguration)
+            throws ExecutionException, InterruptedException, TimeoutException {
         Map<String, Object> params = translateParams(sqlStatementsSource().params(lockConfiguration));
-        try {
-            // block to keep compatibility with synchronous ShedLock contracts
-            RowSet<?> rs = SqlTemplate.forQuery(sqlClient, sql)
-                    .execute(params)
-                    .toCompletionStage()
-                    .toCompletableFuture()
-                    .get(30, TimeUnit.SECONDS);
-            return rs.rowCount();
-        } catch (CompletionException ce) {
-            Throwable cause = ce.getCause();
-            throw new LockException(requireNonNullElse(cause, ce));
-        } catch (Exception e) {
-            throw new LockException(e);
-        }
+        // block to keep compatibility with synchronous ShedLock contracts
+        RowSet<?> rs = SqlTemplate.forQuery(sqlClient, sql)
+                .execute(params)
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS);
+        return rs.rowCount();
     }
 
     private Map<String, Object> translateParams(Map<String, Object> params) {
@@ -117,7 +119,7 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     }
 
     private static Throwable unwrap(Throwable e) {
-        if (e instanceof CompletionException && e.getCause() != null) {
+        if ((e instanceof CompletionException || e instanceof ExecutionException) && e.getCause() != null) {
             return e.getCause();
         }
         return e;
