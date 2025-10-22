@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.firestore;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
 import com.google.cloud.Timestamp;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +65,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
             log.debug("Inserting lock {}", docRef);
 
             return runTransaction(transaction -> {
-                DocumentSnapshot snapshot = transaction.get(docRef).get();
+                DocumentSnapshot snapshot = transaction.get(docRef).get(30, SECONDS);
                 if (!snapshot.exists()) {
                     transaction.set(docRef, lockData);
                     log.debug("Lock inserted {}", docRef);
@@ -71,9 +73,8 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
                 }
                 return false;
             });
-        } catch (InterruptedException | ExecutionException e) {
-            log.debug("Error inserting lock record", e);
-            return false;
+        } catch (Exception e) {
+            throw new LockException("Error on insert", e);
         }
     }
 
@@ -82,7 +83,7 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
             DocumentReference docRef = getDocument(name);
 
             return runTransaction(transaction -> {
-                DocumentSnapshot snapshot = transaction.get(docRef).get();
+                DocumentSnapshot snapshot = transaction.get(docRef).get(30, SECONDS);
                 if (snapshot.exists()) {
                     Timestamp lockUntilTs = snapshot.getTimestamp(fieldNames.lockUntil());
                     if (lockUntilTs != null && toInstant(lockUntilTs).isBefore(now())) {
@@ -93,9 +94,8 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
                 }
                 return false;
             });
-        } catch (InterruptedException | ExecutionException e) {
-            log.debug("Error updating lock record", e);
-            return false;
+        } catch (Exception e) {
+            throw new LockException("Error on update", e);
         }
     }
 
@@ -131,9 +131,8 @@ class FirestoreStorageAccessor extends AbstractStorageAccessor {
                 }
                 return false;
             });
-        } catch (InterruptedException | ExecutionException e) {
-            log.debug("Error updating own lock record", e);
-            return false;
+        } catch (Exception e) {
+            throw new LockException("Error on update", e);
         }
     }
 

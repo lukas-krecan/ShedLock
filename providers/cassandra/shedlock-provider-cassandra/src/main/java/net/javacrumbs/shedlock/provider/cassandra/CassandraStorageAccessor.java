@@ -30,6 +30,7 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.cassandra.CassandraLockProvider.Configuration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -82,7 +83,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
             return insert(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         } catch (QueryExecutionException e) {
             logger.warn("Error on insert", e);
-            return false;
+            throw new LockException("Error on insert", e);
         }
     }
 
@@ -97,7 +98,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
             return update(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil());
         } catch (QueryExecutionException e) {
             logger.warn("Error on update", e);
-            return false;
+            throw new LockException("Error on update", e);
         }
     }
 

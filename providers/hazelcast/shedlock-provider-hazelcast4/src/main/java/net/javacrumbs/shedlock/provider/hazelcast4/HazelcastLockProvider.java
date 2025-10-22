@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,6 +125,8 @@ public class HazelcastLockProvider implements LockProvider {
             if (tryLock(lockConfiguration)) {
                 return Optional.of(new HazelcastSimpleLock(this, lockConfiguration));
             }
+        } catch (Exception e) {
+            throw new LockException(e);
         } finally {
             // released the map lock for the others threads
             store.unlock(lockName);
