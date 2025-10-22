@@ -14,21 +14,21 @@
 package net.javacrumbs.shedlock.test.support.jdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     protected JdbcTestUtils testUtils;
@@ -87,12 +87,16 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     }
 
     @Test
-    @Disabled
-    public void shouldNotFailIfKeyNameTooLong() {
+    @EnabledIf("failIfKeyNameTooLong")
+    public void shouldFailIfKeyNameTooLong() {
         LockConfiguration configuration = lockConfig(
                 "lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
-        Optional<SimpleLock> lock = getLockProvider().lock(configuration);
-        assertThat(lock).isEmpty();
+        assertThatThrownBy(() -> getLockProvider().lock(configuration)).isInstanceOf(LockException.class);
+    }
+
+    @SuppressWarnings("UnusedMethod")
+    private boolean failIfKeyNameTooLong() {
+        return getDbConfig().failIfKeyNameTooLong(useDbTime());
     }
 
     protected DataSource getDatasource() {

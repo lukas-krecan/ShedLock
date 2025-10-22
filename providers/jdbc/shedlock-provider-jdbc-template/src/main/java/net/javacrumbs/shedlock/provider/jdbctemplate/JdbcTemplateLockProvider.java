@@ -87,8 +87,6 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         @Nullable
         private final PlatformTransactionManager transactionManager;
 
-        private final boolean throwUnexpectedException;
-
         private final @Nullable Integer isolationLevel;
 
         private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -103,14 +101,12 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 ColumnNames columnNames,
                 String lockedByValue,
                 boolean useDbTime,
-                @Nullable Integer isolationLevel,
-                boolean throwUnexpectedException) {
+                @Nullable Integer isolationLevel) {
 
             super(databaseProduct, dbUpperCase, tableName, timeZone, columnNames, lockedByValue, useDbTime);
             this.jdbcTemplate = requireNonNull(jdbcTemplate, "jdbcTemplate can not be null");
             this.transactionManager = transactionManager;
             this.isolationLevel = isolationLevel;
-            this.throwUnexpectedException = throwUnexpectedException;
         }
 
         public JdbcTemplate getJdbcTemplate() {
@@ -143,10 +139,6 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             }
         }
 
-        public boolean isThrowUnexpectedException() {
-            return throwUnexpectedException;
-        }
-
         public static Configuration.Builder builder() {
             return new Configuration.Builder();
         }
@@ -160,8 +152,6 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
 
             @Nullable
             private TimeZone timeZone;
-
-            private boolean throwUnexpectedException;
 
             @Nullable
             private Integer isolationLevel;
@@ -195,11 +185,6 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                 return this;
             }
 
-            public Builder withThrowUnexpectedException(boolean throwUnexpectedException) {
-                this.throwUnexpectedException = throwUnexpectedException;
-                return getThis();
-            }
-
             /**
              * Sets the isolation level for ShedLock. See {@link java.sql.Connection} for
              * constant definitions. for constant definitions
@@ -220,8 +205,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
                         columnNames,
                         lockedByValue,
                         useDbTime,
-                        isolationLevel,
-                        throwUnexpectedException);
+                        isolationLevel);
             }
         }
     }

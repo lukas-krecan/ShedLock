@@ -33,4 +33,10 @@ public class MySqlConfig extends AbstractContainerBasedDbConfig<MySQLContainer> 
     public String nowExpression() {
         return "UTC_TIMESTAMP(3)";
     }
+
+    @Override
+    public boolean failIfKeyNameTooLong(boolean dbTime) {
+        // We use INSERT IGNORE which does not fail on key too long
+        return !dbTime;
+    }
 }

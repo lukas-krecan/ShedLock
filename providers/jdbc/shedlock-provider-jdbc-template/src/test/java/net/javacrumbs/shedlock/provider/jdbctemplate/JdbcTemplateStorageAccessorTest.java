@@ -25,8 +25,10 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.support.LockException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -49,25 +51,24 @@ class JdbcTemplateStorageAccessorTest {
     }
 
     @Test
-    void shouldCatchUnexpectedException() {
+    void shouldCatchTransactionSystemException() {
         TransactionSystemException exception = new TransactionSystemException("test");
-        JdbcTemplateStorageAccessor jdbcTemplateStorageAccessor = createJdbcTemplateStorageAccessor(exception, false);
+        JdbcTemplateStorageAccessor jdbcTemplateStorageAccessor = createJdbcTemplateStorageAccessor(exception);
 
         assertThat(jdbcTemplateStorageAccessor.updateRecord(lockConfiguration)).isFalse();
     }
 
     @Test
     void shouldThrowUnexpectedException() {
-        TransactionSystemException exception = new TransactionSystemException("test");
-        JdbcTemplateStorageAccessor jdbcTemplateStorageAccessor = createJdbcTemplateStorageAccessor(exception, true);
+        var exception = new InvalidDataAccessResourceUsageException("test");
+        JdbcTemplateStorageAccessor jdbcTemplateStorageAccessor = createJdbcTemplateStorageAccessor(exception);
 
         assertThatThrownBy(() -> jdbcTemplateStorageAccessor.updateRecord(lockConfiguration))
-                .isEqualTo(exception);
+                .isInstanceOf(LockException.class);
     }
 
     @NotNull
-    private JdbcTemplateStorageAccessor createJdbcTemplateStorageAccessor(
-            TransactionSystemException exception, boolean throwUnexpectedException) {
+    private JdbcTemplateStorageAccessor createJdbcTemplateStorageAccessor(Exception exception) {
         JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
         when(jdbcTemplate.getDataSource()).thenReturn(dataSource);
         PlatformTransactionManager txManager = mock(PlatformTransactionManager.class);
@@ -76,14 +77,13 @@ class JdbcTemplateStorageAccessorTest {
                 new JdbcTemplateStorageAccessor(JdbcTemplateLockProvider.Configuration.builder()
                         .withJdbcTemplate(jdbcTemplate)
                         .withTransactionManager(txManager)
-                        .withThrowUnexpectedException(throwUnexpectedException)
                         .build());
 
         mockUpdateThrowsException(jdbcTemplate, exception);
         return jdbcTemplateStorageAccessor;
     }
 
-    private static void mockUpdateThrowsException(JdbcTemplate jdbcTemplate, TransactionSystemException ex) {
+    private static void mockUpdateThrowsException(JdbcTemplate jdbcTemplate, Exception ex) {
         when(jdbcTemplate.update(any(PreparedStatementCreator.class))).thenThrow(ex);
     }
 }

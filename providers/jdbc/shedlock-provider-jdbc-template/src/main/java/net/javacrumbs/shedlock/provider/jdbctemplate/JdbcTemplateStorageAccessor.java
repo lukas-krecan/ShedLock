@@ -20,12 +20,11 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration;
 import net.javacrumbs.shedlock.provider.sql.SqlStatementsSource;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -68,12 +67,9 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         } catch (DuplicateKeyException | ConcurrencyFailureException | TransactionSystemException e) {
             logger.debug("Duplicate key", e);
             return false;
-        } catch (DataIntegrityViolationException | BadSqlGrammarException | UncategorizedSQLException e) {
-            if (configuration.isThrowUnexpectedException()) {
-                throw e;
-            }
+        } catch (DataAccessException e) {
             logger.error("Unexpected exception", e);
-            return false;
+            throw new LockException(e);
         }
     }
 
@@ -82,15 +78,12 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         String sql = sqlStatementsSource().getUpdateStatement();
         try {
             return execute(sql, lockConfiguration);
-        } catch (ConcurrencyFailureException e) {
+        } catch (DuplicateKeyException | ConcurrencyFailureException | TransactionSystemException e) {
             logger.debug("Serialization exception", e);
             return false;
-        } catch (DataIntegrityViolationException | TransactionSystemException | UncategorizedSQLException e) {
-            if (configuration.isThrowUnexpectedException()) {
-                throw e;
-            }
+        } catch (DataAccessException e) {
             logger.error("Unexpected exception", e);
-            return false;
+            throw new LockException(e);
         }
     }
 

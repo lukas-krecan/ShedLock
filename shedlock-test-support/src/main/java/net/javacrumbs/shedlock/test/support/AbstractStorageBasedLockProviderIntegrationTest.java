@@ -42,4 +42,22 @@ public abstract class AbstractStorageBasedLockProviderIntegrationTest
 
         lock.get().unlock();
     }
+
+    @Test
+    public void unlockedLockShouldSurviveCacheClearingInTheMiddle() {
+        StorageBasedLockProvider provider = getLockProvider();
+
+        LockConfiguration configuration = lockConfig(LOCK_NAME1);
+
+        Optional<SimpleLock> lock1 = provider.lock(configuration);
+        assertThat(lock1).isPresent();
+        lock1.get().unlock();
+
+        provider.clearCache();
+
+        // Lock can be obtained
+        Optional<SimpleLock> lock2 = provider.lock(lockConfig(LOCK_NAME1));
+        assertThat(lock2).isNotEmpty();
+        lock2.get().unlock();
+    }
 }
