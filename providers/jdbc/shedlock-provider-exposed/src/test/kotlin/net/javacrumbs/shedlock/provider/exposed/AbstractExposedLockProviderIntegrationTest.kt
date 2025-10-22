@@ -3,7 +3,7 @@ package net.javacrumbs.shedlock.provider.exposed
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance

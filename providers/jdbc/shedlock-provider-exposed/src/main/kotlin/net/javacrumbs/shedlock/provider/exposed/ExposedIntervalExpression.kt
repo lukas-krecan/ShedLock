@@ -2,10 +2,10 @@ package net.javacrumbs.shedlock.provider.exposed
 
 import java.time.Duration
 import java.time.LocalDateTime
-import org.jetbrains.exposed.sql.Expression
-import org.jetbrains.exposed.sql.QueryBuilder
-import org.jetbrains.exposed.sql.vendors.SQLServerDialect
-import org.jetbrains.exposed.sql.vendors.currentDialect
+import org.jetbrains.exposed.v1.core.Expression
+import org.jetbrains.exposed.v1.core.QueryBuilder
+import org.jetbrains.exposed.v1.core.vendors.SQLServerDialect
+import org.jetbrains.exposed.v1.core.vendors.currentDialect
 
 internal fun Expression<LocalDateTime>.plus(duration: Duration): Expression<LocalDateTime> =
     IntervalExpression(this, duration)

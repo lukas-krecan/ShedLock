@@ -1,9 +1,9 @@
 package net.javacrumbs.shedlock.provider.exposed
 
 import net.javacrumbs.shedlock.test.support.jdbc.H2Config
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.DatabaseConfig
-import org.jetbrains.exposed.sql.ExperimentalKeywordApi
+import org.jetbrains.exposed.v1.core.DatabaseConfig
+import org.jetbrains.exposed.v1.core.ExperimentalKeywordApi
+import org.jetbrains.exposed.v1.jdbc.Database
 
 @OptIn(ExperimentalKeywordApi::class)
 class H2ExposedLockProviderIntegrationTest :

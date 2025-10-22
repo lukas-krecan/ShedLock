@@ -1,7 +1,7 @@
 package net.javacrumbs.shedlock.provider.exposed
 
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.javatime.datetime
 
 internal object Shedlock : Table() {
     override val tableName: String = "shedlock"
