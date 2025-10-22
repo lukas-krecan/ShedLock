@@ -15,6 +15,7 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import io.r2dbc.spi.Connection;
@@ -154,7 +155,8 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
 
     private void bindParams(Statement statement, Map<String, Object> params, java.util.List<String> parameterNames) {
         AtomicInteger index = new AtomicInteger(0);
-        parameterNames.forEach(name -> bind(statement, index.getAndIncrement(), name, params.get(name)));
+        parameterNames.forEach(
+                name -> bind(statement, index.getAndIncrement(), name, requireNonNull(params.get(name))));
     }
 
     private Map<String, Object> translateParams(Map<String, Object> params) {
