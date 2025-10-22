@@ -30,7 +30,9 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
 import org.jspecify.annotations.Nullable;
 
-/** Internal class, please do not use. */
+/**
+ * Internal class, please do not use.
+ */
 public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccessor {
     private final SqlConfiguration configuration;
     private @Nullable SqlStatementsSource sqlStatementsSource;
@@ -108,12 +110,12 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
             String sql, SqlFunction<PreparedStatement, T> body, BiFunction<String, SQLException, T> exceptionHandler);
 
     boolean handleInsertionException(String sql, SQLException e) {
-        if (e instanceof SQLIntegrityConstraintViolationException) {
-            // lock record already exists
+
+        if ((e instanceof SQLIntegrityConstraintViolationException) || "23000".equals(e.getSQLState())) {
+            return false;
         } else {
             throw new LockException("Failed to execute SQL insertion", e);
         }
-        return false;
     }
 
     private SqlStatementsSource sqlStatementsSource() {
