@@ -94,7 +94,7 @@ public class R2dbcLockProvider extends StorageBasedLockProvider {
                 return new Configuration(
                         connectionFactory,
                         dbUpperCase,
-                        databaseProduct,
+                        requireNonNull(databaseProduct),
                         tableName,
                         columnNames,
                         lockedByValue,
