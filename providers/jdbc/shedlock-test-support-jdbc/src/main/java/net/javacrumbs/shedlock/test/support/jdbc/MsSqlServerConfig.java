@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.mssqlserver.MSSQLServerContainer;
 
-public final class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MSSQLServerContainer> {
+public class MsSqlServerConfig extends AbstractContainerBasedDbConfig<MSSQLServerContainer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MsSqlServerConfig.class);
 
     public MsSqlServerConfig() {
