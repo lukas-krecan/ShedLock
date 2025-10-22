@@ -12,10 +12,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
+import net.javacrumbs.shedlock.support.LockException;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableField;
+import org.jooq.TransactionalCallable;
 import org.jooq.types.DayToSecond;
 
 class JooqStorageAccessor extends AbstractStorageAccessor {
@@ -28,7 +30,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(LockConfiguration lockConfiguration) {
-        return dslContext.transactionResult(tx -> tx.dsl()
+        return runInTransaction(tx -> tx.dsl()
                         .insertInto(t)
                         .set(data(lockConfiguration))
                         .onConflictDoNothing()
@@ -38,7 +40,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
-        return dslContext.transactionResult(tx -> tx.dsl()
+        return runInTransaction(tx -> tx.dsl()
                         .update(t)
                         .set(data(lockConfiguration))
                         .where(t.NAME.eq(lockConfiguration.getName()).and(t.LOCK_UNTIL.le(now())))
@@ -50,7 +52,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
     public void unlock(LockConfiguration lockConfiguration) {
         Field<LocalDateTime> lockAtLeastFor =
                 t.LOCKED_AT.add(DayToSecond.valueOf(lockConfiguration.getLockAtLeastFor()));
-        dslContext.transaction(tx -> tx.dsl()
+        runInTransaction(tx -> tx.dsl()
                 .update(t)
                 .set(
                         t.LOCK_UNTIL,
@@ -61,7 +63,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean extend(LockConfiguration lockConfiguration) {
-        return dslContext.transactionResult(tx -> tx.dsl()
+        return runInTransaction(tx -> tx.dsl()
                         .update(t)
                         .set(t.LOCK_UNTIL, nowPlus(lockConfiguration.getLockAtMostFor()))
                         .where(t.NAME.eq(lockConfiguration.getName())
@@ -69,6 +71,14 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
                                 .and(t.LOCK_UNTIL.gt(now())))
                         .execute()
                 > 0);
+    }
+
+    private <T> T runInTransaction(TransactionalCallable<T> txCallable) {
+        try {
+            return dslContext.transactionResult(txCallable);
+        } catch (Exception e) {
+            throw new LockException(e);
+        }
     }
 
     private Map<? extends TableField<Record, ? extends Serializable>, Serializable> data(
