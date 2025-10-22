@@ -33,6 +33,7 @@ import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -120,7 +121,7 @@ public class MongoLockProvider implements ExtensibleLockProvider {
                 // This means there was a lock with matching ID with lockUntil > now.
                 return Optional.empty();
             } else {
-                throw e;
+                throw new LockException(e);
             }
         }
     }
