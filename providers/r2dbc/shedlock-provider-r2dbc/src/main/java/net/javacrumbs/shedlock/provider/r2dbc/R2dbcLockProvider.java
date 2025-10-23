@@ -22,6 +22,7 @@ import java.util.TimeZone;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.provider.sql.SqlConfiguration;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Lock provided by plain R2DBC SPI. It uses a table that contains lock_name and
@@ -59,16 +60,17 @@ public class R2dbcLockProvider extends StorageBasedLockProvider {
         Configuration(
                 ConnectionFactory connectionFactory,
                 boolean dbUpperCase,
-                DatabaseProduct databaseProduct,
+                @Nullable DatabaseProduct databaseProduct,
                 String tableName,
                 ColumnNames columnNames,
                 String lockedByValue,
-                boolean useDbTime) {
+                boolean useDbTime,
+                boolean forceUtcTimeZone) {
             super(
                     databaseProduct,
                     dbUpperCase,
                     tableName,
-                    useDbTime ? null : TimeZone.getTimeZone("UTC"),
+                    !useDbTime && forceUtcTimeZone ? TimeZone.getTimeZone("UTC") : null,
                     columnNames,
                     lockedByValue,
                     useDbTime);
@@ -102,20 +104,32 @@ public class R2dbcLockProvider extends StorageBasedLockProvider {
 
         public static final class Builder extends SqlConfigurationBuilder<Builder> {
             private final ConnectionFactory connectionFactory;
+            private boolean forceUtcTimeZone;
 
-            public Builder(ConnectionFactory connectionFactory) {
+            Builder(ConnectionFactory connectionFactory) {
                 this.connectionFactory = connectionFactory;
+            }
+
+            /**
+             * Enforces UTC times. When the useDbTime() is not set, the timestamps are sent to the DB in the JVM default timezone.
+             * If your server is not in UTC and you are not using TIMEZONE WITH TIMESTAMP or an equivalent, the TZ information
+             * may be lost. For example in Postgres.
+             */
+            public Builder forceUtcTimeZone(boolean forceDbTime) {
+                this.forceUtcTimeZone = forceDbTime;
+                return this;
             }
 
             public Configuration build() {
                 return new Configuration(
                         connectionFactory,
                         dbUpperCase,
-                        requireNonNull(databaseProduct),
+                        databaseProduct,
                         tableName,
                         columnNames,
                         lockedByValue,
-                        useDbTime);
+                        useDbTime,
+                        forceUtcTimeZone);
             }
         }
     }
