@@ -13,16 +13,10 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
-import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.OracleServerConfig;
 
 public class OracleR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     public OracleR2dbcLockProviderIntegrationTest() {
         super(new OracleServerConfig());
-    }
-
-    @Override
-    protected DatabaseProduct databaseProduct() {
-        return DatabaseProduct.ORACLE;
     }
 }

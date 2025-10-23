@@ -9,7 +9,6 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import java.time.Duration;
-import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
@@ -60,9 +59,8 @@ public abstract class AbstractR2dbcTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new R2dbcLockProvider(R2dbcLockProvider.Configuration.builder(connectionFactory)
-                    .withDatabaseProduct(databaseProduct())
-                    .build());
+            return new R2dbcLockProvider(
+                    R2dbcLockProvider.Configuration.builder(connectionFactory).build());
         }
 
         @Override
@@ -81,7 +79,6 @@ public abstract class AbstractR2dbcTest {
         @Override
         protected StorageBasedLockProvider getLockProvider() {
             return new R2dbcLockProvider(R2dbcLockProvider.Configuration.builder(connectionFactory)
-                    .withDatabaseProduct(databaseProduct())
                     .usingDbTime()
                     .build());
         }
@@ -91,6 +88,4 @@ public abstract class AbstractR2dbcTest {
             return true;
         }
     }
-
-    protected abstract DatabaseProduct databaseProduct();
 }
