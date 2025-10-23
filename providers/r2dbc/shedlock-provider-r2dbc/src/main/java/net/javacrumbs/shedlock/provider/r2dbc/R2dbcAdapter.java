@@ -5,22 +5,18 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.function.Function;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 
 abstract class R2dbcAdapter {
-    private static final String MSSQL_NAME = "Microsoft SQL Server";
-    private static final String MYSQL_NAME = "MySQL";
-    private static final String JASYNC_MYSQL_NAME = "Jasync-MySQL";
-    private static final String MARIA_NAME = "MariaDB";
-    private static final String ORACLE_NAME = "Oracle Database";
 
-    static R2dbcAdapter create(String driver) {
-        return switch (driver) {
-            case MSSQL_NAME ->
+    static R2dbcAdapter create(DatabaseProduct databaseProduct) {
+        return switch (databaseProduct) {
+            case SQL_SERVER ->
                 new DefaultR2dbcAdapter(
                         (index, name) -> "@" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
-            case MYSQL_NAME, JASYNC_MYSQL_NAME, MARIA_NAME ->
+            case MY_SQL, MARIA_DB ->
                 new DefaultR2dbcAdapter((index, name) -> "?", R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByIndex);
-            case ORACLE_NAME ->
+            case ORACLE ->
                 new DefaultR2dbcAdapter(
                         (index, name) -> ":" + name, R2dbcAdapter::toLocalDate, R2dbcAdapter::bindByName);
             default ->

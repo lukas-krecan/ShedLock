@@ -79,6 +79,15 @@ public class R2dbcLockProvider extends StorageBasedLockProvider {
             return connectionFactory;
         }
 
+        @Override
+        public DatabaseProduct getDatabaseProduct() {
+            if (super.getDatabaseProduct() != null) {
+                return super.getDatabaseProduct();
+            }
+            return DatabaseProduct.matchProductName(
+                    connectionFactory.getMetadata().getName());
+        }
+
         public static Configuration.Builder builder(ConnectionFactory connectionFactory) {
             return new Configuration.Builder(connectionFactory);
         }
