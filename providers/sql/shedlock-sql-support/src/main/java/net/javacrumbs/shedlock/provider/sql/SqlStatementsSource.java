@@ -1,8 +1,7 @@
 package net.javacrumbs.shedlock.provider.sql;
 
 import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -56,13 +55,12 @@ public class SqlStatementsSource {
     }
 
     private Object timestamp(Instant time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(Date.from(time));
         TimeZone timeZone = configuration.getTimeZone();
         if (timeZone != null) {
-            calendar.setTimeZone(timeZone);
+            return time.atZone(timeZone.toZoneId());
+        } else {
+            return time.atZone(ZoneId.systemDefault());
         }
-        return calendar;
     }
 
     public String getInsertStatement() {

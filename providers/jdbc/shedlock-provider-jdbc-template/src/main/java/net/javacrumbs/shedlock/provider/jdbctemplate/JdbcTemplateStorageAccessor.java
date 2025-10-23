@@ -14,6 +14,8 @@
 package net.javacrumbs.shedlock.provider.jdbctemplate;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+import static net.javacrumbs.shedlock.provider.sql.internal.CalendarUtils.toCalendar;
 
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -119,7 +121,16 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     private Map<String, Object> params(LockConfiguration lockConfiguration) {
-        return sqlStatementsSource().params(lockConfiguration);
+        return sqlStatementsSource().params(lockConfiguration).entrySet().stream()
+                .map(e -> {
+                    Object value = e.getValue();
+                    if (value instanceof java.time.ZonedDateTime zdt) {
+                        return Map.entry(e.getKey(), toCalendar(zdt));
+                    } else {
+                        return e;
+                    }
+                })
+                .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private SqlStatementsSource sqlStatementsSource() {

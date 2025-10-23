@@ -6,7 +6,7 @@ import io.vertx.sqlclient.DatabaseException;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.templates.SqlTemplate;
-import java.util.Calendar;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -111,8 +111,8 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
     }
 
     private static Object translate(Object value) {
-        if (value instanceof Calendar cal) {
-            return cal.toInstant().atZone(cal.getTimeZone().toZoneId()).toLocalDateTime();
+        if (value instanceof ZonedDateTime cal) {
+            return cal.toLocalDateTime();
         } else {
             return value;
         }

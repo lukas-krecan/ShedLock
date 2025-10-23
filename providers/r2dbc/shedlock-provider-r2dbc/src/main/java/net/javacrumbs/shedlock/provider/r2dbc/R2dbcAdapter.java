@@ -3,8 +3,7 @@ package net.javacrumbs.shedlock.provider.r2dbc;
 import io.r2dbc.spi.Statement;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
 import java.util.function.Function;
 import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 
@@ -26,12 +25,12 @@ abstract class R2dbcAdapter {
         };
     }
 
-    private static Instant toInstant(Calendar date) {
+    private static Instant toInstant(ZonedDateTime date) {
         return date.toInstant();
     }
 
-    private static LocalDateTime toLocalDateTime(GregorianCalendar date) {
-        return date.toZonedDateTime().toLocalDateTime();
+    private static LocalDateTime toLocalDateTime(ZonedDateTime dateTime) {
+        return dateTime.toLocalDateTime();
     }
 
     private static void bindByName(Statement statement, int index, String name, Object value) {
@@ -48,12 +47,12 @@ abstract class R2dbcAdapter {
 
     private static class DefaultR2dbcAdapter extends R2dbcAdapter {
         private final ParameterResolver parameterResolver;
-        private final Function<GregorianCalendar, Object> dateConverter;
+        private final Function<ZonedDateTime, Object> dateConverter;
         private final ValueBinder binder;
 
         private DefaultR2dbcAdapter(
                 ParameterResolver parameterResolver,
-                Function<GregorianCalendar, Object> dateConverter,
+                Function<ZonedDateTime, Object> dateConverter,
                 ValueBinder binder) {
             this.parameterResolver = parameterResolver;
             this.dateConverter = dateConverter;
@@ -71,8 +70,8 @@ abstract class R2dbcAdapter {
         }
 
         private Object normalizeValue(Object value) {
-            if (value instanceof GregorianCalendar calendar) {
-                return dateConverter.apply(calendar);
+            if (value instanceof ZonedDateTime dateTime) {
+                return dateConverter.apply(dateTime);
             } else {
                 return value;
             }

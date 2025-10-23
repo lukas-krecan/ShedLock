@@ -1,5 +1,8 @@
 package net.javacrumbs.shedlock.provider.jdbc.internal;
 
+import static net.javacrumbs.shedlock.provider.sql.internal.CalendarUtils.toCalendar;
+
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +21,12 @@ class NamedSqlTranslator {
             if (!namedParameters.containsKey(key)) {
                 throw new IllegalStateException("Parameter " + key + " not found");
             }
-            parameters.add(namedParameters.get(key));
+            Object value = namedParameters.get(key);
+            if (value instanceof ZonedDateTime dateTime) {
+                parameters.add(toCalendar(dateTime));
+            } else {
+                parameters.add(value);
+            }
             return "?";
         });
 
