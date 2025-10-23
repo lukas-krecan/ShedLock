@@ -4,4 +4,5 @@ module net.javacrumbs.shedlock.provider.sql {
     requires org.slf4j;
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.sql;
+    exports net.javacrumbs.shedlock.provider.sql.internal;
 }
