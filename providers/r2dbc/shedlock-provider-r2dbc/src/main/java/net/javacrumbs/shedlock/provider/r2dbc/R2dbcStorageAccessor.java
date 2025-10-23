@@ -23,7 +23,6 @@ import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Statement;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,32 +40,20 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
 
     private final ConnectionFactory connectionFactory;
     private final SqlStatementsSource sqlStatementsSource;
-    private final R2dbcLockProvider.Configuration configuration;
-
-    @Nullable
-    private R2dbcAdapter adapter;
+    private final R2dbcAdapter adapter;
 
     R2dbcStorageAccessor(R2dbcLockProvider.Configuration configuration) {
         this.connectionFactory = configuration.getConnectionFactory();
-        this.sqlStatementsSource = SqlStatementsSource.create(configuration); // // TODO: lazy
-        this.configuration = configuration;
+        this.sqlStatementsSource = SqlStatementsSource.create(configuration);
+        this.adapter = R2dbcAdapter.create(configuration.getDatabaseProduct());
     }
 
     protected String toParameter(int index, String name) {
-        return getAdapter().toParameter(index, name);
+        return adapter.toParameter(index, name);
     }
 
     protected void bind(Statement statement, int index, String name, Object value) {
-        getAdapter().bind(statement, index, name, value);
-    }
-
-    private R2dbcAdapter getAdapter() {
-        synchronized (this) {
-            if (adapter == null) {
-                adapter = R2dbcAdapter.create(configuration.getDatabaseProduct());
-            }
-            return adapter;
-        }
+        adapter.bind(statement, index, name, value);
     }
 
     @Override
@@ -167,11 +154,7 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
             if (!namedParameters.containsKey(key)) {
                 throw new IllegalStateException("Parameter " + key + " not found");
             }
-            Object value = namedParameters.get(key);
-            if (value instanceof GregorianCalendar gregorianCalendar) {
-                value = gregorianCalendar.toZonedDateTime().toInstant();
-            }
-            parameters.add(new SqlParam(key, value));
+            parameters.add(new SqlParam(key, namedParameters.get(key)));
             return quoteReplacement(toParameter(index.getAndIncrement(), key));
         });
         return new SqlStatement(translatedSql, parameters);

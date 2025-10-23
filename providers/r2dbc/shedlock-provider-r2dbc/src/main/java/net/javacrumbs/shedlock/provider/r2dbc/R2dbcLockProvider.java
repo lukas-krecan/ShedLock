@@ -84,8 +84,16 @@ public class R2dbcLockProvider extends StorageBasedLockProvider {
             if (super.getDatabaseProduct() != null) {
                 return super.getDatabaseProduct();
             }
-            return DatabaseProduct.matchProductName(
-                    connectionFactory.getMetadata().getName());
+
+            return switch (connectionFactory.getMetadata().getName()) {
+                case "Microsoft SQL Server" -> DatabaseProduct.SQL_SERVER;
+                case "MySQL", "Jasync-MySQL" -> DatabaseProduct.MY_SQL;
+                case "MariaDB" -> DatabaseProduct.MARIA_DB;
+                case "Oracle Database" -> DatabaseProduct.ORACLE;
+                case "PostgreSQL" -> DatabaseProduct.POSTGRES_SQL;
+                case "H2" -> DatabaseProduct.H2;
+                default -> DatabaseProduct.UNKNOWN;
+            };
         }
 
         public static Configuration.Builder builder(ConnectionFactory connectionFactory) {

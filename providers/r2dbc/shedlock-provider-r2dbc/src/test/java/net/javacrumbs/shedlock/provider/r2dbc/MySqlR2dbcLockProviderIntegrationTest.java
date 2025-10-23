@@ -13,16 +13,10 @@
  */
 package net.javacrumbs.shedlock.provider.r2dbc;
 
-import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.MySqlConfig;
 
 public class MySqlR2dbcLockProviderIntegrationTest extends AbstractR2dbcTest {
     public MySqlR2dbcLockProviderIntegrationTest() {
         super(new MySqlConfig());
-    }
-
-    @Override
-    protected DatabaseProduct databaseProduct() {
-        return DatabaseProduct.MY_SQL;
     }
 }
