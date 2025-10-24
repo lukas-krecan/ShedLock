@@ -15,6 +15,7 @@ package net.javacrumbs.shedlock.provider.jdbc.internal;
 
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.jdbc.internal.NamedSqlTranslator.translate;
+import static net.javacrumbs.shedlock.provider.sql.internal.ErrorCodeUtils.isConstraintViolation;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -111,7 +112,8 @@ public abstract class AbstractJdbcStorageAccessor extends AbstractStorageAccesso
 
     boolean handleInsertionException(String sql, SQLException e) {
 
-        if ((e instanceof SQLIntegrityConstraintViolationException) || "23000".equals(e.getSQLState())) {
+        if ((e instanceof SQLIntegrityConstraintViolationException) || isConstraintViolation(e.getSQLState())) {
+            logger.debug("Constraint violation, duplicate key error is expected here {}", e.getMessage());
             return false;
         } else {
             throw new LockException("Failed to execute SQL insertion", e);

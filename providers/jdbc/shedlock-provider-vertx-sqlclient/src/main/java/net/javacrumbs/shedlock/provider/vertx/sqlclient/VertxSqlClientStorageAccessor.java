@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.vertx.sqlclient;
 
 import static java.util.stream.Collectors.toUnmodifiableMap;
+import static net.javacrumbs.shedlock.provider.sql.internal.ErrorCodeUtils.isConstraintViolation;
 
 import io.vertx.sqlclient.DatabaseException;
 import io.vertx.sqlclient.RowSet;
@@ -38,8 +39,8 @@ class VertxSqlClientStorageAccessor extends AbstractStorageAccessor {
         } catch (Exception e) {
             Throwable cause = unwrap(e);
             if (cause instanceof DatabaseException dbException) {
-                if ("23000".equals(dbException.getSqlState())) {
-                    // Duplicate key
+                if (isConstraintViolation(dbException.getSqlState())) {
+                    logger.debug("Constraint violation, duplicate key error is expected here {}", e.getMessage());
                     return false;
                 }
             }

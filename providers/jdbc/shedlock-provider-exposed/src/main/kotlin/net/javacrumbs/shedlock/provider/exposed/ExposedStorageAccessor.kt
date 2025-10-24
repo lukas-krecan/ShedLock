@@ -61,7 +61,10 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
             } catch (e: ExposedSQLException) {
                 when (e.cause) {
                     is SQLIntegrityConstraintViolationException -> false
-                    is SQLException if ((e.cause as SQLException).sqlState == "23000") -> false
+                    is SQLException if ((e.cause as SQLException).sqlState.isConstraintViolation()) -> {
+                        logger.debug("Constraint violation, duplicate key error is expected here {}", e.message)
+                        false
+                    }
                     else -> {
                         logger.debug("ExposedSQLException thrown when inserting record", e)
                         throw LockException("Unexpected exception when locking", e)
@@ -72,6 +75,10 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
                 throw LockException("Unexpected exception when locking", e)
             }
         }
+
+    private fun String?.isConstraintViolation(): Boolean {
+        return this?.startsWith("23") ?: false
+    }
 
     override fun updateRecord(lockConfiguration: LockConfiguration): Boolean =
         transaction(database) {
