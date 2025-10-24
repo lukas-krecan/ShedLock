@@ -119,22 +119,21 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
 
     private Mono<Boolean> executeCommand(
             SqlStatement sqlStatement, BiFunction<String, Throwable, Mono<Boolean>> exceptionHandler) {
-        return Mono.usingWhen(
-                Mono.from(connectionFactory.create()).doOnNext(it -> it.setAutoCommit(true)),
-                conn -> {
-                    Statement statement = conn.createStatement(sqlStatement.sql);
+        return
+            Mono.from(connectionFactory.create())
+                .flatMap(conn -> {
+                    Statement statement = conn.createStatement(sqlStatement.sql());
                     for (int i = 0; i < sqlStatement.parameters.size(); i++) {
                         SqlParam param = sqlStatement.parameters.get(i);
                         bind(statement, i, param.name(), param.value());
                     }
                     return Mono.from(statement.execute())
-                            .flatMap(it -> Mono.from(it.getRowsUpdated()))
-                            .map(it -> it > 0)
-                            .onErrorResume(throwable -> exceptionHandler.apply(sqlStatement.sql, throwable));
-                },
-                Connection::close,
-                (connection, throwable) -> Mono.from(connection.close()),
-                connection -> Mono.from(connection.close()).then());
+                        .flatMap(it -> Mono.from(it.getRowsUpdated()))
+                        .map(it -> it > 0)
+                        .onErrorResume(throwable -> exceptionHandler.apply(sqlStatement.sql, throwable))
+                        .delayUntil(r -> conn.commitTransaction())
+                        .doFinally((st) -> conn.close());
+                });
     }
 
     Mono<Boolean> handleInsertionException(String sql, Throwable e) {
