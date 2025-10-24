@@ -17,7 +17,6 @@ package net.javacrumbs.shedlock.provider.r2dbc;
 
 import static java.util.regex.Matcher.quoteReplacement;
 
-import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Statement;
@@ -119,21 +118,19 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
 
     private Mono<Boolean> executeCommand(
             SqlStatement sqlStatement, BiFunction<String, Throwable, Mono<Boolean>> exceptionHandler) {
-        return
-            Mono.from(connectionFactory.create())
-                .flatMap(conn -> {
-                    Statement statement = conn.createStatement(sqlStatement.sql());
-                    for (int i = 0; i < sqlStatement.parameters.size(); i++) {
-                        SqlParam param = sqlStatement.parameters.get(i);
-                        bind(statement, i, param.name(), param.value());
-                    }
-                    return Mono.from(statement.execute())
-                        .flatMap(it -> Mono.from(it.getRowsUpdated()))
-                        .map(it -> it > 0)
-                        .onErrorResume(throwable -> exceptionHandler.apply(sqlStatement.sql, throwable))
-                        .delayUntil(r -> conn.commitTransaction())
-                        .doFinally((st) -> conn.close());
-                });
+        return Mono.from(connectionFactory.create()).flatMap(conn -> {
+            Statement statement = conn.createStatement(sqlStatement.sql());
+            for (int i = 0; i < sqlStatement.parameters.size(); i++) {
+                SqlParam param = sqlStatement.parameters.get(i);
+                bind(statement, i, param.name(), param.value());
+            }
+            return Mono.from(statement.execute())
+                    .flatMap(it -> Mono.from(it.getRowsUpdated()))
+                    .map(it -> it > 0)
+                    .onErrorResume(throwable -> exceptionHandler.apply(sqlStatement.sql, throwable))
+                    .delayUntil(r -> conn.commitTransaction())
+                    .doFinally((st) -> conn.close());
+        });
     }
 
     Mono<Boolean> handleInsertionException(String sql, Throwable e) {
