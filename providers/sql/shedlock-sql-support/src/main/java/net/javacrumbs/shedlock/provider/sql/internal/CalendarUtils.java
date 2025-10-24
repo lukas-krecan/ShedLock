@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class CalendarUtils {
+    private CalendarUtils() {}
 
     public static Calendar toCalendar(ZonedDateTime dateTime) {
         Calendar calendar = Calendar.getInstance();
