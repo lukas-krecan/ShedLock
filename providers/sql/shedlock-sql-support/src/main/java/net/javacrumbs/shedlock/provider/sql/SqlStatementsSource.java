@@ -26,7 +26,7 @@ public class SqlStatementsSource {
             if (databaseProduct == null) {
                 throw new IllegalStateException("DatabaseProduct must be set when using DB time");
             }
-            var statementsSource = databaseProduct.getDbTimeStatementSource(configuration);
+            var statementsSource = createDbTimeStatementSource(databaseProduct, configuration);
             logger.debug("Using {}", statementsSource.getClass().getSimpleName());
             return statementsSource;
         } else {
@@ -38,6 +38,25 @@ public class SqlStatementsSource {
                 return new SqlStatementsSource(configuration);
             }
         }
+    }
+
+    /**
+     * Create a DB-time capable SqlStatementsSource for the given database product.
+     */
+    private static SqlStatementsSource createDbTimeStatementSource(
+            DatabaseProduct databaseProduct, SqlConfiguration configuration) {
+        return switch (databaseProduct) {
+            case POSTGRES_SQL -> new PostgresSqlServerTimeStatementsSource(configuration);
+            case SQL_SERVER -> new MsSqlServerTimeStatementsSource(configuration);
+            case ORACLE -> new OracleServerTimeStatementsSource(configuration);
+            case MY_SQL, MARIA_DB -> new MySqlServerTimeStatementsSource(configuration);
+            case HQL -> new HsqlServerTimeStatementsSource(configuration);
+            case H2 -> new H2ServerTimeStatementsSource(configuration);
+            case DB2 -> new Db2ServerTimeStatementsSource(configuration);
+            default ->
+                throw new UnsupportedOperationException(
+                        "DB time is not supported for database product: " + databaseProduct);
+        };
     }
 
     public Map<String, Object> params(LockConfiguration lockConfiguration) {
