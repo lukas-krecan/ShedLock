@@ -1,30 +1,17 @@
 package net.javacrumbs.shedlock.provider.sql;
 
-import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 
 public enum DatabaseProduct {
-    POSTGRES_SQL(PostgresSqlServerTimeStatementsSource::new),
-    SQL_SERVER(MsSqlServerTimeStatementsSource::new),
-    ORACLE(OracleServerTimeStatementsSource::new),
-    MY_SQL(MySqlServerTimeStatementsSource::new),
-    MARIA_DB(MySqlServerTimeStatementsSource::new),
-    HQL(HsqlServerTimeStatementsSource::new),
-    H2(H2ServerTimeStatementsSource::new),
-    DB2(Db2ServerTimeStatementsSource::new),
-    UNKNOWN(configuration -> {
-        throw new UnsupportedOperationException("DB time is not supported for unknown database product");
-    });
-
-    private final Function<SqlConfiguration, SqlStatementsSource> serverTimeStatementsSource;
-
-    DatabaseProduct(Function<SqlConfiguration, SqlStatementsSource> serverTimeStatementsSource) {
-        this.serverTimeStatementsSource = serverTimeStatementsSource;
-    }
-
-    SqlStatementsSource getDbTimeStatementSource(SqlConfiguration configuration) {
-        return serverTimeStatementsSource.apply(configuration);
-    }
+    POSTGRES_SQL,
+    SQL_SERVER,
+    ORACLE,
+    MY_SQL,
+    MARIA_DB,
+    HQL,
+    H2,
+    DB2,
+    UNKNOWN;
 
     /**
      * Searches for the right DatabaseProduct based on the ProductName returned from
