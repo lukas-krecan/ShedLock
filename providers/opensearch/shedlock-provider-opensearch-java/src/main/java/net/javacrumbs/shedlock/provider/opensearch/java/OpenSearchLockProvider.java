@@ -28,6 +28,7 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.BuiltinScriptLanguage;
 import org.opensearch.client.opensearch._types.InlineScript;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch._types.Refresh;
@@ -87,7 +88,6 @@ public class OpenSearchLockProvider implements LockProvider {
             + " = params." + LOCKED_AT + "; " + "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; "
             + "} else { " + "ctx.op = 'none' " + "}";
     private static final String UNLOCK_UPDATE_SCRIPT = "ctx._source.lockUntil = params.unlockTime";
-    private static final String PAINLESS_SCRIPT_LANG = "painless";
     private static final String UNLOCK_TIME = "unlockTime";
 
     private final OpenSearchClient openSearchClient;
@@ -150,8 +150,7 @@ public class OpenSearchLockProvider implements LockProvider {
         Map<String, JsonData> updateScriptParams =
                 updateScriptParams(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now);
 
-        InlineScript inlineScript = InlineScript.of(builder ->
-                builder.source(UPDATE_SCRIPT).params(updateScriptParams).lang(PAINLESS_SCRIPT_LANG));
+        InlineScript inlineScript = inlineScript(UPDATE_SCRIPT, updateScriptParams);
 
         return Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
     }
@@ -176,6 +175,11 @@ public class OpenSearchLockProvider implements LockProvider {
                 LOCK_UNTIL, JsonData.of(lockUntil.toEpochMilli()));
     }
 
+    private static InlineScript inlineScript(String sc, Map<String, JsonData> params) {
+        return InlineScript.of(
+                builder -> builder.source(sc).params(params).lang(l -> l.builtin(BuiltinScriptLanguage.Painless)));
+    }
+
     private final class OpenSearchSimpleLock extends AbstractSimpleLock {
 
         private OpenSearchSimpleLock(LockConfiguration lockConfiguration) {
@@ -188,8 +192,7 @@ public class OpenSearchLockProvider implements LockProvider {
             Map<String, JsonData> unlockParams = Map.of(
                     UNLOCK_TIME, JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
 
-            InlineScript inlineScript = InlineScript.of(builder ->
-                    builder.source(UNLOCK_UPDATE_SCRIPT).params(unlockParams).lang(PAINLESS_SCRIPT_LANG));
+            InlineScript inlineScript = inlineScript(UNLOCK_UPDATE_SCRIPT, unlockParams);
 
             Script unlockScript = Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
 
