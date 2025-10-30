@@ -35,7 +35,6 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [OpenSearch](#opensearch)
   - [CosmosDB](#cosmosdb)
   - [Cassandra](#cassandra)
-  - [Consul](#consul)
   - [ArangoDB](#arangodb)
   - [Neo4j](#neo4j)
   - [Etcd](#etcd)
@@ -605,8 +604,7 @@ I am really not sure if it's a good idea to use Elasticsearch as a lock provider
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-elasticsearch8</artifactId>
-    <!--     <artifactId>shedlock-provider-elasticsearch9</artifactId> -->
+    <artifactId>shedlock-provider-elasticsearch9</artifactId>
     <version>6.10.0</version>
 </dependency>
 ```
@@ -630,7 +628,6 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <!-- Use shedlock-provider-opensearch if you are still using RestHighLevelClient -->
     <artifactId>shedlock-provider-opensearch-java</artifactId>
     <version>6.10.0</version>
 </dependency>
@@ -685,34 +682,6 @@ CREATE TABLE shedlock.lock (name text PRIMARY KEY, lockUntil timestamp, lockedAt
 ```
 
 Please, note that CassandraLockProvider uses Cassandra driver v4, which is part of Spring Boot since 2.3.
-
-#### Consul
-ConsulLockProvider has one limitation: lockAtMostFor setting will have a minimum value of 10 seconds. It is dictated by consul's session limitations.
-
-Import the project
-
-```xml
-<dependency>
-    <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-consul</artifactId>
-    <version>6.10.0</version>
-</dependency>
-```
-
-Configure:
-
-```java
-import net.javacrumbs.shedlock.provider.consul.ConsulLockProvider;
-
-...
-
-@Bean // for micronaut please define preDestroy property @Bean(preDestroy="close")
-public ConsulLockProvider lockProvider(com.ecwid.consul.v1.ConsulClient consulClient) {
-    return new ConsulLockProvider(consulClient);
-}
-```
-
-Please, note that Consul lock provider uses [ecwid consul-api client](https://github.com/Ecwid/consul-api), which is part of spring cloud consul integration (the `spring-cloud-starter-consul-discovery` package).
 
 #### ArangoDB
 Import the project
@@ -976,8 +945,6 @@ Import the project
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-provider-s3v2</artifactId>
-    <!-- Or for V1 driver: -->
-    <!-- <artifactId>shedlock-provider-s3</artifactId> -->
     <version>6.10.0</version>
 </dependency>
 ```

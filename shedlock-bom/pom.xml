@@ -171,11 +171,6 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-s3</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-s3v2</artifactId>
                 <version>${project.version}</version>
             </dependency>
