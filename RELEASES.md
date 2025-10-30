@@ -5,7 +5,7 @@
   * Breaking: `DatabaseProduct` enum moved to `net.javacrumbs.shedlock.provider.sql.DatabaseProduct`
 * Improved error handling. All lock providers now throw `LockException` on unexpected errors.
   * SQL based lock providers are more sensitive to errors when inserting lock record. This should prevent issues like #1254
-  * MySQL and MariaDB providers in `useDbTime()` mode are the only exception as the use INSERT IGNORE.
+  * MySQL and MariaDB providers in `useDbTime()` mode are they only exception as the use INSERT IGNORE and all insert errors are ignored.
 * JdbcLockProvider checks for hostname when unlocking.
 * JdbcTemplateLockProvider: `withTimezone` deprecated, use newly introduced `forceUtcTimeZone` instead.
 * New Vert.x JDBC lock provider
