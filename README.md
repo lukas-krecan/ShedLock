@@ -195,7 +195,8 @@ public LockProvider lockProvider(DataSource dataSource) {
     return new JdbcTemplateLockProvider(
         JdbcTemplateLockProvider.Configuration.builder()
         .withJdbcTemplate(new JdbcTemplate(dataSource))
-        .usingDbTime() // Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
+        .usingDbTime() // Use if your DB is using UTC timezone. Works on Postgres, MySQL, MariaDb, MS SQL, Oracle, DB2, HSQL and H2
+     // .forceUtcTimeZone() // If you are not usingDbTime() and your application server is not using UTC
         .build()
     );
 }
