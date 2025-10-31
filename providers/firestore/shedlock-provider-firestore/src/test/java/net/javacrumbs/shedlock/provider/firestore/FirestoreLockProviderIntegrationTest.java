@@ -21,7 +21,7 @@ class FirestoreLockProviderIntegrationTest extends AbstractStorageBasedLockProvi
 
     @Container
     public static final FirestoreEmulatorContainer firestoreEmulator = new FirestoreEmulatorContainer(
-            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:540.0.0-emulators"));
+            DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:545.0.0-emulators"));
 
     private final Firestore firestore = FirestoreOptions.newBuilder()
             .setCredentials(NoCredentials.getInstance())
@@ -84,7 +84,7 @@ class FirestoreLockProviderIntegrationTest extends AbstractStorageBasedLockProvi
     @Disabled
     @Override
     public void fuzzTestShouldPass() throws ExecutionException, InterruptedException {
-        // It gets stuck
+        // It gets stuck in emulator, but works with real firestore
     }
 
     FirestoreStorageAccessor.Lock findLock(String lockName) {
