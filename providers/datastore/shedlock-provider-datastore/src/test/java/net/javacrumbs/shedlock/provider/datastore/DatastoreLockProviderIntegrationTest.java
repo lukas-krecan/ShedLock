@@ -25,7 +25,7 @@ class DatastoreLockProviderIntegrationTest extends AbstractStorageBasedLockProvi
 
     static {
         DockerImageName googleCloudCliImage =
-                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:425.0.0-emulators");
+                DockerImageName.parse("gcr.io/google.com/cloudsdktool/google-cloud-cli:545.0.0-emulators");
         datastoreEmulator = new DatastoreEmulatorContainer(googleCloudCliImage)
                 .withFlags(
                         "--project shedlock-provider-datastore-test --host-port 0.0.0.0:8081 --use-firestore-in-datastore-mode")

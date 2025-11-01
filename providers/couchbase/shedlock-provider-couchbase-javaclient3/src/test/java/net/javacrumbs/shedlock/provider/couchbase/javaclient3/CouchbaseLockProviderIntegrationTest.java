@@ -18,6 +18,7 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.couchbase.javaclient3.CouchbaseLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.couchbase.client.core.env.SeedNode;
@@ -44,6 +45,7 @@ import org.testcontainers.couchbase.CouchbaseContainer;
 public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String BUCKET_NAME = "test";
+    private static final String DOCKER_IMAGE_NAME = "couchbase/server:7.6.7";
 
     private CouchbaseLockProvider lockProvider;
     private static Cluster cluster;
@@ -53,7 +55,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
 
     @BeforeAll
     public static void startCouchbase() {
-        container = new CouchbaseContainer("couchbase/server:7.6.7").withBucket(new BucketDefinition(BUCKET_NAME));
+        container = new CouchbaseContainer(DOCKER_IMAGE_NAME).withBucket(new BucketDefinition(BUCKET_NAME));
         container.start();
 
         Set<SeedNode> seedNodes = new HashSet<>(List.of(SeedNode.create(
@@ -72,6 +74,7 @@ public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLo
     public static void stopCouchbase() {
         cluster.disconnect();
         container.stop();
+        removeImageInCi(DOCKER_IMAGE_NAME);
     }
 
     @BeforeEach

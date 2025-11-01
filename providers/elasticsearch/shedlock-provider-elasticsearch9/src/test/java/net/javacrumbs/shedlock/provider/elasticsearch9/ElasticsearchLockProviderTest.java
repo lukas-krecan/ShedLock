@@ -19,6 +19,7 @@ import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockP
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCK_UNTIL;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -31,6 +32,7 @@ import java.time.Instant;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -40,12 +42,12 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME =
-            DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch");
+    private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName.parse(
+                    "docker.elastic.co/elasticsearch/elasticsearch")
+            .withTag("7.17.28");
 
     @Container
-    private static final ElasticsearchContainer container =
-            new ElasticsearchContainer(DEFAULT_IMAGE_NAME.withTag("7.17.28"));
+    private static final ElasticsearchContainer container = new ElasticsearchContainer(DOCKER_IMAGE_NAME);
 
     private ElasticsearchClient client;
     private ElasticsearchLockProvider lockProvider;
@@ -60,6 +62,11 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     @Override
     protected LockProvider getLockProvider() {
         return lockProvider;
+    }
+
+    @AfterAll
+    public static void removeImage() {
+        removeImageInCi(DOCKER_IMAGE_NAME.asCanonicalNameString());
     }
 
     @Override
