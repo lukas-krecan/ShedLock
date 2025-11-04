@@ -18,8 +18,9 @@ import org.testcontainers.utility.DockerImageName;
 
 public final class OracleServerConfig extends AbstractContainerBasedDbConfig<OracleContainer> {
     public OracleServerConfig() {
-        super(new OracleContainer(
-                DockerImageName.parse("gvenzl/oracle-free:23-slim").asCompatibleSubstituteFor("gvenzl/oracle-xe")).withDatabaseName("freepdb2"));
+        super(new OracleContainer(DockerImageName.parse("gvenzl/oracle-free:23-slim")
+                        .asCompatibleSubstituteFor("gvenzl/oracle-xe"))
+                .withDatabaseName("freepdb2"));
     }
 
     @Override
