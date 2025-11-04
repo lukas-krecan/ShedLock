@@ -17,11 +17,7 @@ import org.testcontainers.mysql.MySQLContainer;
 
 public class MySqlConfig extends AbstractContainerBasedDbConfig<MySQLContainer> {
     public MySqlConfig() {
-        super(new MySQLContainer("mysql:8.2")
-                .withDatabaseName(TEST_SCHEMA_NAME)
-                .withUsername("SA")
-                .withPassword("pass")
-                .withCommand("--default-authentication-plugin=mysql_native_password"));
+        super(new MySQLContainer("mysql:lts").withDatabaseName(TEST_SCHEMA_NAME));
     }
 
     @Override

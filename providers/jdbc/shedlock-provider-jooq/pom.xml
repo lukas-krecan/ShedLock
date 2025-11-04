@@ -81,7 +81,7 @@
                                 <configuration>
                                     <database>
                                         <type>POSTGRES</type>
-                                        <containerImage>postgres:17-alpine</containerImage>
+                                        <containerImage>postgres:18-alpine</containerImage>
                                     </database>
                                     <liquibase>
                                         <changeLogPath>src/liquibase/changelog/db.changelog-root.xml</changeLogPath>

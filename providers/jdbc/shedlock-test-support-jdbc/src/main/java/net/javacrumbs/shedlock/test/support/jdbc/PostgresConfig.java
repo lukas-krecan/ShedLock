@@ -17,7 +17,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 public class PostgresConfig extends AbstractContainerBasedDbConfig<PostgreSQLContainer> {
     public PostgresConfig() {
-        super(new PostgreSQLContainer("postgres:17-alpine")
+        super(new PostgreSQLContainer("postgres:18-alpine")
                 .withDatabaseName(TEST_SCHEMA_NAME)
                 .withUsername("SA")
                 .withPassword("pass"));
