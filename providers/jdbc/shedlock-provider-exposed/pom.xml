@@ -12,7 +12,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <exposed.version>1.0.0-rc-2</exposed.version>
+        <exposed.version>1.0.0-rc-3</exposed.version>
     </properties>
 
     <dependencies>
