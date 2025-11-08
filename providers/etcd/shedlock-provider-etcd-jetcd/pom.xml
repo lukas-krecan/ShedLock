@@ -62,6 +62,13 @@
             <version>${awaitility.ver}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <version>4.2.7.Final</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
