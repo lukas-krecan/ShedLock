@@ -24,6 +24,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
+import org.jspecify.annotations.Nullable;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.params.SetParams;
@@ -159,6 +160,7 @@ public class JedisLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
+        @Nullable
         public Object eval(String script, String key, String... values) {
             return jedisCommands.eval(script, List.of(key), List.of(values));
         }

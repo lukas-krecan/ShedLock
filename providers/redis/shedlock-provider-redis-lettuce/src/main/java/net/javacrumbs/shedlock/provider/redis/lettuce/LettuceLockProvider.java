@@ -25,6 +25,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Uses Redis's `SET resource-name anystring NX PX max-lock-ms-time` as locking
@@ -92,6 +93,7 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
+        @Nullable
         public Object eval(String script, String key, String... values) {
             return connection.sync().eval(script, ScriptOutputType.INTEGER, new String[] {key}, values);
         }

@@ -27,6 +27,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockProvider;
 import net.javacrumbs.shedlock.provider.redis.support.InternalRedisLockTemplate;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -171,6 +172,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
+        @Nullable
         public Object eval(String script, String key, String... values) {
             return template.execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), (Object[]) values);
         }
