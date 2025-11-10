@@ -34,6 +34,7 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
 
     public static final String DEFAULT_KEY_PREFIX = "job-lock";
     public static final String ENV_DEFAULT = "default";
+    private static final Long ONE = 1L;
 
     private final InternalRedisLockTemplate redisLockTemplate;
     private final String environment;
@@ -95,9 +96,8 @@ public class InternalRedisLockProvider implements ExtensibleLockProvider {
 
     private boolean setKeyExpiration(RedisLock currentLock, long expiration) {
         if (safeUpdate) {
-            return redisLockTemplate
-                    .eval(updLuaScript, currentLock.key, currentLock.value, String.valueOf(expiration))
-                    .equals(1L);
+            return ONE.equals(redisLockTemplate.eval(
+                    updLuaScript, currentLock.key, currentLock.value, String.valueOf(expiration)));
         } else {
             return redisLockTemplate.setIfPresent(currentLock.key, currentLock.value, expiration);
         }
