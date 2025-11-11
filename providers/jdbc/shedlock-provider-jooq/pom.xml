@@ -68,7 +68,7 @@
                             <dependency>
                                 <groupId>org.jooq</groupId>
                                 <artifactId>jooq-codegen</artifactId>
-                                <version>3.20.8</version>
+                                <version>3.20.9</version>
                             </dependency>
                         </dependencies>
                         <executions>
