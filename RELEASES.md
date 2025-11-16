@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.0.0 (2025-11-16)
+* OpenSearch client upgraded to 3.3.0 (breaking change on the driver side)
+* Dependency updates
+
 ## 7.0.0-RC1 (2025-10-30)
 * Unified capabilities for all SQL based lock providers. All SQL based lock providers now support dbTime, custom table and column names and other cool features.
   * Breaking: `DatabaseProduct` enum moved to `net.javacrumbs.shedlock.provider.sql.DatabaseProduct`
