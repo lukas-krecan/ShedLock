@@ -17,6 +17,7 @@ import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,6 +26,7 @@ import org.testcontainers.neo4j.Neo4jContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
+@Disabled("Running out of disk space on GitHub runners")
 public class EnterpriseNeo4jLockProviderIntegrationTest extends AbstractNeo4jLockProviderIntegrationTest {
     private static final DockerImageName DOCKER_IMAGE_NAME =
             DockerImageName.parse("neo4j").withTag("5.22.0-enterprise");
