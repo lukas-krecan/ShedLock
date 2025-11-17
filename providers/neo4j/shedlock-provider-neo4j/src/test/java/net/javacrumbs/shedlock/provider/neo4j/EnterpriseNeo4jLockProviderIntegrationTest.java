@@ -13,6 +13,9 @@
  */
 package net.javacrumbs.shedlock.provider.neo4j;
 
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
@@ -23,6 +26,9 @@ import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 public class EnterpriseNeo4jLockProviderIntegrationTest extends AbstractNeo4jLockProviderIntegrationTest {
+    private static final DockerImageName DOCKER_IMAGE_NAME =
+            DockerImageName.parse("neo4j").withTag("5.22.0-enterprise");
+
     private static Neo4jTestUtils testUtils;
 
     @Container
@@ -33,6 +39,11 @@ public class EnterpriseNeo4jLockProviderIntegrationTest extends AbstractNeo4jLoc
         testUtils = new Neo4jTestUtils(GraphDatabase.driver(container.getBoltUrl(), AuthTokens.none()));
     }
 
+    @AfterAll
+    public static void stopCouchbase() {
+        removeImageInCi(DOCKER_IMAGE_NAME.asCanonicalNameString());
+    }
+
     @Override
     protected Neo4jTestUtils getNeo4jTestUtils() {
         return testUtils;
@@ -40,7 +51,7 @@ public class EnterpriseNeo4jLockProviderIntegrationTest extends AbstractNeo4jLoc
 
     private static class MyNeo4jContainer extends Neo4jContainer {
         MyNeo4jContainer() {
-            super(DockerImageName.parse("neo4j").withTag("5.22.0-enterprise"));
+            super(DOCKER_IMAGE_NAME);
             addEnv("NEO4J_ACCEPT_LICENSE_AGREEMENT", "eval");
             withoutAuthentication();
         }

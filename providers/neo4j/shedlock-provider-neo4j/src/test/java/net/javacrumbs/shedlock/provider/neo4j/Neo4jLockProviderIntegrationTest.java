@@ -13,6 +13,9 @@
  */
 package net.javacrumbs.shedlock.provider.neo4j;
 
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
@@ -25,13 +28,20 @@ import org.testcontainers.utility.DockerImageName;
 public class Neo4jLockProviderIntegrationTest extends AbstractNeo4jLockProviderIntegrationTest {
     private static Neo4jTestUtils testUtils;
 
+    private static final DockerImageName DOCKER_IMAGE_NAME =
+            DockerImageName.parse("neo4j").withTag("5.22.0");
+
     @Container
-    private static final Neo4jContainer container =
-            new Neo4jContainer(DockerImageName.parse("neo4j").withTag("5.22.0")).withoutAuthentication();
+    private static final Neo4jContainer container = new Neo4jContainer(DOCKER_IMAGE_NAME).withoutAuthentication();
 
     @BeforeAll
     static void startDb() {
         testUtils = new Neo4jTestUtils(GraphDatabase.driver(container.getBoltUrl(), AuthTokens.none()));
+    }
+
+    @AfterAll
+    public static void stopCouchbase() {
+        removeImageInCi(DOCKER_IMAGE_NAME.asCanonicalNameString());
     }
 
     @Override
