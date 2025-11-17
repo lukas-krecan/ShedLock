@@ -20,6 +20,7 @@ import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockPro
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCK_UNTIL;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -36,6 +37,7 @@ import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.HttpHost;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.GetRequest;
@@ -50,9 +52,11 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationTest {
 
+    private static final String DOCKER_IMAGE = "opensearchproject/opensearch:2";
+
     @Container
     private static final OpenSearchContainer<?> container =
-            new OpenSearchContainer<>(DockerImageName.parse("opensearchproject/opensearch:2"));
+            new OpenSearchContainer<>(DockerImageName.parse(DOCKER_IMAGE));
 
     private OpenSearchClient openSearchClient;
     private OpenSearchLockProvider lockProvider;
@@ -61,6 +65,11 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
     public void setUp() {
         openSearchClient = openSearchClient();
         lockProvider = new OpenSearchLockProvider(openSearchClient);
+    }
+
+    @AfterAll
+    public static void removeImage() {
+        removeImageInCi(DOCKER_IMAGE);
     }
 
     @Override

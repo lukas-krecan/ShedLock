@@ -1,6 +1,8 @@
 package net.javacrumbs.shedlock.provider.memcached.spy;
 
 import static java.lang.Thread.sleep;
+import static net.javacrumbs.shedlock.provider.memcached.spy.MemcachedContainer.MEMCACHED_IMAGE;
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -12,6 +14,7 @@ import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.MemcachedClient;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,6 +38,11 @@ public class MemcachedLockProviderIntegrationTest extends AbstractLockProviderIn
                 new MemcachedClient(AddrUtil.getAddresses(container.getHost() + ":" + container.getFirstMappedPort()));
 
         lockProvider = new MemcachedLockProvider(memcachedClient, ENV);
+    }
+
+    @AfterAll
+    public static void removeImage() {
+        removeImageInCi(MEMCACHED_IMAGE.asCanonicalNameString());
     }
 
     @Override
