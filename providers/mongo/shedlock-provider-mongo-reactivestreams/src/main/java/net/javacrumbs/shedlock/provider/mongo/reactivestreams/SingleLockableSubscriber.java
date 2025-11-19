@@ -27,11 +27,9 @@ import org.reactivestreams.Subscription;
  */
 class SingleLockableSubscriber<T> implements Subscriber<T> {
 
-    @Nullable
-    private T value;
+    private @Nullable T value;
 
-    @Nullable
-    private Throwable error;
+    private @Nullable Throwable error;
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
@@ -56,13 +54,11 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
         latch.countDown();
     }
 
-    @Nullable
-    T getValue() {
+    @Nullable T getValue() {
         return value;
     }
 
-    @Nullable
-    Throwable getError() {
+    @Nullable Throwable getError() {
         return error;
     }
 

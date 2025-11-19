@@ -83,8 +83,7 @@ public class DynamoDBLockProvider implements LockProvider {
     private final String tableName;
     private final String partitionKeyName;
 
-    @Nullable
-    private final String sortKeyName;
+    private final @Nullable String sortKeyName;
 
     /**
      * Uses DynamoDB to coordinate locks

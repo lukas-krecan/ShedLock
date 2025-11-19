@@ -58,11 +58,9 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
     private final Duration defaultLockAtMostFor;
     private final Duration defaultLockAtLeastFor;
 
-    @Nullable
-    private final StringValueResolver embeddedValueResolver;
+    private final @Nullable StringValueResolver embeddedValueResolver;
 
-    @Nullable
-    private final BeanFactory beanFactory;
+    private final @Nullable BeanFactory beanFactory;
 
     private final StandardEvaluationContext originalEvaluationContext = new StandardEvaluationContext();
 

@@ -32,11 +32,9 @@ class LockConfigurationExtractorConfiguration extends AbstractLockConfiguration
         implements EmbeddedValueResolverAware, BeanFactoryAware {
     private final StringToDurationConverter durationConverter = StringToDurationConverter.INSTANCE;
 
-    @Nullable
-    private StringValueResolver resolver;
+    private @Nullable StringValueResolver resolver;
 
-    @Nullable
-    private BeanFactory beanFactory;
+    private @Nullable BeanFactory beanFactory;
 
     @Bean
     ExtendedLockConfigurationExtractor lockConfigurationExtractor() {

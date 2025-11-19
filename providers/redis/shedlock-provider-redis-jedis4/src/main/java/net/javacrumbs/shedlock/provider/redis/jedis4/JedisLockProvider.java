@@ -160,8 +160,7 @@ public class JedisLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
-        @Nullable
-        public Object eval(String script, String key, String... values) {
+        public @Nullable Object eval(String script, String key, String... values) {
             return jedisCommands.eval(script, List.of(key), List.of(values));
         }
 

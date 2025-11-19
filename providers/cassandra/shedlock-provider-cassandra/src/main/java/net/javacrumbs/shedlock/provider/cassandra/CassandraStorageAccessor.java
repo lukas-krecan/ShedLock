@@ -44,8 +44,7 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String hostname;
     private final CqlIdentifier table;
 
-    @Nullable
-    private final CqlIdentifier keyspace;
+    private final @Nullable CqlIdentifier keyspace;
 
     private final String lockName;
     private final String lockUntil;
@@ -53,11 +52,9 @@ class CassandraStorageAccessor extends AbstractStorageAccessor {
     private final String lockedBy;
     private final CqlSession cqlSession;
 
-    @Nullable
-    private final ConsistencyLevel consistencyLevel;
+    private final @Nullable ConsistencyLevel consistencyLevel;
 
-    @Nullable
-    private final ConsistencyLevel serialConsistencyLevel;
+    private final @Nullable ConsistencyLevel serialConsistencyLevel;
 
     CassandraStorageAccessor(Configuration configuration) {
         requireNonNull(configuration, "configuration can not be null");

@@ -41,8 +41,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final TransactionTemplate transactionTemplate;
     private final Configuration configuration;
 
-    @Nullable
-    private SqlStatementsSource sqlStatementsSource;
+    private @Nullable SqlStatementsSource sqlStatementsSource;
 
     JdbcTemplateStorageAccessor(Configuration configuration) {
         requireNonNull(configuration, "configuration can not be null");

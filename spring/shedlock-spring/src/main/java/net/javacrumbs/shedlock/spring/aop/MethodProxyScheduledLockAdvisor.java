@@ -67,8 +67,7 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
         }
 
         @Override
-        @Nullable
-        public Object invoke(MethodInvocation invocation) throws Throwable {
+        public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
             Class<?> returnType = invocation.getMethod().getReturnType();
             if (returnType.isPrimitive() && !void.class.equals(returnType)) {
                 throw new LockingNotSupportedException("Can not lock method returning primitive value");
@@ -90,8 +89,7 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
             }
         }
 
-        @Nullable
-        private static Object toOptional(TaskResult<Object> result) {
+        private static @Nullable Object toOptional(TaskResult<Object> result) {
             if (result.wasExecuted()) {
                 return result.getResult();
             } else {

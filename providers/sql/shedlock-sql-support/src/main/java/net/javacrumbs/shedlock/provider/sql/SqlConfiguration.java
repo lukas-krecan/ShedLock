@@ -14,13 +14,11 @@ public abstract class SqlConfiguration {
 
     public static final String DEFAULT_TABLE_NAME = "shedlock";
 
-    @Nullable
-    private final DatabaseProduct databaseProduct;
+    private final @Nullable DatabaseProduct databaseProduct;
 
     private final String tableName;
 
-    @Nullable
-    private final TimeZone timeZone;
+    private final @Nullable TimeZone timeZone;
 
     private final ColumnNames columnNames;
     private final String lockedByValue;
@@ -73,8 +71,7 @@ public abstract class SqlConfiguration {
 
     public abstract static class SqlConfigurationBuilder<T extends SqlConfigurationBuilder<T>> {
 
-        @Nullable
-        protected DatabaseProduct databaseProduct;
+        protected @Nullable DatabaseProduct databaseProduct;
 
         protected String tableName = DEFAULT_TABLE_NAME;
 

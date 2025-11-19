@@ -10,8 +10,7 @@ public interface InternalRedisLockTemplate {
 
     boolean setIfPresent(String key, String value, long expirationMs);
 
-    @Nullable
-    Object eval(String script, String key, String... values);
+    @Nullable Object eval(String script, String key, String... values);
 
     void delete(String key);
 }

@@ -84,8 +84,7 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
     public static final class Configuration extends SqlConfiguration {
         private final JdbcTemplate jdbcTemplate;
 
-        @Nullable
-        private final PlatformTransactionManager transactionManager;
+        private final @Nullable PlatformTransactionManager transactionManager;
 
         private final @Nullable Integer isolationLevel;
 
@@ -142,17 +141,13 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
         }
 
         public static final class Builder extends SqlConfigurationBuilder<Builder> {
-            @Nullable
-            private JdbcTemplate jdbcTemplate;
+            private @Nullable JdbcTemplate jdbcTemplate;
 
-            @Nullable
-            private PlatformTransactionManager transactionManager;
+            private @Nullable PlatformTransactionManager transactionManager;
 
-            @Nullable
-            private TimeZone timeZone;
+            private @Nullable TimeZone timeZone;
 
-            @Nullable
-            private Integer isolationLevel;
+            private @Nullable Integer isolationLevel;
 
             public Builder withJdbcTemplate(JdbcTemplate jdbcTemplate) {
                 this.jdbcTemplate = jdbcTemplate;
