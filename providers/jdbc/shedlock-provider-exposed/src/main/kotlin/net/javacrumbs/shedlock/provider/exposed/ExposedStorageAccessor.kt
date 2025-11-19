@@ -13,13 +13,16 @@ import net.javacrumbs.shedlock.support.AbstractStorageAccessor
 import net.javacrumbs.shedlock.support.LockException
 import org.jetbrains.exposed.v1.core.Case
 import org.jetbrains.exposed.v1.core.Expression
+import org.jetbrains.exposed.v1.core.QueryBuilder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greater
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.vendors.MysqlDialect
 import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
+import org.jetbrains.exposed.v1.core.vendors.SQLServerDialect
+import org.jetbrains.exposed.v1.core.vendors.currentDialect
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
-import org.jetbrains.exposed.v1.javatime.CurrentDateTime
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -28,7 +31,7 @@ import org.jetbrains.exposed.v1.jdbc.upsert
 
 internal class ExposedStorageAccessor(private val database: Database) : AbstractStorageAccessor() {
 
-    private val now: Expression<LocalDateTime> = CurrentDateTime
+    private val now: Expression<LocalDateTime> = CurrentTimestampExact
 
     override fun insertRecord(lockConfiguration: LockConfiguration): Boolean =
         transaction(database) {
@@ -121,4 +124,16 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
         }
 
     private fun nowPlus(duration: Duration): Expression<LocalDateTime> = now.plus(duration)
+}
+
+// Support for exact current timestamp in MsSQL server. Exposed's CurrentDateTime uses CURRENT_TIMESTAMP which has lower
+// precission. Inspired by Exposed's CurrentDateTime implementation.
+private object CurrentTimestampExact : Expression<LocalDateTime>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +when {
+            (currentDialect as? MysqlDialect)?.isFractionDateTimeSupported() == true -> "CURRENT_TIMESTAMP(6)"
+            currentDialect is SQLServerDialect -> "SYSUTCDATETIME()"
+            else -> "CURRENT_TIMESTAMP"
+        }
+    }
 }
