@@ -1,5 +1,10 @@
 # Release notes
 
+## 7.1.0 (2025-11-19)
+* Fixed position of @Nullable annotations (thanks @AndreiPurcaru)
+* Exposed MS SQL Server lock provider is using SYSUTCDATETIME for now
+* Dependency updates
+
 ## 7.0.0 (2025-11-16)
 * OpenSearch client upgraded to 3.3.0 (breaking change on the driver side)
 * Dependency updates
