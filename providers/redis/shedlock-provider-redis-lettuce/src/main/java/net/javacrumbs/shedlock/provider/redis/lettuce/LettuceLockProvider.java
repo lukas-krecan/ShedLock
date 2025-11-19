@@ -93,8 +93,7 @@ public class LettuceLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
-        @Nullable
-        public Object eval(String script, String key, String... values) {
+        public @Nullable Object eval(String script, String key, String... values) {
             return connection.sync().eval(script, ScriptOutputType.INTEGER, new String[] {key}, values);
         }
 

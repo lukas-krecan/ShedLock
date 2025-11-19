@@ -38,7 +38,7 @@ public final class Neo4jTestUtils {
         executeTransactionally(query, new HashMap<>(), null);
     }
 
-    public @Nullable <T> T executeTransactionally(
+    public <T> @Nullable T executeTransactionally(
             String query, Map<String, Object> parameters, @Nullable Function<Result, T> resultTransformer) {
         try (Session session = driver.session()) {
             T transformedResult = null;

@@ -34,8 +34,7 @@ class BeanNameSelectingLockProviderSupplier implements LockProviderSupplier {
                         + "), use @LockProviderToUse to disambiguate.");
     }
 
-    @Nullable
-    private LockProviderToUse findAnnotation(@Nullable Object target, Method method) {
+    private @Nullable LockProviderToUse findAnnotation(@Nullable Object target, Method method) {
         LockProviderToUse annotation = AnnotationUtils.findAnnotation(method, LockProviderToUse.class);
         if (annotation != null) {
             return annotation;

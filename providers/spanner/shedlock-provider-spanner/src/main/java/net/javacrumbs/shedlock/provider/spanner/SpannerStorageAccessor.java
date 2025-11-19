@@ -140,8 +140,7 @@ class SpannerStorageAccessor extends AbstractStorageAccessor {
         });
     }
 
-    @Nullable
-    private <T> T run(TransactionRunner.TransactionCallable<T> callable) {
+    private <T> @Nullable T run(TransactionRunner.TransactionCallable<T> callable) {
         try {
             return databaseClient.readWriteTransaction().run(callable);
         } catch (Exception e) {

@@ -152,8 +152,7 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
                         combine(set(LOCK_UNTIL, lockConfiguration.getUnlockTime()))));
     }
 
-    @Nullable
-    static <T> T execute(Publisher<T> command) {
+    static <T> @Nullable T execute(Publisher<T> command) {
         SingleLockableSubscriber<T> subscriber = new SingleLockableSubscriber<>();
         command.subscribe(subscriber);
         subscriber.await();

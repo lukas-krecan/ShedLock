@@ -128,8 +128,7 @@ public class ReactiveRedisLockProvider implements LockProvider {
         }
 
         @Override
-        @Nullable
-        public Object eval(String script, String key, String... values) {
+        public @Nullable Object eval(String script, String key, String... values) {
             return redisTemplate
                     .execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), List.of(values))
                     .next()

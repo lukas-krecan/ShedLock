@@ -59,8 +59,7 @@ public class SchedulerLockInterceptor implements MethodInterceptor<Object, Objec
     }
 
     @Override
-    @Nullable
-    public Object intercept(MethodInvocationContext<Object, Object> context) {
+    public @Nullable Object intercept(MethodInvocationContext<Object, Object> context) {
         Class<?> returnType = context.getReturnType().getType();
         if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
             throw new LockingNotSupportedException();

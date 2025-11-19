@@ -113,13 +113,11 @@ public class JdbcTemplateLockProvider extends StorageBasedLockProvider {
             return jdbcTemplate;
         }
 
-        @Nullable
-        public PlatformTransactionManager getTransactionManager() {
+        public @Nullable PlatformTransactionManager getTransactionManager() {
             return transactionManager;
         }
 
-        @Nullable
-        public Integer getIsolationLevel() {
+        public @Nullable Integer getIsolationLevel() {
             return isolationLevel;
         }
 
