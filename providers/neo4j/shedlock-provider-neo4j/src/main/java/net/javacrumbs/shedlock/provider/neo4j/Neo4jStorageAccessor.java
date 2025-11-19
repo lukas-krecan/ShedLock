@@ -33,8 +33,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     private final String collectionName;
     private final Driver driver;
 
-    @Nullable
-    private final String databaseName;
+    private final @Nullable String databaseName;
 
     public Neo4jStorageAccessor(Driver driver, String collectionName, @Nullable String databaseName) {
         this.collectionName = requireNonNull(collectionName, "collectionName can not be null");

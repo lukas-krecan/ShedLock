@@ -40,8 +40,7 @@ public class SchedulerLockInterceptor {
     }
 
     @AroundInvoke
-    @Nullable
-    Object lock(InvocationContext context) throws Throwable {
+    @Nullable Object lock(InvocationContext context) throws Throwable {
         Class<?> returnType = context.getMethod().getReturnType();
         if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
             throw new LockingNotSupportedException();

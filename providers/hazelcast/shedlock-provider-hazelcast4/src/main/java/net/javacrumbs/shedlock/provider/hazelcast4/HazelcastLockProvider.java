@@ -161,8 +161,7 @@ public class HazelcastLockProvider implements LockProvider {
         return hazelcastInstance.getMap(lockStoreKey);
     }
 
-    @Nullable
-    HazelcastLock getLock(String lockName) {
+    @Nullable HazelcastLock getLock(String lockName) {
         return getStore().get(lockName);
     }
 

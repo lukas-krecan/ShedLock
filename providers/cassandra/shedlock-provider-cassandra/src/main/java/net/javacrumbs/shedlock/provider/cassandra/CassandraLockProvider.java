@@ -55,14 +55,11 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
         private final ColumnNames columnNames;
         private final CqlSession cqlSession;
 
-        @Nullable
-        private final ConsistencyLevel consistencyLevel;
+        private final @Nullable ConsistencyLevel consistencyLevel;
 
-        @Nullable
-        private final ConsistencyLevel serialConsistencyLevel;
+        private final @Nullable ConsistencyLevel serialConsistencyLevel;
 
-        @Nullable
-        private final CqlIdentifier keyspace;
+        private final @Nullable CqlIdentifier keyspace;
 
         Configuration(
                 CqlSession cqlSession,
@@ -113,17 +110,13 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             private CqlIdentifier table = CqlIdentifier.fromCql(DEFAULT_TABLE);
             private ColumnNames columnNames = new ColumnNames("name", "lockUntil", "lockedAt", "lockedBy");
 
-            @Nullable
-            private CqlSession cqlSession;
+            private @Nullable CqlSession cqlSession;
 
-            @Nullable
-            private ConsistencyLevel consistencyLevel = ConsistencyLevel.QUORUM;
+            private @Nullable ConsistencyLevel consistencyLevel = ConsistencyLevel.QUORUM;
 
-            @Nullable
-            private ConsistencyLevel serialConsistencyLevel = ConsistencyLevel.SERIAL;
+            private @Nullable ConsistencyLevel serialConsistencyLevel = ConsistencyLevel.SERIAL;
 
-            @Nullable
-            private CqlIdentifier keyspace;
+            private @Nullable CqlIdentifier keyspace;
 
             public Builder withTableName(String table) {
                 return withTableName(CqlIdentifier.fromCql(table));

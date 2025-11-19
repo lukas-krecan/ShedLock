@@ -20,13 +20,11 @@ import javax.sql.DataSource;
 import org.jspecify.annotations.Nullable;
 
 abstract class AbstractDbConfig implements DbConfig {
-    @Nullable
-    private HikariDataSource dataSource;
+    private @Nullable HikariDataSource dataSource;
 
     protected static final String TEST_SCHEMA_NAME = "shedlock_test";
 
-    @Nullable
-    private Integer transactionIsolation;
+    private @Nullable Integer transactionIsolation;
 
     @Override
     public DataSource getDataSource() {
