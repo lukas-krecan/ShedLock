@@ -54,11 +54,13 @@ class SingleLockableSubscriber<T> implements Subscriber<T> {
         latch.countDown();
     }
 
-    @Nullable T getValue() {
+    @Nullable
+    T getValue() {
         return value;
     }
 
-    @Nullable Throwable getError() {
+    @Nullable
+    Throwable getError() {
         return error;
     }
 
