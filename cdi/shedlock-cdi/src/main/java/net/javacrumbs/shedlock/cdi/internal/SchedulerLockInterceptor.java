@@ -35,8 +35,7 @@ public class SchedulerLockInterceptor {
                 parseDuration(lockAtMostFor), lockAtLeastFor != null ? parseDuration(lockAtLeastFor) : Duration.ZERO);
     }
 
-    @Nullable
-    private static String getConfigValue(String propertyName) {
+    private static @Nullable String getConfigValue(String propertyName) {
         return ConfigProvider.getConfig().getConfigValue(propertyName).getValue();
     }
 

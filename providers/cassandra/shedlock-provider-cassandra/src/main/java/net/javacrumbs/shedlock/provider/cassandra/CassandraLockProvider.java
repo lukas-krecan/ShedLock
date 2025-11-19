@@ -92,18 +92,15 @@ public class CassandraLockProvider extends StorageBasedLockProvider {
             return cqlSession;
         }
 
-        @Nullable
-        public ConsistencyLevel getConsistencyLevel() {
+        public @Nullable ConsistencyLevel getConsistencyLevel() {
             return consistencyLevel;
         }
 
-        @Nullable
-        public ConsistencyLevel getSerialConsistencyLevel() {
+        public @Nullable ConsistencyLevel getSerialConsistencyLevel() {
             return serialConsistencyLevel;
         }
 
-        @Nullable
-        public CqlIdentifier getKeyspace() {
+        public @Nullable CqlIdentifier getKeyspace() {
             return keyspace;
         }
 

@@ -41,8 +41,7 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     }
 
     @Override
-    @Nullable
-    public ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
+    public @Nullable ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
         return taskScheduler.schedule(wrap(task), trigger);
     }
 

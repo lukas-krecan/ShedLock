@@ -202,8 +202,7 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         }
     }
 
-    @Nullable
-    static AnnotationData findAnnotation(@Nullable Object target, Method method) {
+    static @Nullable AnnotationData findAnnotation(@Nullable Object target, Method method) {
         SchedulerLock annotation = findAnnotation(target, method, SchedulerLock.class);
         if (annotation != null) {
             return new AnnotationData(
@@ -212,8 +211,8 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
         return null;
     }
 
-    @Nullable
-    static <A extends Annotation> A findAnnotation(@Nullable Object target, Method method, Class<A> annotationType) {
+    static <A extends Annotation> @Nullable A findAnnotation(
+            @Nullable Object target, Method method, Class<A> annotationType) {
         A annotation = AnnotatedElementUtils.getMergedAnnotation(method, annotationType);
         if (annotation != null) {
             return annotation;
@@ -244,19 +243,16 @@ class SpringLockConfigurationExtractor implements ExtendedLockConfigurationExtra
      */
     private static class SimpleParameterNameDiscoverer implements ParameterNameDiscoverer {
         @Override
-        @Nullable
-        public String @Nullable [] getParameterNames(Method method) {
+        public @Nullable String[] getParameterNames(Method method) {
             return getParameterNames(method.getParameters());
         }
 
         @Override
-        @Nullable
-        public String @Nullable [] getParameterNames(Constructor<?> ctor) {
+        public @Nullable String[] getParameterNames(Constructor<?> ctor) {
             return getParameterNames(ctor.getParameters());
         }
 
-        @Nullable
-        private String @Nullable [] getParameterNames(Parameter[] parameters) {
+        private @Nullable String[] getParameterNames(Parameter[] parameters) {
             String[] parameterNames = new String[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
                 Parameter param = parameters[i];

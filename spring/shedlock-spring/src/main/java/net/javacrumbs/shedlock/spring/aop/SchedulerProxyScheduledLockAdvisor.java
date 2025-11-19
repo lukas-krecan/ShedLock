@@ -68,8 +68,7 @@ class SchedulerProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
         }
 
         @Override
-        @Nullable
-        public Object invoke(MethodInvocation invocation) throws Throwable {
+        public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
             Object[] arguments = invocation.getArguments();
             if (arguments.length >= 1) {
                 arguments[0] = wrapTask(arguments[0]);

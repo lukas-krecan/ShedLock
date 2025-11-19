@@ -47,8 +47,7 @@ public abstract class SqlConfiguration {
         this.useDbTime = useDbTime;
     }
 
-    @Nullable
-    public DatabaseProduct getDatabaseProduct() {
+    public @Nullable DatabaseProduct getDatabaseProduct() {
         return databaseProduct;
     }
 
@@ -56,8 +55,7 @@ public abstract class SqlConfiguration {
         return tableName;
     }
 
-    @Nullable
-    public TimeZone getTimeZone() {
+    public @Nullable TimeZone getTimeZone() {
         return timeZone;
     }
 

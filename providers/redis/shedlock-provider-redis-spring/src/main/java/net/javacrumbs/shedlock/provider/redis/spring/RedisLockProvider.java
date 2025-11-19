@@ -172,8 +172,7 @@ public class RedisLockProvider implements ExtensibleLockProvider {
         }
 
         @Override
-        @Nullable
-        public Object eval(String script, String key, String... values) {
+        public @Nullable Object eval(String script, String key, String... values) {
             return template.execute(new DefaultRedisScript<>(script, Integer.class), List.of(key), (Object[]) values);
         }
 

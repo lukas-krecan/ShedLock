@@ -144,13 +144,11 @@ class DatastoreStorageAccessor extends AbstractStorageAccessor {
         }
     }
 
-    @Nullable
-    private static String nullableString(Entity entity, String property) {
+    private static @Nullable String nullableString(Entity entity, String property) {
         return entity.contains(property) ? entity.getString(property) : null;
     }
 
-    @Nullable
-    private static Instant nullableTimestamp(Entity entity, String property) {
+    private static @Nullable Instant nullableTimestamp(Entity entity, String property) {
         return entity.contains(property) ? toInstant(entity.getTimestamp(property)) : null;
     }
 

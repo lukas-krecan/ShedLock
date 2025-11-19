@@ -21,8 +21,7 @@ public abstract class AbstractRedisIntegrationTest extends AbstractExtensibleLoc
         assertThat(getLock(lockName)).isNull();
     }
 
-    @Nullable
-    protected abstract String getLock(String lockName);
+    protected abstract @Nullable String getLock(String lockName);
 
     protected String buildKey(String lockName, String env) {
         return String.format("%s:%s:%s", "job-lock", env, lockName);
