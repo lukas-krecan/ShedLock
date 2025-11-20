@@ -44,6 +44,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Datastore](#datastore)
   - [Firestore](#firestore)
   - [S3](#s3)
+  - [NATS Jetstream](#nats-jetstream)
 + [Multi-tenancy](#multi-tenancy)
 + [Customization](#customization)
 + [Duration specification](#duration-specification)
@@ -958,6 +959,33 @@ import net.javacrumbs.shedlock.provider.s3v2.S3LockProvider;
 @Bean
 public LockProvider lockProvider(S3Client s3Client) {
     return new S3LockProvider(s3Client, "BUCKET_NAME");
+}
+```
+
+#### NATS JetStream
+The NATS JetStream provider uses a Key-Value (KV) store to manage locks. It operates out of a single, shared bucket named `shedlock-locks` by default, which is created automatically if it does not exist.
+
+Import the project:
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-jetstream</artifactId>
+    <version>7.1.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.nats.jetstream.NatsJetStreamLockProvider;
+import io.nats.client.Connection;
+
+...
+
+@Bean
+public LockProvider lockProvider(Connection natsConnection) {
+    return new NatsJetStreamLockProvider(natsConnection);
 }
 ```
 
