@@ -1,12 +1,11 @@
 package net.javacrumbs.shedlock.provider.nats.jetstream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static io.nats.client.support.RandomUtils.bytesToLong;
 import static net.javacrumbs.shedlock.provider.nats.jetstream.NatsJetStreamContainer.NATS_IMAGE;
 import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.nats.client.Connection;
-import io.nats.client.JetStreamApiException;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 import io.nats.client.api.KeyValueEntry;
@@ -14,6 +13,7 @@ import java.time.Instant;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,7 @@ public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProvid
         var entry = getLock(lockName);
         if (entry != null) {
             // If entry exists, check if the timestamp has expired
-            var lockUntil = Instant.parse(new String(entry.getValue(), UTF_8));
+            var lockUntil = Instant.ofEpochMilli(bytesToLong(entry.getValue()));
             assertThat(lockUntil).isBefore(ClockProvider.now());
         }
     }
@@ -67,14 +67,9 @@ public class NatsJetStreamLockProviderIntegrationTest extends AbstractLockProvid
         return lockProvider;
     }
 
-    private KeyValueEntry getLock(final String lockName) {
+    private @Nullable KeyValueEntry getLock(final String lockName) {
         try {
             return connection.keyValue("shedlock-locks").get(lockName);
-        } catch (JetStreamApiException e) {
-            if (e.getApiErrorCode() == 10059) { // Key not found
-                return null;
-            }
-            throw new IllegalStateException(e);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

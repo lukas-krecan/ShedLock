@@ -23,16 +23,16 @@
         </dependency>
 
         <dependency>
+            <groupId>io.nats</groupId>
+            <artifactId>jnats</artifactId>
+            <version>${nats.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.nats</groupId>
-            <artifactId>jnats</artifactId>
-            <version>${nats.version}</version>
         </dependency>
 
         <dependency>
@@ -56,23 +56,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Automatic-Module-Name>
-                                net.javacrumbs.shedlock.provider.nats.jetstream
-                            </Automatic-Module-Name>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
