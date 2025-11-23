@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.2.0 (2025-11-23)
+* NATS Jetstream lock provider added (thanks @Saphri)
+* Dependency updates
+
 ## 7.1.0 (2025-11-19)
 * Fixed position of @Nullable annotations (thanks @AndreiPurcaru)
 * Exposed MS SQL Server lock provider is using SYSUTCDATETIME for now
