@@ -72,7 +72,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                        --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.aop.multiplelockproviders=spring.core,spring.beans,spring.context  --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.it=spring.core,spring.beans,spring.context  --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.proxytest=spring.core,spring.beans,spring.context
+                        --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.aop.primarybean=spring.core,spring.beans,spring.context --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.aop.multiplelockproviders=spring.core,spring.beans,spring.context  --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.it=spring.core,spring.beans,spring.context  --add-opens net.javacrumbs.shedlock.spring/net.javacrumbs.shedlock.spring.proxytest=spring.core,spring.beans,spring.context
                     </argLine>
                 </configuration>
             </plugin>
