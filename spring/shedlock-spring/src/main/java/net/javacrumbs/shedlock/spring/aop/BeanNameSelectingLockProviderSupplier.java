@@ -20,7 +20,12 @@ class BeanNameSelectingLockProviderSupplier implements LockProviderSupplier {
     public LockProvider supply(@Nullable Object target, Method method, @Nullable Object[] parameterValues) {
         LockProviderToUse annotation = findAnnotation(target, method);
         if (annotation == null) {
-            throw noUniqueBeanDefinitionException();
+            try {
+                // We have multiple LockProviders, but maybe one is marked as @Primary
+                return beanFactory.getBean(LockProvider.class);
+            } catch (NoUniqueBeanDefinitionException e) {
+                throw noUniqueBeanDefinitionException();
+            }
         }
         return beanFactory.getBean(annotation.value(), LockProvider.class);
     }
