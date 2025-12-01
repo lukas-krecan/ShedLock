@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.2.1 (2025-12-01)
+* Better handling of @Primary LockProviders #3059
+* Dependency updates
+
 ## 7.2.0 (2025-11-23)
 * NATS Jetstream lock provider added (thanks @Saphri)
 * Dependency updates
