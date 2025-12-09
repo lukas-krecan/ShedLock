@@ -21,10 +21,12 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import io.r2dbc.spi.Statement;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -77,13 +79,23 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     private <T> @Nullable T block(Mono<T> mono) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+
+        mono.subscribe(future::complete, future::completeExceptionally, () -> future.complete(null));
+
         try {
-            return mono.block(Duration.ofSeconds(30));
-        } catch (Exception e) {
-            if (e instanceof LockException lockException) {
+            return future.get(30, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof LockException lockException) {
                 throw lockException;
             }
-            throw new LockException("Unexpected exception when executing r2dbc operation", e);
+            throw new LockException("Unexpected exception when executing r2dbc operation", cause);
+        } catch (TimeoutException e) {
+            throw new LockException("Operation timed out", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new LockException("Operation interrupted", e);
         }
     }
 
