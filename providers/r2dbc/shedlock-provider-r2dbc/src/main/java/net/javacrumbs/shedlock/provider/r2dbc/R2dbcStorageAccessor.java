@@ -79,7 +79,7 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     private <T> @Nullable T block(Mono<T> mono) {
-        CompletableFuture<T> future = new CompletableFuture<>();
+        CompletableFuture<@Nullable T> future = new CompletableFuture<>();
 
         mono.subscribe(future::complete, future::completeExceptionally, () -> future.complete(null));
 
@@ -132,7 +132,8 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
     private Mono<Boolean> executeCommand(
             SqlStatement sqlStatement, BiFunction<String, Throwable, Mono<Boolean>> exceptionHandler) {
         return Mono.usingWhen(
-                Mono.from(connectionFactory.create()).doOnNext(it -> it.setAutoCommit(true)),
+                Mono.from(connectionFactory.create())
+                    .flatMap(it -> Mono.from(it.setAutoCommit(true)).then(Mono.just(it))),
                 conn -> {
                     Statement statement = conn.createStatement(sqlStatement.sql);
                     for (int i = 0; i < sqlStatement.parameters.size(); i++) {
