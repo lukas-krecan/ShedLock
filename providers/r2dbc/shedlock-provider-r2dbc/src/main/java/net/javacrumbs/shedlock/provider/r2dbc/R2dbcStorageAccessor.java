@@ -79,8 +79,11 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
     }
 
     private <T> @Nullable T block(Mono<T> mono) {
+        // Do not use mono.block() because it triggers errors on thread reactor-http-nio-2
         CompletableFuture<@Nullable T> future = new CompletableFuture<>();
 
+        // If Mono.empty() is passed as an argument,
+        // OnComplete is invoked without OnNext, so a completeConsumer is required.
         mono.subscribe(future::complete, future::completeExceptionally, () -> future.complete(null));
 
         try {
@@ -133,7 +136,7 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
             SqlStatement sqlStatement, BiFunction<String, Throwable, Mono<Boolean>> exceptionHandler) {
         return Mono.usingWhen(
                 Mono.from(connectionFactory.create())
-                    .flatMap(it -> Mono.from(it.setAutoCommit(true)).then(Mono.just(it))),
+                        .flatMap(it -> Mono.from(it.setAutoCommit(true)).then(Mono.just(it))),
                 conn -> {
                     Statement statement = conn.createStatement(sqlStatement.sql);
                     for (int i = 0; i < sqlStatement.parameters.size(); i++) {
