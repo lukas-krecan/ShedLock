@@ -93,7 +93,7 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
             if (cause instanceof LockException lockException) {
                 throw lockException;
             }
-            throw new LockException("Unexpected exception when executing r2dbc operation", cause);
+            throw new LockException("Unexpected exception when executing r2dbc operation", cause != null ? cause : e);
         } catch (TimeoutException e) {
             throw new LockException("Operation timed out", e);
         } catch (InterruptedException e) {
