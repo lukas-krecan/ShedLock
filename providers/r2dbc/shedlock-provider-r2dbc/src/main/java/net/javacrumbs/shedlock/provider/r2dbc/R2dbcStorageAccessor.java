@@ -84,7 +84,7 @@ class R2dbcStorageAccessor extends AbstractStorageAccessor {
 
         // If Mono.empty() is passed as an argument,
         // OnComplete is invoked without OnNext, so a completeConsumer is required.
-        mono.subscribe(future::complete, future::completeExceptionally, () -> future.complete(null));
+        mono.subscribe(future::complete, future::completeExceptionally, null);
 
         try {
             return future.get(30, java.util.concurrent.TimeUnit.SECONDS);
