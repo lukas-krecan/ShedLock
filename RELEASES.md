@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.2.2 (2025-12-11)
+* R2dbcLockProvider works in WebFlux Controllers (thanks @Danden1)
+* Dependency updates
+
 ## 7.2.1 (2025-12-01)
 * Better handling of @Primary LockProviders #3059
 * Dependency updates
