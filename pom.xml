@@ -75,7 +75,7 @@
     </modules>
 
     <properties>
-        <spring.version>7.0.1</spring.version>
+        <spring.version>7.0.2</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <spring-boot-current.version>4.0.0</spring-boot-current.version>
