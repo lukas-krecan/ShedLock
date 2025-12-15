@@ -75,6 +75,12 @@
 
         <dependency>
             <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-cockroachdb</artifactId>
+            <version>${test-containers.ver}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-mysql</artifactId>
             <version>${test-containers.ver}</version>
         </dependency>

@@ -102,7 +102,7 @@ public abstract class SqlConfiguration {
          *            Database product
          * @return ConfigurationBuilder
          */
-        public T withDatabaseProduct(final DatabaseProduct databaseProduct) {
+        public T withDatabaseProduct(@Nullable DatabaseProduct databaseProduct) {
             this.databaseProduct = databaseProduct;
             return getThis();
         }

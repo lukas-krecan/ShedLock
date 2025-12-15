@@ -16,12 +16,12 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     @Override
     public String getInsertStatement() {
         return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy()
-                + ") VALUES(:name, " + lockAtMostFor + ", " + now + ", :lockedBy)" + " ON CONFLICT (" + name()
+                + ") VALUES(:name, " + lockAtMostFor() + ", " + now + ", :lockedBy)" + " ON CONFLICT (" + name()
                 + ") DO UPDATE" + updateClause();
     }
 
-    private String updateClause() {
-        return " SET " + lockUntil() + " = " + lockAtMostFor + ", " + lockedAt() + " = " + now + ", " + lockedBy()
+    protected String updateClause() {
+        return " SET " + lockUntil() + " = " + lockAtMostFor() + ", " + lockedAt() + " = " + now + ", " + lockedBy()
                 + " = :lockedBy WHERE " + tableName() + "." + name() + " = :name AND " + tableName() + "." + lockUntil()
                 + " <= " + now;
     }
@@ -33,15 +33,23 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getUnlockStatement() {
-        String lockAtLeastFor = lockedAt() + " + make_interval(secs => :lockAtLeastForInterval)";
+        String lockAtLeastFor = lockedAt() + " + " + lockAtLeastFor();
         return "UPDATE " + tableName() + " SET " + lockUntil() + " = CASE WHEN " + lockAtLeastFor + " > " + now
                 + " THEN " + lockAtLeastFor + " ELSE " + now + " END WHERE " + name() + " = :name AND " + lockedBy()
                 + " = :lockedBy";
     }
 
+    protected String lockAtLeastFor() {
+        return "make_interval(secs => :lockAtLeastForInterval)";
+    }
+
+    protected String lockAtMostFor() {
+        return lockAtMostFor;
+    }
+
     @Override
     public String getExtendStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor + " WHERE " + name()
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = " + lockAtMostFor() + " WHERE " + name()
                 + " = :name AND " + lockedBy() + " = :lockedBy AND " + lockUntil() + " > " + now;
     }
 
