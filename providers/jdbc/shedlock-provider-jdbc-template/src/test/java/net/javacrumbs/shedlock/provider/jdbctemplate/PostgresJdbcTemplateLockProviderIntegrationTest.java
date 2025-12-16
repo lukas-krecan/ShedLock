@@ -96,7 +96,7 @@ public class PostgresJdbcTemplateLockProviderIntegrationTest extends AbstractJdb
         private static final String OTHER_LOCK = "other-lock";
 
         protected StorageAccessor() {
-            super(dbConfig);
+            super(dbConfig, null);
         }
 
         @Test

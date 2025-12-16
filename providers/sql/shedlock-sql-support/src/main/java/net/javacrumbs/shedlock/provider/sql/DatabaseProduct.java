@@ -11,6 +11,7 @@ public enum DatabaseProduct {
     HQL,
     H2,
     DB2,
+    COCKROACH_DB,
     UNKNOWN;
 
     /**

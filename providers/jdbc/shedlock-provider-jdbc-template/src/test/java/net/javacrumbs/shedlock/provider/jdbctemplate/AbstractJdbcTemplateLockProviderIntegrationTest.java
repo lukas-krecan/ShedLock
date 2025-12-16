@@ -16,9 +16,12 @@ package net.javacrumbs.shedlock.provider.jdbctemplate;
 import static net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.builder;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.Builder;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -43,6 +46,11 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
         dbConfig.shutdownDb();
     }
 
+    @Nullable
+    protected DatabaseProduct getExplicitDatabaseProduct() {
+        return null;
+    }
+
     @Nested
     class ClientTime extends AbstractJdbcLockProviderIntegrationTest {
         @Override
@@ -52,9 +60,10 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new JdbcTemplateLockProvider(builder()
+            Builder builder = builder()
                     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
-                    .build());
+                    .withDatabaseProduct(getExplicitDatabaseProduct());
+            return new JdbcTemplateLockProvider(builder.build());
         }
 
         @Override
@@ -72,10 +81,11 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
 
         @Override
         protected StorageBasedLockProvider getLockProvider() {
-            return new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
+            Builder builder = builder()
                     .withJdbcTemplate(new JdbcTemplate(getDatasource()))
                     .usingDbTime()
-                    .build());
+                    .withDatabaseProduct(getExplicitDatabaseProduct());
+            return new JdbcTemplateLockProvider(builder.build());
         }
 
         @Override
@@ -87,7 +97,7 @@ public abstract class AbstractJdbcTemplateLockProviderIntegrationTest {
     @Nested
     class StorageAccessor extends AbstractJdbcTemplateStorageAccessorTest {
         StorageAccessor() {
-            super(dbConfig);
+            super(dbConfig, getExplicitDatabaseProduct());
         }
     }
 }

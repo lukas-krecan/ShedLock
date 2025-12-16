@@ -20,8 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.time.Duration;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider.Configuration.Builder;
+import net.javacrumbs.shedlock.provider.sql.DatabaseProduct;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
 import net.javacrumbs.shedlock.test.support.jdbc.JdbcTestUtils;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +34,12 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
     private static final String OTHER_LOCK = "other-lock";
 
     private final JdbcTestUtils testUtils;
+    private final @Nullable DatabaseProduct explicitDatabaseProduct;
 
-    protected AbstractJdbcTemplateStorageAccessorTest(DbConfig dbConfig) {
+    protected AbstractJdbcTemplateStorageAccessorTest(
+            DbConfig dbConfig, @Nullable DatabaseProduct explicitDatabaseProduct) {
         this.testUtils = new JdbcTestUtils(dbConfig);
+        this.explicitDatabaseProduct = explicitDatabaseProduct;
     }
 
     @AfterEach
@@ -106,8 +112,12 @@ public abstract class AbstractJdbcTemplateStorageAccessorTest {
     }
 
     protected JdbcTemplateStorageAccessor getAccessor(boolean usingDbTime) {
-        JdbcTemplateLockProvider.Configuration.Builder builder =
+        Builder builder =
                 JdbcTemplateLockProvider.Configuration.builder().withJdbcTemplate(testUtils.getJdbcTemplate());
+
+        if (explicitDatabaseProduct != null) {
+            builder.withDatabaseProduct(explicitDatabaseProduct);
+        }
         if (usingDbTime) {
             builder.usingDbTime();
         }

@@ -47,6 +47,7 @@ public class SqlStatementsSource {
             DatabaseProduct databaseProduct, SqlConfiguration configuration) {
         return switch (databaseProduct) {
             case POSTGRES_SQL -> new PostgresSqlServerTimeStatementsSource(configuration);
+            case COCKROACH_DB -> new CockroachDbSqlServerTimeStatementsSource(configuration);
             case SQL_SERVER -> new MsSqlServerTimeStatementsSource(configuration);
             case ORACLE -> new OracleServerTimeStatementsSource(configuration);
             case MY_SQL, MARIA_DB -> new MySqlServerTimeStatementsSource(configuration);
