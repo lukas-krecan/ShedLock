@@ -79,7 +79,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <spring-boot-current.version>4.0.0</spring-boot-current.version>
-        <test-containers.ver>2.0.2</test-containers.ver>
+        <test-containers.ver>2.0.3</test-containers.ver>
         <kotlin.ver>2.3.0</kotlin.ver>
         <micronaut4.version>4.10.4</micronaut4.version>
         <micronaut4.validation.version>4.12.0</micronaut4.validation.version>
