@@ -45,7 +45,7 @@ import org.testcontainers.couchbase.CouchbaseContainer;
 public class CouchbaseLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     private static final String BUCKET_NAME = "test";
-    private static final String DOCKER_IMAGE_NAME = "couchbase/server:7.6.7";
+    private static final String DOCKER_IMAGE_NAME = "couchbase/server:8.0.0";
 
     private CouchbaseLockProvider lockProvider;
     private static Cluster cluster;
