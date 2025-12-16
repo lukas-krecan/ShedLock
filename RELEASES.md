@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.3.0 (2025-12-16)
+* Support for CockroachDB #3096
+* Dependency updates
+
 ## 7.2.2 (2025-12-11)
 * R2dbcLockProvider works in WebFlux Controllers (thanks @Danden1)
 * Dependency updates
