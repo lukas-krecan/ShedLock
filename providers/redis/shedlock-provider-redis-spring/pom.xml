@@ -56,7 +56,7 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-data-32</artifactId>
-            <version>3.52.0</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
 
