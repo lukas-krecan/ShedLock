@@ -13,92 +13,94 @@
  */
 package net.javacrumbs.shedlock.spring.aop;
 
+import static java.time.Duration.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.time.Duration;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Tests for {@link StringToDurationConverter}.
- *
- * @author Phillip Webb
+ * Tests for {@link StringToDurationConverter} rewritten to parameterized tests.
  */
 public class StringToDurationConverterTest {
 
-    @Test
-    public void convertWhenIso8601ShouldReturnDuration() {
-        assertThat(convert("PT20.345S")).isEqualTo(Duration.parse("PT20.345S"));
-        assertThat(convert("PT15M")).isEqualTo(Duration.parse("PT15M"));
-        assertThat(convert("+PT15M")).isEqualTo(Duration.parse("PT15M"));
-        assertThat(convert("PT10H")).isEqualTo(Duration.parse("PT10H"));
-        assertThat(convert("P2D")).isEqualTo(Duration.parse("P2D"));
-        assertThat(convert("P2DT3H4M")).isEqualTo(Duration.parse("P2DT3H4M"));
-        assertThat(convert("-PT6H3M")).isEqualTo(Duration.parse("-PT6H3M"));
-        assertThat(convert("-PT-6H+3M")).isEqualTo(Duration.parse("-PT-6H+3M"));
+    @ParameterizedTest
+    @MethodSource("iso8601Inputs")
+    public void convertWhenIso8601ShouldReturnDuration(String input, Duration expected) {
+        assertThat(convert(input)).isEqualTo(expected);
     }
 
-    @Test
-    public void convertWhenSimpleNanosShouldReturnDuration() {
-        assertThat(convert("10ns")).isEqualTo(Duration.ofNanos(10));
-        assertThat(convert("10NS")).isEqualTo(Duration.ofNanos(10));
-        assertThat(convert("+10ns")).isEqualTo(Duration.ofNanos(10));
-        assertThat(convert("-10ns")).isEqualTo(Duration.ofNanos(-10));
+    static Stream<Arguments> iso8601Inputs() {
+        return Stream.of(
+                args("PT20.345S", parse("PT20.345S")),
+                args("PT15M", parse("PT15M")),
+                args("+PT15M", parse("PT15M")),
+                args("PT10H", parse("PT10H")),
+                args("P2D", parse("P2D")),
+                args("P2DT3H4M", parse("P2DT3H4M")),
+                args("-PT6H3M", parse("-PT6H3M")),
+                args("-PT-6H+3M", parse("-PT-6H+3M")));
     }
 
-    @Test
-    public void convertWhenSimpleMicrosShouldReturnDuration() {
-        assertThat(convert("10us")).isEqualTo(Duration.ofNanos(10000));
-        assertThat(convert("10US")).isEqualTo(Duration.ofNanos(10000));
-        assertThat(convert("+10us")).isEqualTo(Duration.ofNanos(10000));
-        assertThat(convert("-10us")).isEqualTo(Duration.ofNanos(-10000));
+    @ParameterizedTest
+    @MethodSource("simpleInputs")
+    public void convertWhenSimpleShouldReturnDuration(String input, Duration expected) {
+        assertThat(convert(input)).isEqualTo(expected);
     }
 
-    @Test
-    public void convertWhenSimpleMillisShouldReturnDuration() {
-        assertThat(convert("10ms")).isEqualTo(Duration.ofMillis(10));
-        assertThat(convert("10MS")).isEqualTo(Duration.ofMillis(10));
-        assertThat(convert("+10ms")).isEqualTo(Duration.ofMillis(10));
-        assertThat(convert("-10ms")).isEqualTo(Duration.ofMillis(-10));
-    }
+    static Stream<Arguments> simpleInputs() {
+        return Stream.of(
+                // nanos
+                args("10ns", Duration.ofNanos(10)),
+                args("10NS", Duration.ofNanos(10)),
+                args("+10ns", Duration.ofNanos(10)),
+                args("-10ns", Duration.ofNanos(-10)),
 
-    @Test
-    public void convertWhenSimpleSecondsShouldReturnDuration() {
-        assertThat(convert("10s")).isEqualTo(Duration.ofSeconds(10));
-        assertThat(convert("10S")).isEqualTo(Duration.ofSeconds(10));
-        assertThat(convert("+10s")).isEqualTo(Duration.ofSeconds(10));
-        assertThat(convert("-10s")).isEqualTo(Duration.ofSeconds(-10));
-    }
+                // micros
+                args("10us", Duration.ofNanos(10_000)),
+                args("10US", Duration.ofNanos(10_000)),
+                args("+10us", Duration.ofNanos(10_000)),
+                args("-10us", Duration.ofNanos(-10_000)),
 
-    @Test
-    public void convertWhenSimpleMinutesShouldReturnDuration() {
-        assertThat(convert("10m")).isEqualTo(Duration.ofMinutes(10));
-        assertThat(convert("10M")).isEqualTo(Duration.ofMinutes(10));
-        assertThat(convert("+10m")).isEqualTo(Duration.ofMinutes(10));
-        assertThat(convert("-10m")).isEqualTo(Duration.ofMinutes(-10));
-    }
+                // millis
+                args("10ms", Duration.ofMillis(10)),
+                args("10MS", Duration.ofMillis(10)),
+                args("+10ms", Duration.ofMillis(10)),
+                args("-10ms", Duration.ofMillis(-10)),
 
-    @Test
-    public void convertWhenSimpleHoursShouldReturnDuration() {
-        assertThat(convert("10h")).isEqualTo(Duration.ofHours(10));
-        assertThat(convert("10H")).isEqualTo(Duration.ofHours(10));
-        assertThat(convert("+10h")).isEqualTo(Duration.ofHours(10));
-        assertThat(convert("-10h")).isEqualTo(Duration.ofHours(-10));
-    }
+                // seconds
+                args("10s", Duration.ofSeconds(10)),
+                args("10S", Duration.ofSeconds(10)),
+                args("+10s", Duration.ofSeconds(10)),
+                args("-10s", Duration.ofSeconds(-10)),
 
-    @Test
-    public void convertWhenSimpleDaysShouldReturnDuration() {
-        assertThat(convert("10d")).isEqualTo(Duration.ofDays(10));
-        assertThat(convert("10D")).isEqualTo(Duration.ofDays(10));
-        assertThat(convert("+10d")).isEqualTo(Duration.ofDays(10));
-        assertThat(convert("-10d")).isEqualTo(Duration.ofDays(-10));
-    }
+                // minutes
+                args("10m", Duration.ofMinutes(10)),
+                args("10M", Duration.ofMinutes(10)),
+                args("+10m", Duration.ofMinutes(10)),
+                args("-10m", Duration.ofMinutes(-10)),
 
-    @Test
-    public void convertWhenSimpleWithoutSuffixShouldReturnDuration() {
-        assertThat(convert("10")).isEqualTo(Duration.ofMillis(10));
-        assertThat(convert("+10")).isEqualTo(Duration.ofMillis(10));
-        assertThat(convert("-10")).isEqualTo(Duration.ofMillis(-10));
+                // hours
+                args("10h", Duration.ofHours(10)),
+                args("10H", Duration.ofHours(10)),
+                args("+10h", Duration.ofHours(10)),
+                args("-10h", Duration.ofHours(-10)),
+
+                // days
+                args("10d", Duration.ofDays(10)),
+                args("10D", Duration.ofDays(10)),
+                args("+10d", Duration.ofDays(10)),
+                args("-10d", Duration.ofDays(-10)),
+
+                // default (no suffix -> millis)
+                args("10", Duration.ofMillis(10)),
+                args("+10", Duration.ofMillis(10)),
+                args("-10", Duration.ofMillis(-10)));
     }
 
     @Test
@@ -108,7 +110,11 @@ public class StringToDurationConverterTest {
                 .withMessageContaining("'10foo' is not a valid duration");
     }
 
-    private Duration convert(String source) {
-        return new StringToDurationConverter().convert(source);
+    private static Arguments args(String actual, Duration expected) {
+        return Arguments.of(actual, expected);
+    }
+
+    private static Duration convert(String source) {
+        return StringToDurationConverter.INSTANCE.convert(source);
     }
 }
