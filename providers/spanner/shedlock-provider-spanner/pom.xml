@@ -12,7 +12,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <google-cloud-spanner.version>6.104.0</google-cloud-spanner.version>
+        <google-cloud-spanner.version>6.105.0</google-cloud-spanner.version>
     </properties>
 
     <dependencies>
