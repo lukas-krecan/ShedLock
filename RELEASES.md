@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.4.0 (2025-12-18)
+* BOM does not contain JUnit anymore  #3115
+* Dependency updates
+
 ## 7.3.0 (2025-12-16)
 * Support for CockroachDB #3096
 * Dependency updates
