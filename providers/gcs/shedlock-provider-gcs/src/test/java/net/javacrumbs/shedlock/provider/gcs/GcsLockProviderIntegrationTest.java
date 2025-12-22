@@ -1,6 +1,7 @@
 package net.javacrumbs.shedlock.provider.gcs;
 
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.cloud.NoCredentials;
@@ -12,6 +13,7 @@ import java.util.Map;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.GenericContainer;
@@ -23,17 +25,16 @@ import org.testcontainers.utility.DockerImageName;
 public class GcsLockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
     private static final String BUCKET_NAME = "shedlock-test";
 
+    private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName.parse("fsouza/fake-gcs-server");
+
     @Container
-    private static final GenericContainer<?> gcsEmulator = new GenericContainer<>(
-                    DockerImageName.parse("fsouza/fake-gcs-server"))
-            .withExposedPorts(4443)
-            .withCommand("-scheme", "http");
+    private static final GenericContainer<?> gcsEmulator =
+            new GenericContainer<>(DOCKER_IMAGE_NAME).withExposedPorts(4443).withCommand("-scheme", "http");
 
     private static Storage storage;
 
     @BeforeAll
     public static void setUpAll() {
-
         storage = StorageOptions.newBuilder()
                 .setHost("http://" + gcsEmulator.getHost() + ":" + gcsEmulator.getMappedPort(4443))
                 .setProjectId("test-project")
@@ -47,6 +48,11 @@ public class GcsLockProviderIntegrationTest extends AbstractStorageBasedLockProv
         if (storage.get(BUCKET_NAME) == null) {
             storage.create(BucketInfo.of(BUCKET_NAME));
         }
+    }
+
+    @AfterAll
+    public static void removeImage() {
+        removeImageInCi(DOCKER_IMAGE_NAME.asCanonicalNameString());
     }
 
     @Override

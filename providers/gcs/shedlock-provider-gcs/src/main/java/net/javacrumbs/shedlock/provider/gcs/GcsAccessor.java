@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.gcs;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 
@@ -9,7 +10,6 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -33,58 +33,37 @@ class GcsAccessor extends AbstractStorageAccessor {
 
     @Override
     public boolean insertRecord(LockConfiguration lockConfiguration) {
-
         try {
-
-            BlobId blobId = BlobId.of(bucketName, lockConfiguration.getName());
-
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                    .setMetadata(createMetadata(lockConfiguration, now(), getHostname()))
-                    .build();
-
-            storage.create(blobInfo, LOCK_FILE_CONTENT.getBytes(), Storage.BlobTargetOption.doesNotExist());
-
+            BlobInfo blobInfo = getBlobInfo(
+                    lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now(), getHostname());
+            storage.create(blobInfo, LOCK_FILE_CONTENT.getBytes(UTF_8), Storage.BlobTargetOption.doesNotExist());
             logger.debug("insertRecord success for {}", lockConfiguration.getName());
-
             return true;
-
         } catch (StorageException e) {
-
             if (e.getCode() == 412) { // Precondition failed
-
                 logger.debug("insertRecord failed (exists) for {}", lockConfiguration.getName());
-
                 return false;
             }
-
             throw new LockException("Could not insert record", e);
         }
     }
 
     @Override
     public boolean updateRecord(LockConfiguration lockConfiguration) {
-
         return find(lockConfiguration.getName())
                 .map(lock -> {
                     if (lock.lockUntil().isBefore(now())) {
-
                         boolean updated = update(lockConfiguration, lock, now(), getHostname());
-
                         logger.debug("updateRecord result for {}: {}", lockConfiguration.getName(), updated);
-
                         return updated;
                     }
-
                     logger.debug("updateRecord skipped (not expired) for {}", lockConfiguration.getName());
-
                     return false;
                 })
                 .orElseGet(() -> {
                     boolean inserted = insertRecord(lockConfiguration);
-
                     logger.debug(
                             "updateRecord -> insertRecord result for {}: {}", lockConfiguration.getName(), inserted);
-
                     return inserted;
                 });
     }
@@ -122,14 +101,10 @@ class GcsAccessor extends AbstractStorageAccessor {
 
     private boolean update(String name, GcsLock lock, Instant lockedAt, String lockedBy, Instant lockUntil) {
         try {
-            BlobId blobId = BlobId.of(bucketName, name);
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                    .setMetadata(createMetadata(name, lockUntil, lockedAt, lockedBy))
-                    .build();
-
+            BlobInfo blobInfo = getBlobInfo(name, lockUntil, lockedAt, lockedBy);
             storage.create(
                     blobInfo,
-                    LOCK_FILE_CONTENT.getBytes(),
+                    LOCK_FILE_CONTENT.getBytes(UTF_8),
                     Storage.BlobTargetOption.generationMatch(lock.generation()));
             return true;
         } catch (StorageException e) {
@@ -138,6 +113,13 @@ class GcsAccessor extends AbstractStorageAccessor {
             }
             throw new LockException("Could not update record", e);
         }
+    }
+
+    private BlobInfo getBlobInfo(String name, Instant lockUntil, Instant lockedAt, String lockedBy) {
+        BlobId blobId = BlobId.of(bucketName, name);
+        return BlobInfo.newBuilder(blobId)
+                .setMetadata(createMetadata(name, lockUntil, lockedAt, lockedBy))
+                .build();
     }
 
     private Optional<GcsLock> find(String name) {
@@ -153,16 +135,8 @@ class GcsAccessor extends AbstractStorageAccessor {
                 blob.getGeneration()));
     }
 
-    private Map<String, String> createMetadata(LockConfiguration lockConfiguration, Instant lockedAt, String lockedBy) {
-        return createMetadata(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), lockedAt, lockedBy);
-    }
-
     private Map<String, String> createMetadata(String name, Instant lockUntil, Instant lockedAt, String lockedBy) {
-        Map<String, String> metadata = new HashMap<>();
-        metadata.put(LOCK_NAME, name);
-        metadata.put(LOCK_UNTIL, lockUntil.toString());
-        metadata.put(LOCKED_AT, lockedAt.toString());
-        metadata.put(LOCKED_BY, lockedBy);
-        return metadata;
+        return Map.of(
+                LOCK_NAME, name, LOCK_UNTIL, lockUntil.toString(), LOCKED_AT, lockedAt.toString(), LOCKED_BY, lockedBy);
     }
 }
