@@ -43,6 +43,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Memcached](#memcached-using-spymemcached)
   - [Datastore](#datastore)
   - [Firestore](#firestore)
+  - [GCS](#gcs)
   - [S3](#s3)
   - [NATS Jetstream](#nats-jetstream)
 + [Multi-tenancy](#multi-tenancy)
@@ -899,6 +900,43 @@ public LockProvider lockProvider(com.google.cloud.firestore.Firestore firestore)
             .withFieldNames(new FirestoreLockProvider.FieldNames("custom_lock_until", "custom_locked_at", "custom_locked_by"))
             .build()
     );
+}
+```
+#### GCS
+
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-gcs</artifactId>
+    <version>7.4.0</version>
+</dependency>
+```
+
+and configure
+```java
+import net.javacrumbs.shedlock.provider.gcs.GcsLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(com.google.cloud.storage.Storage storage, String bucketName) {
+    return new GcsLockProvider(storage, bucketName);
+}
+```
+
+For more fine-grained configuration, you can use the builder:
+
+```java
+@Bean
+public LockProvider lockProvider() {
+    return new GcsLockProvider(
+                StorageOptions
+                        .newBuilder()
+                        .setProjectId("<YOUR GCP PROJECT ID>")
+                        .build()
+                        .getService(),
+                "<YOUR BUCKET NAME>");
 }
 ```
 
