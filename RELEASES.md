@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.5.0 (2025-12-27)
+* Support for Google Cloud Storage (thanks @mbazos)
+* Dependency updates
+
 ## 7.4.0 (2025-12-18)
 * BOM does not contain JUnit anymore  #3115
 * Dependency updates
