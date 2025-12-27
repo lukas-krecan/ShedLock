@@ -20,7 +20,7 @@
     <artifactId>shedlock-parent</artifactId>
     <name>ShedLock</name>
     <packaging>pom</packaging>
-    <version>7.5.0</version>
+    <version>7.5.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
