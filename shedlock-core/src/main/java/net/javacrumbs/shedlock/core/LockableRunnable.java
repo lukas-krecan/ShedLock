@@ -18,6 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Executes wrapped runnable using {@link LockManager#executeWithLock(Runnable)}
  */
+@Deprecated(forRemoval = true)
 public class LockableRunnable implements Runnable {
     private final Runnable task;
 
