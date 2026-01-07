@@ -44,6 +44,7 @@ class ReentrantLockProviderTest {
                 .thenReturn(Optional.of(configuration));
     }
 
+    @SuppressWarnings("removal")
     @Test
     void shouldExecuteTask() throws ExecutionException, InterruptedException {
         AtomicBoolean executed = new AtomicBoolean(false);
@@ -53,6 +54,7 @@ class ReentrantLockProviderTest {
         assertThat(executed.get()).isEqualTo(true);
     }
 
+    @SuppressWarnings("removal")
     @Test
     void shouldNotExecuteTwiceAtTheSameTime() throws ExecutionException, InterruptedException {
         AtomicInteger executedTasks = new AtomicInteger();

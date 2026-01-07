@@ -29,8 +29,11 @@ import org.springframework.scheduling.Trigger;
 /**
  * Wraps a all tasks to {@link LockableRunnable} and delegates all calls to a
  * {@link TaskScheduler}.
+ *
+ * @deprecated Use AOP based locking
  */
 @SuppressWarnings("deprecation")
+@Deprecated(forRemoval = true)
 public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     private final TaskScheduler taskScheduler;
     private final LockManager lockManager;
@@ -95,6 +98,7 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
         return taskScheduler.scheduleWithFixedDelay(wrap(task), delay);
     }
 
+    @SuppressWarnings("removal")
     private Runnable wrap(Runnable task) {
         return new LockableRunnable(task, lockManager);
     }

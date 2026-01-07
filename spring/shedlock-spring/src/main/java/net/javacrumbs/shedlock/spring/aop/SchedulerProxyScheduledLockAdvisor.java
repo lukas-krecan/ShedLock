@@ -94,6 +94,7 @@ class SchedulerProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
             return firstArgument;
         }
 
+        @SuppressWarnings("removal")
         private LockableRunnable wrapTask(ScheduledMethodRunnable task) {
             LockProvider lockProvider =
                     lockProviderSupplier.supply(task.getTarget(), task.getMethod(), new Object[] {});
