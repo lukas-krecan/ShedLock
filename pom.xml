@@ -312,6 +312,7 @@
                             <fork>true</fork>
                             <compilerArgs>
                                 <arg>-Werror</arg>
+                                <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
                                 <arg>-XDcompilePolicy=simple</arg>
                                 <arg>--should-stop=ifError=FLOW</arg>
                                 <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=net.javacrumbs.jsonunit -Xep:BadImport:OFF -Xep:ImmutableEnumChecker:OFF</arg>
