@@ -13,47 +13,26 @@
  */
 package net.javacrumbs.shedlock.spring;
 
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.mockito.ArgumentMatchers.argThat;
 
-import java.time.Instant;
+import java.time.Duration;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.mockito.ArgumentMatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestUtils {
-
-    private static final int GAP = 1000;
-
-    private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
-
     public static LockConfiguration hasParams(String name, long lockAtMostFor, long lockAtLeastFor) {
         return argThat(new ArgumentMatcher<>() {
             @Override
             public boolean matches(LockConfiguration c) {
                 return name.equals(c.getName())
-                        && isNearTo(lockAtMostFor, c.getLockAtMostUntil())
-                        && isNearTo(lockAtLeastFor, c.getLockAtLeastUntil());
+                        && c.getLockAtMostFor().equals(Duration.ofMillis(lockAtMostFor))
+                        && c.getLockAtLeastFor().equals(Duration.ofMillis(lockAtLeastFor));
             }
 
             @Override
             public String toString() {
-                Instant now = now();
-                return "hasParams(\"" + name + "\", " + now.plusMillis(lockAtMostFor) + ", "
-                        + now.plusMillis(lockAtLeastFor) + ")";
+                return "hasParams(\"" + name + "\", " + lockAtMostFor + ", " + lockAtLeastFor + ")";
             }
         });
-    }
-
-    private static boolean isNearTo(long expected, Instant time) {
-        Instant now = now();
-        Instant from = now.plusMillis(expected - GAP);
-        Instant to = now.plusMillis(expected);
-        boolean isNear = time.isAfter(from) && !time.isAfter(to);
-        if (!isNear) {
-            logger.info("Assertion failed time={} is not between {} and {}", time, from, to);
-        }
-        return isNear;
     }
 }
