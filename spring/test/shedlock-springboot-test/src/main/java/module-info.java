@@ -7,6 +7,8 @@ module shedlock.springboot.test {
     requires spring.boot.autoconfigure;
     requires spring.context;
     requires spring.web;
+    requires spring.retry;
+    requires org.jspecify;
 
     opens net.javacrumbs.shedlock.test.boot;
 }
