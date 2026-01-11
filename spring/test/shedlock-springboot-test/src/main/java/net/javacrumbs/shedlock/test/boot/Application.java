@@ -16,10 +16,12 @@ package net.javacrumbs.shedlock.test.boot;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableRetry
 @EnableSchedulerLock(defaultLockAtMostFor = "10m")
 public class Application {
 

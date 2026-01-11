@@ -16,16 +16,24 @@ package net.javacrumbs.shedlock.test.boot;
 import static net.javacrumbs.shedlock.core.LockAssert.assertLocked;
 
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ScheduledTasks {
+    private final AtomicInteger counter = new AtomicInteger();
+
+    @Retryable
     @Scheduled(fixedRate = 100)
     @SchedulerLock(name = "reportCurrentTime", lockAtMostFor = "${lock.at.most.for}")
     public void reportCurrentTime() {
         assertLocked();
+        if (counter.incrementAndGet() % 2 == 0) {
+            throw new RuntimeException("This is a test");
+        }
         System.out.println(Instant.now());
     }
 }
