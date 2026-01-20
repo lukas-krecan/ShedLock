@@ -12,7 +12,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <firestore.ver>3.35.0</firestore.ver>
+        <firestore.ver>3.35.1</firestore.ver>
     </properties>
 
     <dependencies>
