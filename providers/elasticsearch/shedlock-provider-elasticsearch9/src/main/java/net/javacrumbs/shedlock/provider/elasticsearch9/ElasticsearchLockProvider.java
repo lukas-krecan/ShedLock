@@ -33,6 +33,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Elasticsearch-based lock provider.
@@ -248,7 +249,7 @@ public class ElasticsearchLockProvider implements LockProvider {
          * Builder for ElasticsearchLockProvider.Configuration.
          */
         public static final class Builder {
-            private ElasticsearchClient client;
+            private @Nullable ElasticsearchClient client;
             private String index = SCHEDLOCK_DEFAULT_INDEX;
             private DocumentFieldNames fieldNames = DocumentFieldNames.DEFAULT;
 

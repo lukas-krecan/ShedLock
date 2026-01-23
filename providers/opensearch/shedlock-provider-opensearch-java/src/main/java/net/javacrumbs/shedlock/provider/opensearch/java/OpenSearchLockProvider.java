@@ -39,6 +39,7 @@ import org.opensearch.client.opensearch.core.UpdateRequest;
 import org.opensearch.client.opensearch.core.UpdateRequest.Builder;
 import org.opensearch.client.opensearch.core.UpdateResponse;
 import org.opensearch.client.transport.httpclient5.ResponseException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * OpenSearch-based lock provider.
@@ -294,7 +295,7 @@ public class OpenSearchLockProvider implements LockProvider {
          * Builder for OpenSearchLockProvider.Configuration.
          */
         public static final class Builder {
-            private OpenSearchClient client;
+            private @Nullable OpenSearchClient client;
             private String index = SCHEDLOCK_DEFAULT_INDEX;
             private DocumentFieldNames fieldNames = DocumentFieldNames.DEFAULT;
 
