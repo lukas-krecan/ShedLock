@@ -15,7 +15,6 @@ package net.javacrumbs.shedlock.provider.opensearch.java;
 
 import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -34,7 +33,6 @@ import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.HttpHost;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.opensearch.OpenSearchClient;
@@ -76,11 +74,6 @@ class OpenSearchLockProviderSnakeCaseTest {
                 .withIndex(SNAKE_CASE_INDEX)
                 .withFieldNames(SNAKE_CASE_FIELDS)
                 .build());
-    }
-
-    @AfterAll
-    static void removeImage() {
-        removeImageInCi(DOCKER_IMAGE);
     }
 
     @Test

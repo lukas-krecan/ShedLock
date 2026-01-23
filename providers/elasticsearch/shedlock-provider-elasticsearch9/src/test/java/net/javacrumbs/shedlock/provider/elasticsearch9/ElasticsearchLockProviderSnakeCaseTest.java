@@ -14,7 +14,6 @@
 package net.javacrumbs.shedlock.provider.elasticsearch9;
 
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -68,11 +66,6 @@ class ElasticsearchLockProviderSnakeCaseTest {
                 .withIndex(SNAKE_CASE_INDEX)
                 .withFieldNames(SNAKE_CASE_FIELDS)
                 .build());
-    }
-
-    @AfterAll
-    static void removeImage() {
-        removeImageInCi(DOCKER_IMAGE_NAME.asCanonicalNameString());
     }
 
     @Test
