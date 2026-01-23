@@ -18,34 +18,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * Configurable field names for OpenSearch lock documents.
  *
- * <p><b>Note:</b> This class is mirrored in the Elasticsearch provider module.
- * When making changes, ensure both versions remain synchronized:
- * {@code shedlock-provider-elasticsearch9/src/main/java/.../DocumentFieldNames.java}
+ * <p>Use {@link #SNAKE_CASE} when your OpenSearchClient is configured with a JsonpMapper
+ * using SNAKE_CASE naming strategy (fixes <a href="https://github.com/lukas-krecan/ShedLock/issues/2007">Issue #2007</a>).
  *
- * <p><b>WARNING - Migration Risk:</b> Changing field names on an existing index will cause
- * the lock provider to be unable to read existing lock documents. This can lead to
- * <b>duplicate task execution</b> because:
- * <ul>
- *   <li>Existing locks with old field names won't be recognized</li>
- *   <li>New locks will be created with new field names</li>
- *   <li>Multiple instances may acquire the "same" lock simultaneously</li>
- * </ul>
- * <p>If you need to change field names, either:
- * <ol>
- *   <li>Use a new index name, or</li>
- *   <li>Delete all existing lock documents first, or</li>
- *   <li>Migrate existing documents to use the new field names</li>
- * </ol>
- *
- * <p>Provides preset configurations for common naming conventions:
- * <ul>
- *   <li>{@link #DEFAULT} - camelCase (name, lockUntil, lockedAt, lockedBy)
- *   <li>{@link #SNAKE_CASE} - snake_case (name, lock_until, locked_at, locked_by)
- *   <li>{@link #UPPER_SNAKE_CASE} - UPPER_SNAKE_CASE (NAME, LOCK_UNTIL, LOCKED_AT, LOCKED_BY)
- *   <li>{@link #LOWER_CASE} - lowercase (name, lockuntil, lockedat, lockedby)
- * </ul>
- *
- * <p>Example usage with SNAKE_CASE (for JsonpMapper configured with SNAKE_CASE naming):
+ * <p>Example usage:
  * <pre>
  * OpenSearchLockProvider provider = new OpenSearchLockProvider(
  *     OpenSearchLockProvider.Configuration.builder()
@@ -57,65 +33,18 @@ import static java.util.Objects.requireNonNull;
  */
 public record DocumentFieldNames(String name, String lockUntil, String lockedAt, String lockedBy) {
 
-    /**
-     * Default field names using camelCase convention.
-     * This is the original naming used by ShedLock.
-     */
+    /** Default field names using camelCase (name, lockUntil, lockedAt, lockedBy). */
     public static final DocumentFieldNames DEFAULT =
             new DocumentFieldNames("name", "lockUntil", "lockedAt", "lockedBy");
 
-    /**
-     * Field names using snake_case convention.
-     * Use this when your OpenSearchClient is configured with a JsonpMapper using SNAKE_CASE naming strategy.
-     */
+    /** Field names using snake_case (name, lock_until, locked_at, locked_by). */
     public static final DocumentFieldNames SNAKE_CASE =
             new DocumentFieldNames("name", "lock_until", "locked_at", "locked_by");
 
-    /**
-     * Field names using UPPER_SNAKE_CASE convention.
-     */
-    public static final DocumentFieldNames UPPER_SNAKE_CASE =
-            new DocumentFieldNames("NAME", "LOCK_UNTIL", "LOCKED_AT", "LOCKED_BY");
-
-    /**
-     * Field names using lowercase convention (no separators).
-     */
-    public static final DocumentFieldNames LOWER_CASE =
-            new DocumentFieldNames("name", "lockuntil", "lockedat", "lockedby");
-
-    /**
-     * Creates a new DocumentFieldNames instance with custom field names.
-     *
-     * <p>Field names must:
-     * <ul>
-     *   <li>Not be null or empty</li>
-     *   <li>Contain only alphanumeric characters and underscores</li>
-     *   <li>Not start with a number</li>
-     * </ul>
-     *
-     * @param name the field name for the lock name
-     * @param lockUntil the field name for the lock expiration timestamp
-     * @param lockedAt the field name for the lock acquisition timestamp
-     * @param lockedBy the field name for the lock owner hostname
-     * @throws NullPointerException if any field name is null
-     * @throws IllegalArgumentException if any field name is invalid
-     */
     public DocumentFieldNames {
-        validateFieldName(name, "name");
-        validateFieldName(lockUntil, "lockUntil");
-        validateFieldName(lockedAt, "lockedAt");
-        validateFieldName(lockedBy, "lockedBy");
-    }
-
-    private static void validateFieldName(String fieldName, String parameterName) {
-        requireNonNull(fieldName, "'" + parameterName + "' field name cannot be null");
-        if (fieldName.trim().isEmpty()) {
-            throw new IllegalArgumentException("'" + parameterName + "' field name cannot be empty");
-        }
-        if (!fieldName.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
-            throw new IllegalArgumentException("Invalid field name '" + fieldName + "' for " + parameterName
-                    + ". Field names must contain only alphanumeric characters and underscores, "
-                    + "and cannot start with a number.");
-        }
+        requireNonNull(name, "name cannot be null");
+        requireNonNull(lockUntil, "lockUntil cannot be null");
+        requireNonNull(lockedAt, "lockedAt cannot be null");
+        requireNonNull(lockedBy, "lockedBy cannot be null");
     }
 }
