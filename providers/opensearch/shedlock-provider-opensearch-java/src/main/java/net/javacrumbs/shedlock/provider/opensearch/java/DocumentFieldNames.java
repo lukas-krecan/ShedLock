@@ -22,6 +22,21 @@ import static java.util.Objects.requireNonNull;
  * When making changes, ensure both versions remain synchronized:
  * {@code shedlock-provider-elasticsearch9/src/main/java/.../DocumentFieldNames.java}
  *
+ * <p><b>WARNING - Migration Risk:</b> Changing field names on an existing index will cause
+ * the lock provider to be unable to read existing lock documents. This can lead to
+ * <b>duplicate task execution</b> because:
+ * <ul>
+ *   <li>Existing locks with old field names won't be recognized</li>
+ *   <li>New locks will be created with new field names</li>
+ *   <li>Multiple instances may acquire the "same" lock simultaneously</li>
+ * </ul>
+ * <p>If you need to change field names, either:
+ * <ol>
+ *   <li>Use a new index name, or</li>
+ *   <li>Delete all existing lock documents first, or</li>
+ *   <li>Migrate existing documents to use the new field names</li>
+ * </ol>
+ *
  * <p>Provides preset configurations for common naming conventions:
  * <ul>
  *   <li>{@link #DEFAULT} - camelCase (name, lockUntil, lockedAt, lockedBy)
