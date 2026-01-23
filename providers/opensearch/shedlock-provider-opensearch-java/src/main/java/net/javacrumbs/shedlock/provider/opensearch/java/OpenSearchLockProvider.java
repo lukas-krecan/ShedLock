@@ -27,6 +27,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jspecify.annotations.Nullable;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.BuiltinScriptLanguage;
@@ -39,7 +40,6 @@ import org.opensearch.client.opensearch.core.UpdateRequest;
 import org.opensearch.client.opensearch.core.UpdateRequest.Builder;
 import org.opensearch.client.opensearch.core.UpdateResponse;
 import org.opensearch.client.transport.httpclient5.ResponseException;
-import org.jspecify.annotations.Nullable;
 
 /**
  * OpenSearch-based lock provider.
