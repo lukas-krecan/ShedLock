@@ -22,9 +22,13 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
@@ -35,6 +39,8 @@ import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBu
 import org.apache.hc.core5.http.HttpHost;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.GetRequest;
 import org.opensearch.client.opensearch.core.GetResponse;
@@ -146,5 +152,129 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
         basicCredentialsProvider.setCredentials(
                 new AuthScope(httpHost), new UsernamePasswordCredentials("admin", "admin".toCharArray()));
         return basicCredentialsProvider;
+    }
+
+    /**
+     * Nested tests for SNAKE_CASE field names.
+     * This verifies the fix for Issue #2007 where JsonpMapper with SNAKE_CASE naming
+     * strategy caused field name mismatches.
+     */
+    @Nested
+    class SnakeCaseFieldNamesTest {
+
+        private static final String SNAKE_CASE_INDEX = "shedlock_snake_case";
+        private static final DocumentFieldNames SNAKE_CASE_FIELDS = DocumentFieldNames.SNAKE_CASE;
+
+        private OpenSearchLockProvider snakeCaseLockProvider;
+
+        @BeforeEach
+        void setUpSnakeCase() {
+            snakeCaseLockProvider = new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
+                    .withClient(openSearchClient)
+                    .withIndex(SNAKE_CASE_INDEX)
+                    .withFieldNames(SNAKE_CASE_FIELDS)
+                    .build());
+        }
+
+        @Test
+        void shouldAcquireLockWithSnakeCaseFieldNames() {
+            String lockName = "snake_case_lock_test";
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            Optional<SimpleLock> lock = snakeCaseLockProvider.lock(lockConfiguration);
+
+            assertThat(lock).isPresent();
+            assertDocumentHasSnakeCaseFields(lockName);
+
+            lock.get().unlock();
+            assertLockIsReleased(lockName);
+        }
+
+        @Test
+        void shouldPreventConcurrentLockAcquisitionWithSnakeCaseFieldNames() {
+            String lockName = "snake_case_concurrent_test";
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            Optional<SimpleLock> firstLock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(firstLock).isPresent();
+
+            // Second attempt should fail
+            Optional<SimpleLock> secondLock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(secondLock).isEmpty();
+
+            // After unlock, should be able to acquire again
+            firstLock.get().unlock();
+            Optional<SimpleLock> thirdLock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(thirdLock).isPresent();
+            thirdLock.get().unlock();
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void shouldStoreDocumentWithCorrectSnakeCaseFieldNames() {
+            String lockName = "snake_case_field_verification_test";
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            Optional<SimpleLock> lock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(lock).isPresent();
+
+            // Verify the document structure uses snake_case field names
+            GetRequest request = GetRequest.of(gr -> gr.index(SNAKE_CASE_INDEX).id(lockName));
+            try {
+                GetResponse<Object> response = openSearchClient.get(request, Object.class);
+                Map<String, Object> source = (Map<String, Object>) response.source();
+                assert source != null;
+
+                // Verify snake_case fields exist (not camelCase)
+                assertThat(source).containsKey("lock_until");
+                assertThat(source).containsKey("locked_at");
+                assertThat(source).containsKey("locked_by");
+                assertThat(source).containsKey("name");
+
+                // Verify camelCase fields do NOT exist
+                assertThat(source).doesNotContainKey("lockUntil");
+                assertThat(source).doesNotContainKey("lockedAt");
+                assertThat(source).doesNotContainKey("lockedBy");
+
+            } catch (IOException e) {
+                fail("Call to OpenSearch failed: " + e.getMessage());
+            }
+
+            lock.get().unlock();
+        }
+
+        @SuppressWarnings("unchecked")
+        private void assertDocumentHasSnakeCaseFields(String lockName) {
+            GetRequest request = GetRequest.of(gr -> gr.index(SNAKE_CASE_INDEX).id(lockName));
+            try {
+                GetResponse<Object> response = openSearchClient.get(request, Object.class);
+                Map<String, Object> source = (Map<String, Object>) response.source();
+                assert source != null;
+
+                assertThat(getInstant(source, SNAKE_CASE_FIELDS.lockUntil())).isAfter(now());
+                assertThat(getInstant(source, SNAKE_CASE_FIELDS.lockedAt())).isBeforeOrEqualTo(now());
+                assertThat((String) source.get(SNAKE_CASE_FIELDS.lockedBy())).isNotBlank();
+                assertThat((String) source.get(SNAKE_CASE_FIELDS.name())).isEqualTo(lockName);
+            } catch (IOException e) {
+                fail("Call to OpenSearch failed: " + e.getMessage());
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void assertLockIsReleased(String lockName) {
+            GetRequest request = GetRequest.of(gr -> gr.index(SNAKE_CASE_INDEX).id(lockName));
+            try {
+                GetResponse<Object> response = openSearchClient.get(request, Object.class);
+                Map<String, Object> source = (Map<String, Object>) response.source();
+                assert source != null;
+
+                assertThat(getInstant(source, SNAKE_CASE_FIELDS.lockUntil())).isBeforeOrEqualTo(now());
+            } catch (IOException e) {
+                fail("Call to OpenSearch failed: " + e.getMessage());
+            }
+        }
     }
 }
