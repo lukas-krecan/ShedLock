@@ -14,6 +14,7 @@
 package net.javacrumbs.shedlock.provider.opensearch.java;
 
 import static java.net.HttpURLConnection.HTTP_CONFLICT;
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static net.javacrumbs.shedlock.support.Utils.getHostname;
 
@@ -40,8 +41,7 @@ import org.opensearch.client.opensearch.core.UpdateResponse;
 import org.opensearch.client.transport.httpclient5.ResponseException;
 
 /**
- * Lock using OpenSearch &gt;= . Requires opensearch-rest-high-level-client &gt;
- * 1.1.0
+ * OpenSearch-based lock provider.
  *
  * <p>
  * It uses a collection that contains documents like this:
@@ -75,33 +75,58 @@ import org.opensearch.client.transport.httpclient5.ResponseException;
  * update failed (0 updated documents) somebody else holds the lock
  * <li>When unlocking, lock_until is set to now.
  * </ol>
+ *
+ * <p>Example with custom field names for SNAKE_CASE JsonpMapper:
+ * <pre>
+ * OpenSearchLockProvider provider = new OpenSearchLockProvider(
+ *     OpenSearchLockProvider.Configuration.builder()
+ *         .withClient(client)
+ *         .withFieldNames(DocumentFieldNames.SNAKE_CASE)
+ *         .build()
+ * );
+ * </pre>
  */
 public class OpenSearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
-    static final String LOCK_UNTIL = "lockUntil";
-    static final String LOCKED_AT = "lockedAt";
-    static final String LOCKED_BY = "lockedBy";
-    static final String NAME = "name";
-
-    private static final String UPDATE_SCRIPT = "if (ctx._source." + LOCK_UNTIL + " <= " + "params." + LOCKED_AT
-            + ") { " + "ctx._source." + LOCKED_BY + " = params." + LOCKED_BY + "; " + "ctx._source." + LOCKED_AT
-            + " = params." + LOCKED_AT + "; " + "ctx._source." + LOCK_UNTIL + " =  params." + LOCK_UNTIL + "; "
-            + "} else { " + "ctx.op = 'none' " + "}";
-    private static final String UNLOCK_UPDATE_SCRIPT = "ctx._source.lockUntil = params.unlockTime";
     private static final String UNLOCK_TIME = "unlockTime";
 
     private final OpenSearchClient openSearchClient;
     private final String hostname;
     private final String index;
+    private final DocumentFieldNames fieldNames;
 
+    /**
+     * Creates a new OpenSearchLockProvider with the specified configuration.
+     *
+     * @param configuration the configuration containing client, index, and field names
+     */
+    public OpenSearchLockProvider(Configuration configuration) {
+        this.openSearchClient = requireNonNull(configuration.getClient(), "client cannot be null");
+        this.index = requireNonNull(configuration.getIndex(), "index cannot be null");
+        this.fieldNames = requireNonNull(configuration.getFieldNames(), "fieldNames cannot be null");
+        this.hostname = getHostname();
+    }
+
+    /**
+     * Creates a new OpenSearchLockProvider with default configuration.
+     *
+     * @param openSearchClient the OpenSearch client
+     */
     public OpenSearchLockProvider(OpenSearchClient openSearchClient) {
         this(openSearchClient, SCHEDLOCK_DEFAULT_INDEX);
     }
 
+    /**
+     * Creates a new OpenSearchLockProvider with a custom index name.
+     *
+     * @param openSearchClient the OpenSearch client
+     * @param index the index name
+     */
     public OpenSearchLockProvider(OpenSearchClient openSearchClient, String index) {
-        this.openSearchClient = openSearchClient;
-        this.index = index;
-        this.hostname = getHostname();
+        this(Configuration.builder()
+                .withClient(openSearchClient)
+                .withIndex(index)
+                .build());
     }
 
     @Override
@@ -133,46 +158,69 @@ public class OpenSearchLockProvider implements LockProvider {
     }
 
     private UpdateRequest<Object, Object> createUpdateRequest(LockConfiguration lockConfiguration, Instant now) {
-
-        Map<String, Object> lockObject =
-                lockObject(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now);
+        Map<String, Object> upsertDoc =
+                createUpsertDocument(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now);
 
         return new Builder<>()
                 .index(index)
                 .script(createUpdateScript(lockConfiguration, now))
                 .id(lockConfiguration.getName())
                 .refresh(Refresh.True)
-                .upsert(lockObject)
+                .upsert(upsertDoc)
                 .build();
     }
 
     private Script createUpdateScript(LockConfiguration lockConfiguration, Instant now) {
         Map<String, JsonData> updateScriptParams =
-                updateScriptParams(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now);
+                createLockParams(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now);
 
-        InlineScript inlineScript = inlineScript(UPDATE_SCRIPT, updateScriptParams);
+        InlineScript inlineScript = inlineScript(buildUpdateScript(), updateScriptParams);
 
         return Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
     }
 
-    private Map<String, Object> lockObject(String name, Instant lockUntil, Instant lockedAt) {
+    private String buildUpdateScript() {
+        return """
+                if (ctx._source.%s <= params.%s) {
+                    ctx._source.%s = params.%s;
+                    ctx._source.%s = params.%s;
+                    ctx._source.%s = params.%s;
+                } else {
+                    ctx.op = 'none'
+                }"""
+                .formatted(
+                        fieldNames.lockUntil(),
+                        fieldNames.lockedAt(),
+                        fieldNames.lockedBy(),
+                        fieldNames.lockedBy(),
+                        fieldNames.lockedAt(),
+                        fieldNames.lockedAt(),
+                        fieldNames.lockUntil(),
+                        fieldNames.lockUntil());
+    }
+
+    private Map<String, Object> createUpsertDocument(String name, Instant lockUntil, Instant lockedAt) {
         return Map.of(
-                NAME,
+                fieldNames.name(),
                 name,
-                LOCKED_BY,
+                fieldNames.lockedBy(),
                 hostname,
-                LOCKED_AT,
+                fieldNames.lockedAt(),
                 lockedAt.toEpochMilli(),
-                LOCK_UNTIL,
+                fieldNames.lockUntil(),
                 lockUntil.toEpochMilli());
     }
 
-    private Map<String, JsonData> updateScriptParams(String name, Instant lockUntil, Instant lockedAt) {
+    private Map<String, JsonData> createLockParams(String name, Instant lockUntil, Instant lockedAt) {
         return Map.of(
-                NAME, JsonData.of(name),
-                LOCKED_BY, JsonData.of(hostname),
-                LOCKED_AT, JsonData.of(lockedAt.toEpochMilli()),
-                LOCK_UNTIL, JsonData.of(lockUntil.toEpochMilli()));
+                fieldNames.name(),
+                JsonData.of(name),
+                fieldNames.lockedBy(),
+                JsonData.of(hostname),
+                fieldNames.lockedAt(),
+                JsonData.of(lockedAt.toEpochMilli()),
+                fieldNames.lockUntil(),
+                JsonData.of(lockUntil.toEpochMilli()));
     }
 
     private static InlineScript inlineScript(String sc, Map<String, JsonData> params) {
@@ -188,18 +236,18 @@ public class OpenSearchLockProvider implements LockProvider {
 
         @Override
         public void doUnlock() {
-
             Map<String, JsonData> unlockParams = Map.of(
                     UNLOCK_TIME, JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
 
-            InlineScript inlineScript = inlineScript(UNLOCK_UPDATE_SCRIPT, unlockParams);
+            String unlockScript = "ctx._source." + fieldNames.lockUntil() + " = params." + UNLOCK_TIME;
+            InlineScript inlineScript = inlineScript(unlockScript, unlockParams);
 
-            Script unlockScript = Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
+            Script script = Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
 
             UpdateRequest<Object, Object> unlockUpdateRequest =
                     new org.opensearch.client.opensearch.core.UpdateRequest.Builder<>()
                             .index(index)
-                            .script(unlockScript)
+                            .script(script)
                             .id(lockConfiguration.getName())
                             .refresh(Refresh.True)
                             .build();
@@ -207,12 +255,94 @@ public class OpenSearchLockProvider implements LockProvider {
             try {
                 openSearchClient.update(unlockUpdateRequest, Object.class);
             } catch (IOException | OpenSearchException e) {
-                throwLockException(e);
+                throw new LockException("Unexpected exception occurred", e);
             }
         }
+    }
 
-        private void throwLockException(Exception e) {
-            throw new LockException("Unexpected exception occurred", e);
+    /**
+     * Configuration for OpenSearchLockProvider.
+     */
+    public static final class Configuration {
+        private final OpenSearchClient client;
+        private final String index;
+        private final DocumentFieldNames fieldNames;
+
+        Configuration(OpenSearchClient client, String index, DocumentFieldNames fieldNames) {
+            this.client = requireNonNull(client, "client cannot be null");
+            this.index = requireNonNull(index, "index cannot be null");
+            this.fieldNames = requireNonNull(fieldNames, "fieldNames cannot be null");
+        }
+
+        public OpenSearchClient getClient() {
+            return client;
+        }
+
+        public String getIndex() {
+            return index;
+        }
+
+        public DocumentFieldNames getFieldNames() {
+            return fieldNames;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        /**
+         * Builder for OpenSearchLockProvider.Configuration.
+         */
+        public static final class Builder {
+            private OpenSearchClient client;
+            private String index = SCHEDLOCK_DEFAULT_INDEX;
+            private DocumentFieldNames fieldNames = DocumentFieldNames.DEFAULT;
+
+            /**
+             * Sets the OpenSearch client (required).
+             *
+             * @param client the OpenSearch client
+             * @return this builder
+             */
+            public Builder withClient(OpenSearchClient client) {
+                this.client = client;
+                return this;
+            }
+
+            /**
+             * Sets the index name. Defaults to "shedlock".
+             *
+             * @param index the index name
+             * @return this builder
+             */
+            public Builder withIndex(String index) {
+                this.index = index;
+                return this;
+            }
+
+            /**
+             * Sets the document field names. Defaults to {@link DocumentFieldNames#DEFAULT}.
+             *
+             * <p>Use {@link DocumentFieldNames#SNAKE_CASE} when your OpenSearchClient
+             * is configured with a JsonpMapper using SNAKE_CASE naming strategy.
+             *
+             * @param fieldNames the field names configuration
+             * @return this builder
+             */
+            public Builder withFieldNames(DocumentFieldNames fieldNames) {
+                this.fieldNames = fieldNames;
+                return this;
+            }
+
+            /**
+             * Builds the Configuration.
+             *
+             * @return the configuration
+             * @throws NullPointerException if client is not set
+             */
+            public Configuration build() {
+                return new Configuration(requireNonNull(client, "client is required"), index, fieldNames);
+            }
         }
     }
 }

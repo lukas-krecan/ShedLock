@@ -14,10 +14,6 @@
 package net.javacrumbs.shedlock.provider.elasticsearch9;
 
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +45,8 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
     @Container
     private static final ElasticsearchContainer container = new ElasticsearchContainer(DOCKER_IMAGE_NAME);
 
+    private static final DocumentFieldNames DEFAULT_FIELDS = DocumentFieldNames.DEFAULT;
+
     private ElasticsearchClient client;
     private ElasticsearchLockProvider lockProvider;
 
@@ -71,15 +69,27 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
     @Override
     protected void assertUnlocked(String lockName) {
-        GetRequest request =
-                GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
+        assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, false);
+    }
+
+    @Override
+    protected void assertLocked(String lockName) {
+        assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, true);
+    }
+
+    private void assertDocumentState(String lockName, String index, DocumentFieldNames fields, boolean locked) {
+        GetRequest request = GetRequest.of(gr -> gr.index(index).id(lockName));
         try {
             GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
             Map<String, Object> source = requireNonNull(response.source());
-            assertThat(getInstant(source, LOCK_UNTIL)).isBeforeOrEqualTo(now());
-            assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
-            assertThat((String) source.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) source.get(NAME)).isEqualTo(lockName);
+            if (locked) {
+                assertThat(getInstant(source, fields.lockUntil())).isAfter(now());
+            } else {
+                assertThat(getInstant(source, fields.lockUntil())).isBeforeOrEqualTo(now());
+            }
+            assertThat(getInstant(source, fields.lockedAt())).isBeforeOrEqualTo(now());
+            assertThat((String) source.get(fields.lockedBy())).isNotBlank();
+            assertThat((String) source.get(fields.name())).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded ES failed.");
         }
@@ -87,22 +97,6 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
     private static Instant getInstant(Map<String, Object> source, String key) {
         return Instant.ofEpochMilli((Long) requireNonNull(source.get(key)));
-    }
-
-    @Override
-    protected void assertLocked(String lockName) {
-        GetRequest request =
-                GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
-        try {
-            GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
-            Map<String, Object> source = requireNonNull(response.source());
-            assertThat(getInstant(source, LOCK_UNTIL)).isAfter(now());
-            assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
-            assertThat((String) source.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) source.get(NAME)).isEqualTo(lockName);
-        } catch (IOException e) {
-            fail("Call to embedded ES failed.");
-        }
     }
 
     private Instant now() {

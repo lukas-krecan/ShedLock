@@ -15,10 +15,6 @@ package net.javacrumbs.shedlock.provider.opensearch.java;
 
 import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +54,8 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
     private static final OpenSearchContainer<?> container =
             new OpenSearchContainer<>(DockerImageName.parse(DOCKER_IMAGE));
 
+    private static final DocumentFieldNames DEFAULT_FIELDS = DocumentFieldNames.DEFAULT;
+
     private OpenSearchClient openSearchClient;
     private OpenSearchLockProvider lockProvider;
 
@@ -80,44 +78,38 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
     @Override
     @SuppressWarnings("unchecked")
     protected void assertUnlocked(String lockName) {
-        GetRequest getRequest =
-                GetRequest.of(builder -> builder.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
-
-        try {
-            GetResponse<Object> objectGetResponse = openSearchClient.get(getRequest, Object.class);
-            Map<String, Object> sourceData = (Map<String, Object>) objectGetResponse.source();
-            assert sourceData != null;
-            assertThat(getInstant(sourceData, LOCK_UNTIL)).isBeforeOrEqualTo(now());
-            assertThat(getInstant(sourceData, LOCKED_AT)).isBeforeOrEqualTo(now());
-            assertThat((String) sourceData.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) sourceData.get(NAME)).isEqualTo(lockName);
-        } catch (IOException e) {
-            fail("Call to embedded OS failed.");
-        }
-    }
-
-    private static Instant getInstant(Map<String, Object> sourceData, String lockUntil) {
-        return Instant.ofEpochMilli((Long) requireNonNull(sourceData.get(lockUntil)));
+        assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, false);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected void assertLocked(String lockName) {
-        GetRequest getRequest =
-                GetRequest.of(builder -> builder.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
+        assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assertDocumentState(String lockName, String index, DocumentFieldNames fields, boolean locked) {
+        GetRequest getRequest = GetRequest.of(builder -> builder.index(index).id(lockName));
 
         try {
-            GetResponse<Object> getResponse = openSearchClient.get(getRequest, Object.class);
-            Map<String, Object> sourceData = (Map<String, Object>) getResponse.source();
-
+            GetResponse<Object> response = openSearchClient.get(getRequest, Object.class);
+            Map<String, Object> sourceData = (Map<String, Object>) response.source();
             assert sourceData != null;
-            assertThat(getInstant(sourceData, LOCK_UNTIL)).isAfter(now());
-            assertThat(getInstant(sourceData, LOCKED_AT)).isBeforeOrEqualTo(now());
-            assertThat((String) sourceData.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) sourceData.get(NAME)).isEqualTo(lockName);
+            if (locked) {
+                assertThat(getInstant(sourceData, fields.lockUntil())).isAfter(now());
+            } else {
+                assertThat(getInstant(sourceData, fields.lockUntil())).isBeforeOrEqualTo(now());
+            }
+            assertThat(getInstant(sourceData, fields.lockedAt())).isBeforeOrEqualTo(now());
+            assertThat((String) sourceData.get(fields.lockedBy())).isNotBlank();
+            assertThat((String) sourceData.get(fields.name())).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded OS failed.");
         }
+    }
+
+    private static Instant getInstant(Map<String, Object> sourceData, String key) {
+        return Instant.ofEpochMilli((Long) requireNonNull(sourceData.get(key)));
     }
 
     private OpenSearchClient openSearchClient() {
