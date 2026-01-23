@@ -74,6 +74,7 @@ class DocumentFieldNamesTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void shouldRejectNullFieldNames() {
         assertThatThrownBy(() -> new DocumentFieldNames(null, "lockUntil", "lockedAt", "lockedBy"))
                 .isInstanceOf(NullPointerException.class)
