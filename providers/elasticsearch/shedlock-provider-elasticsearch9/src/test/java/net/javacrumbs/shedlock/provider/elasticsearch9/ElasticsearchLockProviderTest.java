@@ -17,11 +17,13 @@ import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.Duration;
@@ -31,6 +33,7 @@ import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -224,6 +227,120 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
             } catch (IOException e) {
                 fail("Call to Elasticsearch failed: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Tests for field name mismatch scenarios.
+     * Verifies fail-fast behavior when configuration doesn't match existing data.
+     */
+    @Nested
+    class FieldNameMismatchTest {
+
+        private static final String MISMATCH_INDEX = "shedlock_mismatch";
+
+        @Test
+        void shouldThrowExceptionWhenFieldNameMismatch() throws IOException {
+            // Create a document with snake_case fields directly
+            String lockName = "mismatch_test";
+            Map<String, Object> snakeCaseDoc = Map.of(
+                    "name",
+                    lockName,
+                    "lock_until",
+                    Instant.now().minusSeconds(60).toEpochMilli(), // expired lock
+                    "locked_at",
+                    Instant.now().minusSeconds(120).toEpochMilli(),
+                    "locked_by",
+                    "test-host");
+
+            client.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
+                    .document(snakeCaseDoc)));
+
+            // Try to acquire lock using DEFAULT (camelCase) field names
+            // The script should throw because it expects 'lockUntil' but finds 'lock_until'
+            ElasticsearchLockProvider mismatchedProvider =
+                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
+                            .withClient(client)
+                            .withIndex(MISMATCH_INDEX)
+                            .withFieldNames(DocumentFieldNames.DEFAULT) // expects camelCase
+                            .build());
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> mismatchedProvider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception occurred")
+                    .hasCauseInstanceOf(co.elastic.clients.elasticsearch._types.ElasticsearchException.class);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenFieldIsMissing() throws IOException {
+            // Create a document missing the lockUntil field entirely
+            String lockName = "missing_field_test";
+            Map<String, Object> incompleteDoc = Map.of(
+                    "name",
+                    lockName,
+                    "locked_at",
+                    Instant.now().minusSeconds(120).toEpochMilli(),
+                    "locked_by",
+                    "test-host");
+            // Note: lockUntil/lock_until is intentionally missing
+
+            client.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
+                    .document(incompleteDoc)));
+
+            ElasticsearchLockProvider provider =
+                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
+                            .withClient(client)
+                            .withIndex(MISMATCH_INDEX)
+                            .withFieldNames(DocumentFieldNames.DEFAULT)
+                            .build());
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> provider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception occurred");
+        }
+
+        @Test
+        void shouldThrowExceptionWhenFieldHasWrongType() throws IOException {
+            // Create a document where lockUntil is a string instead of number
+            String lockName = "wrong_type_test";
+            Map<String, Object> wrongTypeDoc = Map.of(
+                    "name",
+                    lockName,
+                    "lockUntil",
+                    "not-a-number", // wrong type
+                    "lockedAt",
+                    Instant.now().minusSeconds(120).toEpochMilli(),
+                    "lockedBy",
+                    "test-host");
+
+            client.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
+                    .document(wrongTypeDoc)));
+
+            ElasticsearchLockProvider provider =
+                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
+                            .withClient(client)
+                            .withIndex(MISMATCH_INDEX)
+                            .withFieldNames(DocumentFieldNames.DEFAULT)
+                            .build());
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> provider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception occurred");
         }
     }
 }

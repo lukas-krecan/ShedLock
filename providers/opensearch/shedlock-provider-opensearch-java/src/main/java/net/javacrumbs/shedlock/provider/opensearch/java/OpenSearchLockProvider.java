@@ -89,7 +89,44 @@ import org.opensearch.client.transport.httpclient5.ResponseException;
  */
 public class OpenSearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
-    private static final String UNLOCK_TIME = "unlockTime";
+
+    // Script parameter keys
+    private static final String PARAM_LOCK_UNTIL_FIELD = "lockUntilField";
+    private static final String PARAM_LOCKED_AT_FIELD = "lockedAtField";
+    private static final String PARAM_LOCKED_BY_FIELD = "lockedByField";
+    private static final String PARAM_NOW = "now";
+    private static final String PARAM_LOCK_UNTIL = "lockUntil";
+    private static final String PARAM_LOCKED_BY = "lockedBy";
+    private static final String PARAM_UNLOCK_TIME = "unlockTime";
+
+    /**
+     * Lock script uses bracket notation for field access to support configurable field names.
+     * Field names are passed as params for script caching.
+     *
+     * <p>Fail-fast behavior: If the lockUntil field is missing or not a Number, the script
+     * throws an exception to make configuration errors visible. This typically indicates
+     * a field name mismatch (e.g., using SNAKE_CASE config on data with camelCase fields)
+     * without proper data migration.
+     */
+    private static final String LOCK_SCRIPT =
+            """
+            def v = ctx._source[params.lockUntilField];
+            if (!(v instanceof Number)) {
+                throw new IllegalStateException("Field '" + params.lockUntilField + "' is missing or not a Number. " +
+                    "Possible field name mismatch - check DocumentFieldNames configuration and ensure data migration was performed.");
+            }
+            if (((Number) v).longValue() <= params.now) {
+                ctx._source[params.lockUntilField] = params.lockUntil;
+                ctx._source[params.lockedAtField] = params.now;
+                ctx._source[params.lockedByField] = params.lockedBy;
+            } else {
+                ctx.op = 'none';
+            }""";
+
+    /**
+     * Unlock script uses same bracket notation pattern as lock script for consistency.
+     */
+    private static final String UNLOCK_SCRIPT = "ctx._source[params.lockUntilField] = params.unlockTime;";
 
     private final OpenSearchClient openSearchClient;
     private final String hostname;
@@ -172,32 +209,11 @@ public class OpenSearchLockProvider implements LockProvider {
     }
 
     private Script createUpdateScript(LockConfiguration lockConfiguration, Instant now) {
-        Map<String, JsonData> updateScriptParams =
-                createLockParams(lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now);
+        Map<String, JsonData> updateScriptParams = createLockParams(lockConfiguration.getLockAtMostUntil(), now);
 
-        InlineScript inlineScript = inlineScript(buildUpdateScript(), updateScriptParams);
+        InlineScript inlineScript = inlineScript(LOCK_SCRIPT, updateScriptParams);
 
         return Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
-    }
-
-    private String buildUpdateScript() {
-        return """
-                if (ctx._source.%s <= params.%s) {
-                    ctx._source.%s = params.%s;
-                    ctx._source.%s = params.%s;
-                    ctx._source.%s = params.%s;
-                } else {
-                    ctx.op = 'none'
-                }"""
-                .formatted(
-                        fieldNames.lockUntil(),
-                        fieldNames.lockedAt(),
-                        fieldNames.lockedBy(),
-                        fieldNames.lockedBy(),
-                        fieldNames.lockedAt(),
-                        fieldNames.lockedAt(),
-                        fieldNames.lockUntil(),
-                        fieldNames.lockUntil());
     }
 
     private Map<String, Object> createUpsertDocument(String name, Instant lockUntil, Instant lockedAt) {
@@ -212,16 +228,20 @@ public class OpenSearchLockProvider implements LockProvider {
                 lockUntil.toEpochMilli());
     }
 
-    private Map<String, JsonData> createLockParams(String name, Instant lockUntil, Instant lockedAt) {
+    private Map<String, JsonData> createLockParams(Instant lockUntil, Instant lockedAt) {
         return Map.of(
-                fieldNames.name(),
-                JsonData.of(name),
-                fieldNames.lockedBy(),
-                JsonData.of(hostname),
-                fieldNames.lockedAt(),
+                PARAM_LOCK_UNTIL_FIELD,
+                JsonData.of(fieldNames.lockUntil()),
+                PARAM_LOCKED_AT_FIELD,
+                JsonData.of(fieldNames.lockedAt()),
+                PARAM_LOCKED_BY_FIELD,
+                JsonData.of(fieldNames.lockedBy()),
+                PARAM_NOW,
                 JsonData.of(lockedAt.toEpochMilli()),
-                fieldNames.lockUntil(),
-                JsonData.of(lockUntil.toEpochMilli()));
+                PARAM_LOCK_UNTIL,
+                JsonData.of(lockUntil.toEpochMilli()),
+                PARAM_LOCKED_BY,
+                JsonData.of(hostname));
     }
 
     private static InlineScript inlineScript(String sc, Map<String, JsonData> params) {
@@ -238,10 +258,12 @@ public class OpenSearchLockProvider implements LockProvider {
         @Override
         public void doUnlock() {
             Map<String, JsonData> unlockParams = Map.of(
-                    UNLOCK_TIME, JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
+                    PARAM_LOCK_UNTIL_FIELD,
+                    JsonData.of(fieldNames.lockUntil()),
+                    PARAM_UNLOCK_TIME,
+                    JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
 
-            String unlockScript = "ctx._source." + fieldNames.lockUntil() + " = params." + UNLOCK_TIME;
-            InlineScript inlineScript = inlineScript(unlockScript, unlockParams);
+            InlineScript inlineScript = inlineScript(UNLOCK_SCRIPT, unlockParams);
 
             Script script = Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
 

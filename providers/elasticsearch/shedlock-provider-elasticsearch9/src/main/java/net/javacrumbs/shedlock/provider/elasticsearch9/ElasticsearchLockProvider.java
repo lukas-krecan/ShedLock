@@ -82,7 +82,44 @@ import org.jspecify.annotations.Nullable;
  */
 public class ElasticsearchLockProvider implements LockProvider {
     static final String SCHEDLOCK_DEFAULT_INDEX = "shedlock";
-    private static final String UNLOCK_TIME = "unlockTime";
+
+    // Script parameter keys
+    private static final String PARAM_LOCK_UNTIL_FIELD = "lockUntilField";
+    private static final String PARAM_LOCKED_AT_FIELD = "lockedAtField";
+    private static final String PARAM_LOCKED_BY_FIELD = "lockedByField";
+    private static final String PARAM_NOW = "now";
+    private static final String PARAM_LOCK_UNTIL = "lockUntil";
+    private static final String PARAM_LOCKED_BY = "lockedBy";
+    private static final String PARAM_UNLOCK_TIME = "unlockTime";
+
+    /**
+     * Lock script uses bracket notation for field access to support any valid ES field names.
+     * Field names are passed as params for script caching.
+     *
+     * <p>Fail-fast behavior: If the lockUntil field is missing or not a Number, the script
+     * throws an exception to make configuration errors visible. This typically indicates
+     * a field name mismatch (e.g., using SNAKE_CASE config on data with camelCase fields)
+     * without proper data migration.
+     */
+    private static final String LOCK_SCRIPT =
+            """
+            def v = ctx._source[params.lockUntilField];
+            if (!(v instanceof Number)) {
+                throw new IllegalStateException("Field '" + params.lockUntilField + "' is missing or not a Number. " +
+                    "Possible field name mismatch - check DocumentFieldNames configuration and ensure data migration was performed.");
+            }
+            if (((Number) v).longValue() <= params.now) {
+                ctx._source[params.lockUntilField] = params.lockUntil;
+                ctx._source[params.lockedAtField] = params.now;
+                ctx._source[params.lockedByField] = params.lockedBy;
+            } else {
+                ctx.op = 'none';
+            }""";
+
+    /**
+     * Unlock script uses same bracket notation pattern as lock script for consistency.
+     */
+    private static final String UNLOCK_SCRIPT = "ctx._source[params.lockUntilField] = params.unlockTime;";
 
     private final ElasticsearchClient client;
     private final String hostname;
@@ -115,7 +152,7 @@ public class ElasticsearchLockProvider implements LockProvider {
         try {
             Instant now = now();
             Instant lockAtMostUntil = lockConfiguration.getLockAtMostUntil();
-            Map<String, JsonData> lockParams = createLockParams(lockConfiguration.getName(), lockAtMostUntil, now);
+            Map<String, JsonData> lockParams = createLockParams(lockAtMostUntil, now);
             Map<String, Object> upsertDoc = createUpsertDocument(lockConfiguration.getName(), lockAtMostUntil, now);
 
             UpdateRequest<Map<String, Object>, Map<String, Object>> updateRequest =
@@ -123,7 +160,7 @@ public class ElasticsearchLockProvider implements LockProvider {
                             .id(lockConfiguration.getName())
                             .refresh(Refresh.True)
                             .script(sc -> sc.lang("painless")
-                                    .source(builder -> builder.scriptString(buildUpdateScript()))
+                                    .source(builder -> builder.scriptString(LOCK_SCRIPT))
                                     .params(lockParams))
                             .upsert(upsertDoc));
 
@@ -142,36 +179,20 @@ public class ElasticsearchLockProvider implements LockProvider {
         }
     }
 
-    private String buildUpdateScript() {
-        return """
-                if (ctx._source.%s <= params.%s) {
-                    ctx._source.%s = params.%s;
-                    ctx._source.%s = params.%s;
-                    ctx._source.%s = params.%s;
-                } else {
-                    ctx.op = 'none'
-                }"""
-                .formatted(
-                        fieldNames.lockUntil(),
-                        fieldNames.lockedAt(),
-                        fieldNames.lockedBy(),
-                        fieldNames.lockedBy(),
-                        fieldNames.lockedAt(),
-                        fieldNames.lockedAt(),
-                        fieldNames.lockUntil(),
-                        fieldNames.lockUntil());
-    }
-
-    private Map<String, JsonData> createLockParams(String name, Instant lockUntil, Instant lockedAt) {
+    private Map<String, JsonData> createLockParams(Instant lockUntil, Instant lockedAt) {
         return Map.of(
-                fieldNames.name(),
-                JsonData.of(name),
-                fieldNames.lockedBy(),
-                JsonData.of(hostname),
-                fieldNames.lockedAt(),
+                PARAM_LOCK_UNTIL_FIELD,
+                JsonData.of(fieldNames.lockUntil()),
+                PARAM_LOCKED_AT_FIELD,
+                JsonData.of(fieldNames.lockedAt()),
+                PARAM_LOCKED_BY_FIELD,
+                JsonData.of(fieldNames.lockedBy()),
+                PARAM_NOW,
                 JsonData.of(lockedAt.toEpochMilli()),
-                fieldNames.lockUntil(),
-                JsonData.of(lockUntil.toEpochMilli()));
+                PARAM_LOCK_UNTIL,
+                JsonData.of(lockUntil.toEpochMilli()),
+                PARAM_LOCKED_BY,
+                JsonData.of(hostname));
     }
 
     private Map<String, Object> createUpsertDocument(String name, Instant lockUntil, Instant lockedAt) {
@@ -196,17 +217,17 @@ public class ElasticsearchLockProvider implements LockProvider {
         public void doUnlock() {
             try {
                 Map<String, JsonData> unlockParams = Map.of(
-                        UNLOCK_TIME,
+                        PARAM_LOCK_UNTIL_FIELD,
+                        JsonData.of(fieldNames.lockUntil()),
+                        PARAM_UNLOCK_TIME,
                         JsonData.of(lockConfiguration.getUnlockTime().toEpochMilli()));
-
-                String unlockScript = "ctx._source." + fieldNames.lockUntil() + " = params." + UNLOCK_TIME;
 
                 UpdateRequest<Map<String, Object>, Map<String, Object>> updateRequest =
                         UpdateRequest.of(ur -> ur.index(index)
                                 .id(lockConfiguration.getName())
                                 .refresh(Refresh.True)
                                 .script(sc -> sc.lang("painless")
-                                        .source(builder -> builder.scriptString(unlockScript))
+                                        .source(builder -> builder.scriptString(UNLOCK_SCRIPT))
                                         .params(unlockParams)));
                 client.update(updateRequest, Map.class);
             } catch (IOException | ElasticsearchException e) {

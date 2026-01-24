@@ -30,6 +30,17 @@ import static java.util.Objects.requireNonNull;
  *         .build()
  * );
  * </pre>
+ *
+ * <p><b>Migration note:</b> Changing field names on an existing index requires
+ * data migration. If field names are changed without migration, lock acquisition
+ * on existing documents will throw an exception (fail-fast behavior) because the
+ * expected fields won't exist. This is intentional to make configuration errors
+ * immediately visible rather than silently failing. Options:
+ * <ul>
+ *   <li>Delete the shedlock index and let it be recreated</li>
+ *   <li>Reindex documents with updated field names</li>
+ *   <li>Use a new index name via Configuration.builder().withIndex()</li>
+ * </ul>
  */
 public record DocumentFieldNames(String name, String lockUntil, String lockedAt, String lockedBy) {
 

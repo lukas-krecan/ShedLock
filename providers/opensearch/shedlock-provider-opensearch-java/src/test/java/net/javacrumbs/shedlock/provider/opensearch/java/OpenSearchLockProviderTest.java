@@ -18,6 +18,7 @@ import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.CredentialsProvider;
@@ -44,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.GetRequest;
 import org.opensearch.client.opensearch.core.GetResponse;
+import org.opensearch.client.opensearch.core.IndexRequest;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.httpclient5.ApacheHttpClient5TransportBuilder;
 import org.opensearch.testcontainers.OpenSearchContainer;
@@ -275,6 +278,113 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
             } catch (IOException e) {
                 fail("Call to OpenSearch failed: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Tests for field name mismatch scenarios.
+     * Verifies fail-fast behavior when configuration doesn't match existing data.
+     */
+    @Nested
+    class FieldNameMismatchTest {
+
+        private static final String MISMATCH_INDEX = "shedlock_mismatch";
+
+        @Test
+        void shouldThrowExceptionWhenFieldNameMismatch() throws IOException {
+            // Create a document with snake_case fields directly
+            String lockName = "mismatch_test";
+            Map<String, Object> snakeCaseDoc = Map.of(
+                    "name",
+                    lockName,
+                    "lock_until",
+                    now().minusSeconds(60).toEpochMilli(), // expired lock
+                    "locked_at",
+                    now().minusSeconds(120).toEpochMilli(),
+                    "locked_by",
+                    "test-host");
+
+            openSearchClient.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(org.opensearch.client.opensearch._types.Refresh.True)
+                    .document(snakeCaseDoc)));
+
+            // Try to acquire lock using DEFAULT (camelCase) field names
+            // The script should throw because it expects 'lockUntil' but finds 'lock_until'
+            OpenSearchLockProvider mismatchedProvider =
+                    new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
+                            .withClient(openSearchClient)
+                            .withIndex(MISMATCH_INDEX)
+                            .withFieldNames(DocumentFieldNames.DEFAULT) // expects camelCase
+                            .build());
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> mismatchedProvider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception occurred")
+                    .hasCauseInstanceOf(org.opensearch.client.opensearch._types.OpenSearchException.class);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenFieldIsMissing() throws IOException {
+            // Create a document missing the lockUntil field entirely
+            String lockName = "missing_field_test";
+            Map<String, Object> incompleteDoc = Map.of(
+                    "name", lockName, "locked_at", now().minusSeconds(120).toEpochMilli(), "locked_by", "test-host");
+            // Note: lockUntil/lock_until is intentionally missing
+
+            openSearchClient.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(org.opensearch.client.opensearch._types.Refresh.True)
+                    .document(incompleteDoc)));
+
+            OpenSearchLockProvider provider = new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
+                    .withClient(openSearchClient)
+                    .withIndex(MISMATCH_INDEX)
+                    .withFieldNames(DocumentFieldNames.DEFAULT)
+                    .build());
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> provider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception occurred");
+        }
+
+        @Test
+        void shouldThrowExceptionWhenFieldHasWrongType() throws IOException {
+            // Create a document where lockUntil is a string instead of number
+            String lockName = "wrong_type_test";
+            Map<String, Object> wrongTypeDoc = Map.of(
+                    "name",
+                    lockName,
+                    "lockUntil",
+                    "not-a-number", // wrong type
+                    "lockedAt",
+                    now().minusSeconds(120).toEpochMilli(),
+                    "lockedBy",
+                    "test-host");
+
+            openSearchClient.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(org.opensearch.client.opensearch._types.Refresh.True)
+                    .document(wrongTypeDoc)));
+
+            OpenSearchLockProvider provider = new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
+                    .withClient(openSearchClient)
+                    .withIndex(MISMATCH_INDEX)
+                    .withFieldNames(DocumentFieldNames.DEFAULT)
+                    .build());
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> provider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception occurred");
         }
     }
 }
