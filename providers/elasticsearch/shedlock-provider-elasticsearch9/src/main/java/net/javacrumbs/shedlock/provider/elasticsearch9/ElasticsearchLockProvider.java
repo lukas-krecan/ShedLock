@@ -174,7 +174,8 @@ public class ElasticsearchLockProvider implements LockProvider {
             if ((e instanceof ElasticsearchException ex && ex.status() == 409)) {
                 return Optional.empty();
             } else {
-                throw new LockException("Unexpected exception occurred", e);
+                throw new LockException(
+                        "Unexpected exception while locking (possible field name mismatch - see cause for details)", e);
             }
         }
     }
@@ -231,7 +232,9 @@ public class ElasticsearchLockProvider implements LockProvider {
                                         .params(unlockParams)));
                 client.update(updateRequest, Map.class);
             } catch (IOException | ElasticsearchException e) {
-                throw new LockException("Unexpected exception occurred", e);
+                throw new LockException(
+                        "Unexpected exception while unlocking (possible field name mismatch - see cause for details)",
+                        e);
             }
         }
     }

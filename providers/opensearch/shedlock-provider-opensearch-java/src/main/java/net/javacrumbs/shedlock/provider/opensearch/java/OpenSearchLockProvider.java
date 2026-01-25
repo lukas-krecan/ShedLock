@@ -183,7 +183,8 @@ public class OpenSearchLockProvider implements LockProvider {
                 return Optional.empty();
             }
 
-            throw new LockException("Unexpected exception occurred", e);
+            throw new LockException(
+                    "Unexpected exception while locking (possible field name mismatch - see cause for details)", e);
         }
     }
 
@@ -278,7 +279,9 @@ public class OpenSearchLockProvider implements LockProvider {
             try {
                 openSearchClient.update(unlockUpdateRequest, Object.class);
             } catch (IOException | OpenSearchException e) {
-                throw new LockException("Unexpected exception occurred", e);
+                throw new LockException(
+                        "Unexpected exception while unlocking (possible field name mismatch - see cause for details)",
+                        e);
             }
         }
     }

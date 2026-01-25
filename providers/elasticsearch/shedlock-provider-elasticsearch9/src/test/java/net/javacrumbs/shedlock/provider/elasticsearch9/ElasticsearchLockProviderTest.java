@@ -272,7 +272,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
             assertThatThrownBy(() -> mismatchedProvider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
-                    .hasMessageContaining("Unexpected exception occurred")
+                    .hasMessageContaining("Unexpected exception while locking")
                     .hasCauseInstanceOf(co.elastic.clients.elasticsearch._types.ElasticsearchException.class);
         }
 
@@ -306,7 +306,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
             assertThatThrownBy(() -> provider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
-                    .hasMessageContaining("Unexpected exception occurred");
+                    .hasMessageContaining("Unexpected exception while locking");
         }
 
         @Test
@@ -340,7 +340,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
             assertThatThrownBy(() -> provider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
-                    .hasMessageContaining("Unexpected exception occurred");
+                    .hasMessageContaining("Unexpected exception while locking");
         }
     }
 }

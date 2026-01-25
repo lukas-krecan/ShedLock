@@ -323,7 +323,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
             assertThatThrownBy(() -> mismatchedProvider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
-                    .hasMessageContaining("Unexpected exception occurred")
+                    .hasMessageContaining("Unexpected exception while locking")
                     .hasCauseInstanceOf(org.opensearch.client.opensearch._types.OpenSearchException.class);
         }
 
@@ -351,7 +351,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
             assertThatThrownBy(() -> provider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
-                    .hasMessageContaining("Unexpected exception occurred");
+                    .hasMessageContaining("Unexpected exception while locking");
         }
 
         @Test
@@ -384,7 +384,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
             assertThatThrownBy(() -> provider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
-                    .hasMessageContaining("Unexpected exception occurred");
+                    .hasMessageContaining("Unexpected exception while locking");
         }
     }
 }

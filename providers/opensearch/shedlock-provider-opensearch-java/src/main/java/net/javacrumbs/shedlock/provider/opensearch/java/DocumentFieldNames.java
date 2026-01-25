@@ -33,13 +33,23 @@ import static java.util.Objects.requireNonNull;
  *
  * <p><b>Migration note:</b> Changing field names on an existing index requires
  * data migration. If field names are changed without migration, lock acquisition
- * on existing documents will throw an exception (fail-fast behavior) because the
- * expected fields won't exist. This is intentional to make configuration errors
- * immediately visible rather than silently failing. Options:
+ * on existing documents will throw an exception (fail-fast behavior).
+ * The exception's cause contains details like (example shown for DEFAULT field names):
+ * <pre>"Field 'lockUntil' is missing or not a Number. Possible field name mismatch..."</pre>
+ *
+ * <p><b>Diagnosing field name issues:</b> Check current document fields with:
+ * <pre>GET /shedlock/_search?size=1</pre>
+ * If you see {@code lock_until} but configured {@link #DEFAULT}, or {@code lockUntil}
+ * but configured {@link #SNAKE_CASE}, there's a mismatch.
+ *
+ * <p><b>Resolution options:</b>
  * <ul>
- *   <li>Delete the shedlock index and let it be recreated</li>
- *   <li>Reindex documents with updated field names</li>
- *   <li>Use a new index name via Configuration.builder().withIndex()</li>
+ *   <li><b>Easiest:</b> Delete the shedlock index and let it be recreated:
+ *       {@code DELETE /shedlock}</li>
+ *   <li><b>Zero-downtime:</b> Use a new index name via
+ *       {@code Configuration.builder().withIndex("shedlock_v2")}</li>
+ *   <li><b>In-place:</b> Reindex with field name transformation using OpenSearch's
+ *       Reindex API with a script</li>
  * </ul>
  */
 public record DocumentFieldNames(String name, String lockUntil, String lockedAt, String lockedBy) {
