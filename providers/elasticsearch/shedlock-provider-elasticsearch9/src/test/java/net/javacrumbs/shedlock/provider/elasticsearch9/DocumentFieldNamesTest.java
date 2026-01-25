@@ -40,6 +40,7 @@ class DocumentFieldNamesTest {
         assertThat(fieldNames.lockedBy()).isEqualTo("locked_by");
     }
 
+    @SuppressWarnings("NullAway")
     @Test
     void shouldRejectNullFieldName() {
         assertThatThrownBy(() -> new DocumentFieldNames(null, "lockUntil", "lockedAt", "lockedBy"))
