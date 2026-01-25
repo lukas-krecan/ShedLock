@@ -14,6 +14,7 @@
 package net.javacrumbs.shedlock.provider.elasticsearch9;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,5 +38,28 @@ class DocumentFieldNamesTest {
         assertThat(fieldNames.lockUntil()).isEqualTo("lock_until");
         assertThat(fieldNames.lockedAt()).isEqualTo("locked_at");
         assertThat(fieldNames.lockedBy()).isEqualTo("locked_by");
+    }
+
+    @Test
+    void shouldRejectNullFieldName() {
+        assertThatThrownBy(() -> new DocumentFieldNames(null, "lockUntil", "lockedAt", "lockedBy"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("name")
+                .hasMessageContaining("must not be blank");
+    }
+
+    @Test
+    void shouldRejectBlankFieldName() {
+        assertThatThrownBy(() -> new DocumentFieldNames("name", "  ", "lockedAt", "lockedBy"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("lockUntil")
+                .hasMessageContaining("must not be blank");
+    }
+
+    @Test
+    void shouldRejectDuplicateFieldNames() {
+        assertThatThrownBy(() -> new DocumentFieldNames("name", "name", "lockedAt", "lockedBy"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("distinct");
     }
 }

@@ -13,8 +13,6 @@
  */
 package net.javacrumbs.shedlock.provider.elasticsearch9;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Configurable field names for Elasticsearch lock documents.
  *
@@ -36,6 +34,10 @@ import static java.util.Objects.requireNonNull;
  * on existing documents will throw an exception (fail-fast behavior).
  * The exception's cause contains details like (example shown for DEFAULT field names):
  * <pre>"Field 'lockUntil' is missing or not a Number. Possible field name mismatch..."</pre>
+ *
+ * <p><b>Warning:</b> If your index contains documents created with different field-name settings,
+ * some documents may have mixed fields (e.g., both {@code lock_until} and {@code lockUntil}).
+ * This requires cleanup before switching configurations.
  *
  * <p><b>Diagnosing field name issues:</b> Check current document fields with:
  * <pre>GET /shedlock/_search?size=1</pre>
@@ -63,9 +65,23 @@ public record DocumentFieldNames(String name, String lockUntil, String lockedAt,
             new DocumentFieldNames("name", "lock_until", "locked_at", "locked_by");
 
     public DocumentFieldNames {
-        requireNonNull(name, "name cannot be null");
-        requireNonNull(lockUntil, "lockUntil cannot be null");
-        requireNonNull(lockedAt, "lockedAt cannot be null");
-        requireNonNull(lockedBy, "lockedBy cannot be null");
+        requireHasText(name, "name");
+        requireHasText(lockUntil, "lockUntil");
+        requireHasText(lockedAt, "lockedAt");
+        requireHasText(lockedBy, "lockedBy");
+        requireDistinct(name, lockUntil, lockedAt, lockedBy);
+    }
+
+    private static void requireHasText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("DocumentFieldNames." + field + " must not be blank");
+        }
+    }
+
+    private static void requireDistinct(String... values) {
+        long distinct = java.util.Arrays.stream(values).distinct().count();
+        if (distinct != values.length) {
+            throw new IllegalArgumentException("DocumentFieldNames must contain distinct field names");
+        }
     }
 }
