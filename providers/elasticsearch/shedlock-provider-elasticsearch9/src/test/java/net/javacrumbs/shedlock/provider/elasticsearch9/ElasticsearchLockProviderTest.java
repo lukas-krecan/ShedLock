@@ -14,26 +14,31 @@
 package net.javacrumbs.shedlock.provider.elasticsearch9;
 
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.LOCK_UNTIL;
-import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.NAME;
 import static net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider.SCHEDLOCK_DEFAULT_INDEX;
 import static net.javacrumbs.shedlock.test.support.DockerCleaner.removeImageInCi;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -47,7 +52,9 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
             .withTag("7.17.28");
 
     @Container
-    private static final ElasticsearchContainer container = new ElasticsearchContainer(DOCKER_IMAGE_NAME);
+    static final ElasticsearchContainer container = new ElasticsearchContainer(DOCKER_IMAGE_NAME);
+
+    private static final DocumentFieldNames DEFAULT_FIELDS = DocumentFieldNames.DEFAULT;
 
     private ElasticsearchClient client;
     private ElasticsearchLockProvider lockProvider;
@@ -71,15 +78,27 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
     @Override
     protected void assertUnlocked(String lockName) {
-        GetRequest request =
-                GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
+        assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, false);
+    }
+
+    @Override
+    protected void assertLocked(String lockName) {
+        assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, true);
+    }
+
+    private void assertDocumentState(String lockName, String index, DocumentFieldNames fields, boolean locked) {
+        GetRequest request = GetRequest.of(gr -> gr.index(index).id(lockName));
         try {
             GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
             Map<String, Object> source = requireNonNull(response.source());
-            assertThat(getInstant(source, LOCK_UNTIL)).isBeforeOrEqualTo(now());
-            assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
-            assertThat((String) source.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) source.get(NAME)).isEqualTo(lockName);
+            if (locked) {
+                assertThat(getInstant(source, fields.lockUntil())).isAfter(now());
+            } else {
+                assertThat(getInstant(source, fields.lockUntil())).isBeforeOrEqualTo(now());
+            }
+            assertThat(getInstant(source, fields.lockedAt())).isBeforeOrEqualTo(now());
+            assertThat((String) source.get(fields.lockedBy())).isNotBlank();
+            assertThat((String) source.get(fields.name())).isEqualTo(lockName);
         } catch (IOException e) {
             fail("Call to embedded ES failed.");
         }
@@ -89,23 +108,231 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
         return Instant.ofEpochMilli((Long) requireNonNull(source.get(key)));
     }
 
-    @Override
-    protected void assertLocked(String lockName) {
-        GetRequest request =
-                GetRequest.of(gr -> gr.index(SCHEDLOCK_DEFAULT_INDEX).id(lockName));
-        try {
-            GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
-            Map<String, Object> source = requireNonNull(response.source());
-            assertThat(getInstant(source, LOCK_UNTIL)).isAfter(now());
-            assertThat(getInstant(source, LOCKED_AT)).isBeforeOrEqualTo(now());
-            assertThat((String) source.get(LOCKED_BY)).isNotBlank();
-            assertThat((String) source.get(NAME)).isEqualTo(lockName);
-        } catch (IOException e) {
-            fail("Call to embedded ES failed.");
+    private Instant now() {
+        return Instant.now();
+    }
+
+    /**
+     * Nested tests for SNAKE_CASE field names.
+     * This verifies the fix for Issue #2007 where JsonpMapper with SNAKE_CASE naming
+     * strategy caused field name mismatches.
+     */
+    @Nested
+    class SnakeCaseFieldNamesTest {
+
+        private static final String SNAKE_CASE_INDEX = "shedlock_snake_case";
+        private static final DocumentFieldNames SNAKE_CASE_FIELDS = DocumentFieldNames.SNAKE_CASE;
+
+        private ElasticsearchLockProvider snakeCaseLockProvider;
+
+        @BeforeEach
+        void setUpSnakeCase() {
+            snakeCaseLockProvider =
+                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder(client)
+                            .withIndex(SNAKE_CASE_INDEX)
+                            .withFieldNames(SNAKE_CASE_FIELDS)
+                            .build());
+        }
+
+        @Test
+        void shouldAcquireLockWithSnakeCaseFieldNames() {
+            String lockName = "snake_case_lock_test";
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            Optional<SimpleLock> lock = snakeCaseLockProvider.lock(lockConfiguration);
+
+            assertThat(lock).isPresent();
+            assertDocumentHasSnakeCaseFields(lockName);
+
+            lock.get().unlock();
+            assertLockIsReleased(lockName);
+        }
+
+        @Test
+        void shouldPreventConcurrentLockAcquisitionWithSnakeCaseFieldNames() {
+            String lockName = "snake_case_concurrent_test";
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            Optional<SimpleLock> firstLock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(firstLock).isPresent();
+
+            // Second attempt should fail
+            Optional<SimpleLock> secondLock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(secondLock).isEmpty();
+
+            // After unlock, should be able to acquire again
+            firstLock.get().unlock();
+            Optional<SimpleLock> thirdLock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(thirdLock).isPresent();
+            thirdLock.get().unlock();
+        }
+
+        @Test
+        void shouldStoreDocumentWithCorrectSnakeCaseFieldNames() {
+            String lockName = "snake_case_field_verification_test";
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            Optional<SimpleLock> lock = snakeCaseLockProvider.lock(lockConfiguration);
+            assertThat(lock).isPresent();
+
+            // Verify the document structure uses snake_case field names
+            GetRequest request = GetRequest.of(gr -> gr.index(SNAKE_CASE_INDEX).id(lockName));
+            try {
+                GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
+                Map<String, Object> source = requireNonNull(response.source());
+
+                // Verify snake_case fields exist (not camelCase)
+                assertThat(source).containsKey("lock_until");
+                assertThat(source).containsKey("locked_at");
+                assertThat(source).containsKey("locked_by");
+                assertThat(source).containsKey("name");
+
+                // Verify camelCase fields do NOT exist
+                assertThat(source).doesNotContainKey("lockUntil");
+                assertThat(source).doesNotContainKey("lockedAt");
+                assertThat(source).doesNotContainKey("lockedBy");
+
+            } catch (IOException e) {
+                fail("Call to Elasticsearch failed: " + e.getMessage());
+            }
+
+            lock.get().unlock();
+        }
+
+        private void assertDocumentHasSnakeCaseFields(String lockName) {
+            GetRequest request = GetRequest.of(gr -> gr.index(SNAKE_CASE_INDEX).id(lockName));
+            try {
+                GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
+                Map<String, Object> source = requireNonNull(response.source());
+
+                assertThat(getInstant(source, SNAKE_CASE_FIELDS.lockUntil())).isAfter(Instant.now());
+                assertThat(getInstant(source, SNAKE_CASE_FIELDS.lockedAt())).isBeforeOrEqualTo(Instant.now());
+                assertThat((String) source.get(SNAKE_CASE_FIELDS.lockedBy())).isNotBlank();
+                assertThat((String) source.get(SNAKE_CASE_FIELDS.name())).isEqualTo(lockName);
+            } catch (IOException e) {
+                fail("Call to Elasticsearch failed: " + e.getMessage());
+            }
+        }
+
+        private void assertLockIsReleased(String lockName) {
+            GetRequest request = GetRequest.of(gr -> gr.index(SNAKE_CASE_INDEX).id(lockName));
+            try {
+                GetResponse<Map<String, Object>> response = client.get(request, (Type) Map.class);
+                Map<String, Object> source = requireNonNull(response.source());
+
+                assertThat(getInstant(source, SNAKE_CASE_FIELDS.lockUntil())).isBeforeOrEqualTo(Instant.now());
+            } catch (IOException e) {
+                fail("Call to Elasticsearch failed: " + e.getMessage());
+            }
         }
     }
 
-    private Instant now() {
-        return Instant.now();
+    /**
+     * Tests for field name mismatch scenarios.
+     * Verifies fail-fast behavior when configuration doesn't match existing data.
+     */
+    @Nested
+    class FieldNameMismatchTest {
+
+        private static final String MISMATCH_INDEX = "shedlock_mismatch";
+
+        @Test
+        void shouldThrowExceptionWhenFieldNameMismatch() throws IOException {
+            // Create a document with snake_case fields directly
+            String lockName = "mismatch_test";
+            Map<String, Object> snakeCaseDoc = Map.of(
+                    "name",
+                    lockName,
+                    "lock_until",
+                    Instant.now().minusSeconds(60).toEpochMilli(), // expired lock
+                    "locked_at",
+                    Instant.now().minusSeconds(120).toEpochMilli(),
+                    "locked_by",
+                    "test-host");
+
+            client.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
+                    .document(snakeCaseDoc)));
+
+            // Try to acquire lock using DEFAULT (camelCase) field names
+            // The script should throw because it expects 'lockUntil' but finds 'lock_until'
+            ElasticsearchLockProvider mismatchedProvider = lockProvider();
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> mismatchedProvider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception while locking")
+                    .hasCauseInstanceOf(co.elastic.clients.elasticsearch._types.ElasticsearchException.class);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenFieldIsMissing() throws IOException {
+            // Create a document missing the lockUntil field entirely
+            String lockName = "missing_field_test";
+            Map<String, Object> incompleteDoc = Map.of(
+                    "name",
+                    lockName,
+                    "locked_at",
+                    Instant.now().minusSeconds(120).toEpochMilli(),
+                    "locked_by",
+                    "test-host");
+            // Note: lockUntil/lock_until is intentionally missing
+
+            client.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
+                    .document(incompleteDoc)));
+
+            ElasticsearchLockProvider provider = lockProvider();
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> provider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception while locking");
+        }
+
+        @Test
+        void shouldThrowExceptionWhenFieldHasWrongType() throws IOException {
+            // Create a document where lockUntil is a string instead of number
+            String lockName = "wrong_type_test";
+            Map<String, Object> wrongTypeDoc = Map.of(
+                    "name",
+                    lockName,
+                    "lockUntil",
+                    "not-a-number", // wrong type
+                    "lockedAt",
+                    Instant.now().minusSeconds(120).toEpochMilli(),
+                    "lockedBy",
+                    "test-host");
+
+            client.index(IndexRequest.of(ir -> ir.index(MISMATCH_INDEX)
+                    .id(lockName)
+                    .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
+                    .document(wrongTypeDoc)));
+
+            ElasticsearchLockProvider provider = lockProvider();
+
+            LockConfiguration lockConfiguration =
+                    new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
+
+            assertThatThrownBy(() -> provider.lock(lockConfiguration))
+                    .isInstanceOf(LockException.class)
+                    .hasMessageContaining("Unexpected exception while locking");
+        }
+
+        private ElasticsearchLockProvider lockProvider() {
+            return new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder(client)
+                    .withIndex(MISMATCH_INDEX)
+                    .withFieldNames(DocumentFieldNames.DEFAULT)
+                    .build());
+        }
     }
 }
