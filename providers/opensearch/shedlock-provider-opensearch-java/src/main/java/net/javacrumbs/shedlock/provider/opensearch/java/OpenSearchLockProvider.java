@@ -27,7 +27,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jspecify.annotations.Nullable;
 import org.opensearch.client.json.JsonData;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.BuiltinScriptLanguage;
@@ -80,8 +79,7 @@ import org.opensearch.client.transport.httpclient5.ResponseException;
  * <p>Example with custom field names for SNAKE_CASE JsonpMapper:
  * <pre>
  * OpenSearchLockProvider provider = new OpenSearchLockProvider(
- *     OpenSearchLockProvider.Configuration.builder()
- *         .withClient(client)
+ *     OpenSearchLockProvider.Configuration.builder(client)
  *         .withFieldNames(DocumentFieldNames.SNAKE_CASE)
  *         .build()
  * );
@@ -161,10 +159,7 @@ public class OpenSearchLockProvider implements LockProvider {
      * @param index the index name
      */
     public OpenSearchLockProvider(OpenSearchClient openSearchClient, String index) {
-        this(Configuration.builder()
-                .withClient(openSearchClient)
-                .withIndex(index)
-                .build());
+        this(Configuration.builder(openSearchClient).withIndex(index).build());
     }
 
     @Override
@@ -183,8 +178,7 @@ public class OpenSearchLockProvider implements LockProvider {
                 return Optional.empty();
             }
 
-            throw new LockException(
-                    "Unexpected exception while locking (possible field name mismatch - see cause for details)", e);
+            throw new LockException("Unexpected exception while locking", e);
         }
     }
 
@@ -268,20 +262,17 @@ public class OpenSearchLockProvider implements LockProvider {
 
             Script script = Script.of(scriptBuilder -> scriptBuilder.inline(inlineScript));
 
-            UpdateRequest<Object, Object> unlockUpdateRequest =
-                    new org.opensearch.client.opensearch.core.UpdateRequest.Builder<>()
-                            .index(index)
-                            .script(script)
-                            .id(lockConfiguration.getName())
-                            .refresh(Refresh.True)
-                            .build();
+            UpdateRequest<Object, Object> unlockUpdateRequest = new Builder<>()
+                    .index(index)
+                    .script(script)
+                    .id(lockConfiguration.getName())
+                    .refresh(Refresh.True)
+                    .build();
 
             try {
                 openSearchClient.update(unlockUpdateRequest, Object.class);
             } catch (IOException | OpenSearchException e) {
-                throw new LockException(
-                        "Unexpected exception while unlocking (possible field name mismatch - see cause for details)",
-                        e);
+                throw new LockException("Unexpected exception while unlocking", e);
             }
         }
     }
@@ -312,27 +303,20 @@ public class OpenSearchLockProvider implements LockProvider {
             return fieldNames;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static Builder builder(OpenSearchClient client) {
+            return new Builder(client);
         }
 
         /**
          * Builder for OpenSearchLockProvider.Configuration.
          */
         public static final class Builder {
-            private @Nullable OpenSearchClient client;
+            private final OpenSearchClient client;
             private String index = SCHEDLOCK_DEFAULT_INDEX;
             private DocumentFieldNames fieldNames = DocumentFieldNames.DEFAULT;
 
-            /**
-             * Sets the OpenSearch client (required).
-             *
-             * @param client the OpenSearch client
-             * @return this builder
-             */
-            public Builder withClient(OpenSearchClient client) {
+            private Builder(OpenSearchClient client) {
                 this.client = client;
-                return this;
             }
 
             /**

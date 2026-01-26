@@ -33,7 +33,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Elasticsearch-based lock provider.
@@ -73,8 +72,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Example with custom field names for SNAKE_CASE JsonpMapper:
  * <pre>
  * ElasticsearchLockProvider provider = new ElasticsearchLockProvider(
- *     ElasticsearchLockProvider.Configuration.builder()
- *         .withClient(client)
+ *     ElasticsearchLockProvider.Configuration.builder(client)
  *         .withFieldNames(DocumentFieldNames.SNAKE_CASE)
  *         .build()
  * );
@@ -144,7 +142,7 @@ public class ElasticsearchLockProvider implements LockProvider {
      * @param client the Elasticsearch client
      */
     public ElasticsearchLockProvider(ElasticsearchClient client) {
-        this(Configuration.builder().withClient(client).build());
+        this(Configuration.builder(client).build());
     }
 
     @Override
@@ -174,8 +172,7 @@ public class ElasticsearchLockProvider implements LockProvider {
             if ((e instanceof ElasticsearchException ex && ex.status() == 409)) {
                 return Optional.empty();
             } else {
-                throw new LockException(
-                        "Unexpected exception while locking (possible field name mismatch - see cause for details)", e);
+                throw new LockException("Unexpected exception while locking", e);
             }
         }
     }
@@ -232,9 +229,7 @@ public class ElasticsearchLockProvider implements LockProvider {
                                         .params(unlockParams)));
                 client.update(updateRequest, Map.class);
             } catch (IOException | ElasticsearchException e) {
-                throw new LockException(
-                        "Unexpected exception while unlocking (possible field name mismatch - see cause for details)",
-                        e);
+                throw new LockException("Unexpected exception while unlocking", e);
             }
         }
     }
@@ -265,27 +260,20 @@ public class ElasticsearchLockProvider implements LockProvider {
             return fieldNames;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static Builder builder(ElasticsearchClient client) {
+            return new Builder(client);
         }
 
         /**
          * Builder for ElasticsearchLockProvider.Configuration.
          */
         public static final class Builder {
-            private @Nullable ElasticsearchClient client;
+            private final ElasticsearchClient client;
             private String index = SCHEDLOCK_DEFAULT_INDEX;
             private DocumentFieldNames fieldNames = DocumentFieldNames.DEFAULT;
 
-            /**
-             * Sets the Elasticsearch client (required).
-             *
-             * @param client the Elasticsearch client
-             * @return this builder
-             */
-            public Builder withClient(ElasticsearchClient client) {
-                this.client = client;
-                return this;
+            private Builder(ElasticsearchClient client) {
+                this.client = requireNonNull(client, "client cannot be null");
             }
 
             /**
@@ -317,10 +305,9 @@ public class ElasticsearchLockProvider implements LockProvider {
              * Builds the Configuration.
              *
              * @return the configuration
-             * @throws NullPointerException if client is not set
              */
             public Configuration build() {
-                return new Configuration(requireNonNull(client, "client is required"), index, fieldNames);
+                return new Configuration(client, index, fieldNames);
             }
         }
     }

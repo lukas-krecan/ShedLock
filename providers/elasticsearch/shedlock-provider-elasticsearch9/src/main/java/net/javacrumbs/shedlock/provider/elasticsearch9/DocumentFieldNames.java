@@ -22,8 +22,7 @@ package net.javacrumbs.shedlock.provider.elasticsearch9;
  * <p>Example usage:
  * <pre>
  * ElasticsearchLockProvider provider = new ElasticsearchLockProvider(
- *     ElasticsearchLockProvider.Configuration.builder()
- *         .withClient(client)
+ *     ElasticsearchLockProvider.Configuration.builder(client)
  *         .withFieldNames(DocumentFieldNames.SNAKE_CASE)
  *         .build()
  * );

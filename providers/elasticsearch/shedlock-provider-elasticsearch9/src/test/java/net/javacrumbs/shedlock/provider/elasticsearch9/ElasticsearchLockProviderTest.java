@@ -127,11 +127,11 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
         @BeforeEach
         void setUpSnakeCase() {
-            snakeCaseLockProvider = new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
-                    .withClient(client)
-                    .withIndex(SNAKE_CASE_INDEX)
-                    .withFieldNames(SNAKE_CASE_FIELDS)
-                    .build());
+            snakeCaseLockProvider =
+                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder(client)
+                            .withIndex(SNAKE_CASE_INDEX)
+                            .withFieldNames(SNAKE_CASE_FIELDS)
+                            .build());
         }
 
         @Test
@@ -260,12 +260,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
 
             // Try to acquire lock using DEFAULT (camelCase) field names
             // The script should throw because it expects 'lockUntil' but finds 'lock_until'
-            ElasticsearchLockProvider mismatchedProvider =
-                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
-                            .withClient(client)
-                            .withIndex(MISMATCH_INDEX)
-                            .withFieldNames(DocumentFieldNames.DEFAULT) // expects camelCase
-                            .build());
+            ElasticsearchLockProvider mismatchedProvider = lockProvider();
 
             LockConfiguration lockConfiguration =
                     new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
@@ -294,12 +289,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
                     .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
                     .document(incompleteDoc)));
 
-            ElasticsearchLockProvider provider =
-                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
-                            .withClient(client)
-                            .withIndex(MISMATCH_INDEX)
-                            .withFieldNames(DocumentFieldNames.DEFAULT)
-                            .build());
+            ElasticsearchLockProvider provider = lockProvider();
 
             LockConfiguration lockConfiguration =
                     new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
@@ -328,12 +318,7 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
                     .refresh(co.elastic.clients.elasticsearch._types.Refresh.True)
                     .document(wrongTypeDoc)));
 
-            ElasticsearchLockProvider provider =
-                    new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder()
-                            .withClient(client)
-                            .withIndex(MISMATCH_INDEX)
-                            .withFieldNames(DocumentFieldNames.DEFAULT)
-                            .build());
+            ElasticsearchLockProvider provider = lockProvider();
 
             LockConfiguration lockConfiguration =
                     new LockConfiguration(Instant.now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
@@ -341,6 +326,13 @@ public class ElasticsearchLockProviderTest extends AbstractLockProviderIntegrati
             assertThatThrownBy(() -> provider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
                     .hasMessageContaining("Unexpected exception while locking");
+        }
+
+        private ElasticsearchLockProvider lockProvider() {
+            return new ElasticsearchLockProvider(ElasticsearchLockProvider.Configuration.builder(client)
+                    .withIndex(MISMATCH_INDEX)
+                    .withFieldNames(DocumentFieldNames.DEFAULT)
+                    .build());
         }
     }
 }

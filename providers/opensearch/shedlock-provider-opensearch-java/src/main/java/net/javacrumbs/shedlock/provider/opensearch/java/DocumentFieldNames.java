@@ -22,8 +22,7 @@ package net.javacrumbs.shedlock.provider.opensearch.java;
  * <p>Example usage:
  * <pre>
  * OpenSearchLockProvider provider = new OpenSearchLockProvider(
- *     OpenSearchLockProvider.Configuration.builder()
- *         .withClient(client)
+ *     OpenSearchLockProvider.Configuration.builder(client)
  *         .withFieldNames(DocumentFieldNames.SNAKE_CASE)
  *         .build()
  * );

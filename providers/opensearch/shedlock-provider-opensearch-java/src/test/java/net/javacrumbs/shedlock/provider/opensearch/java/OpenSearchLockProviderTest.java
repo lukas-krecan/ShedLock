@@ -39,6 +39,7 @@ import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.HttpHost;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -172,11 +173,11 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
         @BeforeEach
         void setUpSnakeCase() {
-            snakeCaseLockProvider = new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
-                    .withClient(openSearchClient)
-                    .withIndex(SNAKE_CASE_INDEX)
-                    .withFieldNames(SNAKE_CASE_FIELDS)
-                    .build());
+            snakeCaseLockProvider =
+                    new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder(openSearchClient)
+                            .withIndex(SNAKE_CASE_INDEX)
+                            .withFieldNames(SNAKE_CASE_FIELDS)
+                            .build());
         }
 
         @Test
@@ -311,12 +312,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
 
             // Try to acquire lock using DEFAULT (camelCase) field names
             // The script should throw because it expects 'lockUntil' but finds 'lock_until'
-            OpenSearchLockProvider mismatchedProvider =
-                    new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
-                            .withClient(openSearchClient)
-                            .withIndex(MISMATCH_INDEX)
-                            .withFieldNames(DocumentFieldNames.DEFAULT) // expects camelCase
-                            .build());
+            OpenSearchLockProvider mismatchedProvider = lockProvider();
 
             LockConfiguration lockConfiguration =
                     new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
@@ -340,11 +336,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
                     .refresh(org.opensearch.client.opensearch._types.Refresh.True)
                     .document(incompleteDoc)));
 
-            OpenSearchLockProvider provider = new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
-                    .withClient(openSearchClient)
-                    .withIndex(MISMATCH_INDEX)
-                    .withFieldNames(DocumentFieldNames.DEFAULT)
-                    .build());
+            OpenSearchLockProvider provider = lockProvider();
 
             LockConfiguration lockConfiguration =
                     new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
@@ -373,11 +365,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
                     .refresh(org.opensearch.client.opensearch._types.Refresh.True)
                     .document(wrongTypeDoc)));
 
-            OpenSearchLockProvider provider = new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder()
-                    .withClient(openSearchClient)
-                    .withIndex(MISMATCH_INDEX)
-                    .withFieldNames(DocumentFieldNames.DEFAULT)
-                    .build());
+            OpenSearchLockProvider provider = lockProvider();
 
             LockConfiguration lockConfiguration =
                     new LockConfiguration(now(), lockName, Duration.ofMinutes(5), Duration.ZERO);
@@ -385,6 +373,13 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
             assertThatThrownBy(() -> provider.lock(lockConfiguration))
                     .isInstanceOf(LockException.class)
                     .hasMessageContaining("Unexpected exception while locking");
+        }
+
+        private @NonNull OpenSearchLockProvider lockProvider() {
+            return new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder(openSearchClient)
+                    .withIndex(MISMATCH_INDEX)
+                    .withFieldNames(DocumentFieldNames.DEFAULT)
+                    .build());
         }
     }
 }
