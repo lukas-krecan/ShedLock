@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.6.0 (2026-01-27)
+* Customizable document field names for Elasticsearch9 and OpenSearch providers (thanks @dlwldnjs1009)
+* Dependency updates
+
 ## 7.5.0 (2025-12-27)
 * Support for Google Cloud Storage (thanks @mbazos)
 * Dependency updates
