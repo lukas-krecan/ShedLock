@@ -213,7 +213,7 @@
             <extension>
                 <groupId>org.apache.maven.extensions</groupId>
                 <artifactId>maven-build-cache-extension</artifactId>
-                <version>1.2.1</version>
+                <version>1.2.2</version>
             </extension>
         </extensions>
     </build>
