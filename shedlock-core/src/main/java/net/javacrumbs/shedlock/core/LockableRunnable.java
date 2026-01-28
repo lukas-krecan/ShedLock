@@ -18,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Executes wrapped runnable using {@link LockManager#executeWithLock(Runnable)}
  */
-@Deprecated(forRemoval = true)
+// Don't remove, people are using it https://github.com/lukas-krecan/ShedLock/issues/3210
 public class LockableRunnable implements Runnable {
     private final Runnable task;
 
