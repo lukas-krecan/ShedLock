@@ -124,7 +124,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
                 <configuration>
                     <release>${jdk.version}</release>
                     <fork>true</fork>
@@ -306,7 +306,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.14.1</version>
+                        <version>3.15.0</version>
                         <configuration>
                             <release>${jdk.version}</release>
                             <fork>true</fork>
