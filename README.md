@@ -130,7 +130,7 @@ Let's say you have a task which you execute every 15 minutes and which usually t
 Moreover, you want to execute it at most once per 15 minutes. In that case, you can configure it like this:
 
 ```java
-import net.javacrumbs.shedlock.core.SchedulerLock;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 
 @Scheduled(cron = "0 */15 * * * *")
