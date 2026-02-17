@@ -272,7 +272,7 @@ Add dependency
 Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.jooq;
+import net.javacrumbs.shedlock.provider.jooq.JooqLockProvider;
 
 ...
 @Bean
@@ -305,7 +305,7 @@ Add dependency
 Configure:
 
 ```kotlin
-import net.javacrumbs.shedlock.provider.exposed;
+import net.javacrumbs.shedlock.provider.exposed.ExposedLockProvider;
 
 ...
 @Bean
@@ -614,7 +614,7 @@ I am really not sure if it's a good idea to use Elasticsearch as a lock provider
 Configure:
 
 ```java
-import static net.javacrumbs.shedlock.provider.elasticsearch8.ElasticsearchLockProvider;
+import net.javacrumbs.shedlock.provider.elasticsearch9.ElasticsearchLockProvider;
 
 ...
 
@@ -638,7 +638,7 @@ Import the project
 Configure:
 
 ```java
-import static net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider;
+import net.javacrumbs.shedlock.provider.opensearch.java.OpenSearchLockProvider;
 
 ...
 
@@ -958,14 +958,14 @@ import net.javacrumbs.shedlock.provider.spanner.SpannerLockProvider;
 // Basic
 @Bean
 public LockProvider lockProvider(DatabaseClient databaseClient) {
-    return new SpannerLockProvider(databaseClientSupplier);
+    return new SpannerLockProvider(databaseClient);
 }
 
 // Custom host, table and column names
 @Bean
 public LockProvider lockProvider(DatabaseClient databaseClient) {
     var config = SpannerLockProvider.Configuration.builder()
-        .withDatabaseClient(databaseClientSupplier)
+        .withDatabaseClient(databaseClient)
         .withTableConfiguration(SpannerLockProvider.TableConfiguration.builder()
             ...
             // Custom table and column names
