@@ -12,7 +12,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <aws-java-sdk2-s3.version>2.41.30</aws-java-sdk2-s3.version>
+        <aws-java-sdk2-s3.version>2.42.0</aws-java-sdk2-s3.version>
     </properties>
 
     <dependencies>
