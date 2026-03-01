@@ -16,7 +16,6 @@ package net.javacrumbs.shedlock.support;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Some LockProviders have to decide if a new record has to be created or an old
