@@ -13,7 +13,9 @@
  */
 package net.javacrumbs.shedlock.support;
 
+import java.util.Collections;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * they know if a lock record exists.
  */
 class LockRecordRegistry {
-    private final Set<String> lockRecords = ConcurrentHashMap.newKeySet();
+    private final Set<String> lockRecords = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     public void addLockRecord(String lockName) {
         lockRecords.add(lockName);
