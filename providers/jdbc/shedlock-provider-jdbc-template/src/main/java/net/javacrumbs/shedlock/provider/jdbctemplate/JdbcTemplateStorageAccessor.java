@@ -41,6 +41,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     private final TransactionTemplate transactionTemplate;
     private final Configuration configuration;
 
+    private final Object sqlStatementsSourceLock = new Object();
     private @Nullable SqlStatementsSource sqlStatementsSource;
 
     JdbcTemplateStorageAccessor(Configuration configuration) {
@@ -133,7 +134,7 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
     }
 
     private SqlStatementsSource sqlStatementsSource() {
-        synchronized (configuration) {
+        synchronized (sqlStatementsSourceLock) {
             if (sqlStatementsSource == null) {
                 sqlStatementsSource = SqlStatementsSource.create(configuration);
             }

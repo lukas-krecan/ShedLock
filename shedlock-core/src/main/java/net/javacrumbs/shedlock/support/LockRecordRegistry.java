@@ -13,9 +13,8 @@
  */
 package net.javacrumbs.shedlock.support;
 
-import java.util.Collections;
 import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Some LockProviders have to decide if a new record has to be created or an old
@@ -23,7 +22,7 @@ import java.util.WeakHashMap;
  * they know if a lock record exists.
  */
 class LockRecordRegistry {
-    private final Set<String> lockRecords = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    private final Set<String> lockRecords = ConcurrentHashMap.newKeySet();
 
     public void addLockRecord(String lockName) {
         lockRecords.add(lockName);
