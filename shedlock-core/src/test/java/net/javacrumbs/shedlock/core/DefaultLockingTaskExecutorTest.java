@@ -15,6 +15,7 @@ package net.javacrumbs.shedlock.core;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -147,6 +148,27 @@ class DefaultLockingTaskExecutorTest {
         inOrder.verify(innerLock).unlock();
         inOrder.verify(listener).onTaskFinished(eq(lockConfig), any());
         inOrder.verify(outerLock).unlock();
+    }
+
+    @Test
+    void shouldNotifyListenerWhenTaskThrows() {
+        SimpleLock lock = mock(SimpleLock.class);
+        when(lockProvider.lock(lockConfig)).thenReturn(Optional.of(lock));
+
+        assertThatThrownBy(() -> executorWithListener.executeWithLock(
+                        (Runnable) () -> {
+                            throw new RuntimeException("task failed");
+                        },
+                        lockConfig))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("task failed");
+
+        InOrder inOrder = inOrder(listener, lock);
+        inOrder.verify(listener).onLockAttempt(lockConfig);
+        inOrder.verify(listener).onLockAcquired(lockConfig);
+        inOrder.verify(listener).onTaskStarted(lockConfig);
+        inOrder.verify(listener).onTaskFinished(eq(lockConfig), any());
+        inOrder.verify(lock).unlock();
     }
 
     @Test

@@ -109,13 +109,12 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     private <T> TaskResult<T> executeTask(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
         long taskStartTime = System.nanoTime();
         safeEmit("onTaskStarted", () -> lockingTaskExecutorListener.onTaskStarted(lockConfig));
-        TaskResult<T> result = TaskResult.result(task.call());
-        long taskEndTime = System.nanoTime();
-        safeEmit(
-                "onTaskFinished",
-                () -> lockingTaskExecutorListener.onTaskFinished(
-                        lockConfig, Duration.ofNanos(taskEndTime - taskStartTime)));
-        return result;
+        try {
+            return TaskResult.result(task.call());
+        } finally {
+            Duration taskDuration = Duration.ofNanos(System.nanoTime() - taskStartTime);
+            safeEmit("onTaskFinished", () -> lockingTaskExecutorListener.onTaskFinished(lockConfig, taskDuration));
+        }
     }
 
     private void safeEmit(String eventName, Runnable emitter) {
