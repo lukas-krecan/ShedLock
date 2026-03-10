@@ -4,7 +4,7 @@
  * <p>This module provides Micrometer metrics for ShedLock execution events.
  */
 module net.javacrumbs.shedlock.micrometer {
-    requires transitive micrometer.core;
+    requires micrometer.core;
     requires transitive net.javacrumbs.shedlock.core;
     requires static org.jspecify;
 

@@ -26,13 +26,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutorListener;
 
+/**
+ * {@link LockingTaskExecutorListener} that records ShedLock execution events as Micrometer metrics.
+ *
+ * <p>The following meters are registered, all tagged with {@code lock.name}:
+ *
+ * <ul>
+ *   <li>{@code shedlock.lock.attempts} (Counter) — total lock acquisition attempts
+ *   <li>{@code shedlock.lock.acquired} (Counter) — successful lock acquisitions
+ *   <li>{@code shedlock.lock.not.acquired} (Counter) — failed lock acquisitions (lock held elsewhere)
+ *   <li>{@code shedlock.execution.duration} (Timer) — task execution time; {@code timer.count()}
+ *       gives total completed executions
+ *   <li>{@code shedlock.execution.active} (Gauge) — number of currently executing tasks
+ * </ul>
+ *
+ * <p>All meters are registered lazily on first use. To pre-register meters for known lock names
+ * (so dashboards show zero rather than missing data before the first execution), call
+ * {@link #registerMetricsFor(String...)}.
+ */
 public class MicrometerLockingTaskExecutorListener implements LockingTaskExecutorListener {
     static final String LOCK_ATTEMPTS = "shedlock.lock.attempts";
     static final String LOCK_ACQUIRED = "shedlock.lock.acquired";
     static final String LOCK_NOT_ACQUIRED = "shedlock.lock.not.acquired";
     static final String EXECUTION_DURATION = "shedlock.execution.duration";
     static final String EXECUTION_ACTIVE = "shedlock.execution.active";
-    private static final String LOCK_NAME_TAG = "name";
+    static final String LOCK_NAME_TAG = "lock.name";
 
     private final MeterRegistry meterRegistry;
     private final ConcurrentMap<String, Counter> attemptsCounters = new ConcurrentHashMap<>();
@@ -45,52 +63,81 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
         this.meterRegistry = requireNonNull(meterRegistry);
     }
 
+    /**
+     * Pre-registers all meters for the given lock names. Useful for ensuring metrics appear in
+     * dashboards immediately on startup, before any lock contention or execution has occurred.
+     *
+     * @param lockNames the lock names to pre-register metrics for
+     */
+    public void registerMetricsFor(String... lockNames) {
+        for (String lockName : lockNames) {
+            attemptsCounters.computeIfAbsent(lockName, this::buildAttemptsCounter);
+            acquiredCounters.computeIfAbsent(lockName, this::buildAcquiredCounter);
+            notAcquiredCounters.computeIfAbsent(lockName, this::buildNotAcquiredCounter);
+            executionTimers.computeIfAbsent(lockName, this::buildTimer);
+            activeCounters.computeIfAbsent(lockName, this::buildActiveCounter);
+        }
+    }
+
     @Override
     public void onLockAttempt(LockConfiguration lockConfig) {
-        counterFor(attemptsCounters, LOCK_ATTEMPTS, lockConfig).increment();
+        attemptsCounters
+                .computeIfAbsent(lockConfig.getName(), this::buildAttemptsCounter)
+                .increment();
     }
 
     @Override
     public void onLockAcquired(LockConfiguration lockConfig) {
-        counterFor(acquiredCounters, LOCK_ACQUIRED, lockConfig).increment();
+        acquiredCounters
+                .computeIfAbsent(lockConfig.getName(), this::buildAcquiredCounter)
+                .increment();
     }
 
     @Override
     public void onLockNotAcquired(LockConfiguration lockConfig) {
-        counterFor(notAcquiredCounters, LOCK_NOT_ACQUIRED, lockConfig).increment();
+        notAcquiredCounters
+                .computeIfAbsent(lockConfig.getName(), this::buildNotAcquiredCounter)
+                .increment();
     }
 
     @Override
     public void onTaskStarted(LockConfiguration lockConfig) {
-        activeCountFor(lockConfig).incrementAndGet();
+        activeCounters
+                .computeIfAbsent(lockConfig.getName(), this::buildActiveCounter)
+                .incrementAndGet();
     }
 
     @Override
     public void onTaskFinished(LockConfiguration lockConfiguration, Duration executionTime) {
-        activeCountFor(lockConfiguration).updateAndGet(current -> current > 0 ? current - 1 : 0);
-        timerFor(lockConfiguration).record(executionTime);
+        activeCounters
+                .computeIfAbsent(lockConfiguration.getName(), this::buildActiveCounter)
+                .updateAndGet(current -> current > 0 ? current - 1 : 0);
+        executionTimers
+                .computeIfAbsent(lockConfiguration.getName(), this::buildTimer)
+                .record(executionTime);
     }
 
-    private Counter counterFor(
-            ConcurrentMap<String, Counter> counters, String meterName, LockConfiguration lockConfiguration) {
-        return counters.computeIfAbsent(lockConfiguration.getName(), ignored -> Counter.builder(meterName)
-                .tag(LOCK_NAME_TAG, lockConfiguration.getName())
-                .register(meterRegistry));
+    private Counter buildAttemptsCounter(String lockName) {
+        return Counter.builder(LOCK_ATTEMPTS).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
     }
 
-    private Timer timerFor(LockConfiguration lockConfiguration) {
-        return executionTimers.computeIfAbsent(lockConfiguration.getName(), ignored -> Timer.builder(EXECUTION_DURATION)
-                .tag(LOCK_NAME_TAG, lockConfiguration.getName())
-                .register(meterRegistry));
+    private Counter buildAcquiredCounter(String lockName) {
+        return Counter.builder(LOCK_ACQUIRED).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
     }
 
-    private AtomicInteger activeCountFor(LockConfiguration lockConfiguration) {
-        return activeCounters.computeIfAbsent(lockConfiguration.getName(), name -> {
-            AtomicInteger counter = new AtomicInteger();
-            Gauge.builder(EXECUTION_ACTIVE, counter, AtomicInteger::get)
-                    .tag(LOCK_NAME_TAG, name)
-                    .register(meterRegistry);
-            return counter;
-        });
+    private Counter buildNotAcquiredCounter(String lockName) {
+        return Counter.builder(LOCK_NOT_ACQUIRED).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
+    }
+
+    private Timer buildTimer(String lockName) {
+        return Timer.builder(EXECUTION_DURATION).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
+    }
+
+    private AtomicInteger buildActiveCounter(String lockName) {
+        AtomicInteger counter = new AtomicInteger();
+        Gauge.builder(EXECUTION_ACTIVE, counter, AtomicInteger::get)
+                .tag(LOCK_NAME_TAG, lockName)
+                .register(meterRegistry);
+        return counter;
     }
 }
