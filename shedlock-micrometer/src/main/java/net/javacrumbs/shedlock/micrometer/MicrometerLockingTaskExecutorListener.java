@@ -29,23 +29,20 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutorListener;
 public class MicrometerLockingTaskExecutorListener implements LockingTaskExecutorListener {
     static final String LOCK_ATTEMPTS = "shedlock.lock.attempts";
     static final String LOCK_ACQUIRED = "shedlock.lock.acquired";
-    static final String LOCK_NOT_ACQUIRED = "shedlock.lock.not_acquired";
-    static final String EXECUTION = "shedlock.execution";
+    static final String LOCK_NOT_ACQUIRED = "shedlock.lock.not.acquired";
     static final String EXECUTION_DURATION = "shedlock.execution.duration";
     static final String EXECUTION_ACTIVE = "shedlock.execution.active";
     private static final String LOCK_NAME_TAG = "name";
 
     private final MeterRegistry meterRegistry;
-    private final AtomicInteger activeExecutions = new AtomicInteger();
     private final ConcurrentMap<String, Counter> attemptsCounters = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Counter> acquiredCounters = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Counter> notAcquiredCounters = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Counter> executionCounters = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Timer> executionTimers = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, AtomicInteger> activeCounters = new ConcurrentHashMap<>();
 
     public MicrometerLockingTaskExecutorListener(MeterRegistry meterRegistry) {
         this.meterRegistry = requireNonNull(meterRegistry);
-        Gauge.builder(EXECUTION_ACTIVE, activeExecutions, AtomicInteger::get).register(meterRegistry);
     }
 
     @Override
@@ -65,13 +62,12 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
 
     @Override
     public void onTaskStarted(LockConfiguration lockConfig) {
-        activeExecutions.incrementAndGet();
+        activeCountFor(lockConfig).incrementAndGet();
     }
 
     @Override
     public void onTaskFinished(LockConfiguration lockConfiguration, Duration executionTime) {
-        activeExecutions.updateAndGet(current -> current > 0 ? current - 1 : 0);
-        counterFor(executionCounters, EXECUTION, lockConfiguration).increment();
+        activeCountFor(lockConfiguration).updateAndGet(current -> current > 0 ? current - 1 : 0);
         timerFor(lockConfiguration).record(executionTime);
     }
 
@@ -86,5 +82,15 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
         return executionTimers.computeIfAbsent(lockConfiguration.getName(), ignored -> Timer.builder(EXECUTION_DURATION)
                 .tag(LOCK_NAME_TAG, lockConfiguration.getName())
                 .register(meterRegistry));
+    }
+
+    private AtomicInteger activeCountFor(LockConfiguration lockConfiguration) {
+        return activeCounters.computeIfAbsent(lockConfiguration.getName(), name -> {
+            AtomicInteger counter = new AtomicInteger();
+            Gauge.builder(EXECUTION_ACTIVE, counter, AtomicInteger::get)
+                    .tag(LOCK_NAME_TAG, name)
+                    .register(meterRegistry);
+            return counter;
+        });
     }
 }

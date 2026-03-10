@@ -15,6 +15,7 @@ package net.javacrumbs.shedlock.micrometer;
 
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Duration;
@@ -47,10 +48,8 @@ class MicrometerLockingTaskExecutorListenerTest {
                 .isEqualTo(1.0);
         assertThat(counter(MicrometerLockingTaskExecutorListener.LOCK_NOT_ACQUIRED, "test"))
                 .isZero();
-        assertThat(counter(MicrometerLockingTaskExecutorListener.EXECUTION, "test"))
-                .isEqualTo(1.0);
         assertThat(timerCount("test")).isEqualTo(1L);
-        assertThat(activeGauge()).isZero();
+        assertThat(activeGauge("test")).isZero();
     }
 
     @Test
@@ -66,23 +65,36 @@ class MicrometerLockingTaskExecutorListenerTest {
                 .isZero();
         assertThat(counter(MicrometerLockingTaskExecutorListener.LOCK_NOT_ACQUIRED, "test"))
                 .isEqualTo(1.0);
-        assertThat(counter(MicrometerLockingTaskExecutorListener.EXECUTION, "test"))
-                .isZero();
         assertThat(timerCount("test")).isZero();
-        assertThat(activeGauge()).isZero();
+        assertThat(activeGauge("test")).isZero();
     }
 
     @Test
     void shouldTrackActiveExecutions() {
         listener.onTaskStarted(lockConfiguration);
 
-        assertThat(activeGauge()).isEqualTo(1.0);
+        assertThat(activeGauge("test")).isEqualTo(1.0);
 
         listener.onTaskFinished(lockConfiguration, Duration.ofMillis(5));
 
-        assertThat(activeGauge()).isZero();
-        assertThat(counter(MicrometerLockingTaskExecutorListener.EXECUTION, "test"))
-                .isEqualTo(1.0);
+        assertThat(activeGauge("test")).isZero();
+        assertThat(timerCount("test")).isEqualTo(1L);
+    }
+
+    @Test
+    void shouldDecrementActiveGaugeWhenTaskThrows() {
+        LockProvider lockProvider = lockConfiguration -> Optional.of(new TestSimpleLock());
+        DefaultLockingTaskExecutor executor = new DefaultLockingTaskExecutor(lockProvider, listener);
+
+        assertThatThrownBy(() -> executor.executeWithLock(
+                        (Runnable) () -> {
+                            throw new RuntimeException("task failed");
+                        },
+                        lockConfiguration))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("task failed");
+
+        assertThat(activeGauge("test")).isZero();
         assertThat(timerCount("test")).isEqualTo(1L);
     }
 
@@ -102,10 +114,8 @@ class MicrometerLockingTaskExecutorListenerTest {
                 .isZero();
         assertThat(counter(MicrometerLockingTaskExecutorListener.LOCK_ACQUIRED, "other"))
                 .isEqualTo(1.0);
-        assertThat(counter(MicrometerLockingTaskExecutorListener.EXECUTION, "test"))
-                .isZero();
-        assertThat(counter(MicrometerLockingTaskExecutorListener.EXECUTION, "other"))
-                .isEqualTo(1.0);
+        assertThat(timerCount("test")).isZero();
+        assertThat(timerCount("other")).isEqualTo(1L);
     }
 
     private double counter(String meterName, String lockName) {
@@ -128,11 +138,16 @@ class MicrometerLockingTaskExecutorListenerTest {
         }
     }
 
-    private double activeGauge() {
-        return meterRegistry
-                .get(MicrometerLockingTaskExecutorListener.EXECUTION_ACTIVE)
-                .gauge()
-                .value();
+    private double activeGauge(String lockName) {
+        try {
+            return meterRegistry
+                    .get(MicrometerLockingTaskExecutorListener.EXECUTION_ACTIVE)
+                    .tag("name", lockName)
+                    .gauge()
+                    .value();
+        } catch (Exception ignored) {
+            return 0.0;
+        }
     }
 
     private static class TestSimpleLock implements SimpleLock {
