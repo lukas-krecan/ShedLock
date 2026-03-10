@@ -71,9 +71,9 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
      */
     public void registerMetricsFor(String... lockNames) {
         for (String lockName : lockNames) {
-            attemptsCounters.computeIfAbsent(lockName, this::buildAttemptsCounter);
-            acquiredCounters.computeIfAbsent(lockName, this::buildAcquiredCounter);
-            notAcquiredCounters.computeIfAbsent(lockName, this::buildNotAcquiredCounter);
+            attemptsCounters.computeIfAbsent(lockName, name -> buildCounter(LOCK_ATTEMPTS, name));
+            acquiredCounters.computeIfAbsent(lockName, name -> buildCounter(LOCK_ACQUIRED, name));
+            notAcquiredCounters.computeIfAbsent(lockName, name -> buildCounter(LOCK_NOT_ACQUIRED, name));
             executionTimers.computeIfAbsent(lockName, this::buildTimer);
             activeCounters.computeIfAbsent(lockName, this::buildActiveCounter);
         }
@@ -82,21 +82,21 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
     @Override
     public void onLockAttempt(LockConfiguration lockConfig) {
         attemptsCounters
-                .computeIfAbsent(lockConfig.getName(), this::buildAttemptsCounter)
+                .computeIfAbsent(lockConfig.getName(), name -> buildCounter(LOCK_ATTEMPTS, name))
                 .increment();
     }
 
     @Override
     public void onLockAcquired(LockConfiguration lockConfig) {
         acquiredCounters
-                .computeIfAbsent(lockConfig.getName(), this::buildAcquiredCounter)
+                .computeIfAbsent(lockConfig.getName(), name -> buildCounter(LOCK_ACQUIRED, name))
                 .increment();
     }
 
     @Override
     public void onLockNotAcquired(LockConfiguration lockConfig) {
         notAcquiredCounters
-                .computeIfAbsent(lockConfig.getName(), this::buildNotAcquiredCounter)
+                .computeIfAbsent(lockConfig.getName(), name -> buildCounter(LOCK_NOT_ACQUIRED, name))
                 .increment();
     }
 
@@ -117,16 +117,8 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
                 .record(executionTime);
     }
 
-    private Counter buildAttemptsCounter(String lockName) {
-        return Counter.builder(LOCK_ATTEMPTS).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
-    }
-
-    private Counter buildAcquiredCounter(String lockName) {
-        return Counter.builder(LOCK_ACQUIRED).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
-    }
-
-    private Counter buildNotAcquiredCounter(String lockName) {
-        return Counter.builder(LOCK_NOT_ACQUIRED).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
+    private Counter buildCounter(String metricName, String lockName) {
+        return Counter.builder(metricName).tag(LOCK_NAME_TAG, lockName).register(meterRegistry);
     }
 
     private Timer buildTimer(String lockName) {
