@@ -200,4 +200,43 @@ class DefaultLockingTaskExecutorTest {
         verify(listener).onTaskFinished(eq(lockConfig), any());
         verify(lock).unlock();
     }
+
+    @Test
+    void shouldIgnoreListenerFailureDuringLockAcquired() {
+        SimpleLock lock = mock(SimpleLock.class);
+        doThrow(new RuntimeException("listener failed")).when(listener).onLockAcquired(lockConfig);
+        when(lockProvider.lock(lockConfig)).thenReturn(Optional.of(lock));
+
+        executorWithListener.executeWithLock((Runnable) () -> {}, lockConfig);
+
+        verify(listener).onLockAttempt(lockConfig);
+        verify(listener).onLockAcquired(lockConfig);
+        verify(listener).onTaskStarted(lockConfig);
+        verify(listener).onTaskFinished(eq(lockConfig), any());
+        verify(lock).unlock();
+    }
+
+    @Test
+    void shouldIgnoreListenerFailureDuringLockNotAcquired() {
+        when(lockProvider.lock(lockConfig)).thenReturn(Optional.empty());
+        doThrow(new RuntimeException("listener failed")).when(listener).onLockNotAcquired(lockConfig);
+
+        executorWithListener.executeWithLock((Runnable) () -> {}, lockConfig);
+
+        verify(listener).onLockAttempt(lockConfig);
+        verify(listener).onLockNotAcquired(lockConfig);
+    }
+
+    @Test
+    void shouldIgnoreListenerFailureDuringTaskStarted() {
+        SimpleLock lock = mock(SimpleLock.class);
+        doThrow(new RuntimeException("listener failed")).when(listener).onTaskStarted(lockConfig);
+        when(lockProvider.lock(lockConfig)).thenReturn(Optional.of(lock));
+
+        executorWithListener.executeWithLock((Runnable) () -> {}, lockConfig);
+
+        verify(listener).onTaskStarted(lockConfig);
+        verify(listener).onTaskFinished(eq(lockConfig), any());
+        verify(lock).unlock();
+    }
 }
