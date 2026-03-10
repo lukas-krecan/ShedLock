@@ -120,7 +120,7 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     private void safeEmit(String eventName, Runnable emitter) {
         try {
             emitter.run();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             logger.debug("LockingTaskExecutorListener threw exception during {}", eventName, e);
         }
     }
