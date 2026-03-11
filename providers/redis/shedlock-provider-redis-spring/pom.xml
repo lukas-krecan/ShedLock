@@ -27,7 +27,7 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.8.3</version>
+            <version>3.8.4</version>
             <optional>true</optional>
         </dependency>
 
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>7.3.0</version>
+            <version>7.4.0</version>
             <scope>test</scope>
         </dependency>
 
