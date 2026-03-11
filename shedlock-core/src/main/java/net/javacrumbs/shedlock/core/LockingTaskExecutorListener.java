@@ -65,7 +65,7 @@ public interface LockingTaskExecutorListener {
      *
      * @param executionTime wall-clock duration of the task body (excluding lock acquisition time)
      */
-    default void onTaskFinished(LockConfiguration lockConfiguration, Duration executionTime) {}
+    default void onTaskFinished(LockConfiguration lockConfig, Duration executionTime) {}
 
     /** No-op implementation, used as the default when no listener is configured. */
     LockingTaskExecutorListener NO_OP = new LockingTaskExecutorListener() {};
