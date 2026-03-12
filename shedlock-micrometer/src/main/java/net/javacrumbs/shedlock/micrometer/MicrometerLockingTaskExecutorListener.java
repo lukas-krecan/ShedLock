@@ -108,13 +108,11 @@ public class MicrometerLockingTaskExecutorListener implements LockingTaskExecuto
     }
 
     @Override
-    public void onTaskFinished(LockConfiguration lockConfiguration, Duration executionTime) {
+    public void onTaskFinished(LockConfiguration lockConfig, Duration executionTime) {
         activeCounters
-                .computeIfAbsent(lockConfiguration.getName(), this::buildActiveCounter)
+                .computeIfAbsent(lockConfig.getName(), this::buildActiveCounter)
                 .updateAndGet(current -> current > 0 ? current - 1 : 0);
-        executionTimers
-                .computeIfAbsent(lockConfiguration.getName(), this::buildTimer)
-                .record(executionTime);
+        executionTimers.computeIfAbsent(lockConfig.getName(), this::buildTimer).record(executionTime);
     }
 
     private Counter buildCounter(String metricName, String lockName) {
