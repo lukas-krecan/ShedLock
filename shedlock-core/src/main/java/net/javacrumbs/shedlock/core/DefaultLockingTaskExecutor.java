@@ -16,6 +16,7 @@ package net.javacrumbs.shedlock.core;
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.LockAssert.alreadyLockedBy;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -25,9 +26,16 @@ import org.slf4j.LoggerFactory;
 public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultLockingTaskExecutor.class);
     private final LockProvider lockProvider;
+    private final LockingTaskExecutorListener lockingTaskExecutorListener;
 
     public DefaultLockingTaskExecutor(LockProvider lockProvider) {
+        this(lockProvider, LockingTaskExecutorListener.NO_OP);
+    }
+
+    public DefaultLockingTaskExecutor(
+            LockProvider lockProvider, LockingTaskExecutorListener lockingTaskExecutorListener) {
         this.lockProvider = requireNonNull(lockProvider);
+        this.lockingTaskExecutorListener = requireNonNull(lockingTaskExecutorListener);
     }
 
     @Override
@@ -57,17 +65,19 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
         String lockName = lockConfig.getName();
         if (alreadyLockedBy(lockName)) {
             logger.debug("Already locked '{}'", lockName);
-            return TaskResult.result(task.call());
+            return executeTask(task, lockConfig);
         }
 
+        safeEmit("onLockAttempt", () -> lockingTaskExecutorListener.onLockAttempt(lockConfig));
         Optional<SimpleLock> lock = lockProvider.lock(lockConfig);
         if (lock.isPresent()) {
             try {
                 LockAssert.startLock(lockName);
                 LockExtender.startLock(lock.get());
+                safeEmit("onLockAcquired", () -> lockingTaskExecutorListener.onLockAcquired(lockConfig));
                 logger.debug(
                         "Locked '{}', lock will be held at most until {}", lockName, lockConfig.getLockAtMostUntil());
-                return TaskResult.result(task.call());
+                return executeTask(task, lockConfig);
             } finally {
                 LockAssert.endLock();
                 SimpleLock activeLock = LockExtender.endLock();
@@ -90,8 +100,28 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
                 }
             }
         } else {
+            safeEmit("onLockNotAcquired", () -> lockingTaskExecutorListener.onLockNotAcquired(lockConfig));
             logger.debug("Not executing '{}'. It's locked.", lockName);
             return TaskResult.notExecuted();
+        }
+    }
+
+    private <T> TaskResult<T> executeTask(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
+        safeEmit("onTaskStarted", () -> lockingTaskExecutorListener.onTaskStarted(lockConfig));
+        long taskStartTime = System.nanoTime();
+        try {
+            return TaskResult.result(task.call());
+        } finally {
+            Duration taskDuration = Duration.ofNanos(System.nanoTime() - taskStartTime);
+            safeEmit("onTaskFinished", () -> lockingTaskExecutorListener.onTaskFinished(lockConfig, taskDuration));
+        }
+    }
+
+    private void safeEmit(String eventName, Runnable emitter) {
+        try {
+            emitter.run();
+        } catch (Exception e) {
+            logger.debug("LockingTaskExecutorListener threw exception during {}", eventName, e);
         }
     }
 }
