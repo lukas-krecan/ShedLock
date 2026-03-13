@@ -78,7 +78,7 @@
 
     <properties>
         <micrometer.version>1.15.9</micrometer.version>
-        <spring.version>7.0.5</spring.version>
+        <spring.version>7.0.6</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <spring-boot-current.version>4.0.3</spring-boot-current.version>
