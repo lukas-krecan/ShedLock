@@ -19,6 +19,7 @@ import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
+import net.javacrumbs.shedlock.core.LockingTaskExecutorListener;
 import net.javacrumbs.shedlock.spring.ExtendedLockConfigurationExtractor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.aopalliance.aop.Advice;
@@ -29,6 +30,7 @@ import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
+import org.springframework.beans.factory.ObjectProvider;
 
 class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     private final Pointcut pointcut = new ComposablePointcut(methodPointcutFor(SchedulerLock.class));
@@ -36,8 +38,10 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     private final Advice advice;
 
     MethodProxyScheduledLockAdvisor(
-            ExtendedLockConfigurationExtractor lockConfigurationExtractor, LockProviderSupplier lockProviderSupplier) {
-        this.advice = new LockingInterceptor(lockConfigurationExtractor, lockProviderSupplier);
+            ExtendedLockConfigurationExtractor lockConfigurationExtractor,
+            LockProviderSupplier lockProviderSupplier,
+            ObjectProvider<LockingTaskExecutorListener> listenerProvider) {
+        this.advice = new LockingInterceptor(lockConfigurationExtractor, lockProviderSupplier, listenerProvider);
     }
 
     private static AnnotationMatchingPointcut methodPointcutFor(Class<? extends Annotation> methodAnnotationType) {
@@ -58,12 +62,15 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
     private static class LockingInterceptor implements MethodInterceptor {
         private final ExtendedLockConfigurationExtractor lockConfigurationExtractor;
         private final LockProviderSupplier lockProviderSupplier;
+        private final ObjectProvider<LockingTaskExecutorListener> listenerProvider;
 
         LockingInterceptor(
                 ExtendedLockConfigurationExtractor lockConfigurationExtractor,
-                LockProviderSupplier lockProviderSupplier) {
+                LockProviderSupplier lockProviderSupplier,
+                ObjectProvider<LockingTaskExecutorListener> listenerProvider) {
             this.lockConfigurationExtractor = lockConfigurationExtractor;
             this.lockProviderSupplier = lockProviderSupplier;
+            this.listenerProvider = listenerProvider;
         }
 
         @Override
@@ -79,7 +86,9 @@ class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
 
             LockProvider lockProvider = lockProviderSupplier.supply(
                     invocation.getThis(), invocation.getMethod(), invocation.getArguments());
-            DefaultLockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
+            LockingTaskExecutorListener listener =
+                    listenerProvider.getIfAvailable(() -> LockingTaskExecutorListener.NO_OP);
+            DefaultLockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider, listener);
             TaskResult<Object> result = lockingTaskExecutor.executeWithLock(invocation::proceed, lockConfiguration);
 
             if (Optional.class.equals(returnType)) {
