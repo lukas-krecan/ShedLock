@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.7.0 (2026-03-17)
+* Support for Micrometer metrics (thanks @josipmusa)
+* Dependency updates
+
 ## 7.6.0 (2026-01-27)
 * Customizable document field names for Elasticsearch9 and OpenSearch providers (thanks @dlwldnjs1009)
 * Dependency updates
