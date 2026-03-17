@@ -54,6 +54,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
 + [CDI integration](#cdi-integration)
 + [Locking without a framework](#locking-without-a-framework)
 + [Troubleshooting](#troubleshooting)
++ [Micrometer integration (Spring)](#micrometer-integration-spring)
 + [Modes of Spring integration](#modes-of-spring-integration)
   - [Scheduled method proxy](#scheduled-method-proxy)
   - [TaskScheduler proxy](#taskscheduler-proxy)
@@ -1207,6 +1208,48 @@ Since version 6.0.0 you can use multiple lock provider implementations. Just def
 and disambiguate them using `@LockProviderToUse("lockProviderBeanName")` annotation on method, class or package.
 If the annotation is not found, the execution fails in the runtime, not in startup-time. If you need more dynamic resolution
 of LockProviders, use a LockProvider wrapper as described in [Multi-tenancy](#multi-tenancy).
+
+## Micrometer integration (Spring)
+ShedLock can publish lock execution metrics via [Micrometer](https://micrometer.io/). To enable it, add the
+`shedlock-micrometer` dependency and define a `MicrometerLockingTaskExecutorListener` bean. ShedLock's Spring
+integration will detect it automatically and wire it in — no further configuration is required.
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-micrometer</artifactId>
+    <version>${shedlock.version}</version>
+</dependency>
+```
+
+```java
+@Bean
+public LockingTaskExecutorListener micrometerLockingTaskExecutorListener(MeterRegistry meterRegistry) {
+    return new MicrometerLockingTaskExecutorListener(meterRegistry);
+}
+```
+
+The following meters are registered, all tagged with `lock.name`:
+
+| Meter | Type | Description |
+|---|---|---|
+| `shedlock.lock.attempts` | Counter | Total lock acquisition attempts |
+| `shedlock.lock.acquired` | Counter | Successful lock acquisitions |
+| `shedlock.lock.not.acquired` | Counter | Failed lock acquisitions (lock held elsewhere) |
+| `shedlock.execution.duration` | Timer | Task execution time |
+| `shedlock.execution.active` | Gauge | Number of currently executing tasks |
+
+To pre-register meters for known lock names (so dashboards show zero rather than missing data before the first
+execution), call `registerMetricsFor`:
+
+```java
+@Bean
+public LockingTaskExecutorListener micrometerLockingTaskExecutorListener(MeterRegistry meterRegistry) {
+    MicrometerLockingTaskExecutorListener listener = new MicrometerLockingTaskExecutorListener(meterRegistry);
+    listener.registerMetricsFor("myLock1", "myLock2");
+    return listener;
+}
+```
 
 ## Modes of Spring integration
 ShedLock supports two modes of Spring integration. One that uses an AOP proxy around scheduled method (PROXY_METHOD)
