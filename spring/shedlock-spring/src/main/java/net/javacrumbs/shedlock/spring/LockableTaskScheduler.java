@@ -17,7 +17,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Date;
 import java.util.concurrent.ScheduledFuture;
 import net.javacrumbs.shedlock.core.LockManager;
 import net.javacrumbs.shedlock.core.LockableRunnable;
@@ -27,13 +26,10 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 
 /**
- * Wraps a all tasks to {@link LockableRunnable} and delegates all calls to a
+ * Wraps all tasks to {@link LockableRunnable} and delegates all calls to a
  * {@link TaskScheduler}.
- *
- * @deprecated Use AOP based locking
  */
-@SuppressWarnings("deprecation")
-@Deprecated(forRemoval = true)
+// Don't remove, people are using it directly https://github.com/lukas-krecan/ShedLock/issues/3325
 public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     private final TaskScheduler taskScheduler;
     private final LockManager lockManager;
@@ -46,31 +42,6 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
     @Override
     public @Nullable ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
         return taskScheduler.schedule(wrap(task), trigger);
-    }
-
-    @Override
-    public ScheduledFuture<?> schedule(Runnable task, Date startTime) {
-        return taskScheduler.schedule(wrap(task), startTime);
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, Date startTime, long period) {
-        return taskScheduler.scheduleAtFixedRate(wrap(task), startTime, period);
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, long period) {
-        return taskScheduler.scheduleAtFixedRate(wrap(task), period);
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, Date startTime, long delay) {
-        return taskScheduler.scheduleWithFixedDelay(wrap(task), startTime, delay);
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, long delay) {
-        return taskScheduler.scheduleWithFixedDelay(wrap(task), delay);
     }
 
     @Override
@@ -98,7 +69,6 @@ public class LockableTaskScheduler implements TaskScheduler, DisposableBean {
         return taskScheduler.scheduleWithFixedDelay(wrap(task), delay);
     }
 
-    @SuppressWarnings("removal")
     private Runnable wrap(Runnable task) {
         return new LockableRunnable(task, lockManager);
     }
