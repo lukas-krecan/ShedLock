@@ -6,6 +6,9 @@
         <version>7.7.1-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
+    <properties>
+        <jooq.version>3.21.0</jooq.version>
+    </properties>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shedlock-provider-jooq</artifactId>
@@ -21,7 +24,7 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
-            <version>3.20.11</version>
+            <version>${jooq.version}</version>
         </dependency>
 
         <dependency>
@@ -51,9 +54,9 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.testcontainers</groupId>
+                        <groupId>io.github.nillerr</groupId>
                         <artifactId>testcontainers-jooq-codegen-maven-plugin</artifactId>
-                        <version>0.0.4</version>
+                        <version>0.0.5</version>
                         <dependencies>
                             <dependency>
                                 <groupId>org.testcontainers</groupId>
@@ -68,7 +71,7 @@
                             <dependency>
                                 <groupId>org.jooq</groupId>
                                 <artifactId>jooq-codegen</artifactId>
-                                <version>3.20.11</version>
+                                <version>${jooq.version}</version>
                             </dependency>
                         </dependencies>
                         <executions>
