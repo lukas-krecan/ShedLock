@@ -31,7 +31,7 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
 
     @Container
     static final LocalStackContainer localStackS3 =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"));
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack:4.14.0"));
 
     private static S3Client s3Client;
     private static final String BUCKET_NAME = "my-bucket";
