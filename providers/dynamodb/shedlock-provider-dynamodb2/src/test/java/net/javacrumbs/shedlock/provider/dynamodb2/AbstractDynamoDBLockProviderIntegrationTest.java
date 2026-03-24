@@ -42,7 +42,7 @@ public abstract class AbstractDynamoDBLockProviderIntegrationTest extends Abstra
 
     @Container
     static final LocalStackContainer dynamoDbContainer =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"));
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack:4.14.0"));
 
     protected static final String TABLE_NAME = "Shedlock";
 
