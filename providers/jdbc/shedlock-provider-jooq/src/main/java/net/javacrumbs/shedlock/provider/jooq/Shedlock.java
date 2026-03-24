@@ -12,7 +12,6 @@ import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
 import org.jooq.Record;
 import org.jooq.SQL;
-import org.jooq.Select;
 import org.jooq.Stringly;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -210,21 +209,5 @@ class Shedlock extends TableImpl<Record> {
     @PlainSQL
     public Shedlock where(@Stringly.SQL String condition, QueryPart... parts) {
         return where(DSL.condition(condition, parts));
-    }
-
-    /**
-     * Create an inline derived table from this table
-     */
-    @Override
-    public Shedlock whereExists(Select<?> select) {
-        return where(DSL.exists(select));
-    }
-
-    /**
-     * Create an inline derived table from this table
-     */
-    @Override
-    public Shedlock whereNotExists(Select<?> select) {
-        return where(DSL.notExists(select));
     }
 }
