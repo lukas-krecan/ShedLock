@@ -7,7 +7,7 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <properties>
-        <jooq.version>3.21.0</jooq.version>
+        <jooq.version>3.21.1</jooq.version>
     </properties>
     <modelVersion>4.0.0</modelVersion>
 
