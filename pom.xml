@@ -210,6 +210,19 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.6.2</version>
             </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.9.8.0</version>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>4.9.8</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
