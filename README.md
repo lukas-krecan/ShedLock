@@ -114,7 +114,7 @@ public void scheduledTask() {
 ```
 ### Behavior
 1. Only methods annotated by `@SchedulerLock` are locked, the library ignores all other scheduled tasks. By default, the lock will be applied
-even if the method is called directly, not only thorough the scheduler.
+even if the method is called directly, not only through the scheduler.
 2. Only one task with the same name can be executed at the same time.
 3. If the lock is being held by a task, **other tasks protected by the same lock are not blocked, but are simply skipped.**
 4. The lock is released as soon as the task is finished (unless `lockAtLeastFor` is specified, see below)
@@ -125,6 +125,7 @@ even if the method is called directly, not only thorough the scheduler.
 7. You can set `lockAtLeastFor` attribute which specifies minimum amount of time for which the lock should be kept.
 Its main purpose is to prevent execution from multiple nodes in case of really short tasks and clock difference between the nodes.
 8. All the annotations support Spring Expression Language (SpEL).
+9. By default, the lock will be applied even if the method is called directly, not just through the scheduler.
 
 #### Example
 Let's say you have a task which you execute every 15 minutes and which usually takes few minutes to run.
@@ -306,7 +307,7 @@ Add dependency
 Configure:
 
 ```kotlin
-import net.javacrumbs.shedlock.provider.exposed.ExposedLockProvider;
+import net.javacrumbs.shedlock.provider.exposed.ExposedLockProvider
 
 ...
 @Bean
