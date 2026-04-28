@@ -1,0 +1,65 @@
+name: Dependabot auto-merge
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Wait for status checks
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const maxAttempts = 60;
+            let attempt = 0;
+
+            while (attempt < maxAttempts) {
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+              });
+
+              const { data: status } = await github.rest.repos.getCombinedStatusForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.head.sha,
+              });
+
+              console.log(`Attempt ${attempt + 1}: ${status.state}`);
+
+              if (status.state === 'success') {
+                console.log('✅ All checks passed');
+                return;
+              } else if (status.state === 'failure') {
+                throw new Error('❌ Checks failed - will not merge');
+              }
+
+              await new Promise(r => setTimeout(r, 30000));
+              attempt++;
+            }
+            throw new Error('Timeout waiting for checks');
+
+      - name: Enable auto-merge for patch versions
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
