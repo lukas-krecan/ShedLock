@@ -4,7 +4,16 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # Exclude Spring Boot versions used in test modules
+      - dependency-name: "org.springframework.boot:*"
+        versions: ["4.1.x", "3.5.x"]  # Future test (4.1.0-RC1) and old test (3.5.14)
+
+      # Exclude pre-release versions globally
+      - dependency-name: "*"
+        versions: ["*-alpha", "*-beta", "*-rc", "*-M*", "*-RC*"]
+
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
