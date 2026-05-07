@@ -12,7 +12,7 @@
     <name>${project.groupId}:${project.artifactId}</name>
 
     <properties>
-        <google-cloud-storage.ver>2.67.0</google-cloud-storage.ver>
+        <google-cloud-storage.ver>2.68.0</google-cloud-storage.ver>
     </properties>
 
     <dependencies>
