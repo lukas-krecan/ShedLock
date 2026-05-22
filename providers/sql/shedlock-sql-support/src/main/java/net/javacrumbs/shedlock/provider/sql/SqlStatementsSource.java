@@ -56,7 +56,7 @@ public class SqlStatementsSource {
             case DB2 -> new Db2ServerTimeStatementsSource(configuration);
             default ->
                 throw new UnsupportedOperationException(
-                        "DB time is not supported for database product: " + databaseProduct);
+                        "useDbTime() is not supported for database product: " + databaseProduct);
         };
     }
 
