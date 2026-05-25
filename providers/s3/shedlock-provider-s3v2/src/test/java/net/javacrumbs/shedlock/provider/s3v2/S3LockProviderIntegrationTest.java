@@ -9,9 +9,9 @@ import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderInte
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
@@ -30,8 +30,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     @Container
-    static final LocalStackContainer localStackS3 =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack:4.14.0"));
+    static final GenericContainer<?> localStackS3 =
+            new GenericContainer<>(DockerImageName.parse("ghcr.io/testcontainers/floci:latest")).withExposedPorts(4566);
 
     private static S3Client s3Client;
     private static final String BUCKET_NAME = "my-bucket";
@@ -39,11 +39,11 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
 
     @BeforeAll
     public static void startLocalStackS3() {
+        String endpoint = "http://" + localStackS3.getHost() + ":" + localStackS3.getFirstMappedPort();
         s3Client = S3Client.builder()
-                .endpointOverride(URI.create(localStackS3.getEndpoint().toString()))
-                .credentialsProvider(
-                        () -> AwsBasicCredentials.create(localStackS3.getAccessKey(), localStackS3.getSecretKey()))
-                .region(Region.of(localStackS3.getRegion()))
+                .endpointOverride(URI.create(endpoint))
+                .credentialsProvider(() -> AwsBasicCredentials.create("dummy", "dummy"))
+                .region(Region.US_EAST_1)
                 .build();
     }
 
