@@ -2,6 +2,7 @@ package net.javacrumbs.shedlock.provider.s3v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.floci.testcontainers.FlociContainer;
 import java.net.URI;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
@@ -9,14 +10,13 @@ import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderInte
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
@@ -30,8 +30,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProviderIntegrationTest {
 
     @Container
-    static final GenericContainer<?> localStackS3 =
-            new GenericContainer<>(DockerImageName.parse("ghcr.io/testcontainers/floci:latest")).withExposedPorts(4566);
+    static final FlociContainer localStackS3 = new FlociContainer();
 
     private static S3Client s3Client;
     private static final String BUCKET_NAME = "my-bucket";
@@ -63,6 +62,8 @@ public class S3LockProviderIntegrationTest extends AbstractStorageBasedLockProvi
                         .bucket(BUCKET_NAME)
                         .key(s3Object.key())
                         .build()));
+
+        s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(BUCKET_NAME).build());
     }
 
     @Override

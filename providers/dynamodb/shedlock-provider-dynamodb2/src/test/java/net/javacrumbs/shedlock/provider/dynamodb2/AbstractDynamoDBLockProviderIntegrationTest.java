@@ -20,14 +20,13 @@ import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LO
 import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.floci.testcontainers.FlociContainer;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
 import net.javacrumbs.shedlock.test.support.AbstractLockProviderIntegrationTest;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -41,8 +40,7 @@ public abstract class AbstractDynamoDBLockProviderIntegrationTest extends Abstra
     protected static final String ID = "_id2";
 
     @Container
-    static final GenericContainer<?> dynamoDbContainer =
-            new GenericContainer<>(DockerImageName.parse("ghcr.io/testcontainers/floci:latest")).withExposedPorts(4566);
+    static final FlociContainer dynamoDbContainer = new FlociContainer();
 
     protected static final String TABLE_NAME = "Shedlock";
 
