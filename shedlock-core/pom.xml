@@ -20,6 +20,12 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.ver}</version>
         </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>1.0.4</version>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>

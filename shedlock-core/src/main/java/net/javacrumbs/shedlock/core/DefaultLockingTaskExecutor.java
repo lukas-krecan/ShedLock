@@ -77,32 +77,40 @@ public class DefaultLockingTaskExecutor implements LockingTaskExecutor {
                 safeEmit("onLockAcquired", () -> lockingTaskExecutorListener.onLockAcquired(lockConfig));
                 logger.debug(
                         "Locked '{}', lock will be held at most until {}", lockName, lockConfig.getLockAtMostUntil());
-                return executeTask(task, lockConfig);
+                TaskResult<T> result = executeTask(task, lockConfig);
+                if (result.getResult() instanceof org.reactivestreams.Publisher publisher) {
+                    //publisher.???
+                }
+                return result;
             } finally {
-                LockAssert.endLock();
-                SimpleLock activeLock = LockExtender.endLock();
-                if (activeLock != null) {
-                    activeLock.unlock();
-                } else {
-                    // This should never happen, but I do not know any better way to handle the null
-                    // case.
-                    logger.warn("No active lock, please report this as a bug.");
-                    lock.get().unlock();
-                }
-                if (logger.isDebugEnabled()) {
-                    Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();
-                    Instant now = ClockProvider.now();
-                    if (lockAtLeastUntil.isAfter(now)) {
-                        logger.debug("Task finished, lock '{}' will be released at {}", lockName, lockAtLeastUntil);
-                    } else {
-                        logger.debug("Task finished, lock '{}' released", lockName);
-                    }
-                }
+                unlock(lockConfig, lockName, lock.get());
             }
         } else {
             safeEmit("onLockNotAcquired", () -> lockingTaskExecutorListener.onLockNotAcquired(lockConfig));
             logger.debug("Not executing '{}'. It's locked.", lockName);
             return TaskResult.notExecuted();
+        }
+    }
+
+    private static void unlock(LockConfiguration lockConfig, String lockName, SimpleLock lock) {
+        LockAssert.endLock();
+        SimpleLock activeLock = LockExtender.endLock();
+        if (activeLock != null) {
+            activeLock.unlock();
+        } else {
+            // This should never happen, but I do not know any better way to handle the null
+            // case.
+            logger.warn("No active lock, please report this as a bug.");
+            lock.unlock();
+        }
+        if (logger.isDebugEnabled()) {
+            Instant lockAtLeastUntil = lockConfig.getLockAtLeastUntil();
+            Instant now = ClockProvider.now();
+            if (lockAtLeastUntil.isAfter(now)) {
+                logger.debug("Task finished, lock '{}' will be released at {}", lockName, lockAtLeastUntil);
+            } else {
+                logger.debug("Task finished, lock '{}' released", lockName);
+            }
         }
     }
 

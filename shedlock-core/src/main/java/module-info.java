@@ -10,6 +10,7 @@
 module net.javacrumbs.shedlock.core {
     requires transitive org.slf4j;
     requires transitive static org.jspecify;
+    requires org.reactivestreams;
 
     // Export main API packages
     exports net.javacrumbs.shedlock.core;
