@@ -5,6 +5,9 @@ on:
     branches: [master]
   pull_request:
     types: [ opened, reopened, synchronize ]
+  workflow_run:
+    workflows: ["Dependabot auto-merge"]
+    types: [completed]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -12,6 +15,10 @@ concurrency:
 
 jobs:
   build:
+    # If this workflow was triggered by the automerge workflow completion, only
+    # continue when that workflow run concluded successfully. For regular push
+    # events the condition is ignored.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
