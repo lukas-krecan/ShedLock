@@ -33,7 +33,6 @@
         <module>spring/test/shedlock-springboot-old-test</module>
         <module>spring/test/shedlock-springboot-test</module>
         <module>spring/test/shedlock-springboot-future-test</module>
-        <module>spring/test/shedlock-springboot-sleuth-test</module>
         <module>spring/test/shedlock-springboot-kotlin-test</module>
         <module>spring/test/shedlock-testng-test</module>
         <module>shedlock-test-support</module>
@@ -266,7 +265,6 @@
                         <artifact>shedlock-springboot-future-test</artifact>
                         <artifact>shedlock-springboot-kotlin-test</artifact>
                         <artifact>shedlock-springboot-old-test</artifact>
-                        <artifact>shedlock-springboot-sleuth-test</artifact>
                         <artifact>shedlock-springboot-test</artifact>
                         <artifact>shedlock-testng-test</artifact>
                         <artifact>quarkus-test</artifact>
