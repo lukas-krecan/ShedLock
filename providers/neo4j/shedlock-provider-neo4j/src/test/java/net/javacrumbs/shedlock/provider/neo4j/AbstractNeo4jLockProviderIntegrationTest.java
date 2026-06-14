@@ -85,7 +85,7 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
                         parameters,
                         null);
         assertUnlocked(LOCK_NAME1);
-        shouldCreateLock();
+        assertSimpleLock();
     }
 
     @Test

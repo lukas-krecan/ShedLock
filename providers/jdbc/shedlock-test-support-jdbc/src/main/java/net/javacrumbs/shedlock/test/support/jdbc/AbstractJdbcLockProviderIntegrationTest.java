@@ -78,7 +78,7 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
                         previousLockTime,
                         "me");
         assertUnlocked(LOCK_NAME1);
-        shouldCreateLock();
+        assertSimpleLock();
     }
 
     @Test

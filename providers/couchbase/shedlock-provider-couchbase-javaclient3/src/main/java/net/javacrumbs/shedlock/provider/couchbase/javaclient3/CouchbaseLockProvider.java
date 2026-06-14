@@ -75,7 +75,7 @@ public class CouchbaseLockProvider extends StorageBasedLockProvider {
         this(new CouchbaseAccessor(collection));
     }
 
-    CouchbaseLockProvider(CouchbaseAccessor couchbaseAccessor) {
+    private CouchbaseLockProvider(CouchbaseAccessor couchbaseAccessor) {
         super(couchbaseAccessor);
     }
 

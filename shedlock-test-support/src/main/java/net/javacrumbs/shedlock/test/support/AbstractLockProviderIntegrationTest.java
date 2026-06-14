@@ -40,6 +40,10 @@ public abstract class AbstractLockProviderIntegrationTest {
 
     @Test
     public void shouldCreateLock() {
+        assertSimpleLock();
+    }
+
+    protected void assertSimpleLock() {
         Optional<SimpleLock> lock = getLockProvider().lock(lockConfig(LOCK_NAME1));
         assertThat(lock).isNotEmpty();
 

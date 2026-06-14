@@ -40,7 +40,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class ArangoLockProviderIntegrationTest extends AbstractLockProviderIntegrationTest {
     @Container
-    static final ArangoContainer arangoContainer = new ArangoContainer();
+    private static final ArangoContainer arangoContainer = new ArangoContainer();
 
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
@@ -48,7 +48,7 @@ public class ArangoLockProviderIntegrationTest extends AbstractLockProviderInteg
     private static final int DB_PORT = 8529;
 
     private static final String DB_NAME = "arangodb";
-    private static final String ARANGO_IMAGE = "arangodb/arangodb:3.7.2";
+    private static final String ARANGO_IMAGE = "arangodb/arangodb:3.12";
 
     private static ArangoDB arango;
     private static ArangoDatabase arangoDatabase;
