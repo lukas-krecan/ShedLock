@@ -139,6 +139,7 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         if: ${{ always() && ((github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
         with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/site/allure-maven-plugin
 
   deploy-allure:
@@ -152,3 +153,5 @@ jobs:
       - name: Deploy Allure report to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
