@@ -89,9 +89,9 @@ jobs:
       - name: Configure GitHub Pages
         id: pages
         uses: actions/configure-pages@v6
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: ${{ always() && ((github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
       - name: Restore Allure history
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: ${{ always() && ((github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
         run: |
@@ -137,12 +137,12 @@ jobs:
           path: target/site/allure-maven-plugin
       - name: Upload Allure report for GitHub Pages
         uses: actions/upload-pages-artifact@v5
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: ${{ always() && ((github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
         with:
           path: target/site/allure-maven-plugin
 
   deploy-allure:
-    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: ${{ always() && ((github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')) }}
     needs: build
     runs-on: ubuntu-latest
     environment:
