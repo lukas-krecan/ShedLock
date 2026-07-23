@@ -136,7 +136,7 @@ jobs:
           name: allure-report-java-${{ matrix.java }}
           path: target/site/allure-maven-plugin
       - name: Upload Allure report for GitHub Pages
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           path: target/site/allure-maven-plugin
