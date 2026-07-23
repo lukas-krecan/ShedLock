@@ -151,4 +151,4 @@ jobs:
     steps:
       - name: Deploy Allure report to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
