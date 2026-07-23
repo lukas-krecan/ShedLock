@@ -130,7 +130,7 @@ jobs:
             cp .allure/history/report/history.jsonl target/site/allure-maven-plugin/allure-history/history/report/history.jsonl
           fi
       - name: Upload Allure report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: allure-report-java-${{ matrix.java }}
