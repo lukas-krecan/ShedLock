@@ -93,7 +93,7 @@
         <slf4j.ver>2.0.18</slf4j.ver>
         <fork.count>1</fork.count>
         <surefire.version>3.5.6</surefire.version>
-        <allure.version>2.35.3</allure.version>
+        <allure.version>2.35.4</allure.version>
         <allure.maven.version>3.0.2</allure.maven.version>
         <allure.report.version>3.4.1</allure.report.version>
     </properties>
