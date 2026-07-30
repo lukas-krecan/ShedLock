@@ -37,13 +37,21 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
-      - name: Cache Maven packages
+      - name: Cache Maven dependencies
         uses: actions/cache@v6
         with:
-          path: ~/.m2
-          key: maven-${{ hashFiles('**/pom.xml') }}
+          path: ~/.m2/repository
+          key: maven-repository-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            maven-
+            maven-repository-${{ runner.os }}-
+      - name: Restore Maven build cache
+        id: maven-build-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.m2/build-cache
+          key: maven-build-cache-${{ runner.os }}-java-${{ matrix.java }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            maven-build-cache-${{ runner.os }}-java-${{ matrix.java }}-
       - name: Aggressive cleanup
         run: |
           # Remove .NET SDKs
@@ -79,6 +87,11 @@ jobs:
           # Kotlin needs access to java.util
           MAVEN_OPTS: --add-opens java.base/java.util=ALL-UNNAMED
         run:  ./mvnw -e -Perror-prone,allure -Dmaven.build.cache.enabled=true validate test package
+      - name: Save Maven build cache
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.m2/build-cache
+          key: maven-build-cache-${{ runner.os }}-java-${{ matrix.java }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v6
         if: always() # always run even if the previous step fails
