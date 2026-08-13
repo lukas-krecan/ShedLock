@@ -2,12 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
-
     <developers>
         <developer>
             <id>lukas</id>
@@ -19,6 +13,8 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <name>ShedLock</name>
+    <description>Distributed lock for scheduled tasks.</description>
+    <url>https://github.com/lukas-krecan/ShedLock</url>
     <packaging>pom</packaging>
     <version>7.7.1-SNAPSHOT</version>
     <modules>
@@ -104,7 +100,7 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>3.3.1</version>
-                    <configuration combine.self="override">
+                    <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
                         <useReleaseProfile>false</useReleaseProfile>
                         <arguments>-DperformRelease=true</arguments>
