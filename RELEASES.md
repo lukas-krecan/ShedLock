@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.8.0 (2026-08-13)
+* Fix S3LockProvider 409 Conflict handling #3662
+* Dependency updates
+
 ## 7.7.0 (2026-03-17)
 * Support for Micrometer metrics (thanks @josipmusa)
 * Dependency updates
