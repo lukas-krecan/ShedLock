@@ -16,7 +16,7 @@
     <description>Distributed lock for scheduled tasks.</description>
     <url>https://github.com/lukas-krecan/ShedLock</url>
     <packaging>pom</packaging>
-    <version>7.8.0</version>
+    <version>7.8.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
@@ -452,6 +452,6 @@
         <connection>scm:git:git@github.com:lukas-krecan/ShedLock.git</connection>
         <developerConnection>scm:git:git@github.com:lukas-krecan/ShedLock.git</developerConnection>
         <url>scm:git:git@github.com:lukas-krecan/ShedLock.git</url>
-      <tag>shedlock-parent-7.8.0</tag>
+      <tag>HEAD</tag>
   </scm>
 </project>
