@@ -20,7 +20,7 @@
     <artifactId>shedlock-parent</artifactId>
     <name>ShedLock</name>
     <packaging>pom</packaging>
-    <version>7.8.1-SNAPSHOT</version>
+    <version>7.7.1-SNAPSHOT</version>
     <modules>
         <module>shedlock-bom</module>
         <module>shedlock-core</module>
@@ -100,15 +100,6 @@
         <pluginManagement>
             <plugins>
                 <!-- Default binding plugins -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>3.3.1</version>
-                    <configuration combine.self="override">
-                        <mavenExecutorId>forked-path</mavenExecutorId>
-                        <useReleaseProfile>false</useReleaseProfile>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -248,7 +239,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.12.0</version>
                 <configuration>
                     <doclint>all,-missing</doclint>
                 </configuration>
@@ -367,7 +357,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -455,6 +444,5 @@
         <connection>scm:git:git@github.com:lukas-krecan/ShedLock.git</connection>
         <developerConnection>scm:git:git@github.com:lukas-krecan/ShedLock.git</developerConnection>
         <url>scm:git:git@github.com:lukas-krecan/ShedLock.git</url>
-      <tag>HEAD</tag>
-  </scm>
+    </scm>
 </project>
