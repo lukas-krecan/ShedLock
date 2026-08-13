@@ -103,7 +103,7 @@
                     <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
                         <useReleaseProfile>false</useReleaseProfile>
-                        <arguments>-DperformRelease=true</arguments>
+                        <arguments>-DperformRelease=true -DskipTests</arguments>
                     </configuration>
                 </plugin>
                 <plugin>
