@@ -5,6 +5,7 @@ target/
 .project
 .settings/
 .gradle/
+.allure/
 build/
 .attach_pid*
 micronaut/micronaut-test/dependency-reduced-pom.xml
