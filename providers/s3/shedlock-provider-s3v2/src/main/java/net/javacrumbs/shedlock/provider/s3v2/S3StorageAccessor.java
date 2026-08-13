@@ -30,6 +30,7 @@ class S3StorageAccessor extends AbstractStorageAccessor {
     private static final String LOCKED_AT = "locked-at";
     private static final String LOCKED_BY = "locked-by";
     private static final int PRECONDITION_FAILED = 412;
+    private static final int CONFLICT = 409;
 
     private final S3Client s3Client;
     private final String bucketName;
@@ -88,11 +89,16 @@ class S3StorageAccessor extends AbstractStorageAccessor {
             logger.debug("Lock created successfully. name: {}, metadata: {}", name, metadata);
             return true;
         } catch (AwsServiceException e) {
-            if (e.statusCode() == PRECONDITION_FAILED) {
-                logger.debug("Lock already in use. name: {}", name);
-                return false;
-            } else {
-                logger.warn("Failed to create lock. name: {}", name, e);
+            switch (e.statusCode()) {
+                case PRECONDITION_FAILED -> {
+                    logger.debug("Lock already in use. name: {}", name);
+                    return false;
+                }
+                case CONFLICT -> {
+                    logger.debug("Lock conflict. name: {}", name);
+                    return false;
+                }
+                default -> logger.warn("Failed to create lock. name: {}", name, e);
             }
             throw new LockException(e);
         }
@@ -176,12 +182,19 @@ class S3StorageAccessor extends AbstractStorageAccessor {
                     response.eTag());
             return true;
         } catch (AwsServiceException e) {
-            if (e.statusCode() == PRECONDITION_FAILED) {
-                logger.debug("Lock not exists to {}. name: {}, e-tag {}", action, name, eTag);
-                return false;
-            } else {
-                logger.warn("Failed to {} lock. name: {}", action, name, e);
-                throw new LockException(e);
+            switch (e.statusCode()) {
+                case PRECONDITION_FAILED -> {
+                    logger.debug("Lock not exists to {}. name: {}, e-tag {}", action, name, eTag);
+                    return false;
+                }
+                case CONFLICT -> {
+                    logger.debug("Lock conflict for {}. name: {}, e-tag {}", action, name, eTag);
+                    return false;
+                }
+                default -> {
+                    logger.warn("Failed to {} lock. name: {}", action, name, e);
+                    throw new LockException(e);
+                }
             }
         }
     }
