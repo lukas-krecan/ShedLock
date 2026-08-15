@@ -13,8 +13,13 @@
  */
 package net.javacrumbs.shedlock.provider.jooq;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.NewTransactionRunner;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.jdbc.AbstractJdbcLockProviderIntegrationTest;
 import net.javacrumbs.shedlock.test.support.jdbc.DbConfig;
@@ -22,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(PER_CLASS)
@@ -43,6 +49,21 @@ public abstract class AbstractJooqLockProviderIntegrationTest extends AbstractJd
     @Override
     protected StorageBasedLockProvider getLockProvider() {
         return new JooqLockProvider(dslContext);
+    }
+
+    @Test
+    public void shouldUseNewTransactionRunner() {
+        AtomicInteger transactionCount = new AtomicInteger();
+        NewTransactionRunner transactionRunner = callback -> {
+            transactionCount.incrementAndGet();
+            return callback.execute();
+        };
+
+        Optional<SimpleLock> lock = new JooqLockProvider(dslContext, transactionRunner).lock(lockConfig(LOCK_NAME1));
+
+        assertThat(lock).isNotEmpty();
+        lock.get().unlock();
+        assertThat(transactionCount).hasValue(2);
     }
 
     @Override

@@ -13,11 +13,16 @@
  */
 package net.javacrumbs.shedlock.provider.jooq;
 
+import net.javacrumbs.shedlock.support.NewTransactionRunner;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.jooq.DSLContext;
 
 public class JooqLockProvider extends StorageBasedLockProvider {
     public JooqLockProvider(DSLContext dslContext) {
         super(new JooqStorageAccessor(dslContext));
+    }
+
+    public JooqLockProvider(DSLContext dslContext, NewTransactionRunner newTransactionRunner) {
+        super(new JooqStorageAccessor(dslContext, newTransactionRunner));
     }
 }

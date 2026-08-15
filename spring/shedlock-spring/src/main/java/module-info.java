@@ -11,6 +11,7 @@ module net.javacrumbs.shedlock.spring {
     requires spring.beans;
     requires spring.aop;
     requires spring.expression;
+    requires static spring.tx;
 
     exports net.javacrumbs.shedlock.spring;
     exports net.javacrumbs.shedlock.spring.annotation;
