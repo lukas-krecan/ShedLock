@@ -117,6 +117,21 @@
                                 <artifactId>micronaut-validation</artifactId>
                                 <version>${micronaut4.validation.version}</version>
                             </path>
+                            <path>
+                                <groupId>org.ow2.asm</groupId>
+                                <artifactId>asm</artifactId>
+                                <version>${micronaut-sourcegen-asm.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.ow2.asm</groupId>
+                                <artifactId>asm-commons</artifactId>
+                                <version>${micronaut-sourcegen-asm.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.ow2.asm</groupId>
+                                <artifactId>asm-util</artifactId>
+                                <version>${micronaut-sourcegen-asm.version}</version>
+                            </path>
                         </annotationProcessorPaths>
                     </configuration>
                     <executions>
@@ -139,6 +154,21 @@
                                         <groupId>io.micronaut.validation</groupId>
                                         <artifactId>micronaut-validation</artifactId>
                                         <version>${micronaut4.validation.version}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm</artifactId>
+                                        <version>${micronaut-sourcegen-asm.version}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm-commons</artifactId>
+                                        <version>${micronaut-sourcegen-asm.version}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm-util</artifactId>
+                                        <version>${micronaut-sourcegen-asm.version}</version>
                                     </path>
                                 </annotationProcessorPaths>
                             </configuration>
