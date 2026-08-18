@@ -1,5 +1,6 @@
 package net.javacrumbs.shedlock.provider.jooq;
 
+import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.provider.jooq.Shedlock.SHEDLOCK;
 import static org.jooq.impl.DSL.currentLocalDateTime;
 import static org.jooq.impl.DSL.inline;
@@ -13,6 +14,8 @@ import java.util.Map;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.support.NewTransactionRunner;
+import net.javacrumbs.shedlock.support.NewTransactionRunner.TransactionCallback;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -22,10 +25,16 @@ import org.jooq.types.DayToSecond;
 
 class JooqStorageAccessor extends AbstractStorageAccessor {
     private final DSLContext dslContext;
+    private final NewTransactionRunner newTransactionRunner;
     private final Shedlock t = SHEDLOCK;
 
     JooqStorageAccessor(DSLContext dslContext) {
-        this.dslContext = dslContext;
+        this(dslContext, TransactionCallback::execute);
+    }
+
+    JooqStorageAccessor(DSLContext dslContext, NewTransactionRunner newTransactionRunner) {
+        this.dslContext = requireNonNull(dslContext, "dslContext can not be null");
+        this.newTransactionRunner = requireNonNull(newTransactionRunner, "newTransactionRunner can not be null");
     }
 
     @Override
@@ -75,8 +84,12 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
 
     private <T> T runInTransaction(TransactionalCallable<T> txCallable) {
         try {
-            return dslContext.transactionResult(txCallable);
+            @SuppressWarnings("unchecked")
+            T result = (T) newTransactionRunner.runInNewTransaction(() -> dslContext.transactionResult(txCallable));
+            return result;
         } catch (Exception e) {
+            throw new LockException(e);
+        } catch (Throwable e) {
             throw new LockException(e);
         }
     }

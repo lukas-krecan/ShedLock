@@ -25,7 +25,7 @@ import org.jetbrains.exposed.v1.core.vendors.currentDialect
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.insert
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.inTopLevelTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.upsert
 
@@ -34,7 +34,7 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
     private val now: Expression<LocalDateTime> = CurrentTimestampExact
 
     override fun insertRecord(lockConfiguration: LockConfiguration): Boolean =
-        transaction(database) {
+        inTopLevelTransaction(database) {
             try {
                 if (database.dialect is PostgreSQLDialect) {
                     Shedlock.upsert(
@@ -84,7 +84,7 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
     }
 
     override fun updateRecord(lockConfiguration: LockConfiguration): Boolean =
-        transaction(database) {
+        inTopLevelTransaction(database) {
             try {
                 Shedlock.update({ (name eq lockConfiguration.name) and (lockUntil lessEq now) }) {
                     it[lockUntil] = nowPlus(lockConfiguration.lockAtMostFor)
@@ -97,7 +97,7 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
         }
 
     override fun unlock(lockConfiguration: LockConfiguration) {
-        transaction(database) {
+        inTopLevelTransaction(database) {
             try {
                 val lockAtLeastUntil = Shedlock.lockedAt.plus(lockConfiguration.lockAtLeastFor)
 
@@ -111,7 +111,7 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
     }
 
     override fun extend(lockConfiguration: LockConfiguration): Boolean =
-        transaction(database) {
+        inTopLevelTransaction(database) {
             try {
                 Shedlock.update({
                     (name eq lockConfiguration.name) and (lockedBy eq hostname) and (lockUntil greater now)
