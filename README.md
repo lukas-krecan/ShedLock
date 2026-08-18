@@ -283,10 +283,23 @@ public LockProvider getLockProvider(DSLContext dslContext) {
 }
 ```
 
-jOOQ provider has a bit different transactional behavior. While the other JDBC lock providers
-create new transaction (with REQUIRES_NEW), jOOQ [does not support setting it](https://github.com/jOOQ/jOOQ/issues/4836).
-ShedLock tries to create a new transaction, but depending on your set-up, ShedLock DB operations may
-end-up being part of the enclosing transaction.
+jOOQ provider has a bit different transactional behavior. If your `DSLContext` participates in Spring transactions,
+ShedLock DB operations may become part of the enclosing transaction. In that case, use `SpringNewTransactionRunner`
+to run ShedLock DB operations in a separate `PROPAGATION_REQUIRES_NEW` transaction.
+
+```java
+import net.javacrumbs.shedlock.spring.SpringNewTransactionRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+
+...
+@Bean
+public LockProvider getLockProvider(DSLContext dslContext, PlatformTransactionManager transactionManager) {
+    return new JooqLockProvider(dslContext, new SpringNewTransactionRunner(transactionManager));
+}
+```
+
+If you are not using Spring, you can use the two-argument constructor with your own
+`net.javacrumbs.shedlock.support.NewTransactionRunner` implementation.
 
 If you need to configure the table name, schema or column names, you can use jOOQ render mapping as
 described [here](https://github.com/lukas-krecan/ShedLock/issues/1830#issuecomment-2015820509).
