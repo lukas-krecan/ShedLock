@@ -1,5 +1,10 @@
 # Release notes
 
+## 7.9.0 (2026-08-18)
+* Introduce NewTransactionRunner for jOOQ provider to solve #3577 in case when a transaction is active
+* Improve transaction handling in Exposed when lock wrapped in a transaction
+* Dependency updates
+
 ## 7.8.0 (2026-08-13)
 * Fix S3LockProvider 409 Conflict handling #3662
 * Dependency updates
