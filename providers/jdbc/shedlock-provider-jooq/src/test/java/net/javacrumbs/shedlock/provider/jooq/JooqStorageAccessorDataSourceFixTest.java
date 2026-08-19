@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Connection;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.test.support.jdbc.PostgresConfig;
 import org.jooq.DSLContext;
@@ -57,7 +58,7 @@ class JooqStorageAccessorDataSourceFixTest {
             DSLContext callerDsl = DSL.using(callerConn, SQLDialect.POSTGRES);
             JooqStorageAccessor accessor = new JooqStorageAccessor(callerDsl, dbConfig.getDataSource());
 
-            LocalDateTime realNow = LocalDateTime.now();
+            LocalDateTime realNow = LocalDateTime.now(ZoneId.systemDefault());
             boolean acquired = accessor.insertRecord(
                     new LockConfiguration(java.time.Instant.now(), "fix-lock", Duration.ofMinutes(5), Duration.ZERO));
             assertThat(acquired).isTrue();

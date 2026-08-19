@@ -100,8 +100,9 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
     }
 
     private <T> T runInTransaction(TransactionalCallable<T> txCallable) {
-        if (dataSource != null) {
-            return runOnIndependentConnection(txCallable);
+        DataSource ds = dataSource;
+        if (ds != null) {
+            return runOnIndependentConnection(ds, txCallable);
         }
         try {
             @SuppressWarnings("unchecked")
@@ -121,7 +122,7 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
      * {@link Connection} that may already have an ambient transaction (and other, unrelated
      * caller work) pending on it.
      */
-    private <T> T runOnIndependentConnection(TransactionalCallable<T> txCallable) {
+    private <T> T runOnIndependentConnection(DataSource dataSource, TransactionalCallable<T> txCallable) {
         try (Connection connection = dataSource.getConnection()) {
             boolean originalAutoCommit = connection.getAutoCommit();
             if (!originalAutoCommit) {
