@@ -13,6 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.jooq;
 
+import javax.sql.DataSource;
 import net.javacrumbs.shedlock.support.NewTransactionRunner;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.jooq.DSLContext;
@@ -24,5 +25,21 @@ public class JooqLockProvider extends StorageBasedLockProvider {
 
     public JooqLockProvider(DSLContext dslContext, NewTransactionRunner newTransactionRunner) {
         super(new JooqStorageAccessor(dslContext, newTransactionRunner));
+    }
+
+    /**
+     * Like {@link #JooqLockProvider(DSLContext)}, but every lock operation runs on a fresh
+     * connection obtained directly from {@code dataSource}, instead of whatever connection {@code
+     * dslContext} happens to be using. Unlike {@link #JooqLockProvider(DSLContext,
+     * NewTransactionRunner)}, this works even when {@code dslContext} is bound directly to a raw
+     * {@link java.sql.Connection} that may already have an ambient transaction open (e.g. {@code
+     * DSL.using(connection, dialect)}) - a construction {@code NewTransactionRunner} cannot help
+     * with, since it has no independent connection to switch to. Use this constructor if {@code
+     * dslContext} may be bound to a connection that is shared with, or participates in, a
+     * transaction the calling code manages itself, and {@code dslContext} isn't guaranteed to be
+     * Spring-transaction-aware.
+     */
+    public JooqLockProvider(DSLContext dslContext, DataSource dataSource) {
+        super(new JooqStorageAccessor(dslContext, dataSource));
     }
 }
