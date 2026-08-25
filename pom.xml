@@ -282,7 +282,7 @@
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs</artifactId>
-                        <version>4.10.3</version>
+                        <version>4.10.4</version>
                     </dependency>
                 </dependencies>
             </plugin>
