@@ -30,7 +30,16 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
+      - name: Restore Maven packages
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.m2
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-
       - name: Cache Maven packages
+        if: github.event_name != 'pull_request'
         uses: actions/cache@v6
         with:
           path: ~/.m2
