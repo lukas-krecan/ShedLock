@@ -301,6 +301,20 @@ public LockProvider getLockProvider(DSLContext dslContext, PlatformTransactionMa
 If you are not using Spring, you can use the two-argument constructor with your own
 `net.javacrumbs.shedlock.support.NewTransactionRunner` implementation.
 
+If your `DSLContext` is bound directly to a caller-managed `Connection`, configure a datasource-backed
+`JooqTransactionRunner` so ShedLock can run lock operations on a separate connection without committing the caller's
+pending transaction.
+
+```java
+import net.javacrumbs.shedlock.provider.jooq.JooqTransactionRunner;
+
+...
+@Bean
+public LockProvider getLockProvider(DSLContext dslContext, DataSource dataSource) {
+    return new JooqLockProvider(dslContext, JooqTransactionRunner.usingDataSource(dataSource));
+}
+```
+
 If you need to configure the table name, schema or column names, you can use jOOQ render mapping as
 described [here](https://github.com/lukas-krecan/ShedLock/issues/1830#issuecomment-2015820509).
 

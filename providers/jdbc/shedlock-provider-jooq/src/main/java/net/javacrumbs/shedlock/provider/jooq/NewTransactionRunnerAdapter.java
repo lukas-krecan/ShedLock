@@ -13,20 +13,21 @@
  */
 package net.javacrumbs.shedlock.provider.jooq;
 
+import static java.util.Objects.requireNonNull;
+
 import net.javacrumbs.shedlock.support.NewTransactionRunner;
-import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.jooq.DSLContext;
+import org.jooq.TransactionalCallable;
 
-public class JooqLockProvider extends StorageBasedLockProvider {
-    public JooqLockProvider(DSLContext dslContext) {
-        this(dslContext, DSLContext::transactionResult);
+final class NewTransactionRunnerAdapter implements JooqTransactionRunner {
+    private final NewTransactionRunner newTransactionRunner;
+
+    NewTransactionRunnerAdapter(NewTransactionRunner newTransactionRunner) {
+        this.newTransactionRunner = requireNonNull(newTransactionRunner, "newTransactionRunner can not be null");
     }
 
-    public JooqLockProvider(DSLContext dslContext, NewTransactionRunner newTransactionRunner) {
-        super(new JooqStorageAccessor(dslContext, JooqTransactionRunner.with(newTransactionRunner)));
-    }
-
-    public JooqLockProvider(DSLContext dslContext, JooqTransactionRunner transactionRunner) {
-        super(new JooqStorageAccessor(dslContext, transactionRunner));
+    @Override
+    public Object runInTransaction(DSLContext dslContext, TransactionalCallable<?> txCallable) throws Throwable {
+        return newTransactionRunner.runInNewTransaction(() -> dslContext.transactionResult(txCallable));
     }
 }

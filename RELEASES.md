@@ -1,5 +1,8 @@
 # Release notes
 
+## 7.9.1 (not-released-yet)
+* Add datasource-backed transaction runner for jOOQ provider to avoid committing caller-managed raw connection transactions
+
 ## 7.9.0 (2026-08-18)
 * Introduce NewTransactionRunner for jOOQ provider to solve #3577 in case when a transaction is active
 * Improve transaction handling in Exposed when lock wrapped in a transaction
