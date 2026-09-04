@@ -66,6 +66,21 @@ public abstract class AbstractJooqLockProviderIntegrationTest extends AbstractJd
         assertThat(transactionCount).hasValue(2);
     }
 
+    @Test
+    public void shouldUseJooqTransactionRunner() {
+        AtomicInteger transactionCount = new AtomicInteger();
+        JooqTransactionRunner transactionRunner = (context, callback) -> {
+            transactionCount.incrementAndGet();
+            return context.transactionResult(callback);
+        };
+
+        Optional<SimpleLock> lock = new JooqLockProvider(dslContext, transactionRunner).lock(lockConfig(LOCK_NAME1));
+
+        assertThat(lock).isNotEmpty();
+        lock.get().unlock();
+        assertThat(transactionCount).hasValue(2);
+    }
+
     @Override
     protected boolean useDbTime() {
         return true;
