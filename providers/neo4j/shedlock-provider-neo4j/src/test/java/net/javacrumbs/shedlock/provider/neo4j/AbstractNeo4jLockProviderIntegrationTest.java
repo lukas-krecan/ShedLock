@@ -18,8 +18,10 @@ import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +52,7 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
 
     @AfterEach
     public void cleanup() {
+        ClockProvider.setClock(Clock.systemUTC());
         getNeo4jTestUtils().clean();
     }
 
@@ -119,6 +122,38 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
     @Test
     void shouldNotUpdateOnInsertIfPreviousDidNotEndWhenUsingDbTime() {
         shouldNotUpdateOnInsertIfPreviousDidNotEnd();
+    }
+
+    @Test
+    void shouldNotExtendExpiredLockAtExactSecondBoundary() {
+        ClockProvider.setClock(Clock.fixed(Instant.parse("2026-09-08T16:16:22.998Z"), ZoneOffset.UTC));
+        var lock = getLockProvider().lock(new LockConfiguration(now(), MY_LOCK, Duration.ofMillis(2), Duration.ZERO));
+
+        assertThat(lock).isNotEmpty();
+
+        ClockProvider.setClock(Clock.fixed(Instant.parse("2026-09-08T16:16:23.002Z"), ZoneOffset.UTC));
+        var extendedLock = lock.get().extend(Duration.ofSeconds(10), Duration.ZERO);
+
+        assertThat(extendedLock).isEmpty();
+    }
+
+    @Test
+    void shouldLockAfterUnlockAtExactSecondBoundary() {
+        ClockProvider.setClock(Clock.fixed(Instant.parse("2026-09-08T16:16:22.998Z"), ZoneOffset.UTC));
+        var lock = getLockProvider()
+                .lock(new LockConfiguration(now(), MY_LOCK, Duration.ofSeconds(10), Duration.ofMillis(2)));
+
+        assertThat(lock).isNotEmpty();
+
+        ClockProvider.setClock(Clock.fixed(Instant.parse("2026-09-08T16:16:23.000Z"), ZoneOffset.UTC));
+        lock.get().unlock();
+
+        ClockProvider.setClock(Clock.fixed(Instant.parse("2026-09-08T16:16:23.002Z"), ZoneOffset.UTC));
+        var nextLock =
+                getLockProvider().lock(new LockConfiguration(now(), MY_LOCK, Duration.ofSeconds(10), Duration.ZERO));
+
+        assertThat(nextLock).isNotEmpty();
+        nextLock.get().unlock();
     }
 
     private void shouldNotUpdateOnInsertIfPreviousDidNotEnd() {

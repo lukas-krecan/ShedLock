@@ -14,6 +14,7 @@
 package net.javacrumbs.shedlock.provider.neo4j;
 
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
 
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -76,9 +77,9 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
                 "lockedBy",
                 getHostname(),
                 "now",
-                ClockProvider.now().toString(),
+                toIsoString(ClockProvider.now()),
                 "lockUntil",
-                lockConfiguration.getLockAtMostUntil().toString());
+                toIsoString(lockConfiguration.getLockAtMostUntil()));
     }
 
     @Override
@@ -129,10 +130,7 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
                 "CYPHER runtime = slotted MATCH (lock:%s) WHERE lock.name = $lockName SET lock.lock_until = $lockUntil",
                 collectionName);
         Map<String, Object> parameters = Map.of(
-                "lockName",
-                lockConfiguration.getName(),
-                "lockUntil",
-                lockConfiguration.getUnlockTime().toString());
+                "lockName", lockConfiguration.getName(), "lockUntil", toIsoString(lockConfiguration.getUnlockTime()));
         executeCommand(cypher, statement -> 0, parameters, this::handleUnlockException);
     }
 
