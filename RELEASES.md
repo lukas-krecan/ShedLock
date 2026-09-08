@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.10.1 (2026-09-08)
+* Fix Neo4j ordering for lock extension #3739
+* Dependency updates
+
 ## 7.10.0 (2026-09-04)
 * Add datasource-backed transaction runner for jOOQ provider #3683
 * Dependency updates
