@@ -30,22 +30,42 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'zulu'
-      - name: Restore Maven packages
+      - name: Restore Maven dependencies
         if: github.event_name == 'pull_request'
         uses: actions/cache/restore@v6
         with:
-          path: ~/.m2
-          key: maven-${{ hashFiles('**/pom.xml') }}
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-repository-${{ runner.os }}-jdk-${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            maven-
-      - name: Cache Maven packages
+            maven-repository-${{ runner.os }}-jdk-${{ matrix.java }}-
+      - name: Cache Maven dependencies
         if: github.event_name != 'pull_request'
         uses: actions/cache@v6
         with:
-          path: ~/.m2
-          key: maven-${{ hashFiles('**/pom.xml') }}
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-repository-${{ runner.os }}-jdk-${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            maven-
+            maven-repository-${{ runner.os }}-jdk-${{ matrix.java }}-
+      - name: Restore Maven build cache
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.m2/build-cache
+          key: maven-build-${{ runner.os }}-jdk-${{ matrix.java }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            maven-build-${{ runner.os }}-jdk-${{ matrix.java }}-
+      - name: Cache Maven build cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/build-cache
+          key: maven-build-${{ runner.os }}-jdk-${{ matrix.java }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            maven-build-${{ runner.os }}-jdk-${{ matrix.java }}-
       - name: Aggressive cleanup
         run: |
           # Remove .NET SDKs
