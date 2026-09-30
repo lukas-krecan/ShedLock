@@ -88,7 +88,7 @@
         <logback.ver>1.6.4</logback.ver>
         <awaitility.ver>4.3.0</awaitility.ver>
         <assertj.ver>3.27.7</assertj.ver>
-        <mockito.ver>5.23.0</mockito.ver>
+        <mockito.ver>5.24.0</mockito.ver>
         <slf4j.ver>2.0.20</slf4j.ver>
         <fork.count>1</fork.count>
         <surefire.version>3.6.0</surefire.version>
