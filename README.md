@@ -230,6 +230,13 @@ If you need to specify a schema, you can set it in the table name using the usua
 To use a database with case-sensitive table and column names, the `.withDbUpperCase(true)` flag can be used.
 Default is `false` (lowercase).
 
+#### Transactions
+JdbcTemplateLock provider is by default trying to run lock operations in a new transaction.
+If you are using a nonstandard transaction manager (for example with Hibernate) you have to
+specify it explicitly using `withTransactionManager` method.
+
+```java
+
 
 #### Warning
 **Do not manually delete lock row from the DB table.** ShedLock has an in-memory cache of existing lock rows
