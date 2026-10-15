@@ -113,9 +113,11 @@ internal class ExposedStorageAccessor(private val database: Database) : Abstract
     override fun extend(lockConfiguration: LockConfiguration): Boolean =
         inTopLevelTransaction(database) {
             try {
-                Shedlock.update({
-                    (name eq lockConfiguration.name) and (lockedBy eq hostname) and (lockUntil greater now)
-                }) {
+                Shedlock.update(
+                    {
+                        (name eq lockConfiguration.name) and (lockedBy eq hostname) and (lockUntil greater now)
+                    },
+                ) {
                     it[lockUntil] = nowPlus(lockConfiguration.lockAtMostFor)
                 } > 0
             } catch (e: Exception) {

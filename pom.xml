@@ -191,7 +191,7 @@
                 <artifactId>spotless-maven-plugin</artifactId>
                 <configuration>
                     <java>
-                        <palantirJavaFormat><version>2.74.0</version></palantirJavaFormat>
+                        <palantirJavaFormat><version>2.102.0</version></palantirJavaFormat>
                         <removeUnusedImports />
                     </java>
                     <kotlin>
