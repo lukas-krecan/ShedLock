@@ -163,5 +163,8 @@ class DatastoreStorageAccessor extends AbstractStorageAccessor {
     }
 
     public record Lock(
-            String name, @Nullable Instant lockedAt, @Nullable Instant lockedUntil, @Nullable String lockedBy) {}
+            String name,
+            @Nullable Instant lockedAt,
+            @Nullable Instant lockedUntil,
+            @Nullable String lockedBy) {}
 }

@@ -45,9 +45,7 @@ public class Application {
         datasource.setUsername("SA");
         datasource.setPassword("");
 
-        new JdbcTemplate(datasource)
-                .execute(
-                        """
+        new JdbcTemplate(datasource).execute("""
 				CREATE TABLE shedlock(
 				    name VARCHAR(64),\s
 				    lock_until TIMESTAMP(3) NULL,\s

@@ -99,8 +99,7 @@ public class ElasticsearchLockProvider implements LockProvider {
      * a field name mismatch (e.g., using SNAKE_CASE config on data with camelCase fields)
      * without proper data migration.
      */
-    private static final String LOCK_SCRIPT =
-            """
+    private static final String LOCK_SCRIPT = """
             def v = ctx._source[params.lockUntilField];
             if (!(v instanceof Number)) {
                 throw new IllegalStateException("Field '" + params.lockUntilField + "' is missing or not a Number. " +
