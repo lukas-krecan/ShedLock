@@ -13,6 +13,7 @@ import java.util.Map;
 import net.javacrumbs.shedlock.core.ClockProvider;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import net.javacrumbs.shedlock.test.support.AbstractStorageBasedLockProviderIntegrationTest;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +79,7 @@ public class GcsLockProviderIntegrationTest extends AbstractStorageBasedLockProv
 
     private GcsLock findLock(String lockName) {
         var blob = storage.get(BUCKET_NAME, lockName);
-        Map<String, String> metadata = blob.getMetadata();
+        Map<String, @Nullable String> metadata = blob.getMetadata();
         return new GcsLock(
                 Instant.parse(requireNonNull(metadata.get("lockUntil"))),
                 Instant.parse(requireNonNull(metadata.get("lockedAt"))),

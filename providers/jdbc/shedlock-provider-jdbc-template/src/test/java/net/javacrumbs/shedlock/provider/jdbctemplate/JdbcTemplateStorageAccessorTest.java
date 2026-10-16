@@ -26,7 +26,6 @@ import java.time.Duration;
 import javax.sql.DataSource;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.LockException;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -67,7 +66,6 @@ class JdbcTemplateStorageAccessorTest {
                 .isInstanceOf(LockException.class);
     }
 
-    @NotNull
     private JdbcTemplateStorageAccessor createJdbcTemplateStorageAccessor(Exception exception) {
         JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
         when(jdbcTemplate.getDataSource()).thenReturn(dataSource);

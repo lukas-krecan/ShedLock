@@ -115,7 +115,6 @@ class JdbcTemplateStorageAccessor extends AbstractStorageAccessor {
         execute(sql, lockConfiguration);
     }
 
-    @SuppressWarnings("ConstantConditions")
     private boolean execute(String sql, LockConfiguration lockConfiguration) throws TransactionException {
         return transactionTemplate.execute(status -> jdbcTemplate.update(sql, params(lockConfiguration)) > 0);
     }
