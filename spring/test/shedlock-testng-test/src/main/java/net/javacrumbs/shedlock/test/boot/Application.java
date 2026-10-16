@@ -46,13 +46,14 @@ public class Application {
         datasource.setPassword("");
 
         new JdbcTemplate(datasource).execute("""
-				CREATE TABLE shedlock(
-				    name VARCHAR(64),\s
-				    lock_until TIMESTAMP(3) NULL,\s
-				    locked_at TIMESTAMP(3) NULL,\s
-				    locked_by  VARCHAR(255),\s
-				    PRIMARY KEY (name)
-				)""");
+            CREATE TABLE shedlock(
+                name VARCHAR(64),\s
+                lock_until TIMESTAMP(3) NULL,\s
+                locked_at TIMESTAMP(3) NULL,\s
+                locked_by  VARCHAR(255),\s
+                PRIMARY KEY (name)
+            )\
+            """);
         return datasource;
     }
 }

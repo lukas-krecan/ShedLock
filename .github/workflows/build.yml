@@ -87,8 +87,8 @@ jobs:
 
           # Remove PowerShell
           sudo rm -rf /usr/local/share/powershell
-      - name: Run spotless check
-        run: ./mvnw spotless:check
+      - name: Run format check
+        run: ./mvnw dev.openjavaformat:fmt-maven-plugin:check
       - name: Build with Maven
         env:
           # Kotlin needs access to java.util

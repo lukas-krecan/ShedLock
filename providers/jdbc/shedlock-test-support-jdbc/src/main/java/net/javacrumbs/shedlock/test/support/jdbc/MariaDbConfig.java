@@ -25,7 +25,8 @@ public class MariaDbConfig extends AbstractContainerBasedDbConfig<MariaDBContain
 
     @Override
     public String getCreateTableStatement() {
-        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
+        return "CREATE TABLE shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP"
+                + " NOT NULL DEFAULT CURRENT_TIMESTAMP, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))";
     }
 
     @Override

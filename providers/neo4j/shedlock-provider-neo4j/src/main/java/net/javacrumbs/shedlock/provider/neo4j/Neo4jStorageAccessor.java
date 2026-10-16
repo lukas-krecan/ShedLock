@@ -57,7 +57,8 @@ class Neo4jStorageAccessor extends AbstractStorageAccessor {
     public boolean insertRecord(LockConfiguration lockConfiguration) {
         // Try to insert if the record does not exists
         String cypher = String.format(
-                "CYPHER runtime = slotted CREATE (lock:%s {name: $lockName, lock_until: $lockUntil, locked_at: $now, locked_by: $lockedBy })",
+                "CYPHER runtime = slotted CREATE (lock:%s {name: $lockName, lock_until: $lockUntil, locked_at: $now,"
+                        + " locked_by: $lockedBy })",
                 collectionName);
         Map<String, Object> parameters = createParameterMap(lockConfiguration);
         return executeCommand(

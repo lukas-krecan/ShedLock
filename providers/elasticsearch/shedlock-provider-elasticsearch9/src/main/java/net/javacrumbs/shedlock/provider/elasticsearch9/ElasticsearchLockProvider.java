@@ -100,18 +100,19 @@ public class ElasticsearchLockProvider implements LockProvider {
      * without proper data migration.
      */
     private static final String LOCK_SCRIPT = """
-            def v = ctx._source[params.lockUntilField];
-            if (!(v instanceof Number)) {
-                throw new IllegalStateException("Field '" + params.lockUntilField + "' is missing or not a Number. " +
-                    "Possible field name mismatch - check DocumentFieldNames configuration and ensure data migration was performed.");
-            }
-            if (((Number) v).longValue() <= params.now) {
-                ctx._source[params.lockUntilField] = params.lockUntil;
-                ctx._source[params.lockedAtField] = params.now;
-                ctx._source[params.lockedByField] = params.lockedBy;
-            } else {
-                ctx.op = 'none';
-            }""";
+        def v = ctx._source[params.lockUntilField];
+        if (!(v instanceof Number)) {
+            throw new IllegalStateException("Field '" + params.lockUntilField + "' is missing or not a Number. " +
+                "Possible field name mismatch - check DocumentFieldNames configuration and ensure data migration was performed.");
+        }
+        if (((Number) v).longValue() <= params.now) {
+            ctx._source[params.lockUntilField] = params.lockUntil;
+            ctx._source[params.lockedAtField] = params.now;
+            ctx._source[params.lockedByField] = params.lockedBy;
+        } else {
+            ctx.op = 'none';
+        }\
+        """;
 
     /**
      * Unlock script uses same bracket notation pattern as lock script for consistency.

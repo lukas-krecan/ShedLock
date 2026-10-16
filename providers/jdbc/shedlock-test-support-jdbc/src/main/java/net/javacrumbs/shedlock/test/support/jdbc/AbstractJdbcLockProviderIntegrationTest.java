@@ -90,7 +90,8 @@ public abstract class AbstractJdbcLockProviderIntegrationTest extends AbstractSt
     @EnabledIf("failIfKeyNameTooLong")
     public void shouldFailIfKeyNameTooLong() {
         LockConfiguration configuration = lockConfig(
-                "lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+                "lock name that is too long Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod"
+                        + " tempor incididunt ut labore et dolore magna aliqua.");
         assertThatThrownBy(() -> getLockProvider().lock(configuration)).isInstanceOf(LockException.class);
     }
 
