@@ -66,8 +66,8 @@ public final class LockExtender {
 
     public static class NoActiveLockException extends LockExtensionException {
         public NoActiveLockException() {
-            super(
-                    "No active lock in current thread, please make sure that you execute LockExtender.extendActiveLock in locked context.");
+            super("No active lock in current thread, please make sure that you execute LockExtender.extendActiveLock"
+                    + " in locked context.");
         }
     }
 

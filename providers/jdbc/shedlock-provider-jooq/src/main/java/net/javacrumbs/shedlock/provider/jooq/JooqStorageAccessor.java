@@ -81,8 +81,6 @@ class JooqStorageAccessor extends AbstractStorageAccessor {
             @SuppressWarnings("unchecked")
             T result = (T) transactionRunner.runInTransaction(dslContext, txCallable);
             return result;
-        } catch (Exception e) {
-            throw new LockException(e);
         } catch (Throwable e) {
             throw new LockException(e);
         }

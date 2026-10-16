@@ -84,7 +84,8 @@ public abstract class AbstractNeo4jLockProviderIntegrationTest extends AbstractS
         parameters.put("lockedBy", "me");
         getNeo4jTestUtils()
                 .executeTransactionally(
-                        "CREATE (lock:shedlock { name: $name, lock_until: $previousLockTime, locked_at: $previousLockTime, locked_by: $lockedBy })",
+                        "CREATE (lock:shedlock { name: $name, lock_until: $previousLockTime, locked_at:"
+                                + " $previousLockTime, locked_by: $lockedBy })",
                         parameters,
                         null);
         assertUnlocked(LOCK_NAME1);

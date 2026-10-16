@@ -39,8 +39,8 @@ public class HsqlJdbcTemplateLockProviderIntegrationTest extends AbstractJdbcTem
     public void shouldBeAbleToSetCustomColumnNames() throws SQLException {
         try (Connection conn = dbConfig.getDataSource().getConnection();
                 Statement statement = conn.createStatement()) {
-            statement.execute(
-                    "CREATE TABLE shdlck(n VARCHAR(64), lck_untl TIMESTAMP(3), lckd_at TIMESTAMP(3), lckd_by  VARCHAR(255), PRIMARY KEY (n))");
+            statement.execute("CREATE TABLE shdlck(n VARCHAR(64), lck_untl TIMESTAMP(3), lckd_at TIMESTAMP(3), lckd_by "
+                    + " VARCHAR(255), PRIMARY KEY (n))");
         }
 
         JdbcTemplateLockProvider provider = new JdbcTemplateLockProvider(builder()

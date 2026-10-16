@@ -66,7 +66,8 @@ public final class Neo4jTestUtils {
     public @Nullable LockInfo getLockInfo(String lockName) {
         Map<String, Object> parameters = singletonMap("lockName", lockName);
         return Objects.requireNonNull(executeTransactionally(
-                        "MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until, localdatetime() as db_time ",
+                        "MATCH (lock:shedlock) WHERE lock.name = $lockName RETURN lock.name, lock.lock_until,"
+                                + " localdatetime() as db_time ",
                         parameters,
                         result -> result.stream()
                                 .findFirst()

@@ -110,12 +110,12 @@ public abstract class AbstractSpannerStorageBasedLockProviderIntegrationTest
 
     private static String getShedlockDdl() {
         return """
-                CREATE TABLE shedlock (
-                    name STRING(64) NOT NULL,
-                    lock_until TIMESTAMP NOT NULL,
-                    locked_at TIMESTAMP NOT NULL,
-                    locked_by STRING(255) NOT NULL
-                    ) PRIMARY KEY (name)
-                """;
+            CREATE TABLE shedlock (
+                name STRING(64) NOT NULL,
+                lock_until TIMESTAMP NOT NULL,
+                locked_at TIMESTAMP NOT NULL,
+                locked_by STRING(255) NOT NULL
+                ) PRIMARY KEY (name)
+            """;
     }
 }

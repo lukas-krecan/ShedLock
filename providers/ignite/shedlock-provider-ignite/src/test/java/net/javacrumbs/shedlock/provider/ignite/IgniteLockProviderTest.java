@@ -37,7 +37,6 @@ import org.junit.jupiter.api.io.TempDir;
 public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegrationTest {
     private static Ignite ignite;
     private static KeyValueView<String, LockValue> keyValueView;
-    private static Table table;
     private static IgniteServer node;
     private static final String TEST_NODE_NAME = "ignite-node";
 
@@ -61,7 +60,7 @@ public class IgniteLockProviderTest extends AbstractExtensibleLockProviderIntegr
 
             ignite = node.api();
 
-            table = ignite.tables().table(DEFAULT_SHEDLOCK_CACHE_NAME);
+            Table table = ignite.tables().table(DEFAULT_SHEDLOCK_CACHE_NAME);
             if (table == null) {
                 ignite.sql()
                         .execute(

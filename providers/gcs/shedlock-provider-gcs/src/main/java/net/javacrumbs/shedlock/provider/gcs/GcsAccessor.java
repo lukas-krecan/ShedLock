@@ -15,6 +15,7 @@ import java.util.Optional;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.support.AbstractStorageAccessor;
 import net.javacrumbs.shedlock.support.LockException;
+import org.jspecify.annotations.Nullable;
 
 class GcsAccessor extends AbstractStorageAccessor {
     private static final String LOCK_FILE_CONTENT = "_lock";
@@ -127,7 +128,7 @@ class GcsAccessor extends AbstractStorageAccessor {
         if (blob == null) {
             return Optional.empty();
         }
-        Map<String, String> metadata = blob.getMetadata();
+        Map<String, @Nullable String> metadata = blob.getMetadata();
         return Optional.of(new GcsLock(
                 Instant.parse(requireNonNull(metadata.get(LOCK_UNTIL))),
                 Instant.parse(requireNonNull(metadata.get(LOCKED_AT))),

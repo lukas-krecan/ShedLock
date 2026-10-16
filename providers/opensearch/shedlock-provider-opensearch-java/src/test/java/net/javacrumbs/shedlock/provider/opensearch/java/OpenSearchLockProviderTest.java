@@ -39,7 +39,6 @@ import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.HttpHost;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -86,13 +85,11 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void assertUnlocked(String lockName) {
         assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, false);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void assertLocked(String lockName) {
         assertDocumentState(lockName, SCHEDLOCK_DEFAULT_INDEX, DEFAULT_FIELDS, true);
     }
@@ -375,7 +372,7 @@ public class OpenSearchLockProviderTest extends AbstractLockProviderIntegrationT
                     .hasMessageContaining("Unexpected exception while locking");
         }
 
-        private @NonNull OpenSearchLockProvider lockProvider() {
+        private OpenSearchLockProvider lockProvider() {
             return new OpenSearchLockProvider(OpenSearchLockProvider.Configuration.builder(openSearchClient)
                     .withIndex(MISMATCH_INDEX)
                     .withFieldNames(DocumentFieldNames.DEFAULT)
