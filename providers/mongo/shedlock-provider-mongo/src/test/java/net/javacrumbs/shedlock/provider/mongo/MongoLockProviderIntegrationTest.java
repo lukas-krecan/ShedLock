@@ -44,7 +44,7 @@ import org.testcontainers.mongodb.MongoDBContainer;
 @Testcontainers
 public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
 
-    private static final String DB_NAME = "db";
+    static final String DB_NAME = "db";
 
     @Container
     public static final MongoDBContainer container = new MongoDBContainer("mongo:6");
@@ -116,7 +116,7 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
         assertLocked(LOCK_NAME1);
     }
 
-    private MongoClient getMongo() {
+    static MongoClient getMongo() {
         return mongo;
     }
 }

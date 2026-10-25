@@ -405,6 +405,11 @@ public LockProvider lockProvider(MongoClient mongo) {
 
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.7.0
 
+By default, the clock of the app server is used. To use the clock of the Mongo server instead (similar to `usingDbTime()`
+in JDBC providers), use `new MongoLockProvider(mongo.getDatabase(databaseName), true)`. This option requires Mongo >= 4.2.
+The lock itself then no longer depends on the clocks of the app servers, but their schedulers still fire at slightly
+different moments if the clocks differ, so keep `lockAtLeastFor` longer than the expected clock difference between the nodes.
+
 
 #### Reactive Mongo
 Import the project

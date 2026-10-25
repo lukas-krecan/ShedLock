@@ -15,6 +15,8 @@ package net.javacrumbs.shedlock.provider.mongo;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.exists;
+import static com.mongodb.client.model.Filters.expr;
 import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Updates.combine;
@@ -27,6 +29,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ClockProvider;
@@ -67,6 +70,10 @@ import org.bson.conversions.Bson;
  * update failed (0 updated documents) somebody else holds the lock
  * <li>When unlocking, lock_until is set to now.
  * </ol>
+ *
+ * <p>
+ * If <code>useDbTime</code> is set, the time of the Mongo server is used instead of the time of the application
+ * server. Requires MongoDB &gt;= 4.2.
  */
 public class MongoLockProvider implements ExtensibleLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
@@ -74,16 +81,30 @@ public class MongoLockProvider implements ExtensibleLockProvider {
     static final String LOCKED_BY = "lockedBy";
     static final String ID = "_id";
     static final String DEFAULT_SHEDLOCK_COLLECTION_NAME = "shedLock";
+    private static final String DB_NOW = "$$NOW";
 
     private final String hostname;
     private final MongoCollection<Document> collection;
+    private final boolean useDbTime;
 
     /** Uses Mongo to coordinate locks */
     public MongoLockProvider(MongoDatabase mongoDatabase) {
-        this(mongoDatabase
-                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .withReadConcern(ReadConcern.MAJORITY));
+        this(mongoDatabase, false);
+    }
+
+    /**
+     * Uses Mongo to coordinate locks
+     *
+     * @param useDbTime
+     *            if true, the time of the Mongo server is used instead of the time of the application server
+     */
+    public MongoLockProvider(MongoDatabase mongoDatabase, boolean useDbTime) {
+        this(
+                mongoDatabase
+                        .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
+                        .withWriteConcern(WriteConcern.MAJORITY)
+                        .withReadConcern(ReadConcern.MAJORITY),
+                useDbTime);
     }
 
     /**
@@ -93,12 +114,28 @@ public class MongoLockProvider implements ExtensibleLockProvider {
      *            Mongo collection to be used
      */
     public MongoLockProvider(MongoCollection<Document> collection) {
+        this(collection, false);
+    }
+
+    /**
+     * Uses Mongo to coordinate locks. Please, make sure that the collection has WriteConcern.MAJORITY set.
+     *
+     * @param collection
+     *            Mongo collection to be used
+     * @param useDbTime
+     *            if true, the time of the Mongo server is used instead of the time of the application server
+     */
+    public MongoLockProvider(MongoCollection<Document> collection, boolean useDbTime) {
         this.collection = collection;
         this.hostname = Utils.getHostname();
+        this.useDbTime = useDbTime;
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
+        if (useDbTime) {
+            return lockUsingDbTime(lockConfiguration);
+        }
         Instant now = now();
         Bson update = combine(
                 set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil()), set(LOCKED_AT, now), set(LOCKED_BY, hostname));
@@ -126,7 +163,45 @@ public class MongoLockProvider implements ExtensibleLockProvider {
         }
     }
 
+    private Optional<SimpleLock> lockUsingDbTime(LockConfiguration lockConfiguration) {
+        // "now" is evaluated by the server as $$NOW, which is constant for the whole operation. $$NOW can only be
+        // compared using $expr and $expr is not allowed in upserts, so we can not do it in one step as above.
+        List<Bson> update = List.of(new Document(
+                "$set",
+                new Document(
+                                LOCK_UNTIL,
+                                dbNowPlus(lockConfiguration.getLockAtMostFor().toMillis()))
+                        .append(LOCKED_AT, DB_NOW)
+                        .append(LOCKED_BY, literal(hostname))));
+        Bson idFilter = eq(ID, lockConfiguration.getName());
+        // 1. The lock document exists and lockUntil <= now - it is updated - we have the lock
+        Document updatedDocument =
+                getCollection().findOneAndUpdate(and(idFilter, expr(compare("$lte", LOCK_UNTIL, DB_NOW))), update);
+        if (updatedDocument != null) {
+            return Optional.of(new MongoLock(lockConfiguration, this));
+        }
+        try {
+            // 2. The lock document does not exist yet - it is inserted - we have the lock
+            // 3. The lock document exists and lockUntil > now - Duplicate key exception is thrown
+            getCollection()
+                    .findOneAndUpdate(
+                            and(idFilter, exists(LOCK_UNTIL, false)),
+                            update,
+                            new FindOneAndUpdateOptions().upsert(true));
+            return Optional.of(new MongoLock(lockConfiguration, this));
+        } catch (MongoServerException e) {
+            if (e.getCode() == 11000) { // duplicate key
+                return Optional.empty();
+            } else {
+                throw new LockException(e);
+            }
+        }
+    }
+
     private Optional<SimpleLock> extend(LockConfiguration lockConfiguration) {
+        if (useDbTime) {
+            return extendUsingDbTime(lockConfiguration);
+        }
         Instant now = now();
         Bson update = set(LOCK_UNTIL, lockConfiguration.getLockAtMostUntil());
 
@@ -140,12 +215,62 @@ public class MongoLockProvider implements ExtensibleLockProvider {
         }
     }
 
+    private Optional<SimpleLock> extendUsingDbTime(LockConfiguration lockConfiguration) {
+        List<Bson> update = List.of(new Document(
+                "$set",
+                new Document(
+                        LOCK_UNTIL,
+                        dbNowPlus(lockConfiguration.getLockAtMostFor().toMillis()))));
+
+        Document updatedDocument = getCollection()
+                .findOneAndUpdate(
+                        and(
+                                eq(ID, lockConfiguration.getName()),
+                                expr(compare("$gt", LOCK_UNTIL, DB_NOW)),
+                                eq(LOCKED_BY, hostname)),
+                        update);
+        if (updatedDocument != null) {
+            return Optional.of(new MongoLock(lockConfiguration, this));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private void unlock(LockConfiguration lockConfiguration) {
+        if (useDbTime) {
+            unlockUsingDbTime(lockConfiguration);
+            return;
+        }
         // Set lockUtil to now or lockAtLeastUntil whichever is later
         getCollection()
                 .findOneAndUpdate(
                         eq(ID, lockConfiguration.getName()),
                         combine(set(LOCK_UNTIL, lockConfiguration.getUnlockTime())));
+    }
+
+    private void unlockUsingDbTime(LockConfiguration lockConfiguration) {
+        // Set lockUtil to now or lockedAt + lockAtLeastFor whichever is later
+        Document lockAtLeastUntil = new Document(
+                "$add",
+                List.of("$" + LOCKED_AT, lockConfiguration.getLockAtLeastFor().toMillis()));
+        getCollection()
+                .findOneAndUpdate(
+                        eq(ID, lockConfiguration.getName()),
+                        List.of(new Document(
+                                "$set",
+                                new Document(LOCK_UNTIL, new Document("$max", List.of(lockAtLeastUntil, DB_NOW))))));
+    }
+
+    private static Document dbNowPlus(long millis) {
+        return new Document("$add", List.of(DB_NOW, millis));
+    }
+
+    private static Document compare(String operator, String fieldName, Object value) {
+        return new Document(operator, List.of("$" + fieldName, value));
+    }
+
+    private static Document literal(Object value) {
+        return new Document("$literal", value);
     }
 
     private MongoCollection<Document> getCollection() {
