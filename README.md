@@ -437,6 +437,9 @@ public LockProvider lockProvider(MongoClient mongo) {
 
 Please note that MongoDB integration requires Mongo >= 4.x and mongodb-driver-reactivestreams 1.x
 
+To use the clock of the Mongo server, use `new ReactiveStreamsMongoLockProvider(mongo.getDatabase(databaseName), true)`.
+This option requires Mongo >= 4.2.
+
 
 #### DynamoDB 2
 Depends on AWS SDK v2.
