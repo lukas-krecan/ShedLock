@@ -44,12 +44,12 @@ import org.testcontainers.mongodb.MongoDBContainer;
 @Testcontainers
 @SuppressWarnings("JavaUtilDate")
 public class ReactiveStreamsMongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
-    private static final String DB_NAME = "db";
+    static final String DB_NAME = "db";
 
     @Container
     public static final MongoDBContainer container = new MongoDBContainer("mongo:6");
 
-    private static MongoClient mongo;
+    static MongoClient mongo;
 
     @BeforeAll
     public static void startMongo() {
