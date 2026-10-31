@@ -20,17 +20,32 @@ import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStr
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import com.mongodb.WriteConcern;
 import com.mongodb.client.result.DeleteResult;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class ReactiveStreamsMongoLockProviderIntegrationTest
         extends AbstractReactiveStreamsMongoLockProviderIntegrationTest {
 
     @Override
     protected ExtensibleLockProvider getLockProvider() {
-        return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(DB_NAME));
+        return ReactiveStreamsMongoLockProvider.create(mongo.getDatabase(DB_NAME), false);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void shouldUseSuppliedCollection(boolean useDbTime) {
+        var collection =
+                mongo.getDatabase(DB_NAME).getCollection("customShedLock").withWriteConcern(WriteConcern.MAJORITY);
+        ExtensibleLockProvider provider = ReactiveStreamsMongoLockProvider.create(collection, useDbTime);
+
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
+        assertThat(execute(collection.find(eq(ID, LOCK_NAME1)).first())).isNotNull();
+        assertThat(execute(getLockCollection().countDocuments())).isZero();
     }
 
     @Test

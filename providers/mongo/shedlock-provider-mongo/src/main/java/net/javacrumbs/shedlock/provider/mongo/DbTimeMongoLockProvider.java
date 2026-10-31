@@ -13,12 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.mongo;
 
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
-
-import com.mongodb.ReadConcern;
-import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.bson.Document;
 
@@ -29,21 +24,8 @@ import org.bson.Document;
  * Existing lock names are cached, so externally deleted documents are not automatically recreated
  * while their names remain cached. Use {@link #clearCache()} to clear the cache.
  */
-public class DbTimeMongoLockProvider extends StorageBasedLockProvider {
-    /** Uses the default {@code shedLock} collection with majority read and write concerns. */
-    public DbTimeMongoLockProvider(MongoDatabase mongoDatabase) {
-        this(mongoDatabase
-                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .withReadConcern(ReadConcern.MAJORITY));
-    }
-
-    /**
-     * Uses the supplied collection. Please, make sure that the collection has {@link WriteConcern#MAJORITY} set.
-     *
-     * @param collection Mongo collection to be used
-     */
-    public DbTimeMongoLockProvider(MongoCollection<Document> collection) {
+class DbTimeMongoLockProvider extends StorageBasedLockProvider {
+    DbTimeMongoLockProvider(MongoCollection<Document> collection) {
         super(new DbTimeMongoStorageAccessor(collection));
     }
 }

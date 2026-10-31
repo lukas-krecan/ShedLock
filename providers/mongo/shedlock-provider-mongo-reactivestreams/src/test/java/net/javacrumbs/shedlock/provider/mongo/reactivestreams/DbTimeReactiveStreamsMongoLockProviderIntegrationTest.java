@@ -27,7 +27,9 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.ClockProvider;
+import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +37,8 @@ public class DbTimeReactiveStreamsMongoLockProviderIntegrationTest
         extends AbstractReactiveStreamsMongoLockProviderIntegrationTest {
 
     @Override
-    protected DbTimeReactiveStreamsMongoLockProvider getLockProvider() {
-        return new DbTimeReactiveStreamsMongoLockProvider(mongo.getDatabase(DB_NAME));
+    protected ExtensibleLockProvider getLockProvider() {
+        return ReactiveStreamsMongoLockProvider.create(mongo.getDatabase(DB_NAME), true);
     }
 
     @AfterEach
@@ -87,7 +89,7 @@ public class DbTimeReactiveStreamsMongoLockProviderIntegrationTest
 
     @Test
     void shouldRequireCacheClearAfterDocumentRemovedExternally() {
-        DbTimeReactiveStreamsMongoLockProvider provider = getLockProvider();
+        ExtensibleLockProvider provider = getLockProvider();
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertThat(requireNonNull(execute(getLockCollection().deleteOne(eq(ID, LOCK_NAME1))))
                         .getDeletedCount())
@@ -97,7 +99,7 @@ public class DbTimeReactiveStreamsMongoLockProviderIntegrationTest
         assertThat(execute(getLockCollection().find(eq(ID, LOCK_NAME1)).first()))
                 .isNull();
 
-        provider.clearCache();
+        ((StorageBasedLockProvider) provider).clearCache();
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertLocked(LOCK_NAME1);
     }

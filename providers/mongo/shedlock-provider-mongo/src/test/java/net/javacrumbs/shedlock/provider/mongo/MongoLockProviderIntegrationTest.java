@@ -27,7 +27,7 @@ public class MongoLockProviderIntegrationTest extends AbstractMongoLockProviderI
 
     @Override
     protected ExtensibleLockProvider getLockProvider() {
-        return new MongoLockProvider(getMongo().getDatabase(DB_NAME));
+        return MongoLockProvider.create(getMongo().getDatabase(DB_NAME), false);
     }
 
     @Test

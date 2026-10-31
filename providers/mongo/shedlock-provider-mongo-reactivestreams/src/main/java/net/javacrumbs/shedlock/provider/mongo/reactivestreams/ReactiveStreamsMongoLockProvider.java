@@ -66,7 +66,7 @@ import org.reactivestreams.Publisher;
  * <li>When unlocking, lockUntil is set to now or lockAtLeastUntil, whichever is later.
  * </ol>
  *
- * <p>Uses the application server clock. To use the Mongo server clock, use {@link DbTimeReactiveStreamsMongoLockProvider}.
+ * <p>Uses the application server clock. To use the Mongo server clock, use {@link #create(MongoDatabase, boolean)} with {@code useDbTime} set to {@code true}.
  */
 public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
@@ -78,17 +78,57 @@ public class ReactiveStreamsMongoLockProvider implements ExtensibleLockProvider 
     private final String hostname;
     private final MongoCollection<Document> collection;
 
-    /** Uses Mongo to coordinate locks */
-    public ReactiveStreamsMongoLockProvider(MongoDatabase mongoDatabase) {
-        this(mongoDatabase
-                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .withReadConcern(ReadConcern.MAJORITY));
+    /**
+     * Creates a lock provider using the default {@code shedLock} collection with majority read and write concerns.
+     *
+     * <p>Using the Mongo server clock requires MongoDB &gt;= 4.2. In this mode, existing lock names are cached,
+     * so externally deleted documents are not automatically recreated while their names remain cached.
+     * The cache can be cleared by casting the returned provider to
+     * {@link net.javacrumbs.shedlock.support.StorageBasedLockProvider} and calling
+     * {@link net.javacrumbs.shedlock.support.StorageBasedLockProvider#clearCache()}.
+     *
+     * @param mongoDatabase Mongo database to be used
+     * @param useDbTime {@code true} to use the Mongo server clock, {@code false} to use the application server clock
+     * @return a lock provider using the selected clock
+     */
+    public static ExtensibleLockProvider create(MongoDatabase mongoDatabase, boolean useDbTime) {
+        return create(getCollection(mongoDatabase), useDbTime);
     }
 
     /**
-     * Uses Mongo to coordinate locks. Please, make sure that the collection has WriteConcern.MAJORITY set.
+     * Creates a lock provider using the supplied collection. Please, make sure that the collection has
+     * {@link WriteConcern#MAJORITY} set.
      *
+     * <p>See {@link #create(MongoDatabase, boolean)} for MongoDB version requirements and lock name caching
+     * when using the Mongo server clock.
+     *
+     * @param collection Mongo collection to be used
+     * @param useDbTime {@code true} to use the Mongo server clock, {@code false} to use the application server clock
+     * @return a lock provider using the selected clock
+     */
+    public static ExtensibleLockProvider create(MongoCollection<Document> collection, boolean useDbTime) {
+        if (useDbTime) {
+            return new DbTimeReactiveStreamsMongoLockProvider(collection);
+        } else {
+            return new ReactiveStreamsMongoLockProvider(collection);
+        }
+    }
+
+    /** Uses the application server clock and the default {@code shedLock} collection with majority read and write concerns. */
+    public ReactiveStreamsMongoLockProvider(MongoDatabase mongoDatabase) {
+        this(getCollection(mongoDatabase));
+    }
+
+    private static MongoCollection<Document> getCollection(MongoDatabase mongoDatabase) {
+        return mongoDatabase
+                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
+                .withWriteConcern(WriteConcern.MAJORITY)
+                .withReadConcern(ReadConcern.MAJORITY);
+    }
+
+    /**
+     * Uses the application server clock and the supplied collection. Please, make sure that the collection has
+     * {@link WriteConcern#MAJORITY} set.
      * @param collection
      *            Mongo collection to be used
      */

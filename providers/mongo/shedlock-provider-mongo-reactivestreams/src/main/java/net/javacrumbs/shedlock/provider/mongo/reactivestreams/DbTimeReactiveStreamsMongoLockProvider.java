@@ -13,12 +13,7 @@
  */
 package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 
-import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
-
-import com.mongodb.ReadConcern;
-import com.mongodb.WriteConcern;
 import com.mongodb.reactivestreams.client.MongoCollection;
-import com.mongodb.reactivestreams.client.MongoDatabase;
 import net.javacrumbs.shedlock.support.StorageBasedLockProvider;
 import org.bson.Document;
 
@@ -29,21 +24,8 @@ import org.bson.Document;
  * Existing lock names are cached, so externally deleted documents are not automatically recreated
  * while their names remain cached. Use {@link #clearCache()} to clear the cache.
  */
-public class DbTimeReactiveStreamsMongoLockProvider extends StorageBasedLockProvider {
-    /** Uses the default {@code shedLock} collection with majority read and write concerns. */
-    public DbTimeReactiveStreamsMongoLockProvider(MongoDatabase mongoDatabase) {
-        this(mongoDatabase
-                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .withReadConcern(ReadConcern.MAJORITY));
-    }
-
-    /**
-     * Uses the supplied collection. Please, make sure that the collection has {@link WriteConcern#MAJORITY} set.
-     *
-     * @param collection Mongo collection to be used
-     */
-    public DbTimeReactiveStreamsMongoLockProvider(MongoCollection<Document> collection) {
+class DbTimeReactiveStreamsMongoLockProvider extends StorageBasedLockProvider {
+    DbTimeReactiveStreamsMongoLockProvider(MongoCollection<Document> collection) {
         super(new DbTimeReactiveStreamsMongoStorageAccessor(collection));
     }
 }
