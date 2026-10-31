@@ -14,93 +14,20 @@
 package net.javacrumbs.shedlock.provider.mongo;
 
 import static com.mongodb.client.model.Filters.eq;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.DEFAULT_SHEDLOCK_COLLECTION_NAME;
 import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.mongo.MongoLockProvider.LOCK_UNTIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Objects;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.test.support.AbstractExtensibleLockProviderIntegrationTest;
-import org.bson.Document;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.mongodb.MongoDBContainer;
 
-@Testcontainers
-public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
-
-    static final String DB_NAME = "db";
-
-    @Container
-    public static final MongoDBContainer container = new MongoDBContainer("mongo:6");
-
-    private static MongoClient mongo;
-
-    @BeforeAll
-    public static void startMongo() {
-        mongo = MongoClients.create("mongodb://" + container.getHost() + ":" + container.getFirstMappedPort());
-    }
-
-    @AfterAll
-    public static void stopMongo() {
-        mongo.close();
-    }
-
-    @BeforeEach
-    public void cleanDb() {
-        getMongo().getDatabase(DB_NAME).drop();
-    }
+public class MongoLockProviderIntegrationTest extends AbstractMongoLockProviderIntegrationTest {
 
     @Override
     protected ExtensibleLockProvider getLockProvider() {
         return new MongoLockProvider(getMongo().getDatabase(DB_NAME));
-    }
-
-    @Override
-    protected void assertUnlocked(String lockName) {
-        Document lockDocument = getLockDocument(lockName);
-        Instant lockUntil = ((Date) Objects.requireNonNull(lockDocument.get(LOCK_UNTIL))).toInstant();
-        Instant lockedAt = ((Date) Objects.requireNonNull(lockDocument.get(LOCKED_AT))).toInstant();
-        assertThat(lockUntil).isBeforeOrEqualTo(now());
-        assertThat(lockedAt).isBeforeOrEqualTo(now());
-        assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
-    }
-
-    private Instant now() {
-        return Instant.now();
-    }
-
-    @Override
-    protected void assertLocked(String lockName) {
-        Document lockDocument = getLockDocument(lockName);
-        Instant lockUntil = ((Date) Objects.requireNonNull(lockDocument.get(LOCK_UNTIL))).toInstant();
-        Instant lockedAt = ((Date) Objects.requireNonNull(lockDocument.get(LOCKED_AT))).toInstant();
-        assertThat(lockUntil).isAfter(now());
-        assertThat(lockedAt).isBeforeOrEqualTo(now());
-        assertThat((String) lockDocument.get(LOCKED_BY)).isNotEmpty();
-    }
-
-    private MongoCollection<Document> getLockCollection() {
-        return getMongo().getDatabase(DB_NAME).getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME);
-    }
-
-    private Document getLockDocument(String lockName) {
-        return getLockCollection().find(eq(ID, lockName)).first();
     }
 
     @Test
@@ -114,9 +41,5 @@ public class MongoLockProviderIntegrationTest extends AbstractExtensibleLockProv
 
         assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
         assertLocked(LOCK_NAME1);
-    }
-
-    static MongoClient getMongo() {
-        return mongo;
     }
 }

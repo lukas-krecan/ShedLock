@@ -406,9 +406,12 @@ public LockProvider lockProvider(MongoClient mongo) {
 Please note that MongoDB integration requires Mongo >= 2.4 and mongo-java-driver >= 3.7.0
 
 By default, the clock of the app server is used. To use the clock of the Mongo server instead (similar to `usingDbTime()`
-in JDBC providers), use `new MongoLockProvider(mongo.getDatabase(databaseName), true)`. This option requires Mongo >= 4.2.
+in JDBC providers), use `new DbTimeMongoLockProvider(mongo.getDatabase(databaseName))`. This provider requires Mongo >= 4.2.
 The lock itself then no longer depends on the clocks of the app servers, but their schedulers still fire at slightly
 different moments if the clocks differ, so keep `lockAtLeastFor` longer than the expected clock difference between the nodes.
+
+`DbTimeMongoLockProvider` caches existing lock names. Do not delete its lock documents manually;
+deleted documents are not automatically recreated while their names remain cached. Call `clearCache()` to clear this cache.
 
 
 #### Reactive Mongo
@@ -437,8 +440,9 @@ public LockProvider lockProvider(MongoClient mongo) {
 
 Please note that MongoDB integration requires Mongo >= 4.x and mongodb-driver-reactivestreams 1.x
 
-To use the clock of the Mongo server, use `new ReactiveStreamsMongoLockProvider(mongo.getDatabase(databaseName), true)`.
-This option requires Mongo >= 4.2.
+To use the clock of the Mongo server, use `new DbTimeReactiveStreamsMongoLockProvider(mongo.getDatabase(databaseName))`.
+This provider requires Mongo >= 4.2. Like `DbTimeMongoLockProvider`, it caches existing lock names;
+externally deleted documents are not automatically recreated while their names remain cached. Call `clearCache()` to clear this cache.
 
 
 #### DynamoDB 2

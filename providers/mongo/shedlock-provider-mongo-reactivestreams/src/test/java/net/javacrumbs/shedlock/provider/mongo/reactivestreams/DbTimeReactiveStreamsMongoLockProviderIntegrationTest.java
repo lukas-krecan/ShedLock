@@ -13,27 +13,30 @@
  */
 package net.javacrumbs.shedlock.provider.mongo.reactivestreams;
 
+import static com.mongodb.client.model.Filters.eq;
 import static java.time.Duration.ZERO;
 import static java.time.Duration.ofHours;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
+import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.mongo.reactivestreams.ReactiveStreamsMongoLockProvider.execute;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Optional;
 import net.javacrumbs.shedlock.core.ClockProvider;
-import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 public class DbTimeReactiveStreamsMongoLockProviderIntegrationTest
-        extends ReactiveStreamsMongoLockProviderIntegrationTest {
+        extends AbstractReactiveStreamsMongoLockProviderIntegrationTest {
 
     @Override
-    protected ExtensibleLockProvider getLockProvider() {
-        return new ReactiveStreamsMongoLockProvider(mongo.getDatabase(DB_NAME), true);
+    protected DbTimeReactiveStreamsMongoLockProvider getLockProvider() {
+        return new DbTimeReactiveStreamsMongoLockProvider(mongo.getDatabase(DB_NAME));
     }
 
     @AfterEach
@@ -80,6 +83,23 @@ public class DbTimeReactiveStreamsMongoLockProviderIntegrationTest
         assertUnlocked(LOCK_NAME1);
         assertThat(getLockProvider().lock(lockConfig(LOCK_NAME1, ofSeconds(5), ZERO)))
                 .isNotEmpty();
+    }
+
+    @Test
+    void shouldRequireCacheClearAfterDocumentRemovedExternally() {
+        DbTimeReactiveStreamsMongoLockProvider provider = getLockProvider();
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
+        assertThat(requireNonNull(execute(getLockCollection().deleteOne(eq(ID, LOCK_NAME1))))
+                        .getDeletedCount())
+                .isEqualTo(1);
+
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isEmpty();
+        assertThat(execute(getLockCollection().find(eq(ID, LOCK_NAME1)).first()))
+                .isNull();
+
+        provider.clearCache();
+        assertThat(provider.lock(lockConfig(LOCK_NAME1))).isNotEmpty();
+        assertLocked(LOCK_NAME1);
     }
 
     private static void skewClientClock(Duration offset) {
