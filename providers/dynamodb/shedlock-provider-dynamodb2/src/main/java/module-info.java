@@ -10,6 +10,7 @@ module net.javacrumbs.shedlock.provider.dynamodb2 {
     requires software.amazon.awssdk.services.dynamodb;
     requires software.amazon.awssdk.core;
     requires software.amazon.awssdk.utils;
+    requires static software.amazon.awssdk.enhanced.dynamodb;
 
     // Export provider packages
     exports net.javacrumbs.shedlock.provider.dynamodb2;
