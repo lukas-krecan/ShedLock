@@ -13,12 +13,27 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb2;
 
+import static java.util.Collections.singletonMap;
+import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.core.ClockProvider.now;
+import static net.javacrumbs.shedlock.support.Utils.toIsoString;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.LockException;
+import net.javacrumbs.shedlock.support.Utils;
 import org.jspecify.annotations.Nullable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.awssdk.utils.StringUtils;
 
 /**
  * Distributed lock using DynamoDB. Depends on
@@ -57,7 +72,18 @@ public class DynamoDBLockProvider implements LockProvider {
     static final String ID = "_id";
     static final String SORT = "_SortKey";
 
-    private final LockProvider delegate;
+    private static final String OBTAIN_LOCK_QUERY =
+            "set " + LOCK_UNTIL + " = :lockUntil, " + LOCKED_AT + " = :lockedAt, " + LOCKED_BY + " = :lockedBy";
+    private static final String OBTAIN_LOCK_CONDITION =
+            LOCK_UNTIL + " <= :lockedAt or attribute_not_exists(" + LOCK_UNTIL + ")";
+    private static final String RELEASE_LOCK_QUERY = "set " + LOCK_UNTIL + " = :lockUntil";
+
+    private final String hostname;
+    private final DynamoDbClient dynamoDbClient;
+    private final String tableName;
+    private final String partitionKeyName;
+
+    private final @Nullable String sortKeyName;
 
     /**
      * Uses DynamoDB to coordinate locks
@@ -90,12 +116,94 @@ public class DynamoDBLockProvider implements LockProvider {
      */
     public DynamoDBLockProvider(
             DynamoDbClient dynamoDbClient, String tableName, String partitionKeyName, @Nullable String sortKeyName) {
-        this.delegate = new InternalDynamoDBLockProvider(
-                new DynamoDBClientLockRepository(dynamoDbClient, tableName, partitionKeyName, sortKeyName));
+        this.dynamoDbClient = requireNonNull(dynamoDbClient, "dynamoDbClient can not be null");
+        this.tableName = requireNonNull(tableName, "tableName can not be null");
+        this.partitionKeyName = requireNonNull(partitionKeyName, "partitionKeyName can not be null");
+        this.sortKeyName = sortKeyName;
+        this.hostname = Utils.getHostname();
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        return delegate.lock(lockConfiguration);
+        String nowIso = toIsoString(now());
+        String lockUntilIso = toIsoString(lockConfiguration.getLockAtMostUntil());
+
+        Map<String, AttributeValue> key = getKey(lockConfiguration);
+
+        Map<String, AttributeValue> attributeUpdates =
+                Map.of(":lockUntil", attr(lockUntilIso), ":lockedAt", attr(nowIso), ":lockedBy", attr(hostname));
+
+        UpdateItemRequest request = UpdateItemRequest.builder()
+                .tableName(tableName)
+                .key(key)
+                .updateExpression(OBTAIN_LOCK_QUERY)
+                .conditionExpression(OBTAIN_LOCK_CONDITION)
+                .expressionAttributeValues(attributeUpdates)
+                .returnValues(ReturnValue.UPDATED_NEW)
+                .build();
+
+        try {
+            // There are three possible situations:
+            // 1. The lock document does not exist yet - it is inserted - we have the lock
+            // 2. The lock document exists and lockUtil <= now - it is updated - we have the
+            // lock
+            // 3. The lock document exists and lockUtil > now -
+            // ConditionalCheckFailedException is thrown
+            dynamoDbClient.updateItem(request);
+            return Optional.of(new DynamoDBLock(dynamoDbClient, tableName, lockConfiguration, key));
+        } catch (ConditionalCheckFailedException e) {
+            // Condition failed. This means there was a lock with lockUntil > now.
+            return Optional.empty();
+        } catch (Exception e) {
+            throw new LockException("Error on lock", e);
+        }
+    }
+
+    private Map<String, AttributeValue> getKey(LockConfiguration lockConfiguration) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put(partitionKeyName, attr(lockConfiguration.getName()));
+        if (StringUtils.isNotBlank(sortKeyName)) {
+            key.put(sortKeyName, attr(lockConfiguration.getName().concat(SORT)));
+        }
+        return key;
+    }
+
+    private static AttributeValue attr(String lockUntilIso) {
+        return AttributeValue.builder().s(lockUntilIso).build();
+    }
+
+    private static final class DynamoDBLock extends AbstractSimpleLock {
+        private final DynamoDbClient dynamoDbClient;
+        private final String tableName;
+        private final Map<String, AttributeValue> key;
+
+        private DynamoDBLock(
+                DynamoDbClient dynamoDbClient,
+                String tableName,
+                LockConfiguration lockConfiguration,
+                Map<String, AttributeValue> key) {
+            super(lockConfiguration);
+            this.dynamoDbClient = dynamoDbClient;
+            this.tableName = tableName;
+            this.key = key;
+        }
+
+        @Override
+        public void doUnlock() {
+            // Set lockUntil to now or lockAtLeastUntil whichever is later
+            String unlockTimeIso = toIsoString(lockConfiguration.getUnlockTime());
+
+            Map<String, AttributeValue> attributeUpdates = singletonMap(":lockUntil", attr(unlockTimeIso));
+
+            UpdateItemRequest request = UpdateItemRequest.builder()
+                    .tableName(tableName)
+                    .key(key)
+                    .updateExpression(RELEASE_LOCK_QUERY)
+                    .expressionAttributeValues(attributeUpdates)
+                    .returnValues(ReturnValue.UPDATED_NEW)
+                    .build();
+
+            dynamoDbClient.updateItem(request);
+        }
     }
 }
