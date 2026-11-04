@@ -490,9 +490,7 @@ public LockProvider lockProvider(software.amazon.awssdk.enhanced.dynamodb.Dynamo
 
 By default, the provider expects `_id` as the partition key and no sort key. For custom key names, use
 `new DynamoDBEnhancedLockProvider(enhancedClient, "Shedlock", partitionKeyName, sortKeyName)`;
-pass `null` for `sortKeyName` if the table has no sort key. Both DynamoDB providers write the same item format,
-so they can share a table as long as the key names match. Create the table before using the provider.
-The module includes the `software.amazon.awssdk:dynamodb-enhanced` dependency.
+pass `null` for `sortKeyName` if the table has no sort key. Create the table before using the provider.
 
 #### ZooKeeper (using Curator)
 Import
