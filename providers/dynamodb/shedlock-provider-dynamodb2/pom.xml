@@ -36,6 +36,12 @@
         </dependency>
 
         <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb-enhanced</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-test-support</artifactId>
             <version>${project.version}</version>
