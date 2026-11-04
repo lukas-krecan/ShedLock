@@ -95,7 +95,7 @@ public class LockConfiguration {
 
     @Override
     public String toString() {
-        return "LockConfiguration{" + "name='" + name + '\'' + ", lockAtMostFor=" + lockAtMostFor + ", lockAtLeastFor="
+        return "LockConfiguration{name='" + name + '\'' + ", lockAtMostFor=" + lockAtMostFor + ", lockAtLeastFor="
                 + lockAtLeastFor + '}';
     }
 }

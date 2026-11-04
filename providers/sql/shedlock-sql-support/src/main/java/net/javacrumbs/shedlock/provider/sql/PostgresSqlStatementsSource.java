@@ -7,8 +7,8 @@ class PostgresSqlStatementsSource extends SqlStatementsSource {
 
     @Override
     public String getInsertStatement() {
-        return super.getInsertStatement() + " ON CONFLICT (" + name() + ") DO UPDATE " + "SET " + lockUntil()
-                + " = :lockUntil, " + lockedAt() + " = :now, " + lockedBy() + " = :lockedBy " + "WHERE " + tableName()
+        return super.getInsertStatement() + " ON CONFLICT (" + name() + ") DO UPDATE SET " + lockUntil()
+                + " = :lockUntil, " + lockedAt() + " = :now, " + lockedBy() + " = :lockedBy WHERE " + tableName()
                 + "." + lockUntil() + " <= :now";
     }
 }
