@@ -89,7 +89,7 @@ class HazelcastLock implements Serializable {
 
     @Override
     public String toString() {
-        return "HazelcastLock{" + "name='" + name + '\'' + ", lockAtMostUntil=" + lockAtMostUntil
-                + ", lockAtLeastUntil=" + lockAtLeastUntil + ", timeToLive=" + timeToLive + '}';
+        return "HazelcastLock{name='" + name + '\'' + ", lockAtMostUntil=" + lockAtMostUntil + ", lockAtLeastUntil="
+                + lockAtLeastUntil + ", timeToLive=" + timeToLive + '}';
     }
 }

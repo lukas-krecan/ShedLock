@@ -87,7 +87,7 @@ public final class JdbcTestUtils {
 
         @Override
         public String toString() {
-            return "LockInfo{" + "name='" + name + '\'' + ", lockUntil=" + lockUntil + ", dbTime=" + dbTime + '}';
+            return "LockInfo{name='" + name + '\'' + ", lockUntil=" + lockUntil + ", dbTime=" + dbTime + '}';
         }
     }
 }

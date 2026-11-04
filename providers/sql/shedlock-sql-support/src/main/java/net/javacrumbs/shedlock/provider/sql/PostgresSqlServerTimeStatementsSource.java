@@ -16,7 +16,7 @@ class PostgresSqlServerTimeStatementsSource extends SqlStatementsSource {
     @Override
     public String getInsertStatement() {
         return "INSERT INTO " + tableName() + "(" + name() + ", " + lockUntil() + ", " + lockedAt() + ", " + lockedBy()
-                + ") VALUES(:name, " + lockAtMostFor() + ", " + now + ", :lockedBy)" + " ON CONFLICT (" + name()
+                + ") VALUES(:name, " + lockAtMostFor() + ", " + now + ", :lockedBy) ON CONFLICT (" + name()
                 + ") DO UPDATE" + updateClause();
     }
 

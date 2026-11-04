@@ -99,7 +99,7 @@ public class SqlStatementsSource {
     }
 
     public String getUnlockStatement() {
-        return "UPDATE " + tableName() + " SET " + lockUntil() + " = :unlockTime WHERE " + name() + " = :name" + " AND "
+        return "UPDATE " + tableName() + " SET " + lockUntil() + " = :unlockTime WHERE " + name() + " = :name AND "
                 + lockedBy() + " = :lockedBy";
     }
 
