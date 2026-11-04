@@ -463,9 +463,10 @@ public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.Dynamo
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
-If your framework hands out enhanced-client tables instead of a `DynamoDbClient`, pass a `DynamoDbTable`:
+If your framework hands out enhanced-client tables instead of a `DynamoDbClient`, use `DynamoDBEnhancedLockProvider` with a `DynamoDbTable`:
 
 ```java
+import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBEnhancedLockProvider;
 import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockItem;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
@@ -473,12 +474,12 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 @Bean
 public LockProvider lockProvider(software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient enhancedClient) {
-    return new DynamoDBLockProvider(enhancedClient.table("Shedlock", TableSchema.fromBean(DynamoDBLockItem.class)));
+    return new DynamoDBEnhancedLockProvider(enhancedClient.table("Shedlock", TableSchema.fromBean(DynamoDBLockItem.class)));
 }
 ```
 
 The bean schema expects `_id` as the partition key. For other key names, or a table with a sort key, use
-`DynamoDBLockItem.tableSchema(partitionKeyName, sortKeyName)`. Both constructors write the same item format,
+`DynamoDBLockItem.tableSchema(partitionKeyName, sortKeyName)`. Both providers write the same item format,
 so they can share a table as long as the key names match. This requires `software.amazon.awssdk:dynamodb-enhanced` on the classpath; it is an
 optional dependency of the module.
 

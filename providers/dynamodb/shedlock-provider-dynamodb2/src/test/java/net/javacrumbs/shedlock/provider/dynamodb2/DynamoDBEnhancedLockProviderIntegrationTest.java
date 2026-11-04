@@ -33,7 +33,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
-public class DynamoDBTableLockProviderIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
+public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
     // The inherited ID is "_id2"; the bean schema is fixed on the provider's default "_id".
     private static final String PARTITION_KEY = DynamoDBLockProvider.ID;
 
@@ -65,7 +65,7 @@ public class DynamoDBTableLockProviderIntegrationTest extends AbstractDynamoDBLo
 
     @Override
     protected LockProvider getLockProvider() {
-        return new DynamoDBLockProvider(DynamoDbEnhancedClient.builder()
+        return new DynamoDBEnhancedLockProvider(DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamodb)
                 .build()
                 .table(TABLE_NAME, TableSchema.fromBean(DynamoDBLockItem.class)));

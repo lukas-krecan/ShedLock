@@ -17,12 +17,12 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 
 // Reuses the parent's hash+range table, cleanup and raw getItem, so the item must match what the raw client writes.
-public class DynamoDBTableLockProviderSortKeyIntegrationTest extends DynamoDBLockProviderSortKeyIntegrationTest {
+public class DynamoDBEnhancedLockProviderSortKeyIntegrationTest extends DynamoDBLockProviderSortKeyIntegrationTest {
     private static final String SORT_KEY = "_sk";
 
     @Override
     protected LockProvider getLockProvider() {
-        return new DynamoDBLockProvider(DynamoDbEnhancedClient.builder()
+        return new DynamoDBEnhancedLockProvider(DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamodb)
                 .build()
                 .table(TABLE_NAME, DynamoDBLockItem.tableSchema(ID, SORT_KEY)));

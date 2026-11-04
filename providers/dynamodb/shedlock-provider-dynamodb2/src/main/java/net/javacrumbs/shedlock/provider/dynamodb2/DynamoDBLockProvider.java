@@ -13,17 +13,11 @@
  */
 package net.javacrumbs.shedlock.provider.dynamodb2;
 
-import static net.javacrumbs.shedlock.core.ClockProvider.now;
-
 import java.util.Optional;
-import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
-import net.javacrumbs.shedlock.support.LockException;
-import net.javacrumbs.shedlock.support.Utils;
 import org.jspecify.annotations.Nullable;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 /**
@@ -63,8 +57,7 @@ public class DynamoDBLockProvider implements LockProvider {
     static final String ID = "_id";
     static final String SORT = "_SortKey";
 
-    private final String hostname;
-    private final DynamoDBLockRepository repository;
+    private final LockProvider delegate;
 
     /**
      * Uses DynamoDB to coordinate locks
@@ -97,49 +90,12 @@ public class DynamoDBLockProvider implements LockProvider {
      */
     public DynamoDBLockProvider(
             DynamoDbClient dynamoDbClient, String tableName, String partitionKeyName, @Nullable String sortKeyName) {
-        this(new DynamoDBClientLockRepository(dynamoDbClient, tableName, partitionKeyName, sortKeyName));
-    }
-
-    /**
-     * Uses DynamoDB to coordinate locks through an enhanced-client table. Requires
-     * <code>software.amazon.awssdk:dynamodb-enhanced</code>.
-     *
-     * @param table lock table, see {@link DynamoDBLockItem}
-     */
-    public DynamoDBLockProvider(DynamoDbTable<DynamoDBLockItem> table) {
-        this(new DynamoDBTableLockRepository(table));
-    }
-
-    private DynamoDBLockProvider(DynamoDBLockRepository repository) {
-        this.repository = repository;
-        this.hostname = Utils.getHostname();
+        this.delegate = new InternalDynamoDBLockProvider(
+                new DynamoDBClientLockRepository(dynamoDbClient, tableName, partitionKeyName, sortKeyName));
     }
 
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
-        try {
-            if (repository.obtainLock(
-                    lockConfiguration.getName(), lockConfiguration.getLockAtMostUntil(), now(), hostname)) {
-                return Optional.of(new DynamoDBLock(repository, lockConfiguration));
-            }
-            return Optional.empty();
-        } catch (Exception e) {
-            throw new LockException("Error on lock", e);
-        }
-    }
-
-    private static final class DynamoDBLock extends AbstractSimpleLock {
-        private final DynamoDBLockRepository repository;
-
-        private DynamoDBLock(DynamoDBLockRepository repository, LockConfiguration lockConfiguration) {
-            super(lockConfiguration);
-            this.repository = repository;
-        }
-
-        @Override
-        public void doUnlock() {
-            // Set lockUntil to now or lockAtLeastUntil whichever is later
-            repository.releaseLock(lockConfiguration.getName(), lockConfiguration.getUnlockTime());
-        }
+        return delegate.lock(lockConfiguration);
     }
 }

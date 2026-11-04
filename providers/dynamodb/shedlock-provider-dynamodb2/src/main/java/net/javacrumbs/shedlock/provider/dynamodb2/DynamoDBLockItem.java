@@ -31,7 +31,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.utils.StringUtils;
 
 /**
- * Lock item for {@link DynamoDBLockProvider#DynamoDBLockProvider(software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable)}.
+ * Lock item for {@link DynamoDBEnhancedLockProvider}.
  * Use <code>TableSchema.fromBean(DynamoDBLockItem.class)</code> for a hash-only table keyed on <code>_id</code>, or
  * {@link #tableSchema(String, String)} for custom key names and a sort key.
  */

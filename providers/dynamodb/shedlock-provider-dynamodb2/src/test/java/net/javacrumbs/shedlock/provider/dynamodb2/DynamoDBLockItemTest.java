@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 class DynamoDBLockItemTest {
@@ -61,7 +60,7 @@ class DynamoDBLockItemTest {
     @DisplayName("given a null table when building the provider then it fails fast")
     @SuppressWarnings("NullAway")
     void nullTable() {
-        assertThatThrownBy(() -> new DynamoDBLockProvider((DynamoDbTable<DynamoDBLockItem>) null))
+        assertThatThrownBy(() -> new DynamoDBEnhancedLockProvider(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("table can not be null");
     }
