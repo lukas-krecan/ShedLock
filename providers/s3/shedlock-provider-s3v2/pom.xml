@@ -11,10 +11,6 @@
     <artifactId>shedlock-provider-s3v2</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
 
-    <properties>
-        <aws-java-sdk2-s3.version>2.57.8</aws-java-sdk2-s3.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
@@ -25,7 +21,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>${aws-java-sdk2-s3.version}</version>
+            <version>2.57.8</version>
         </dependency>
 
         <dependency>
