@@ -14,7 +14,6 @@
 package net.javacrumbs.shedlock.provider.dynamodb.enhanced;
 
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.ID;
 import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCK_UNTIL;
@@ -24,19 +23,9 @@ import static software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTag
 import org.jspecify.annotations.Nullable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticTableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbIgnore;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.utils.StringUtils;
 
-/**
- * Lock item for {@link DynamoDBEnhancedLockProvider}.
- * Use <code>TableSchema.fromBean(DynamoDBLockItem.class)</code> for a hash-only table keyed on <code>_id</code>, or
- * {@link #tableSchema(String, String)} for custom key names and a sort key.
- */
-@DynamoDbBean
-public class DynamoDBLockItem {
+class DynamoDBLockItem {
     private @Nullable String id;
     private @Nullable String sortKey;
     private @Nullable String lockUntil;
@@ -44,7 +33,7 @@ public class DynamoDBLockItem {
     private @Nullable String lockedBy;
 
     /** Static schema for custom key names; a null sort key name means a hash-only table. */
-    public static TableSchema<DynamoDBLockItem> tableSchema(String partitionKeyName, @Nullable String sortKeyName) {
+    static TableSchema<DynamoDBLockItem> tableSchema(String partitionKeyName, @Nullable String sortKeyName) {
         requireNonNull(partitionKeyName, "partitionKeyName can not be null");
         StaticTableSchema.Builder<DynamoDBLockItem> builder = StaticTableSchema.builder(DynamoDBLockItem.class)
                 .newItemSupplier(DynamoDBLockItem::new)
@@ -80,47 +69,48 @@ public class DynamoDBLockItem {
         return builder.build();
     }
 
-    @DynamoDbPartitionKey
-    @DynamoDbAttribute(ID)
-    public @Nullable String getId() {
+    @Nullable
+    String getId() {
         return id;
     }
 
-    public void setId(@Nullable String id) {
+    void setId(@Nullable String id) {
         this.id = id;
     }
 
-    // The bean schema is hash-only; only the static schema maps the sort key.
-    @DynamoDbIgnore
-    public @Nullable String getSortKey() {
+    @Nullable
+    String getSortKey() {
         return sortKey;
     }
 
-    public void setSortKey(@Nullable String sortKey) {
+    void setSortKey(@Nullable String sortKey) {
         this.sortKey = sortKey;
     }
 
-    public @Nullable String getLockUntil() {
+    @Nullable
+    String getLockUntil() {
         return lockUntil;
     }
 
-    public void setLockUntil(@Nullable String lockUntil) {
+    void setLockUntil(@Nullable String lockUntil) {
         this.lockUntil = lockUntil;
     }
 
-    public @Nullable String getLockedAt() {
+    @Nullable
+    String getLockedAt() {
         return lockedAt;
     }
 
-    public void setLockedAt(@Nullable String lockedAt) {
+    void setLockedAt(@Nullable String lockedAt) {
         this.lockedAt = lockedAt;
     }
 
-    public @Nullable String getLockedBy() {
+    @Nullable
+    String getLockedBy() {
         return lockedBy;
     }
 
-    public void setLockedBy(@Nullable String lockedBy) {
+    void setLockedBy(@Nullable String lockedBy) {
         this.lockedBy = lockedBy;
     }
 }

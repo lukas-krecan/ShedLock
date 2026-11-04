@@ -26,7 +26,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
@@ -34,7 +33,6 @@ import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
 public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
-    // The inherited ID is "_id2"; the bean schema is fixed on the provider's default "_id".
     private static final String PARTITION_KEY = DynamoDBEnhancedLockProvider.ID;
 
     @BeforeAll
@@ -43,7 +41,7 @@ public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoD
         DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamodb)
                 .build()
-                .table(TABLE_NAME, TableSchema.fromBean(DynamoDBLockItem.class))
+                .table(TABLE_NAME, DynamoDBLockItem.tableSchema(PARTITION_KEY, null))
                 .createTable(request -> request.provisionedThroughput(ProvisionedThroughput.builder()
                         .readCapacityUnits(1L)
                         .writeCapacityUnits(1L)
@@ -66,10 +64,8 @@ public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoD
 
     @Override
     protected LockProvider getLockProvider() {
-        return new DynamoDBEnhancedLockProvider(DynamoDbEnhancedClient.builder()
-                .dynamoDbClient(dynamodb)
-                .build()
-                .table(TABLE_NAME, TableSchema.fromBean(DynamoDBLockItem.class)));
+        return new DynamoDBEnhancedLockProvider(
+                DynamoDbEnhancedClient.builder().dynamoDbClient(dynamodb).build(), TABLE_NAME);
     }
 
     @Override

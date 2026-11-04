@@ -24,6 +24,8 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 import net.javacrumbs.shedlock.support.LockException;
 import net.javacrumbs.shedlock.support.Utils;
+import org.jspecify.annotations.Nullable;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
@@ -51,12 +53,32 @@ public class DynamoDBEnhancedLockProvider implements LockProvider {
     private final String hostname;
 
     /**
-     * Uses DynamoDB to coordinate locks through an enhanced-client table.
+     * Uses a table with <code>_id</code> as its partition key and no sort key.
      *
-     * @param table lock table, see {@link DynamoDBLockItem}
+     * @param enhancedClient DynamoDB enhanced client
+     * @param tableName lock table name; the table must already exist
      */
-    public DynamoDBEnhancedLockProvider(DynamoDbTable<DynamoDBLockItem> table) {
-        this.table = requireNonNull(table, "table can not be null");
+    public DynamoDBEnhancedLockProvider(DynamoDbEnhancedClient enhancedClient, String tableName) {
+        this(enhancedClient, tableName, ID, null);
+    }
+
+    /**
+     * Uses a table with custom key names.
+     *
+     * @param enhancedClient DynamoDB enhanced client
+     * @param tableName lock table name; the table must already exist
+     * @param partitionKeyName partition key attribute name
+     * @param sortKeyName sort key attribute name, or null for a table without a sort key
+     */
+    public DynamoDBEnhancedLockProvider(
+            DynamoDbEnhancedClient enhancedClient,
+            String tableName,
+            String partitionKeyName,
+            @Nullable String sortKeyName) {
+        this.table = requireNonNull(enhancedClient, "enhancedClient can not be null")
+                .table(
+                        requireNonNull(tableName, "tableName can not be null"),
+                        DynamoDBLockItem.tableSchema(partitionKeyName, sortKeyName));
         this.hasSortKey = table.tableSchema().tableMetadata().primarySortKey().isPresent();
         this.hostname = Utils.getHostname();
     }

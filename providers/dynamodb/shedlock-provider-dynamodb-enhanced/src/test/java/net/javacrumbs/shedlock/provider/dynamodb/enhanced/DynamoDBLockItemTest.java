@@ -23,9 +23,9 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 class DynamoDBLockItemTest {
 
     @Test
-    @DisplayName("given the bean schema then it maps _id as the only key plus the three lock attributes")
-    void beanSchema() {
-        TableSchema<DynamoDBLockItem> schema = TableSchema.fromBean(DynamoDBLockItem.class);
+    @DisplayName("given the default schema then it maps _id as the only key plus the three lock attributes")
+    void defaultSchema() {
+        TableSchema<DynamoDBLockItem> schema = DynamoDBLockItem.tableSchema(DynamoDBEnhancedLockProvider.ID, null);
 
         assertThat(schema.tableMetadata().primaryPartitionKey()).isEqualTo("_id");
         assertThat(schema.tableMetadata().primarySortKey()).isEmpty();
@@ -57,12 +57,12 @@ class DynamoDBLockItemTest {
     }
 
     @Test
-    @DisplayName("given a null table when building the provider then it fails fast")
+    @DisplayName("given a null client when building the provider then it fails fast")
     @SuppressWarnings("NullAway")
-    void nullTable() {
-        assertThatThrownBy(() -> new DynamoDBEnhancedLockProvider(null))
+    void nullClient() {
+        assertThatThrownBy(() -> new DynamoDBEnhancedLockProvider(null, "Shedlock"))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("table can not be null");
+                .hasMessage("enhancedClient can not be null");
     }
 
     private static DynamoDBLockItem fullItem() {

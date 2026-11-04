@@ -60,10 +60,8 @@ public class DynamoDBEnhancedLockProviderSortKeyIntegrationTest extends Abstract
 
     @Override
     protected LockProvider getLockProvider() {
-        return new DynamoDBEnhancedLockProvider(DynamoDbEnhancedClient.builder()
-                .dynamoDbClient(dynamodb)
-                .build()
-                .table(TABLE_NAME, DynamoDBLockItem.tableSchema(ID, SORT_KEY)));
+        return new DynamoDBEnhancedLockProvider(
+                DynamoDbEnhancedClient.builder().dynamoDbClient(dynamodb).build(), TABLE_NAME, ID, SORT_KEY);
     }
 
     @Override
