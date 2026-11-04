@@ -146,6 +146,11 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-dynamodb-enhanced</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
                 <artifactId>shedlock-provider-cassandra</artifactId>
                 <version>${project.version}</version>
             </dependency>

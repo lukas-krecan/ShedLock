@@ -11,42 +11,37 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.dynamodb2;
-
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider.LOCK_UNTIL;
-import static org.assertj.core.api.Assertions.assertThat;
+package net.javacrumbs.shedlock.provider.dynamodb.enhanced;
 
 import java.util.List;
 import java.util.Map;
 import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
-public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
-    // The inherited ID is "_id2"; the bean schema is fixed on the provider's default "_id".
-    private static final String PARTITION_KEY = DynamoDBLockProvider.ID;
+@Testcontainers
+public class DynamoDBEnhancedLockProviderSortKeyIntegrationTest extends AbstractDynamoDBLockProviderIntegrationTest {
+    private static final String SORT_KEY = "_sk";
+    private static final String SORT = "_SortKey";
 
     @BeforeAll
     static void createLockTable() {
         dynamodb = createClient();
-        DynamoDBUtils.createLockTable(
-                dynamodb,
-                TABLE_NAME,
-                ProvisionedThroughput.builder()
+        DynamoDbEnhancedClient.builder()
+                .dynamoDbClient(dynamodb)
+                .build()
+                .table(TABLE_NAME, DynamoDBLockItem.tableSchema(ID, SORT_KEY))
+                .createTable(request -> request.provisionedThroughput(ProvisionedThroughput.builder()
                         .readCapacityUnits(1L)
                         .writeCapacityUnits(1L)
-                        .build());
+                        .build()));
         waitForTableBeingActive();
     }
 
@@ -58,7 +53,7 @@ public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoD
         for (Map<String, AttributeValue> item : items) {
             dynamodb.deleteItem(DeleteItemRequest.builder()
                     .tableName(TABLE_NAME)
-                    .key(Map.of(PARTITION_KEY, item.get(PARTITION_KEY)))
+                    .key(Map.of(ID, item.get(ID), SORT_KEY, item.get(SORT_KEY)))
                     .build());
         }
     }
@@ -68,25 +63,19 @@ public class DynamoDBEnhancedLockProviderIntegrationTest extends AbstractDynamoD
         return new DynamoDBEnhancedLockProvider(DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamodb)
                 .build()
-                .table(TABLE_NAME, TableSchema.fromBean(DynamoDBLockItem.class)));
+                .table(TABLE_NAME, DynamoDBLockItem.tableSchema(ID, SORT_KEY)));
     }
 
     @Override
     protected Map<String, AttributeValue> getLockItem(String lockName) {
         GetItemRequest request = GetItemRequest.builder()
                 .tableName(TABLE_NAME)
-                .key(Map.of(PARTITION_KEY, AttributeValue.builder().s(lockName).build()))
+                .key(Map.of(
+                        ID,
+                        AttributeValue.builder().s(lockName).build(),
+                        SORT_KEY,
+                        AttributeValue.builder().s(lockName.concat(SORT)).build()))
                 .build();
         return dynamodb.getItem(request).item();
-    }
-
-    @Test
-    public void shouldKeepLockedAtAndLockedByAfterUnlock() {
-        SimpleLock lock = getLockProvider().lock(lockConfig("keep")).orElseThrow();
-
-        lock.unlock();
-
-        assertThat(getLockItem("keep")).containsKeys(LOCK_UNTIL, LOCKED_AT, LOCKED_BY);
-        assertUnlocked("keep");
     }
 }

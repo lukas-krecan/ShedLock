@@ -463,11 +463,23 @@ public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.Dynamo
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
-If your framework hands out enhanced-client tables instead of a `DynamoDbClient`, use `DynamoDBEnhancedLockProvider` with a `DynamoDbTable`:
+#### DynamoDB Enhanced Client
+
+For an enhanced-client `DynamoDbTable`, import:
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-dynamodb-enhanced</artifactId>
+    <version>7.10.1</version>
+</dependency>
+```
+
+Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBEnhancedLockProvider;
-import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockItem;
+import net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider;
+import net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBLockItem;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 ...
@@ -480,8 +492,8 @@ public LockProvider lockProvider(software.amazon.awssdk.enhanced.dynamodb.Dynamo
 
 The bean schema expects `_id` as the partition key. For other key names, or a table with a sort key, use
 `DynamoDBLockItem.tableSchema(partitionKeyName, sortKeyName)`. Both providers write the same item format,
-so they can share a table as long as the key names match. This requires `software.amazon.awssdk:dynamodb-enhanced` on the classpath; it is an
-optional dependency of the module.
+so they can share a table as long as the key names match. Create the table before using the provider.
+The module includes the `software.amazon.awssdk:dynamodb-enhanced` dependency.
 
 #### ZooKeeper (using Curator)
 Import

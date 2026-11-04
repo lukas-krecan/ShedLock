@@ -11,13 +11,13 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.dynamodb2;
+package net.javacrumbs.shedlock.provider.dynamodb.enhanced;
 
 import static java.util.Objects.requireNonNull;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBEnhancedLockProvider.ID;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBEnhancedLockProvider.LOCKED_AT;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBEnhancedLockProvider.LOCKED_BY;
-import static net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBEnhancedLockProvider.LOCK_UNTIL;
+import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.ID;
+import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCKED_AT;
+import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCKED_BY;
+import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCK_UNTIL;
 import static software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags.primaryPartitionKey;
 import static software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags.primarySortKey;
 

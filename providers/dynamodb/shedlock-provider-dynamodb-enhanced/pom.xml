@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>shedlock-parent</artifactId>
+        <groupId>net.javacrumbs.shedlock</groupId>
+        <version>7.10.2-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>shedlock-provider-dynamodb-enhanced</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.57.8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb-enhanced</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-test-support</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-localstack</artifactId>
+            <version>${test-containers.ver}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <version>${test-containers.ver}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.ver}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

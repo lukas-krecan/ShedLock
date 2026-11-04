@@ -11,7 +11,7 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.shedlock.provider.dynamodb2;
+package net.javacrumbs.shedlock.provider.dynamodb.enhanced;
 
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;
@@ -34,7 +34,7 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
  * Distributed lock using a DynamoDB enhanced-client table. Requires
  * <code>software.amazon.awssdk:dynamodb-enhanced</code>.
  *
- * <p>Uses the same item format as {@link DynamoDBLockProvider}; both providers can share a table
+ * <p>Uses the same item format as the standard DynamoDB provider; both providers can share a table
  * when the key names match.
  */
 public class DynamoDBEnhancedLockProvider implements LockProvider {
