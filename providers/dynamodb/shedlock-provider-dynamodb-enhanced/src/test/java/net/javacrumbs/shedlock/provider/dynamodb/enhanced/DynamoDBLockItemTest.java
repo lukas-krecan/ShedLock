@@ -23,6 +23,20 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 class DynamoDBLockItemTest {
 
     @Test
+    void beanSchemaShouldMatchDefaultStaticSchema() {
+        TableSchema<DynamoDBLockItem> schema = TableSchema.fromClass(DynamoDBLockItem.class);
+        TableSchema<DynamoDBLockItem> defaultSchema =
+                DynamoDBLockItem.tableSchema(DynamoDBEnhancedLockProvider.ID, null);
+        var attributes = defaultSchema.itemToMap(fullItem(), true);
+
+        assertThat(schema.tableMetadata().primaryPartitionKey()).isEqualTo("_id");
+        assertThat(schema.tableMetadata().primarySortKey()).isEmpty();
+        assertThat(schema.attributeNames()).containsExactlyInAnyOrder("_id", "lockUntil", "lockedAt", "lockedBy");
+        assertThat(schema.itemToMap(fullItem(), true)).isEqualTo(attributes);
+        assertThat(schema.itemToMap(schema.mapToItem(attributes), true)).isEqualTo(attributes);
+    }
+
+    @Test
     @DisplayName("given the default schema then it maps _id as the only key plus the three lock attributes")
     void defaultSchema() {
         TableSchema<DynamoDBLockItem> schema = DynamoDBLockItem.tableSchema(DynamoDBEnhancedLockProvider.ID, null);

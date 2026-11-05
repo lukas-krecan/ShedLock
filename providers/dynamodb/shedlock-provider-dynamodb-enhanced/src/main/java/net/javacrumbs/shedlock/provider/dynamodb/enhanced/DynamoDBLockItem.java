@@ -14,6 +14,7 @@
 package net.javacrumbs.shedlock.provider.dynamodb.enhanced;
 
 import static java.util.Objects.requireNonNull;
+import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.ID;
 import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCKED_AT;
 import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCKED_BY;
 import static net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider.LOCK_UNTIL;
@@ -23,9 +24,17 @@ import static software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTag
 import org.jspecify.annotations.Nullable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticTableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.utils.StringUtils;
 
-class DynamoDBLockItem {
+/**
+ * Lock entity for frameworks that create tables using <code>TableSchema.fromClass</code>.
+ * The bean schema uses <code>_id</code> as the partition key and has no sort key.
+ */
+@DynamoDbBean
+public class DynamoDBLockItem {
     private @Nullable String id;
     private @Nullable String sortKey;
     private @Nullable String lockUntil;
@@ -69,12 +78,14 @@ class DynamoDBLockItem {
         return builder.build();
     }
 
+    @DynamoDbPartitionKey
+    @DynamoDbAttribute(ID)
     @Nullable
-    String getId() {
+    public String getId() {
         return id;
     }
 
-    void setId(@Nullable String id) {
+    public void setId(@Nullable String id) {
         this.id = id;
     }
 
@@ -87,30 +98,33 @@ class DynamoDBLockItem {
         this.sortKey = sortKey;
     }
 
+    @DynamoDbAttribute(LOCK_UNTIL)
     @Nullable
-    String getLockUntil() {
+    public String getLockUntil() {
         return lockUntil;
     }
 
-    void setLockUntil(@Nullable String lockUntil) {
+    public void setLockUntil(@Nullable String lockUntil) {
         this.lockUntil = lockUntil;
     }
 
+    @DynamoDbAttribute(LOCKED_AT)
     @Nullable
-    String getLockedAt() {
+    public String getLockedAt() {
         return lockedAt;
     }
 
-    void setLockedAt(@Nullable String lockedAt) {
+    public void setLockedAt(@Nullable String lockedAt) {
         this.lockedAt = lockedAt;
     }
 
+    @DynamoDbAttribute(LOCKED_BY)
     @Nullable
-    String getLockedBy() {
+    public String getLockedBy() {
         return lockedBy;
     }
 
-    void setLockedBy(@Nullable String lockedBy) {
+    public void setLockedBy(@Nullable String lockedBy) {
         this.lockedBy = lockedBy;
     }
 }

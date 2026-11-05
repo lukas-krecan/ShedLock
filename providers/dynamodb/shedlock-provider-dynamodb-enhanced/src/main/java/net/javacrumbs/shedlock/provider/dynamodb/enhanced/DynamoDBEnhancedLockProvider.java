@@ -75,10 +75,20 @@ public class DynamoDBEnhancedLockProvider implements LockProvider {
             String tableName,
             String partitionKeyName,
             @Nullable String sortKeyName) {
-        this.table = requireNonNull(enhancedClient, "enhancedClient can not be null")
+        this(requireNonNull(enhancedClient, "enhancedClient can not be null")
                 .table(
                         requireNonNull(tableName, "tableName can not be null"),
-                        DynamoDBLockItem.tableSchema(partitionKeyName, sortKeyName));
+                        DynamoDBLockItem.tableSchema(partitionKeyName, sortKeyName)));
+    }
+
+    /**
+     * Uses a table supplied by a framework, for example one created using
+     * <code>TableSchema.fromClass(DynamoDBLockItem.class)</code>.
+     *
+     * @param table lock table mapped to {@link DynamoDBLockItem}; the table must already exist
+     */
+    public DynamoDBEnhancedLockProvider(DynamoDbTable<DynamoDBLockItem> table) {
+        this.table = requireNonNull(table, "table can not be null");
         this.hasSortKey = table.tableSchema().tableMetadata().primarySortKey().isPresent();
         this.hostname = Utils.getHostname();
     }
