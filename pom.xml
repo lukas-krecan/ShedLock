@@ -201,7 +201,7 @@
                     <dependency>
                         <groupId>dev.openjavaformat</groupId>
                         <artifactId>open-java-format</artifactId>
-                        <version>21.0.0</version>
+                        <version>21.0.1</version>
                     </dependency>
                 </dependencies>
             </plugin>
