@@ -13,6 +13,7 @@ import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,10 +62,12 @@ public class KeepAliveLockProvider implements LockProvider {
     }
 
     private static class KeepAliveLock extends AbstractSimpleLock {
-        private final Duration lockExtensionPeriod;
+        private final ScheduledExecutorService executorService;
         private SimpleLock lock;
-        private Duration remainingLockAtLeastFor;
-        private final ScheduledFuture<?> future;
+
+        @Nullable
+        private ScheduledFuture<?> future;
+
         private boolean active = true;
         private Instant currentLockAtMostUntil;
 
@@ -72,13 +75,22 @@ public class KeepAliveLockProvider implements LockProvider {
                 LockConfiguration lockConfiguration, SimpleLock lock, ScheduledExecutorService executorService) {
             super(lockConfiguration);
             this.lock = lock;
-            this.lockExtensionPeriod = lockConfiguration.getLockAtMostFor().dividedBy(2);
-            this.remainingLockAtLeastFor = lockConfiguration.getLockAtLeastFor();
+            this.executorService = executorService;
             this.currentLockAtMostUntil = lockConfiguration.getLockAtMostUntil();
 
-            long extensionPeriodMs = lockExtensionPeriod.toMillis();
-            this.future = executorService.scheduleAtFixedRate(
-                    this::extendForNextPeriod, extensionPeriodMs, extensionPeriodMs, MILLISECONDS);
+            scheduleNextExtension();
+        }
+
+        private void scheduleNextExtension() {
+            scheduleNextExtension(
+                    Duration.between(now(), currentLockAtMostUntil).dividedBy(2));
+        }
+
+        private synchronized void scheduleNextExtension(Duration delay) {
+            if (active) {
+                long delayMs = Math.max(1, delay.toMillis());
+                future = executorService.schedule(this::extendForNextPeriod, delayMs, MILLISECONDS);
+            }
         }
 
         private void extendForNextPeriod() {
@@ -89,28 +101,37 @@ public class KeepAliveLockProvider implements LockProvider {
                 if (!active) {
                     return;
                 }
-                if (currentLockAtMostUntil.isBefore(now())) {
+                Instant extensionStartedAt = now();
+                if (!currentLockAtMostUntil.isAfter(extensionStartedAt)) {
                     // Failsafe for cases when we are not able to extend the lock and it expires
                     // before the
                     // extension
                     // In such case someone else might have already obtained the lock so we can't
                     // extend it.
+                    logger.warn("Can't extend expired lock {}", lockConfiguration.getName());
                     stop();
                     return;
                 }
-                remainingLockAtLeastFor = remainingLockAtLeastFor.minus(lockExtensionPeriod);
-                if (remainingLockAtLeastFor.isNegative()) {
-                    remainingLockAtLeastFor = Duration.ZERO;
+                Duration remainingLockAtLeastFor = getRemainingLockAtLeastFor(extensionStartedAt);
+                Optional<SimpleLock> extendedLock;
+                try {
+                    extendedLock = lock.extend(lockConfiguration.getLockAtMostFor(), remainingLockAtLeastFor);
+                } catch (RuntimeException e) {
+                    logger.warn("Can't extend lock {}", lockConfiguration.getName(), e);
+                    scheduleNextExtension();
+                    return;
                 }
-                currentLockAtMostUntil = now().plus(lockConfiguration.getLockAtMostFor());
-                Optional<SimpleLock> extendedLock =
-                        lock.extend(lockConfiguration.getLockAtMostFor(), remainingLockAtLeastFor);
                 if (extendedLock.isPresent()) {
                     lock = extendedLock.get();
+                    currentLockAtMostUntil = extensionStartedAt.plus(lockConfiguration.getLockAtMostFor());
                     logger.trace(
                             "Lock {} extended for {}",
                             lockConfiguration.getName(),
                             lockConfiguration.getLockAtMostFor());
+                    // Keep storage latency from delaying the next renewal past the midpoint of the lease.
+                    Instant nextExtensionAt = extensionStartedAt.plus(
+                            lockConfiguration.getLockAtMostFor().dividedBy(2));
+                    scheduleNextExtension(Duration.between(now(), nextExtensionAt));
                 } else {
                     logger.warn("Can't extend lock {}", lockConfiguration.getName());
                     stop();
@@ -118,9 +139,21 @@ public class KeepAliveLockProvider implements LockProvider {
             }
         }
 
+        private Duration getRemainingLockAtLeastFor(Instant extensionStartedAt) {
+            Duration remainingLockAtLeastFor =
+                    Duration.between(extensionStartedAt, lockConfiguration.getLockAtLeastUntil());
+            if (remainingLockAtLeastFor.isNegative()) {
+                return Duration.ZERO;
+            } else {
+                return remainingLockAtLeastFor;
+            }
+        }
+
         private void stop() {
             active = false;
-            future.cancel(false);
+            if (future != null) {
+                future.cancel(false);
+            }
         }
 
         @Override
