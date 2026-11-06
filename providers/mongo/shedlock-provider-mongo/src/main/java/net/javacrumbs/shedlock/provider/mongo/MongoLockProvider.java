@@ -20,6 +20,7 @@ import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
+import com.mongodb.ErrorCategory;
 import com.mongodb.MongoServerException;
 import com.mongodb.ReadConcern;
 import com.mongodb.WriteConcern;
@@ -54,19 +55,16 @@ import org.bson.conversions.Bson;
  * }
  * </pre>
  *
- * lockedAt and lockedBy are just for troubleshooting and are not read by the
- * code
+ * lockedAt is used for troubleshooting. lockedBy also identifies the owner when extending a lock.
  *
  * <ol>
- * <li>Attempts to insert a new lock record. As an optimization, we keep
- * in-memory track of created lock records. If the record has been inserted,
- * returns lock.
- * <li>We will try to update lock record using filter _id == name AND lock_until
- * &lt;= now
- * <li>If the update succeeded (1 updated document), we have the lock. If the
- * update failed (0 updated documents) somebody else holds the lock
- * <li>When unlocking, lock_until is set to now.
+ * <li>Upserts a document using the filter _id == name AND lockUntil &lt;= now.
+ * <li>If the document is inserted or an expired lock is updated, we have the lock.
+ * <li>If a valid lock already exists, the insert fails with a duplicate key error and the lock is unavailable.
+ * <li>When unlocking, lockUntil is set to now or lockAtLeastUntil, whichever is later.
  * </ol>
+ *
+ * <p>Uses the application server clock. To use the Mongo server clock, use {@link #create(MongoDatabase, boolean)} with {@code useDbTime} set to {@code true}.
  */
 public class MongoLockProvider implements ExtensibleLockProvider {
     static final String LOCK_UNTIL = "lockUntil";
@@ -78,16 +76,57 @@ public class MongoLockProvider implements ExtensibleLockProvider {
     private final String hostname;
     private final MongoCollection<Document> collection;
 
-    /** Uses Mongo to coordinate locks */
-    public MongoLockProvider(MongoDatabase mongoDatabase) {
-        this(mongoDatabase
-                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
-                .withWriteConcern(WriteConcern.MAJORITY)
-                .withReadConcern(ReadConcern.MAJORITY));
+    /**
+     * Creates a lock provider using the default {@code shedLock} collection with majority read and write concerns.
+     *
+     * <p>Using the Mongo server clock requires MongoDB &gt;= 4.2. In this mode, existing lock names are cached,
+     * so externally deleted documents are not automatically recreated while their names remain cached.
+     * The cache can be cleared by casting the returned provider to
+     * {@link net.javacrumbs.shedlock.support.StorageBasedLockProvider} and calling
+     * {@link net.javacrumbs.shedlock.support.StorageBasedLockProvider#clearCache()}.
+     *
+     * @param mongoDatabase Mongo database to be used
+     * @param useDbTime {@code true} to use the Mongo server clock, {@code false} to use the application server clock
+     * @return a lock provider using the selected clock
+     */
+    public static ExtensibleLockProvider create(MongoDatabase mongoDatabase, boolean useDbTime) {
+        return create(getCollection(mongoDatabase), useDbTime);
     }
 
     /**
-     * Uses Mongo to coordinate locks. Please, make sure that the collection has WriteConcern.MAJORITY set.
+     * Creates a lock provider using the supplied collection. Please, make sure that the collection has
+     * {@link WriteConcern#MAJORITY} set.
+     *
+     * <p>See {@link #create(MongoDatabase, boolean)} for MongoDB version requirements and lock name caching
+     * when using the Mongo server clock.
+     *
+     * @param collection Mongo collection to be used
+     * @param useDbTime {@code true} to use the Mongo server clock, {@code false} to use the application server clock
+     * @return a lock provider using the selected clock
+     */
+    public static ExtensibleLockProvider create(MongoCollection<Document> collection, boolean useDbTime) {
+        if (useDbTime) {
+            return new DbTimeMongoLockProvider(collection);
+        } else {
+            return new MongoLockProvider(collection);
+        }
+    }
+
+    /** Uses the application server clock and the default {@code shedLock} collection with majority write concerns. */
+    public MongoLockProvider(MongoDatabase mongoDatabase) {
+        this(getCollection(mongoDatabase));
+    }
+
+    private static MongoCollection<Document> getCollection(MongoDatabase mongoDatabase) {
+        return mongoDatabase
+                .getCollection(DEFAULT_SHEDLOCK_COLLECTION_NAME)
+                .withWriteConcern(WriteConcern.MAJORITY)
+                .withReadConcern(ReadConcern.MAJORITY);
+    }
+
+    /**
+     * Uses the application server clock and the supplied collection. Please, make sure that the collection has
+     * {@link WriteConcern#MAJORITY} set. Read concern is not used by the atomic {@code findOneAndUpdate} operations.
      *
      * @param collection
      *            Mongo collection to be used
@@ -116,7 +155,7 @@ public class MongoLockProvider implements ExtensibleLockProvider {
                             new FindOneAndUpdateOptions().upsert(true));
             return Optional.of(new MongoLock(lockConfiguration, this));
         } catch (MongoServerException e) {
-            if (e.getCode() == 11000) { // duplicate key
+            if (ErrorCategory.fromErrorCode(e.getCode()) == ErrorCategory.DUPLICATE_KEY) {
                 // Upsert attempts to insert when there were no filter matches.
                 // This means there was a lock with matching ID with lockUntil > now.
                 return Optional.empty();
