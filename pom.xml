@@ -56,6 +56,7 @@
         <module>providers/redis/shedlock-provider-redis-lettuce</module>
         <module>providers/redis/shedlock-provider-redis-spring</module>
         <module>providers/dynamodb/shedlock-provider-dynamodb2</module>
+        <module>providers/dynamodb/shedlock-provider-dynamodb-enhanced</module>
         <module>providers/cassandra/shedlock-provider-cassandra</module>
         <module>providers/arangodb/shedlock-provider-arangodb</module>
         <module>providers/ignite/shedlock-provider-ignite</module>

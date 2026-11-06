@@ -463,6 +463,35 @@ public LockProvider lockProvider(software.amazon.awssdk.services.dynamodb.Dynamo
 > `DynamoDBUtils#createLockTable` may be used for creating it programmatically.
 > A table definition is available from `DynamoDBLockProvider`'s Javadoc.
 
+#### DynamoDB Enhanced Client
+
+For the DynamoDB enhanced client, import:
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-dynamodb-enhanced</artifactId>
+    <version>7.10.1</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.dynamodb.enhanced.DynamoDBEnhancedLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient enhancedClient) {
+    return new DynamoDBEnhancedLockProvider(enhancedClient, "Shedlock");
+}
+```
+
+By default, the provider expects `_id` as the partition key and no sort key. For custom key names, use
+`new DynamoDBEnhancedLockProvider(enhancedClient, "Shedlock", partitionKeyName, sortKeyName)`;
+pass `null` for `sortKeyName` if the table has no sort key. Create the table before using the provider.
+
 #### ZooKeeper (using Curator)
 Import
 ```xml
