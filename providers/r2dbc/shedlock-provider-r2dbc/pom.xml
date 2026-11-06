@@ -65,9 +65,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.jasync-sql</groupId>
-            <artifactId>jasync-r2dbc-mysql</artifactId>
-            <version>2.2.4</version>
+            <groupId>io.asyncer</groupId>
+            <artifactId>r2dbc-mysql</artifactId>
+            <version>1.4.0</version>
             <scope>test</scope>
         </dependency>
 
