@@ -1,5 +1,11 @@
 # Release notes
 
+## 7.11.0 (2026-11-07)
+* Support for database time in Mongo and Reactive Mongo providers #3852 (thanks @mraj602)
+* Add DynamoDB Enhanced Client lock provider #3865 (thanks @rvecchilm)
+* Retry keep-alive lock extension after transient failures #3867
+* Dependency updates
+
 ## 7.10.1 (2026-09-08)
 * Fix Neo4j ordering for lock extension #3739
 * Dependency updates
