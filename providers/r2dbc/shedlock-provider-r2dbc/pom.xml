@@ -67,7 +67,7 @@
         <dependency>
             <groupId>io.asyncer</groupId>
             <artifactId>r2dbc-mysql</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.3</version>
             <scope>test</scope>
         </dependency>
 
