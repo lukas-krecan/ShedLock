@@ -84,7 +84,7 @@
         <kotlin.compiler.apiVersion>2.3</kotlin.compiler.apiVersion>
         <micronaut4.version>5.2.5</micronaut4.version>
         <micronaut4.validation.version>5.2.1</micronaut4.validation.version>
-        <micronaut4-data.version>5.1.1</micronaut4-data.version>
+        <micronaut4-data.version>.8.2</micronaut4-data.version>
         <micronaut-sourcegen-asm.version>9.11.1</micronaut-sourcegen-asm.version>
         <logback.ver>1.6.6</logback.ver>
         <awaitility.ver>4.3.0</awaitility.ver>
