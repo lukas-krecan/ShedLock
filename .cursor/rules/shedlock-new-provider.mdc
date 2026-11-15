@@ -1,0 +1,26 @@
+---
+description: Добавление нового LockProvider / новой базы хранения в ShedLock
+alwaysApply: false
+---
+
+# Новый lock provider
+
+Перед работой прочитай [CONTRIBUTING.md](../../CONTRIBUTING.md) и сценарий «Добавление новой базы» в [AGENTS.md](../../AGENTS.md).
+
+## Чеклист
+
+1. Создай модуль `providers/<store>/shedlock-provider-<name>`.
+2. Реализуй `LockProvider` (и unlock/extend по возможности store), в стиле соседнего provider.
+3. Добавь IT на базе `shedlock-test-support`.
+4. Подключи модуль в корневом `pom.xml`.
+5. Добавь секцию в `README.md`.
+6. Не меняй публичный API core и семантику skip-not-wait.
+
+## DoD
+
+- Тесты: `./mvnw -pl providers/<store>/shedlock-provider-<name> -am test`
+- В commit/PR: `Сделано с агентом, проверено человеком`
+
+## Формат ответа
+
+План → изменения в коде → пояснение → шаги проверки.

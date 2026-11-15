@@ -10,6 +10,8 @@ ShedLock uses an external store like Mongo, JDBC database, Redis, Hazelcast, Zoo
 
 Feedback and pull-requests welcome!
 
+Contributing: see [CONTRIBUTING.md](CONTRIBUTING.md) (AI agents: [AGENTS.md](AGENTS.md)).
+
 #### ShedLock is not a distributed scheduler
 Please note that ShedLock is not and will never be full-fledged scheduler, it's just a lock. If you need a distributed
 scheduler, please use another project ([db-scheduler](https://github.com/kagkarlsson/db-scheduler), [JobRunr](https://www.jobrunr.io/en/)).
@@ -29,6 +31,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [Redis (using Spring RedisConnectionFactory)](#redis-using-spring-redisconnectionfactory)
   - [Redis (using Spring ReactiveRedisConnectionFactory)](#redis-using-spring-reactiveredisconnectionfactory)
   - [Redis (using Jedis)](#redis-using-jedis)
+  - [Valkey (using GLIDE)](#valkey-using-glide)
   - [Hazelcast](#hazelcast)
   - [Couchbase](#couchbase)
   - [ElasticSearch](#elasticsearch)
@@ -649,6 +652,34 @@ import net.javacrumbs.shedlock.provider.redis.lettuce.LettuceLockProvider;
 @Bean
 public LockProvider lockProvider(StatefulRedisConnection<String, String> connection) {
     return new LettuceLockProvider(connection, ENV);
+}
+```
+
+#### Valkey (using GLIDE)
+
+Uses [Valkey GLIDE](https://github.com/valkey-io/valkey-glide) Java client. Works with Valkey and Redis-compatible servers.
+
+Import
+
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-valkey-glide</artifactId>
+    <version>7.11.0</version>
+</dependency>
+```
+
+and configure
+
+```java
+import glide.api.GlideClient;
+import net.javacrumbs.shedlock.provider.valkey.glide.ValkeyGlideLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(GlideClient client) {
+    return new ValkeyGlideLockProvider(client, ENV);
 }
 ```
 
