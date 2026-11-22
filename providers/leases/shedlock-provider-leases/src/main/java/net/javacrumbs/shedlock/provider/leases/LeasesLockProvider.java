@@ -6,9 +6,12 @@ import static net.javacrumbs.shedlock.core.ClockProvider.now;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.coordination.v1.Lease;
 import io.fabric8.kubernetes.api.model.coordination.v1.LeaseBuilder;
+import io.fabric8.kubernetes.api.model.coordination.v1.LeaseList;
 import io.fabric8.kubernetes.api.model.coordination.v1.LeaseSpec;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import java.net.HttpURLConnection;
 import java.time.Duration;
 import java.time.Instant;
@@ -17,10 +20,12 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LeasesLockProvider implements ExtensibleLockProvider {
     static final String LOCKED_UNTIL_ANNOTATION = "shedlock.net/locked-until";
-    private static final int MAX_UNLOCK_ATTEMPTS = 5;
+    private static final String LOCK_TOKEN_ANNOTATION = "shedlock.net/lock-token";
 
     private static final Logger logger = LoggerFactory.getLogger(LeasesLockProvider.class);
 
@@ -92,16 +97,17 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String name = lockConfiguration.getName();
+        String lockToken = UUID.randomUUID().toString();
         Instant now = now();
         try {
             Optional<Lease> existing = findLease(name);
             if (existing.isEmpty()) {
-                leases().resource(newLease(lockConfiguration, now)).create();
+                leases().resource(newLease(lockConfiguration, now, lockToken)).create();
             } else {
                 if (lockedUntil(existing.get()).isAfter(now)) {
                     return Optional.empty();
                 }
-                leases().resource(update(existing.get(), lockConfiguration.getLockAtMostUntil(), now, true))
+                leases().resource(update(existing.get(), lockConfiguration.getLockAtMostUntil(), now, true, lockToken))
                         .update();
             }
         } catch (KubernetesClientException e) {
@@ -112,7 +118,7 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
             throw e;
         }
         logger.debug("Locked {}", lockConfiguration);
-        return Optional.of(new LeaseLock(lockConfiguration));
+        return Optional.of(new LeaseLock(lockConfiguration, lockToken));
     }
 
     boolean isLocked(String lockName) {
@@ -126,18 +132,16 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
         return Optional.ofNullable(leases().withName(name).get());
     }
 
-    private io.fabric8.kubernetes.client.dsl.NonNamespaceOperation<
-                    Lease,
-                    io.fabric8.kubernetes.api.model.coordination.v1.LeaseList,
-                    io.fabric8.kubernetes.client.dsl.Resource<Lease>>
-            leases() {
+    private NonNamespaceOperation<Lease, LeaseList, Resource<@Nullable Lease>> leases() {
         return client.leases().inNamespace(namespace);
     }
 
-    private Lease newLease(LockConfiguration configuration, Instant now) {
-        Map<String, String> annotations = new HashMap<>();
-        annotations.put(
-                LOCKED_UNTIL_ANNOTATION, configuration.getLockAtMostUntil().toString());
+    private Lease newLease(LockConfiguration configuration, Instant now, String lockToken) {
+        Map<String, String> annotations = Map.of(
+                LOCKED_UNTIL_ANNOTATION,
+                configuration.getLockAtMostUntil().toString(),
+                LOCK_TOKEN_ANNOTATION,
+                lockToken);
         return new LeaseBuilder()
                 .withMetadata(new ObjectMetaBuilder()
                         .withName(configuration.getName())
@@ -149,12 +153,13 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
     }
 
     /** Returns a copy of the lease with a new expiry; keeps resourceVersion. */
-    private Lease update(Lease lease, Instant lockedUntil, Instant now, boolean newHolder) {
+    private Lease update(Lease lease, Instant lockedUntil, Instant now, boolean newHolder, String lockToken) {
         Map<String, String> annotations = new HashMap<>();
         if (lease.getMetadata().getAnnotations() != null) {
             annotations.putAll(lease.getMetadata().getAnnotations());
         }
         annotations.put(LOCKED_UNTIL_ANNOTATION, lockedUntil.toString());
+        annotations.put(LOCK_TOKEN_ANNOTATION, lockToken);
 
         LeaseSpec oldSpec = lease.getSpec();
         ZonedDateTime acquireTime = newHolder || oldSpec == null ? utc(now) : oldSpec.getAcquireTime();
@@ -219,31 +224,35 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
     }
 
     private final class LeaseLock extends AbstractSimpleLock {
+        private final String lockToken;
 
-        private LeaseLock(LockConfiguration lockConfiguration) {
+        private LeaseLock(LockConfiguration lockConfiguration, String lockToken) {
             super(lockConfiguration);
+            this.lockToken = lockToken;
+        }
+
+        private boolean ownsLease(Lease lease) {
+            Map<String, String> annotations = lease.getMetadata().getAnnotations();
+            return annotations != null && lockToken.equals(annotations.get(LOCK_TOKEN_ANNOTATION));
         }
 
         @Override
         protected void doUnlock() {
             String name = lockConfiguration.getName();
-            for (int attempt = 1; attempt <= MAX_UNLOCK_ATTEMPTS; attempt++) {
-                Optional<Lease> found = findLease(name);
-                if (found.isEmpty()) {
-                    return;
-                }
-                Lease lease = found.get();
-                Instant now = now();
-                Instant lockAtLeastUntil = lockConfiguration.getLockAtLeastUntil();
-                Instant until = lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
-                try {
-                    leases().resource(update(lease, until, now, false)).update();
-                    logger.debug("Unlocked {}", lockConfiguration);
-                    return;
-                } catch (KubernetesClientException e) {
-                    if (!isConflict(e) || attempt == MAX_UNLOCK_ATTEMPTS) {
-                        throw e;
-                    }
+            Optional<Lease> found = findLease(name).filter(this::ownsLease);
+            if (found.isEmpty()) {
+                return;
+            }
+            Lease lease = found.get();
+            Instant now = now();
+            Instant lockAtLeastUntil = lockConfiguration.getLockAtLeastUntil();
+            Instant until = lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
+            try {
+                leases().resource(update(lease, until, now, false, lockToken)).update();
+                logger.debug("Unlocked {}", lockConfiguration);
+            } catch (KubernetesClientException e) {
+                if (!isConflict(e)) {
+                    throw e;
                 }
             }
         }
@@ -252,13 +261,14 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
         protected Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
             Instant now = now();
             Optional<Lease> active = findLease(newConfiguration.getName())
+                    .filter(this::ownsLease)
                     .filter(found -> lockedUntil(found).isAfter(now));
             if (active.isEmpty()) {
                 return Optional.empty();
             }
             Lease lease = active.get();
             try {
-                leases().resource(update(lease, newConfiguration.getLockAtMostUntil(), now, false))
+                leases().resource(update(lease, newConfiguration.getLockAtMostUntil(), now, false, lockToken))
                         .update();
             } catch (KubernetesClientException e) {
                 if (isConflict(e)) {
@@ -267,7 +277,7 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
                 throw e;
             }
             logger.debug("Extended {}", newConfiguration);
-            return Optional.of(new LeaseLock(newConfiguration));
+            return Optional.of(new LeaseLock(newConfiguration, lockToken));
         }
     }
 }
