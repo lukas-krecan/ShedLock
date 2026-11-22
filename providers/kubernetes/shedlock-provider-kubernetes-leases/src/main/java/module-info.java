@@ -4,7 +4,7 @@
  * This module provides a lock provider implementation based on Kubernetes
  * coordination.k8s.io Lease resources.
  */
-module net.javacrumbs.shedlock.provider.leases {
+module net.javacrumbs.shedlock.provider.kubernetes.leases {
     requires net.javacrumbs.shedlock.core;
     requires kubernetes.client.api;
     requires kubernetes.model.core;
@@ -12,5 +12,5 @@ module net.javacrumbs.shedlock.provider.leases {
     requires org.slf4j;
     requires static org.jspecify;
 
-    exports net.javacrumbs.shedlock.provider.leases;
+    exports net.javacrumbs.shedlock.provider.kubernetes.leases;
 }

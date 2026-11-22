@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.leases;
+package net.javacrumbs.shedlock.provider.kubernetes.leases;
 
 import static java.util.Objects.requireNonNull;
 import static net.javacrumbs.shedlock.core.ClockProvider.now;

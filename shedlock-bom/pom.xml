@@ -41,7 +41,7 @@
             </dependency>
             <dependency>
                 <groupId>net.javacrumbs.shedlock</groupId>
-                <artifactId>shedlock-provider-leases</artifactId>
+                <artifactId>shedlock-provider-kubernetes-leases</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

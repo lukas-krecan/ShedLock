@@ -846,7 +846,7 @@ Import the project
 ```xml
 <dependency>
     <groupId>net.javacrumbs.shedlock</groupId>
-    <artifactId>shedlock-provider-leases</artifactId>
+    <artifactId>shedlock-provider-kubernetes-leases</artifactId>
     <version>7.11.0</version>
 </dependency>
 ```
@@ -854,7 +854,7 @@ Import the project
 Configure:
 
 ```java
-import net.javacrumbs.shedlock.provider.leases.LeasesLockProvider;
+import net.javacrumbs.shedlock.provider.kubernetes.leases.LeasesLockProvider;
 
 ...
 

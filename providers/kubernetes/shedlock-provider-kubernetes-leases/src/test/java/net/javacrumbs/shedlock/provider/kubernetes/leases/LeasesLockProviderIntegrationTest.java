@@ -1,4 +1,4 @@
-package net.javacrumbs.shedlock.provider.leases;
+package net.javacrumbs.shedlock.provider.kubernetes.leases;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
