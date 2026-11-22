@@ -38,6 +38,7 @@ executed repeatedly. Moreover, the locks are time-based and ShedLock assumes tha
   - [ArangoDB](#arangodb)
   - [Neo4j](#neo4j)
   - [Etcd](#etcd)
+  - [Kubernetes Leases](#kubernetes-leases)
   - [Apache Ignite](#apache-ignite)
   - [In-Memory](#in-memory)
   - [Memcached](#memcached-using-spymemcached)
@@ -837,6 +838,50 @@ public LockProvider lockProvider(Client client) {
 }
 ```
 
+
+#### Kubernetes Leases
+Uses Kubernetes `coordination.k8s.io/v1` Lease resources. Every lock is stored as one Lease named after the lock,
+so lock names have to be valid DNS-1123 names (lower case alphanumerics, `-` and `.`).
+Import the project
+```xml
+<dependency>
+    <groupId>net.javacrumbs.shedlock</groupId>
+    <artifactId>shedlock-provider-kubernetes-leases</artifactId>
+    <version>7.11.0</version>
+</dependency>
+```
+
+Configure:
+
+```java
+import net.javacrumbs.shedlock.provider.kubernetes.leases.LeasesLockProvider;
+
+...
+
+@Bean
+public LockProvider lockProvider(KubernetesClient client) {
+    return new LeasesLockProvider(client, "my-namespace");
+}
+```
+
+The namespace can be omitted (`new LeasesLockProvider(client)`). In that case the namespace the client runs in
+is used (the pod's namespace in a cluster, the current context's namespace otherwise).
+
+The service account needs `get`, `create`, `list`, `patch`  and `update` permissions on `leases` in the used namespace:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: shedlock
+rules:
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update"]
+```
+
+The exact lock expiry is stored in the `shedlock.net/locked-until` annotation, the standard Lease fields
+(`holderIdentity`, `renewTime`, ...) are filled in for visibility only.
 
 #### Apache Ignite
 Import the project
