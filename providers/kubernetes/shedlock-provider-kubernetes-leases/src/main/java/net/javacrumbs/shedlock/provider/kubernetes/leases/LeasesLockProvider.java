@@ -20,7 +20,6 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -53,8 +52,6 @@ import org.slf4j.LoggerFactory;
  */
 public class LeasesLockProvider implements ExtensibleLockProvider {
     static final String LOCKED_UNTIL_ANNOTATION = "shedlock.net/locked-until";
-    private static final String LOCK_TOKEN_ANNOTATION = "shedlock.net/lock-token";
-
     private static final Logger logger = LoggerFactory.getLogger(LeasesLockProvider.class);
 
     private final KubernetesClient client;
@@ -98,17 +95,17 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
     @Override
     public Optional<SimpleLock> lock(LockConfiguration lockConfiguration) {
         String name = lockConfiguration.getName();
-        String lockToken = UUID.randomUUID().toString();
         Instant now = now();
+        Lease acquired;
         try {
             Optional<Lease> existing = findLease(name);
             if (existing.isEmpty()) {
-                leases().resource(newLease(lockConfiguration, now, lockToken)).create();
+                acquired = leases().resource(newLease(lockConfiguration, now)).create();
             } else {
                 if (lockedUntil(existing.get()).isAfter(now)) {
                     return Optional.empty();
                 }
-                leases().resource(update(existing.get(), lockConfiguration.getLockAtMostUntil(), now, true, lockToken))
+                acquired = leases().resource(update(existing.get(), lockConfiguration.getLockAtMostUntil(), now, true))
                         .update();
             }
         } catch (KubernetesClientException e) {
@@ -119,7 +116,7 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
             throw e;
         }
         logger.debug("Locked {}", lockConfiguration);
-        return Optional.of(new LeaseLock(lockConfiguration, lockToken));
+        return Optional.of(new LeaseLock(lockConfiguration, acquired));
     }
 
     boolean isLocked(String lockName) {
@@ -137,36 +134,32 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
         return client.leases().inNamespace(namespace);
     }
 
-    private Lease newLease(LockConfiguration configuration, Instant now, String lockToken) {
+    private Lease newLease(LockConfiguration configuration, Instant now) {
         Map<String, String> annotations = Map.of(
-                LOCKED_UNTIL_ANNOTATION,
-                configuration.getLockAtMostUntil().toString(),
-                LOCK_TOKEN_ANNOTATION,
-                lockToken);
+                LOCKED_UNTIL_ANNOTATION, configuration.getLockAtMostUntil().toString());
         return new LeaseBuilder()
                 .withMetadata(new ObjectMetaBuilder()
                         .withName(configuration.getName())
                         .withNamespace(namespace)
                         .withAnnotations(annotations)
                         .build())
-                .withSpec(spec(configuration.getLockAtMostUntil(), now, now))
+                .withSpec(spec(configuration.getLockAtMostUntil(), now))
                 .build();
     }
 
     /** Returns a copy of the lease with a new expiry; keeps resourceVersion. */
-    private Lease update(Lease lease, Instant lockedUntil, Instant now, boolean newHolder, String lockToken) {
+    private Lease update(Lease lease, Instant lockedUntil, Instant now, boolean newHolder) {
         Map<String, String> annotations = new HashMap<>();
         if (lease.getMetadata().getAnnotations() != null) {
             annotations.putAll(lease.getMetadata().getAnnotations());
         }
         annotations.put(LOCKED_UNTIL_ANNOTATION, lockedUntil.toString());
-        annotations.put(LOCK_TOKEN_ANNOTATION, lockToken);
 
         LeaseSpec oldSpec = lease.getSpec();
         ZonedDateTime acquireTime = newHolder || oldSpec == null ? utc(now) : oldSpec.getAcquireTime();
         int transitions = oldSpec != null && oldSpec.getLeaseTransitions() != null ? oldSpec.getLeaseTransitions() : 0;
 
-        LeaseSpec newSpec = spec(lockedUntil, now, now);
+        LeaseSpec newSpec = spec(lockedUntil, now);
         newSpec.setAcquireTime(acquireTime);
         newSpec.setLeaseTransitions(newHolder ? transitions + 1 : transitions);
 
@@ -178,13 +171,14 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
                 .build();
     }
 
-    private LeaseSpec spec(Instant lockedUntil, Instant acquireTime, Instant renewTime) {
+    private LeaseSpec spec(Instant lockedUntil, Instant now) {
+        ZonedDateTime utcNow = utc(now);
         LeaseSpec spec = new LeaseSpec();
         spec.setHolderIdentity(holderIdentity);
-        spec.setAcquireTime(utc(acquireTime));
-        spec.setRenewTime(utc(renewTime));
+        spec.setAcquireTime(utcNow);
+        spec.setRenewTime(utcNow);
         spec.setLeaseDurationSeconds(
-                (int) Math.max(1, Duration.between(renewTime, lockedUntil).toSeconds()));
+                (int) Math.max(1, Duration.between(now, lockedUntil).toSeconds()));
         spec.setLeaseTransitions(0);
         return spec;
     }
@@ -216,16 +210,15 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
     }
 
     private final class LeaseLock extends AbstractSimpleLock {
-        private final String lockToken;
+        private final String resourceVersion;
 
-        private LeaseLock(LockConfiguration lockConfiguration, String lockToken) {
+        private LeaseLock(LockConfiguration lockConfiguration, Lease lease) {
             super(lockConfiguration);
-            this.lockToken = lockToken;
+            this.resourceVersion = requireNonNull(lease.getMetadata().getResourceVersion());
         }
 
         private boolean ownsLease(Lease lease) {
-            Map<String, String> annotations = lease.getMetadata().getAnnotations();
-            return annotations != null && lockToken.equals(annotations.get(LOCK_TOKEN_ANNOTATION));
+            return resourceVersion.equals(lease.getMetadata().getResourceVersion());
         }
 
         @Override
@@ -240,7 +233,7 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
             Instant lockAtLeastUntil = lockConfiguration.getLockAtLeastUntil();
             Instant until = lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
             try {
-                leases().resource(update(lease, until, now, false, lockToken)).update();
+                leases().resource(update(lease, until, now, false)).update();
                 logger.debug("Unlocked {}", lockConfiguration);
             } catch (KubernetesClientException e) {
                 if (!isConflict(e)) {
@@ -259,8 +252,9 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
                 return Optional.empty();
             }
             Lease lease = active.get();
+            Lease extended;
             try {
-                leases().resource(update(lease, newConfiguration.getLockAtMostUntil(), now, false, lockToken))
+                extended = leases().resource(update(lease, newConfiguration.getLockAtMostUntil(), now, false))
                         .update();
             } catch (KubernetesClientException e) {
                 if (isConflict(e)) {
@@ -269,7 +263,7 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
                 throw e;
             }
             logger.debug("Extended {}", newConfiguration);
-            return Optional.of(new LeaseLock(newConfiguration, lockToken));
+            return Optional.of(new LeaseLock(newConfiguration, extended));
         }
     }
 }
