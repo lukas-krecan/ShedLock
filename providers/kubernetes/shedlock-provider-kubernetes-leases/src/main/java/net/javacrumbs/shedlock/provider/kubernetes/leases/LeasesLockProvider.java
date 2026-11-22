@@ -218,7 +218,16 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
         }
 
         private boolean ownsLease(Lease lease) {
-            return resourceVersion.equals(lease.getMetadata().getResourceVersion());
+            String currentVersion = lease.getMetadata().getResourceVersion();
+            if (!resourceVersion.equals(currentVersion)) {
+                logger.warn(
+                        "Lease {} has changed since it was acquired (resource version: {}, current: {})",
+                        lockConfiguration.getName(),
+                        resourceVersion,
+                        currentVersion);
+                return false;
+            }
+            return true;
         }
 
         @Override
