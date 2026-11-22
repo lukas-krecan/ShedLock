@@ -25,6 +25,7 @@ import net.javacrumbs.shedlock.core.AbstractSimpleLock;
 import net.javacrumbs.shedlock.core.ExtensibleLockProvider;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.support.Utils;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
      *            namespace where the Lease resources are stored
      */
     public LeasesLockProvider(KubernetesClient client, String namespace) {
-        this(client, namespace, defaultHolderIdentity());
+        this(client, namespace, Utils.getHostname());
     }
 
     /**
@@ -212,15 +213,6 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
 
     private static boolean isConflict(KubernetesClientException e) {
         return e.getCode() == HttpURLConnection.HTTP_CONFLICT;
-    }
-
-    private static String defaultHolderIdentity() {
-        String podName = System.getenv("POD_NAME");
-        if (podName != null && !podName.isBlank()) {
-            return podName;
-        }
-        String hostname = System.getenv("HOSTNAME");
-        return hostname != null && !hostname.isBlank() ? hostname : "shedlock";
     }
 
     private final class LeaseLock extends AbstractSimpleLock {
