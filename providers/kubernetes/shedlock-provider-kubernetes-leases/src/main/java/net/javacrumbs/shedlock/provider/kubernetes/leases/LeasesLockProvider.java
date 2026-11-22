@@ -230,17 +230,19 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
             return true;
         }
 
+        private Optional<Lease> findOwnedLease() {
+            return findLease(lockConfiguration.getName()).filter(this::ownsLease);
+        }
+
         @Override
         protected void doUnlock() {
-            String name = lockConfiguration.getName();
-            Optional<Lease> found = findLease(name).filter(this::ownsLease);
+            Optional<Lease> found = findOwnedLease();
             if (found.isEmpty()) {
                 return;
             }
             Lease lease = found.get();
             Instant now = now();
-            Instant lockAtLeastUntil = lockConfiguration.getLockAtLeastUntil();
-            Instant until = lockAtLeastUntil.isAfter(now) ? lockAtLeastUntil : now;
+            Instant until = lockConfiguration.getUnlockTime();
             try {
                 leases().resource(update(lease, until, now, false)).update();
                 logger.debug("Unlocked {}", lockConfiguration);
@@ -254,9 +256,8 @@ public class LeasesLockProvider implements ExtensibleLockProvider {
         @Override
         protected Optional<SimpleLock> doExtend(LockConfiguration newConfiguration) {
             Instant now = now();
-            Optional<Lease> active = findLease(newConfiguration.getName())
-                    .filter(this::ownsLease)
-                    .filter(found -> lockedUntil(found).isAfter(now));
+            Optional<Lease> active =
+                    findOwnedLease().filter(found -> lockedUntil(found).isAfter(now));
             if (active.isEmpty()) {
                 return Optional.empty();
             }
