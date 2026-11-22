@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 public class LeasesLockProviderIntegrationTest extends AbstractExtensibleLockProviderIntegrationTest {
 
     // injected by the mock server extension
+    @SuppressWarnings("NullAway.Init")
     static KubernetesClient client;
 
     private LeasesLockProvider leasesLockProvider;
