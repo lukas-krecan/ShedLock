@@ -1,5 +1,9 @@
 # Release notes
 
+## 7.12.0 (2026-11-23)
+* Add Kubernetes Leases lock provider #3915 (thanks @mhayen)
+* Dependency updates
+
 ## 7.11.0 (2026-11-07)
 * Support for database time in Mongo and Reactive Mongo providers #3852 (thanks @mraj602)
 * Add DynamoDB Enhanced Client lock provider #3865 (thanks @rvecchilm)
