@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "maven"
     directory: "/"
+    exclude-paths:
+      - "spring/test/shedlock-springboot-old-test/**"
     schedule:
       interval: "daily"
     ignore:
