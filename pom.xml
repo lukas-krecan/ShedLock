@@ -2,12 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
-
     <developers>
         <developer>
             <id>lukas</id>
@@ -19,6 +13,8 @@
     <groupId>net.javacrumbs.shedlock</groupId>
     <artifactId>shedlock-parent</artifactId>
     <name>ShedLock</name>
+    <description>Distributed lock for scheduled tasks.</description>
+    <url>https://github.com/lukas-krecan/ShedLock</url>
     <packaging>pom</packaging>
     <version>6.10.1-SNAPSHOT</version>
     <modules>
@@ -95,6 +91,35 @@
     </properties>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <configuration>
+                        <mavenExecutorId>forked-path</mavenExecutorId>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <arguments>-DperformRelease=true -DskipTests</arguments>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.5.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.22.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
@@ -159,9 +184,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.3</version>
+                <version>3.12.0</version>
                 <configuration>
-                    <failOnError>false</failOnError>
+                    <doclint>all,-missing</doclint>
                 </configuration>
                 <executions>
                     <execution>
@@ -177,30 +202,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>3.1.4</version>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                    <excludeArtifacts>
-                        <artifact>shedlock-springboot-future-test</artifact>
-                        <artifact>shedlock-springboot-kotlin-test</artifact>
-                        <artifact>shedlock-springboot-old-test</artifact>
-                        <artifact>shedlock-springboot-sleuth-test</artifact>
-                        <artifact>shedlock-springboot-test</artifact>
-                        <artifact>shedlock-testng-test</artifact>
-                        <artifact>quarkus-test</artifact>
-                        <artifact>micronaut4-jdbc</artifact>
-                        <artifact>micronaut4-jdbc-template</artifact>
-                        <artifact>shedlock-test-support</artifact>
-                        <artifact>shedlock-test-support-jdbc</artifact>
-                        <artifact>shedlock-test-support-redis</artifact>
-                    </excludeArtifacts>
-                </configuration>
             </plugin>
         </plugins>
         <extensions>
@@ -232,6 +233,20 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>3.2.8</version>
                         <executions>
@@ -243,6 +258,30 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.12.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <excludeArtifacts>
+                                <artifact>shedlock-springboot-future-test</artifact>
+                                <artifact>shedlock-springboot-kotlin-test</artifact>
+                                <artifact>shedlock-springboot-old-test</artifact>
+                                <artifact>shedlock-springboot-sleuth-test</artifact>
+                                <artifact>shedlock-springboot-test</artifact>
+                                <artifact>shedlock-testng-test</artifact>
+                                <artifact>quarkus-test</artifact>
+                                <artifact>micronaut4-jdbc</artifact>
+                                <artifact>micronaut4-jdbc-template</artifact>
+                                <artifact>shedlock-test-support</artifact>
+                                <artifact>shedlock-test-support-jdbc</artifact>
+                                <artifact>shedlock-test-support-redis</artifact>
+                            </excludeArtifacts>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
