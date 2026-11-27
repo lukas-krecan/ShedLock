@@ -100,7 +100,7 @@
                     <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
                         <useReleaseProfile>false</useReleaseProfile>
-                        <arguments>-DperformRelease=true -DskipTests</arguments>
+                        <arguments>-DperformRelease=true -DskipTests -Dmaven.build.cache.enabled=false</arguments>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -229,6 +229,10 @@
                     <value>true</value>
                 </property>
             </activation>
+            <properties>
+                <!-- Cached artifacts do not restore the flattened POM used for signing and deployment. -->
+                <maven.build.cache.enabled>false</maven.build.cache.enabled>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
